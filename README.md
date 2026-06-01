@@ -106,11 +106,28 @@ Screenshots
 Coming soon.
 
 ---
+License
+Turtle Launcher is open source under the GPL-3.0 license.
+Special Thanks
+This project uses several useful code libraries. Special thanks to them!
 
-Credits
-
-Special thanks to the open-source Minecraft launcher community and the developers whose work helped inspire and support this project.
-
+Code Libraries Used by PojavLauncher
+Boardwalk (JVM Launcher): Unknown license / Apache License 2.0 or GNU GPLv2.
+Android Support Library: Apache License 2.0.
+GL4ES: MIT License.
+OpenJDK: GNU GPLv2 License.
+LWJGL3: BSD-3 License.
+LWJGLX (LWJGL2 API compatibility layer for LWJGL3): Unknown license.
+Mesa 3D Graphics Library: MIT License.
+pro-grade (Java Sandbox Security Manager): Apache License 2.0.
+bhook (For exit code capture): MIT License.
+libepoxy: MIT License.
+virglrenderer: MIT License.
+Additional Code Libraries Used by Zalith Launcher
+HMCL (uses some source code): GPL-3.0 License
+CommonMark (for rendering Markdown text): BSD-3-Clause License
+AndroidViewAnimations (uses part of the animation source code): MIT License
+TapTargetView (for creating onboarding guides): Apache License 2.0
 ---
 
 Disclaimer

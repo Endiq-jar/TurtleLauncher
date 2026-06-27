@@ -1,8 +1,8 @@
-# 🐢 Turtle Launcher
+# Turtle Launcher
 
 > **A modern, futuristic, high-performance Android launcher for Minecraft Java Edition.**
 
-Turtle Launcher is a next-generation Android Minecraft launcher designed around speed, stability, and premium user experience. Built with modern Android technologies and inspired by gaming console dashboards, it combines powerful customization with an elegant Material 3 interface.
+Turtle Launcher is a next-generation Android Minecraft launcher designed around speed, stability, and premium user experience. Built with modern Android technologies and inspired by Zalith launcher, it combines powerful customization with an elegant Material 3 interface.
 
 Unlike traditional launcher forks, Turtle Launcher introduces a completely refreshed visual identity, fluid animations, advanced performance optimizations, and a polished ecosystem for playing Minecraft Java on Android.
 
@@ -130,11 +130,9 @@ Supports a wide range of Minecraft versions and modding platforms.
 
 ## Account Manager
 
-* Multiple accounts
 * Offline accounts
-* Microsoft login *(planned)*
-* Account switching
-* Secure local storage
+* Microsoft login
+* Ely.by account
 
 ## Download Center
 
@@ -143,7 +141,6 @@ Supports a wide range of Minecraft versions and modding platforms.
 * Asset downloads
 * Library downloads
 * Java downloads
-* Progress tracking
 * Resume support
 
 ## Launch System
@@ -164,11 +161,10 @@ Personalize every part of the launcher.
 * Accent colors
 * Wallpapers
 * Custom backgrounds
-* Icon customization *(planned)*
-* Font selection *(planned)*
+* Icon customization
+* Font selection
 * UI density options
 * Animation controls
-* Blur intensity
 * Launcher appearance presets
 
 ---
@@ -272,7 +268,8 @@ More screenshots will be added as development progresses.
 ## Planned
 
 * Cloud synchronization
-* Skin manager
+* Skin/Cape manager
+* [Turtle Client]()
 
 ---
 

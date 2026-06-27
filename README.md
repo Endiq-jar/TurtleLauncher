@@ -101,9 +101,9 @@ Features, UI, and performance optimizations are continuously improving.
 
 ---
 
-Screenshots
+## Screenshots
 
-Coming soon.
+![Screenshot 1](1.jpg)
 
 ---
 License

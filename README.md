@@ -269,7 +269,7 @@ More screenshots will be added as development progresses.
 
 * Cloud synchronization
 * Skin/Cape manager
-* [Turtle Client]()
+* [Turtle Client](https://modrinth.com/mod/turtleclient)
 
 ---
 

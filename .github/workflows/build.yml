@@ -64,28 +64,14 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 
-      # Release signing key, injected from a repo secret instead of being committed.
-      - name: Decode release keystore
-        if: ${{ secrets.MOVTERY_KEYSTORE_B64 != '' }}
-        run: |
-          echo "${{ secrets.MOVTERY_KEYSTORE_B64 }}" | base64 -d > "${{ steps.locate.outputs.dir }}/ZalithLauncher/movtery-key.jks"
-
       - name: Build debug APK
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon -Dorg.gradle.jvmargs=-Xmx4096m
 
-      - name: Build release APK
-        if: ${{ secrets.MOVTERY_KEYSTORE_PASSWORD != '' }}
-        working-directory: ${{ steps.locate.outputs.dir }}
-        env:
-          MOVTERY_KEYSTORE_PASSWORD: ${{ secrets.MOVTERY_KEYSTORE_PASSWORD }}
-          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: ./gradlew :ZalithLauncher:assembleRelease --no-daemon -Dorg.gradle.jvmargs=-Xmx4096m
-
-      - name: Upload APKs
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: TurtleLauncher-apks
-          path: "**/build/outputs/apk/**/*.apk"
+          name: TurtleLauncher-debug-apk
+          path: "**/build/outputs/apk/debug/*.apk"

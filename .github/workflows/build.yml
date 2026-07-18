@@ -68,7 +68,7 @@ jobs:
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon -Dorg.gradle.jvmargs=-Xmx4096m
+        run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

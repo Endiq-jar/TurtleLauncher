@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Core -->
+    <color name="black_or_white">#FFFFFF</color>
+
+    <!-- Main Background -->
+    <color name="background_app">#090909</color>
+    <color name="background_app_error">#120909</color>
+    <color name="background_overlay">#66000000</color>
+    <color name="background_status_bar">#050505</color>
+
+    <!-- Top Bar -->
+    <color name="background_menu_top">#CC121212</color>
+    <color name="background_menu_top_error">#992222</color>
+    <color name="background_menu_element">#1A1A1A</color>
+    <color name="background_ripple_effect">#55FFFFFF</color>
+
+    <!-- Buttons -->
+    <color name="button_background">#181818</color>
+    <color name="button_background_selected">#292929</color>
+
+    <!-- Dialog -->
+    <color name="dialog_background">#DD101010</color>
+
+    <!-- Menu -->
+    <color name="menu_bar">#101010</color>
+    <color name="menu_bar_text">#FFFFFF</color>
+    <color name="menu_overlay">#88000000</color>
+    <color name="menu_progress">#00E5FF</color>
+
+    <!-- Cards -->
+    <color name="background_item">#88161616</color>
+    <color name="background_item_selected">#AA242424</color>
+    <color name="background_item_disabled">#55333333</color>
+
+    <!-- Sponsor -->
+    <color name="background_sponsor_intermediate">#66FF9800</color>
+    <color name="background_sponsor_advanced">#66FF5252</color>
+
+    <!-- Inputs -->
+    <color name="edit_box_fill">#AA111111</color>
+    <color name="edit_box_fill_selected">#CC1E1E1E</color>
+
+    <!-- Categories -->
+    <color name="mod_category_fill">#66303030</color>
+    <color name="text_background_fill">#66181818</color>
+
+    <!-- Vibrant Accent Colors -->
+    <color name="settings_category">#00E5FF</color>
+    <color name="favorite_color">#FF4081</color>
+    <color name="turtle_icon_color">#FFFFFF</color>
+    <color name="turtle_primary_text">#FFFFFF</color>
+    <color name="turtle_text_primary">#FFFFFF</color>
+
+    <!-- Extra Vibrant Colors -->
+    <color name="accent_primary">#00E5FF</color>
+    <color name="accent_secondary">#7C4DFF</color>
+    <color name="accent_purple">#B388FF</color>
+    <color name="accent_blue">#448AFF</color>
+    <color name="accent_cyan">#18FFFF</color>
+    <color name="accent_green">#69F0AE</color>
+    <color name="accent_orange">#FFAB40</color>
+    <color name="accent_red">#FF5252</color>
+    <color name="accent_pink">#FF4081</color>
+
+    <!-- Glass / AMOLED -->
+    <color name="bg_deep">#000000</color>
+    <color name="bg_card">#AA101010</color>
+
+    <!-- Surfaces (needed by existing code) -->
+    <color name="turtle_surface">#CC141414</color>
+    <color name="turtle_surface_variant">#88202020</color>
+    <color name="turtle_divider">#33FFFFFF</color>
+    <color name="turtle_stroke">#55FFFFFF</color>
+
+    <!-- Extended aliases used by layouts/code -->
+    <color name="turtle_accent_glow">#00E5FF</color>
+    <color name="turtle_accent_dim">#00B8D4</color>
+    <color name="turtle_accent_ripple">#2200E5FF</color>
+    <color name="turtle_bg_surface">#0D0D0D</color>
+    <color name="turtle_bg_elevated">#161616</color>
+    <color name="turtle_bg_navbar">#080808</color>
+    <color name="turtle_bg_sidebar">#0A0A0A</color>
+    <color name="turtle_bg_terminal">#000000</color>
+    <color name="turtle_text_secondary">#AAAAAA</color>
+    <color name="turtle_text_disabled">#555555</color>
+    <color name="turtle_text_on_accent">#000000</color>
+    <color name="turtle_text_terminal">#00E5FF</color>
+    <color name="turtle_border_subtle">#1A1A1A</color>
+    <color name="turtle_border_default">#242424</color>
+    <color name="turtle_error">#FF5252</color>
+    <color name="turtle_warning">#FFAB40</color>
+    <color name="turtle_success">#69F0AE</color>
+    <color name="turtle_glass_overlay">#1AFFFFFF</color>
+    <color name="turtle_shadow_color">#99000000</color>
+    <color name="turtle_overlay_scrim">#88000000</color>
+    <color name="turtle_stat_fps">#00E5FF</color>
+    <color name="turtle_stat_ram">#69F0AE</color>
+    <color name="turtle_stat_cpu">#FFAB40</color>
+    <color name="turtle_stat_ping">#FF4081</color>
+
+    <color name="panel_translucent">#DD11161D</color>
+    <color name="game_panel_overlay">#801C2128</color>
+    <color name="turtle_highlight_subtle">#22FFFFFF</color>
+
+
+</resources>

@@ -1,0 +1,59 @@
+name: Auto Build
+
+# Runs on every push/PR to main, plus a manual "Run workflow" button in the Actions tab.
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # Handles Gradle wrapper setup AND dependency/build caching automatically -
+      # keeps repeat CI runs fast without hand-rolled actions/cache config.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install required SDK components
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # gradle.properties pins android.aapt2FromMavenOverride to a Termux-only binary
+      # path (this project is normally built on-device in Termux, see gradle.properties
+      # comments). That path doesn't exist on a GitHub runner, so strip it here - AGP
+      # falls back to downloading its own aapt2 from Maven, which works fine on a real
+      # Linux box. This only touches the checked-out copy in the runner, not your repo.
+      - name: Remove Termux-only aapt2 override for CI
+        run: sed -i '/android.aapt2FromMavenOverride/d' gradle.properties
+
+      - name: Build debug APK
+        run: |
+          ./gradlew :ZalithLauncher:assembleDebug \
+            -Dkotlin.compiler.execution.strategy=in-process \
+            -Dorg.gradle.jvmargs=-Xmx4g \
+            --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TurtleLauncher-debug-apk
+          path: ZalithLauncher/build/outputs/apk/debug/*.apk

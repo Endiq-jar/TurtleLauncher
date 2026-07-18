@@ -47,7 +47,7 @@ jobs:
 
       - name: Build debug APK
         run: |
-          ./gradlew :ZalithLauncher:assembleDebug \
+          ./gradlew :TurtleLauncher:assembleDebug \
             -Dkotlin.compiler.execution.strategy=in-process \
             -Dorg.gradle.jvmargs=-Xmx4g \
             --no-daemon
@@ -56,4 +56,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TurtleLauncher-debug-apk
-          path: ZalithLauncher/build/outputs/apk/debug/*.apk
+          path: TurtleLauncher/build/outputs/apk/debug/*.apk

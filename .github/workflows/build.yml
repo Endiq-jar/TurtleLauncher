@@ -1,59 +1,91 @@
-name: Auto Build
+name: Build APK
 
-# Runs on every push/PR to main, plus a manual "Run workflow" button in the Actions tab.
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '21'
 
-      # Handles Gradle wrapper setup AND dependency/build caching automatically -
-      # keeps repeat CI runs fast without hand-rolled actions/cache config.
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install required SDK components
+      # Works whether gradlew lives at the repo root or one level down
+      # (e.g. TurtleLauncher/gradlew) - no need to hardcode the layout.
+      - name: Locate the Android project root
+        id: locate
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          GRADLEW_PATH=$(find . -maxdepth 3 -name gradlew | head -n1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "::error::No gradlew found anywhere in this repo (checked 3 levels deep)."
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          echo "dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+          echo "Found Android project at: $PROJECT_DIR"
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+          PROPS="$PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties"
+          if [ -f "$PROPS" ]; then
+            VERSION=$(grep -oE 'gradle-[0-9.]+-(bin|all)' "$PROPS" | head -n1 | sed -E 's/gradle-([0-9.]+)-(bin|all)/\1/')
+          fi
+          VERSION=${VERSION:-8.9}
+          echo "gradle_version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Target Gradle version: $VERSION"
 
-      # gradle.properties pins android.aapt2FromMavenOverride to a Termux-only binary
-      # path (this project is normally built on-device in Termux, see gradle.properties
-      # comments). That path doesn't exist on a GitHub runner, so strip it here - AGP
-      # falls back to downloading its own aapt2 from Maven, which works fine on a real
-      # Linux box. This only touches the checked-out copy in the runner, not your repo.
-      - name: Remove Termux-only aapt2 override for CI
-        run: sed -i '/android.aapt2FromMavenOverride/d' gradle.properties
+      # Fixes: "Could not find or load main class org.gradle.wrapper.GradleWrapperMain"
+      # That error means gradle/wrapper/gradle-wrapper.jar is missing, empty, or corrupt
+      # in the repo - common with GitHub's web "Add files via upload" flow, which can
+      # silently drop or mangle binary files. Rather than debug how it got lost, this
+      # provisions a real Gradle install and has it write a fresh, correct wrapper jar
+      # before gradlew is ever invoked, so the build no longer depends on whatever
+      # actually made it into the repo.
+      - name: Provision Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ steps.locate.outputs.gradle_version }}
+
+      - name: Regenerate the Gradle wrapper jar
+        working-directory: ${{ steps.locate.outputs.dir }}
+        run: gradle wrapper --gradle-version ${{ steps.locate.outputs.gradle_version }}
+
+      # The Termux build pins aapt2 to a Termux-only ARM64 binary path that doesn't
+      # exist on a normal Linux runner. Strip it so AGP falls back to the standard
+      # aapt2 pulled from Google's Maven repo. Harmless no-op if the line isn't there.
+      - name: Remove Termux-only aapt2 override
+        run: sed -i '/android.aapt2FromMavenOverride/d' "${{ steps.locate.outputs.dir }}/gradle.properties" || true
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
+
+      # Release signing key, injected from a repo secret instead of being committed.
+      - name: Decode release keystore
+        if: ${{ secrets.MOVTERY_KEYSTORE_B64 != '' }}
+        run: |
+          echo "${{ secrets.MOVTERY_KEYSTORE_B64 }}" | base64 -d > "${{ steps.locate.outputs.dir }}/ZalithLauncher/movtery-key.jks"
 
       - name: Build debug APK
-        run: |
-          ./gradlew :TurtleLauncher:assembleDebug \
-            -Dkotlin.compiler.execution.strategy=in-process \
-            -Dorg.gradle.jvmargs=-Xmx4g \
-            --no-daemon
+        working-directory: ${{ steps.locate.outputs.dir }}
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+        run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon -Dorg.gradle.jvmargs=-Xmx4096m
 
-      - name: Upload APK artifact
+      - name: Build release APK
+        if: ${{ secrets.MOVTERY_KEYSTORE_PASSWORD != '' }}
+        working-directory: ${{ steps.locate.outputs.dir }}
+        env:
+          MOVTERY_KEYSTORE_PASSWORD: ${{ secrets.MOVTERY_KEYSTORE_PASSWORD }}
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+        run: ./gradlew :ZalithLauncher:assembleRelease --no-daemon -Dorg.gradle.jvmargs=-Xmx4096m
+
+      - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: TurtleLauncher-debug-apk
-          path: TurtleLauncher/build/outputs/apk/debug/*.apk
+          name: TurtleLauncher-apks
+          path: "**/build/outputs/apk/**/*.apk"

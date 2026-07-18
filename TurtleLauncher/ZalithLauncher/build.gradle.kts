@@ -216,14 +216,23 @@ fun generateJavaClass(sourceOutputDir: File, packageName: String, className: Str
 }
 
 tasks.register("generateInfoDistributor") {
+    // Configuration cache forbids touching Project from inside doLast (execution
+    // time) - resolve everything that needs `project` here instead, into plain
+    // local vals, before doLast runs.
+    val curseforgeApiKey = getCFApiKey()
+    val launcherName = project.property("launcher_name").toString()
+    val appName = project.property("launcher_app_name").toString()
+    val buildType = getBuildType()
+    val outputDir = generatedZalithDir
+
     doLast {
         val constantMap = mapOf(
-            "CURSEFORGE_API_KEY" to getCFApiKey(),
-            "LAUNCHER_NAME" to project.property("launcher_name").toString(),
-            "APP_NAME" to project.property("launcher_app_name").toString(),
-            "BUILD_TYPE" to getBuildType()
+            "CURSEFORGE_API_KEY" to curseforgeApiKey,
+            "LAUNCHER_NAME" to launcherName,
+            "APP_NAME" to appName,
+            "BUILD_TYPE" to buildType
         )
-        generateJavaClass(generatedZalithDir, "com.movtery.zalithlauncher", "InfoDistributor", constantMap)
+        generateJavaClass(outputDir, "com.movtery.zalithlauncher", "InfoDistributor", constantMap)
     }
 }
 

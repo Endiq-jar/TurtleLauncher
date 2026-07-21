@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    TurtleLauncher: launch-button background states from the user-provided
+    LaunchButton/LaunchButtonHover/LaunchButtonPressed images. Note: as supplied,
+    Hover and Pressed are both a flat mid-grey (115,115,115) - identical to each
+    other, only Normal (a flat red, 214,56,56) differs. Wired up as given; if that
+    was unintentional, swapping in a distinct Pressed image is a one-file change,
+    nothing else here needs to move.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@drawable/launch_button_pressed"/>
+    <item android:state_hovered="true" android:drawable="@drawable/launch_button_hover"/>
+    <item android:drawable="@drawable/launch_button_normal"/>
+</selector>

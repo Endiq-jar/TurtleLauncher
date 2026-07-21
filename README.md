@@ -361,5 +361,5 @@ If you enjoy Turtle Launcher:
 * 💡 Suggest features
 * 🤝 Contribute code
 * 📢 Share the project
-
+ 
 Every contribution helps make Turtle Launcher even better.

@@ -8,7 +8,7 @@ Unlike traditional launcher forks, Turtle Launcher introduces a completely refre
 
 ---
 
-# ✨ Highlights
+# ✨ Highlights 
 
 * 🚀 Fast and lightweight
 * 🎮 Gaming-inspired interface

@@ -24,7 +24,7 @@ import java.io.File
  * renderers plug in needed to change, only *which* renderers are registered.
  *
  * POJAV_RENDERER native-string mapping (see RendererInterface.getNativeRendererId's doc
- * comment for why this exists at all): jniLibs/*/libpojavexec.so is a prebuilt binary -
+ * comment for why this exists at all): the per-ABI jniLibs libpojavexec.so is a prebuilt binary -
  * there's no source for it in this repo (jni/Android.mk lists .c files that aren't
  * present; externalNativeBuild is commented out in build.gradle.kts because of that) - and
  * its pojavInitOpenGL only recognizes six legacy POJAV_RENDERER values (confirmed by

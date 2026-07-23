@@ -40,7 +40,7 @@ interface RendererInterface {
      * (prebuilt, no source in this repo - see jni/Android.mk, whose externalNativeBuild
      * is commented out in build.gradle.kts because the .c files it lists aren't present)
      * has its own hardcoded, pre-FCL-refactor set of recognized POJAV_RENDERER strings
-     * (found by disassembling pojavInitOpenGL in jniLibs/*/libpojavexec.so - see
+     * (found by disassembling pojavInitOpenGL in the per-ABI jniLibs libpojavexec.so - see
      * Renderers.kt's top-of-file doc comment for the full mapping table). A string it
      * doesn't recognize falls through its whole strcmp chain into an unguarded call
      * through an uninitialized function pointer - pc=0x0, guaranteed SIGSEGV, on every

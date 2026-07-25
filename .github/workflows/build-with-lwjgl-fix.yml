@@ -34,12 +34,11 @@ jobs:
       # run: "can't open patch '../patches/uni/*.diff'").
       - name: Run MojoLauncher's native build script (arm64 + others)
         working-directory: builder
-        env:
-          LWJGL_VERSION: '3.4.2'
-          LIBFFI_VERSION: '3.7.0'
-          JAVA8_HOME: ${{ env.JAVA_HOME_8_X64 }}
         run: |
           git config --global core.autocrlf false
+          export JAVA8_HOME=$JAVA_HOME_8_X64
+          export LWJGL_VERSION='3.4.2'
+          export LIBFFI_VERSION='3.7.0'
           bash ci_build_all.bash
 
       - name: Locate the new native libs

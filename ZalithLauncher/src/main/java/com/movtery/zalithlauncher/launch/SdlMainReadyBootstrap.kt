@@ -1,0 +1,45 @@
+package com.movtery.zalithlauncher.launch
+
+/**
+ * TurtleLauncher CRASH FIX (MC 26.3+): Minecraft's own bootstrap calls
+ * org.lwjgl.sdl.SDL's SDL_Init() directly as a library call from inside a
+ * normal JVM - never through SDL's own hijacked main() entry point. SDL's
+ * init path specifically checks for this and refuses to initialize
+ * otherwise, which surfaced as:
+ *   IllegalStateException: Unable to initialize SDL: Application didn't
+ *   initialize properly, did you include SDL_main.h in the file containing
+ *   your main() function?
+ *
+ * SDL_SetMainReady() is SDL's own documented function for exactly this case
+ * (embedding SDL as a library instead of owning main()). We can't call it
+ * from inside Minecraft's own main() - that's Mojang's compiled code, not
+ * ours - so this class becomes the actual JVM entry point instead for SDL
+ * versions only (see LaunchArgs.kt): it calls SDL_SetMainReady() first, then
+ * reflectively invokes the real main class Minecraft was supposed to run.
+ *
+ * Reflection throughout because org.lwjgl.sdl.SDLInit isn't a compile-time
+ * dependency of this module - it's one of Mojang's own downloaded libraries,
+ * resolved only at runtime from the version-specific classpath.
+ */
+object SdlMainReadyBootstrap {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val realMainClass = System.getProperty("turtlelauncher.realMainClass")
+            ?: throw IllegalStateException("turtlelauncher.realMainClass system property was not set - LaunchArgs should always set this alongside routing through this bootstrap class")
+
+        try {
+            val sdlInit = Class.forName("org.lwjgl.sdl.SDLInit")
+            val setMainReady = sdlInit.getMethod("SDL_SetMainReady")
+            setMainReady.invoke(null)
+        } catch (t: Throwable) {
+            // Best effort. If the class/method genuinely isn't present, fall
+            // through and let the real main class's own SDL_Init call fail
+            // with its own error instead of masking it with a reflection
+            // failure here - that keeps the crash log meaningful either way.
+        }
+
+        val realMain = Class.forName(realMainClass)
+        val mainMethod = realMain.getMethod("main", Array<String>::class.java)
+        mainMethod.invoke(null, args)
+    }
+}

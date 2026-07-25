@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+        TurtleLauncher Color Theme — v11 "Aurora" repaint
+        ══════════════════════════════════════════════════════════════════
+        Replaces the old green-on-AMOLED-black theme with the teal/purple/
+        pink palette from the brand mockup (turtle mascot + wordmark
+        gradient: "Turtle" teal → "Launcher" purple).
+
+        Background   #0B0F14   Surface     #12161F   Surface Light #1A1F2B
+        Primary      #00F0D1   Secondary   #A78BFA   Accent        #FF71CE
+        Highlight    #FFD166   Success     #4ADE80   Error         #F87171
+        Text Primary #FFFFFF   Text Secondary #6E7681
+
+        Gradients (used by GradientDrawables / Compose brushes, not single
+        colors, so they're not @color entries — kept here for reference):
+          Aurora Flow  : #00F0D1 → #A78BFA
+          Neon Dream   : #A78BFA → #FF71CE
+          Ocean Breeze : #00C2FF → #00F0D1
+          Sunset Glow  : #FF71CE → #FFD166
+          Void Pulse   : #5B2186 → #0EA5E9
+
+        HUD stat colors (FPS/RAM/CPU/Ping) are project-spec and intentionally
+        left untouched by this repaint.
+        ══════════════════════════════════════════════════════════════════
+    -->
+
+    <!-- ── Core ─────────────────────────────────────────────────────── -->
+    <color name="black_or_white">#FFFFFF</color>
+
+    <!-- ── Canonical palette (matches the brand mockup 1:1) ───────────── -->
+    <color name="palette_background">#0B0F14</color>
+    <color name="palette_surface">#12161F</color>
+    <color name="palette_surface_light">#1A1F2B</color>
+    <color name="palette_primary">#00F0D1</color>
+    <color name="palette_secondary">#A78BFA</color>
+    <color name="palette_accent">#FF71CE</color>
+    <color name="palette_highlight">#FFD166</color>
+    <color name="palette_success">#4ADE80</color>
+    <color name="palette_error">#F87171</color>
+    <color name="palette_text_primary">#FFFFFF</color>
+    <color name="palette_text_secondary">#6E7681</color>
+
+    <!-- ── Main Background ─────────────────────────────────────────── -->
+    <color name="background_app">#0B0F14</color>
+    <color name="background_app_error">#160D0D</color>
+    <color name="background_overlay">#66000000</color>
+    <color name="background_status_bar">#080B10</color>
+
+    <!-- ── Top Bar ───────────────────────────────────────────────────── -->
+    <color name="background_menu_top">#CC12161F</color>
+    <color name="background_menu_top_error">#991A1A1A</color>
+    <color name="background_menu_element">#1A1F2B</color>
+    <color name="background_ripple_effect">#3300F0D1</color>
+
+    <!-- ── Buttons ───────────────────────────────────────────────────── -->
+    <!-- Teal is the main CTA color now, in place of the old green -->
+    <color name="button_background">#16302C</color>
+    <color name="button_background_selected">#1B3D37</color>
+
+    <!-- ── Dialog ───────────────────────────────────────────────────── -->
+    <color name="dialog_background">#EE12161F</color>
+
+    <!-- ── Menu ─────────────────────────────────────────────────────── -->
+    <color name="menu_bar">#0D1117</color>
+    <color name="menu_bar_text">#FFFFFF</color>
+    <color name="menu_overlay">#88000000</color>
+    <!-- progress bar = full primary teal -->
+    <color name="menu_progress">#00F0D1</color>
+
+    <!-- ── Cards ────────────────────────────────────────────────────── -->
+    <color name="background_item">#8812161F</color>
+    <color name="background_item_selected">#AA1A2B2B</color>
+    <color name="background_item_disabled">#55252525</color>
+
+    <!-- ── Sponsor ──────────────────────────────────────────────────── -->
+    <color name="background_sponsor_intermediate">#55FFD166</color>
+    <color name="background_sponsor_advanced">#55FF71CE</color>
+
+    <!-- ── Inputs ───────────────────────────────────────────────────── -->
+    <color name="edit_box_fill">#AA12161F</color>
+    <color name="edit_box_fill_selected">#CC1A1F2B</color>
+
+    <!-- ── Categories ───────────────────────────────────────────────── -->
+    <color name="mod_category_fill">#661A1F2B</color>
+    <color name="text_background_fill">#6612161F</color>
+
+    <!-- ── Primary Accent: teal ────────────────────────────────────────
+         Used for buttons, progress bars, active tabs, icons.          -->
+    <color name="settings_category">#00F0D1</color>
+    <color name="accent_primary">#00F0D1</color>
+
+    <!-- ── Secondary accents — direct aliases onto the canonical palette,
+         kept under their old names so existing layouts don't need
+         touching. -->
+    <color name="accent_secondary">#A78BFA</color>
+    <color name="accent_purple">#A78BFA</color>
+
+    <!-- Ocean Breeze blue -->
+    <color name="accent_blue">#00C2FF</color>
+
+    <!-- lighter teal, for where accent_primary needs a softer neighbour -->
+    <color name="accent_cyan">#5EEAD4</color>
+
+    <!-- secondary green, matches Success -->
+    <color name="accent_green">#4ADE80</color>
+
+    <!-- Highlight gold -->
+    <color name="accent_orange">#FFD166</color>
+
+    <!-- Error red -->
+    <color name="accent_red">#F87171</color>
+
+    <!-- Accent pink -->
+    <color name="accent_pink">#FF71CE</color>
+    <color name="favorite_color">#FF71CE</color>
+
+    <!-- ── Icon / Text defaults ──────────────────────────────────────── -->
+    <color name="turtle_icon_color">#FFFFFF</color>
+    <color name="turtle_primary_text">#FFFFFF</color>
+    <color name="turtle_text_primary">#FFFFFF</color>
+
+    <!-- ── Glass / dark surfaces ───────────────────────────────────── -->
+    <color name="bg_deep">#0B0F14</color>
+    <color name="bg_card">#AA12161F</color>
+
+    <!-- ── Surfaces ──────────────────────────────────────────────────── -->
+    <color name="turtle_surface">#CC12161F</color>
+    <color name="turtle_surface_variant">#881A1F2B</color>
+    <color name="turtle_divider">#2200F0D1</color>
+    <color name="turtle_stroke">#3300F0D1</color>
+
+    <!-- ── Extended aliases ──────────────────────────────────────────── -->
+
+    <!-- Teal accent family -->
+    <color name="turtle_accent_glow">#00F0D1</color>
+    <color name="turtle_accent_dim">#00B39C</color>
+    <color name="turtle_accent_ripple">#1A00F0D1</color>
+
+    <!-- Background layers -->
+    <color name="turtle_bg_surface">#12161F</color>
+    <color name="turtle_bg_elevated">#1A1F2B</color>
+    <color name="turtle_bg_navbar">#0D1117</color>
+    <color name="turtle_bg_sidebar">#0B0F14</color>
+    <color name="turtle_bg_terminal">#0B0F14</color>
+
+    <!-- Text -->
+    <color name="turtle_text_secondary">#6E7681</color>
+    <color name="turtle_text_disabled">#3F4650</color>
+    <color name="turtle_text_on_accent">#0B0F14</color>
+    <color name="turtle_text_terminal">#5EEAD4</color>
+
+    <!-- Borders -->
+    <color name="turtle_border_subtle">#141A1F2B</color>
+    <color name="turtle_border_default">#232A38</color>
+
+    <!-- Semantic states -->
+    <color name="turtle_error">#F87171</color>
+    <color name="turtle_warning">#FFD166</color>
+    <color name="turtle_success">#4ADE80</color>
+
+    <!-- Overlays -->
+    <color name="turtle_glass_overlay">#1200F0D1</color>
+    <color name="turtle_shadow_color">#99000000</color>
+    <color name="turtle_overlay_scrim">#88000000</color>
+
+    <!-- ── HUD Stat Colors (project spec, kept exactly) ──────────────
+         These are used in the in-game overlay. Not changed by the repaint. -->
+    <color name="turtle_stat_fps">#00E5FF</color>
+    <color name="turtle_stat_ram">#69F0AE</color>
+    <color name="turtle_stat_cpu">#FFAB40</color>
+    <color name="turtle_stat_ping">#FF4081</color>
+
+    <!-- ── Panel / overlay tokens ──────────────────────────────────── -->
+    <color name="panel_translucent">#DD12161F</color>
+    <color name="game_panel_overlay">#801A1F2B</color>
+    <color name="turtle_highlight_subtle">#22FFFFFF</color>
+
+</resources>

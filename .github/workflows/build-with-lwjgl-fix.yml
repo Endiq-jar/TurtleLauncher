@@ -44,17 +44,21 @@ jobs:
         working-directory: lwjgl3
         run: |
           set -e
-          for p in ../builder/patches/uni/*.diff; do
-            echo "Applying $p"; git apply --whitespace=fix "$p"
-          done
-          for p in ../builder/patches/3.4.2/*.diff; do
-            echo "Applying $p"; git apply --whitespace=fix "$p"
-          done
+          git config --global core.autocrlf false
+          apply_patch() {
+            echo "Applying $1"
+            if ! git apply --reject --whitespace=fix --ignore-whitespace "$1"; then
+              echo "::error::Failed to apply $1 - see the .rej file(s) above for the exact hunk that didn't match."
+              exit 1
+            fi
+          }
+          for p in ../builder/patches/uni/*.diff; do apply_patch "$p"; done
+          for p in ../builder/patches/3.4.2/*.diff; do apply_patch "$p"; done
           if [ -f modules/lwjgl/core/src/templates/kotlin/core/linux/templates/uio.kt ]; then
-            git apply --whitespace=fix ../builder/patches/manual/lwjgl3_droid_syscall.diff
+            apply_patch ../builder/patches/manual/lwjgl3_droid_syscall.diff
           fi
           if [ -f modules/lwjgl/core/src/main/c/linux/LinuxLWJGL.h ]; then
-            git apply --whitespace=fix ../builder/patches/manual/lwjgl3_remove_x11_hdr.diff
+            apply_patch ../builder/patches/manual/lwjgl3_remove_x11_hdr.diff
           fi
 
       # Runs MojoLauncher's own, real, already-tested build script rather than

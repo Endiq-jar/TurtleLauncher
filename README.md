@@ -1,306 +1,136 @@
 # Turtle Launcher
 
-> **A modern, futuristic, high-performance Android launcher for Minecraft Java Edition.**
+> **A modern, high-performance Android launcher for Minecraft: Java Edition.**
 
-Turtle Launcher is a next-generation Android Minecraft launcher designed around speed, stability, and premium user experience. Built with modern Android technologies and inspired by Zalith launcher, it combines powerful customization with an elegant Material 3 interface.
-
-Unlike traditional launcher forks, Turtle Launcher introduces a completely refreshed visual identity, fluid animations, advanced performance optimizations, and a polished ecosystem for playing Minecraft Java on Android.
+Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher built for Android. Inspired by the open-source launcher **Zalith Launcher**, it combines a modern Material 3 interface with powerful customization, performance optimizations, and extensive modding support.
 
 ---
 
-# ✨ Highlights 
+## ✨ Features
 
-* 🚀 Fast and lightweight
-* 🎮 Gaming-inspired interface
-* 🎨 Beautiful Material Design 3 UI
-* ⚡ Performance optimized
-* 🧩 Full mod loader support
-* 📦 Instance management
-* ☁ Modern download system
-* 🔧 Advanced launcher controls
-* 📱 Optimized for phones and tablets
-* 🌙 Dark mode designed from the ground up
-
----
-
-# 📱 Features
-
-## Modern User Interface
+### 🎨 Modern UI
 
 * Material Design 3
-* Glassmorphism effects
-* Dynamic color themes
-* Adaptive layouts
-* Edge-to-edge design
-* Smooth page transitions
-* Premium animations
-* Responsive UI
-* Landscape & portrait support
-* Tablet optimized layouts
-* Modern settings dashboard
-* Gaming-style home screen
-* Minimal and clean design
-* Dynamic blur effects
-* Immersive experience
+* Dynamic themes & accent colors
+* Smooth animations
+* Responsive phone & tablet layouts
+* Dark mode
+* Gaming-inspired interface
 
----
+### 🚀 Performance
 
-## ⚡ Performance
-
-Designed to minimize overhead while maximizing gameplay performance.
-
-### Launcher Optimizations
-
-* Extremely fast startup
-* Low RAM consumption
-* Efficient image caching
-* Hardware accelerated UI
-* Optimized rendering pipeline
-* Reduced animation overhead
-* Background task optimization
+* Fast startup
+* Low RAM usage
+* Optimized rendering
+* Hardware-accelerated UI
 * Intelligent memory management
-* Lazy loading components
-* Smooth scrolling
-* Faster instance loading
-* Optimized downloads
-* Low battery usage
-* Reduced UI jank
+* Stable FPS & faster launches
 
-### Minecraft Optimizations
+### 🎮 Minecraft Support
 
-* Better launch speed
-* Improved Java initialization
-* Optimized JVM configuration
-* Configurable RAM allocation
-* Stable FPS
-* Reduced loading times
-* Efficient resource management
-
----
-
-# 🎮 Minecraft Support
-
-Supports a wide range of Minecraft versions and modding platforms.
-
-### Versions
-
-* Release
-* Snapshot
-* Old Beta
-* Old Alpha
-
-### Mod Loaders
-
+* Release, Snapshot, Beta & Alpha
 * Fabric
 * Quilt
 * Forge
 * NeoForge
 
-### Content Management
+### 📦 Content Management
 
 * Mods
 * Resource Packs
 * Shader Packs
 * Datapacks
 * Worlds
-* Saves
 * Screenshots
 * Logs
 
----
+### 🛠 Launcher Tools
 
-# 🧰 Launcher Features
+* Multiple instances
+* Java Manager
+* Microsoft, Offline, Battly & Ely.by accounts
+* Download Manager
+* Live launch & crash logs
+* Backup, import & export
 
-## Instance Manager
+### ⚙ Customization
 
-* Multiple game installations
-* Independent configurations
-* Version isolation
-* Easy backup
-* Import & export
-* Duplicate instances
-
-## Java Manager
-
-* Install Java automatically
-* Manage multiple Java runtimes
-* Java version detection
-* Custom Java selection
-* Runtime verification
-
-## Account Manager
-
-* Offline accounts
-* Microsoft login
-* Ely.by account
-
-## Download Center
-
-* Minecraft downloads
-* Mod loader downloads
-* Asset downloads
-* Library downloads
-* Java downloads
-* Resume support
-
-## Launch System
-
-* Live launch logs
-* Crash logs
-* Exit code reporting
-* Error diagnostics
-* Debug mode
-
----
-
-# 🎨 Customization
-
-Personalize every part of the launcher.
-
-* Dynamic themes
-* Accent colors
-* Wallpapers
 * Custom backgrounds
-* Icon customization
-* Font selection
-* UI density options
+* UI scaling
 * Animation controls
-* Launcher appearance presets
-
----
-
-# ⚙ Advanced Settings
-
-Power users can fine-tune performance.
-
-* RAM allocation
-* JVM arguments
-* Renderer settings
-* Resolution scaling
 * Performance profiles
-* FPS optimization
-* Cache management
-* Experimental features
-* Debug options
+* JVM & RAM settings
 
 ---
 
-# 📊 Design Philosophy
+## 🏗 Built With
 
-Turtle Launcher is built around six core principles:
-
-* 🚀 Fast
-* 🎨 Beautiful
-* ⚡ Smooth
-* 🛡 Stable
-* 🎮 Immersive
-* 🧩 Customizable
-
-The objective is to create a launcher that feels closer to a modern gaming console dashboard than a traditional Android application.
-
----
-
-# 🏗 Technical Stack
-
-## Languages
-
-* Kotlin
-* Java
-
-## Android
-
+* Kotlin & Java
 * Jetpack Compose
 * Material Design 3
 * AndroidX
-* Coroutines
-* Flow
-* ViewModel
-* Navigation
-
-## Libraries
-
+* Coroutines & Flow
 * Coil
 * Lottie
-* CommonMark
+* LWJGL 3
 * GL4ES
 * Mesa3D
-* LWJGL3
 * OpenJDK
 
 ---
 
-# 🎯 Optimization Goals
-
-Every release focuses on improving:
+## 🎯 Goals
 
 * Faster startup
 * Lower memory usage
-* Reduced CPU usage
 * Better battery efficiency
-* Faster downloads
-* Stable gameplay
-* Smooth animations
-* Responsive interface
-* Reduced loading screens
-* Consistent frame pacing
+* Smooth gameplay
+* Stable frame pacing
+* Modern user experience
 
 ---
 
-# 🖼 Screenshots
+## 🗺 Roadmap
 
-| Screenshots            |
-| -----------------------|
-| ![Home](1.jpg) |
+### Current
 
-More screenshots will be added as development progresses.
+- [X] Modern UI
+- [x] Theme engine
+- [x] Instance Manager
+- [x] Ai intregation
+- [ ] Performance improvements
+- [ ] ANGLE
+- [ ] Mesa3D
+- [ ] LTW Renderer
+- [ ] MobileGlues Renderer
+- [ ] Cleanroom Integration
+- [ ] Terracotta Integration
+- [ ] mclo.gs Integration
 
----
+### Planned
 
-# 📦 Roadmap
-
-## Current
-
-* Modern UI
-* Performance improvements
-* Instance management
-* Theme engine
-
-## Planned
-
-* Cloud synchronization
-* Skin/Cape manager
-* [Turtle Client](https://modrinth.com/mod/turtleclient)
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome.
-
-If you'd like to improve Turtle Launcher:
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Open a Pull Request
-
-Bug reports, feature requests, and suggestions are always appreciated.
+- [ ] Cloud Sync
+- [ ] Skin & Cape Manager
+- [ ] Turtle Client integration
+- [ ] Replace OSMesa with a real EGL implementation
 
 ---
 
-# 📄 License
+## 🤝 Contributing
 
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
-
-See the `LICENSE` file for more information.
+Contributions are welcome! Feel free to submit issues, feature requests, or pull requests.
 
 ---
 
-# ❤️ Acknowledgements
+## 📄 License
 
-Turtle Launcher builds upon the excellent work of the open-source Minecraft launcher community.
+Licensed under **GPL-3.0**.
 
-## Based on ideas and technologies from
+---
+
+## ❤️ Credits
+
+Built upon ideas and technologies from:
 
 * PojavLauncher
 * Zalith Launcher
@@ -311,55 +141,26 @@ Turtle Launcher builds upon the excellent work of the open-source Minecraft laun
 * Mesa3D
 * GL4ES
 
-Huge thanks to every developer and contributor behind these incredible projects.
+Special thanks to all open-source contributors who make Android Minecraft possible.
 
 ---
 
-# 📚 Third-Party Libraries
+## ⚠ Disclaimer
 
-### PojavLauncher
+Turtle Launcher is an independent open-source project and is **not affiliated with Mojang Studios or Microsoft**.
 
-* Boardwalk (JVM Launcher)
-* Android Support Library
-* GL4ES
-* OpenJDK
-* LWJGL3
-* LWJGLX
-* Mesa3D
-* pro-grade
-* bhook
-* libepoxy
-* virglrenderer
-
-### Zalith Launcher
-
-* HMCL
-* CommonMark
-* AndroidViewAnimations
-* TapTargetView
-
-Please refer to each library's respective license for detailed information.
+Minecraft is a trademark of Mojang Studios.
 
 ---
 
-# ⚠ Disclaimer
-
-Turtle Launcher is an independent open-source project.
-
-It is **not affiliated with, endorsed by, or sponsored by Mojang Studios or Microsoft.**
-
-Minecraft is a trademark of Mojang Studios. All rights belong to their respective owners.
-
----
-
-## ⭐ Support the Project
+## ⭐ Support
 
 If you enjoy Turtle Launcher:
 
-* ⭐ Star this repository
-* 🐛 Report bugs
+* ⭐ Star the repository
+* 🐞 Report bugs
 * 💡 Suggest features
 * 🤝 Contribute code
 * 📢 Share the project
- 
-Every contribution helps make Turtle Launcher even better.
+
+Every contribution helps make Turtle Launcher better.

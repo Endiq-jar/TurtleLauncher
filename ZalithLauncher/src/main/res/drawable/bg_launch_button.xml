@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    TurtleLauncher: launch button, solid #009FD9 with white text (see play_button
+    in fragment_launcher.xml for the text color). Replaces the old 3-image
+    (normal/hover/pressed) raster selector with a single ripple-over-shape
+    drawable, matching how every other interactive surface in the app (e.g.
+    background_grid_card) already handles touch feedback - DPI-independent and
+    one place to change the color going forward instead of three PNGs.
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/launch_button_ripple">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/launch_button_color"/>
+            <corners android:radius="@dimen/radius_dialog"/>
+        </shape>
+    </item>
+</ripple>

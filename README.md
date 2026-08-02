@@ -1,4 +1,13 @@
 # Turtle Launcher
+![Downloads](https://img.shields.io/github/downloads/Endiq-jar/TurtleLauncher/total?style=for-the-badge&logo=github)
+![Release](https://img.shields.io/github/v/release/Endiq-jar/TurtleLauncher?style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/Endiq-jar/TurtleLauncher?style=for-the-badge)
+![Forks](https://img.shields.io/github/forks/Endiq-jar/TurtleLauncher?style=for-the-badge)
+
+![License](https://img.shields.io/github/license/Endiq-jar/TurtleLauncher?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android)
+![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
+![Last Commit](https://img.shields.io/github/last-commit/Endiq-jar/TurtleLauncher?style=for-the-badge)
 
 > **A modern, high-performance Android launcher for Minecraft: Java Edition.**
 

@@ -112,8 +112,8 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 - [ ] Mesa3D
 - [ ] LTW Renderer
 - [ ] MobileGlues Renderer
-- [ ] Cleanroom Integration
-- [ ] Terracotta Integration
+- [x] Cleanroom Integration
+- [x] Terracotta Integration
 - [ ] mclo.gs Integration
 
 ### Planned

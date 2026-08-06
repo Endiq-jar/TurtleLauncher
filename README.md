@@ -127,12 +127,13 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 
 ## FAQs
 ## 1. Is Turtle Launcher Safe?
-### -> Yes, Turtle Launcher is safe to use. But remember, you must download the apk file from a trusted site only.
+### -> Yes — Turtle Launcher is safe to use. The source code is fully open on GitHub under the GPL-3.0 license. As always, only download the APK from trusted sources, like the official GitHub releases page..
 ## 2. Is Turtle Launcher free?
-### -> yes, Turtle Launcher is free to use.
+### -> Yes! Turtle Launcher is completely free to use, with no ads and no premium paywall.
 ## 3. Does Turtle Launcher support Minecraft mods?
-### -> Yes, you can install Minecraft mods using Turtle launcher built-in Explorer
-
+### -> Yes. Turtle Launcher supports Fabric, Quilt, Forge and NeoForge, and you can install mods directly through the built-in mod Explorer.
+## Does it require a Microsoft account?
+### No. Turtle Launcher supports Microsoft, offline, Battly and Ely.by accounts, so you can play the way you prefer.
 ---
 
 ## 🤝 Contributing

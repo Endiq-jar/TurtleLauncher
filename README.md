@@ -1,4 +1,4 @@
-# Turtle Launcher 
+# Turtle Launcher
 ![Downloads](https://img.shields.io/github/downloads/Endiq-jar/TurtleLauncher/total?style=for-the-badge&logo=github)
 ![Release](https://img.shields.io/github/v/release/Endiq-jar/TurtleLauncher?style=for-the-badge)
 ![Stars](https://img.shields.io/github/stars/Endiq-jar/TurtleLauncher?style=for-the-badge)

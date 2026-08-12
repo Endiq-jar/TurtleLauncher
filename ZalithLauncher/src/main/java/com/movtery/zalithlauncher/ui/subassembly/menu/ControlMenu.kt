@@ -117,7 +117,7 @@ class ControlMenu(
         }
     }
 
-    override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         binding.apply {
             when (buttonView) {
                 snapping -> AllSettings.buttonSnapping.put(isChecked).save()

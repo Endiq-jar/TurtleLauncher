@@ -97,7 +97,10 @@ android {
     // Play Store submission - this project's numerous prebuilt jniLibs .so files (renderers,
     // LWJGL natives, libpojavexec.so, etc.) would need to be confirmed/rebuilt 16 KB-aligned
     // before that targetSdk bump, independent of anything fixable from Kotlin/Java source here.
-    compileSdk = 35
+    // Bumped again to 36: androidx.media3:*:1.11.0's AAR metadata requires compileSdk 36+
+    // (checkDebugAarMetadata fails otherwise). Same reasoning as above applies unchanged - this
+    // is still just the compile-time API surface, targetSdk stays at 34 below.
+    compileSdk = 36
 
     signingConfigs {
         create("releaseBuild") {
@@ -233,10 +236,11 @@ android {
         resValues = true
     }
 
-    // Kept in step with compileSdk = 35 above - AGP will happily resolve build-tools 34.0.0
-    // against a 35 compileSdk in most cases, but pinning the matching version avoids relying
-    // on that fallback for aapt2/d8 behavior around any new API-35 resource qualifiers.
-    buildToolsVersion = "35.0.0"
+    // Kept in step with compileSdk = 36 above - AGP 9.2.0 already forces build-tools 36.0.0 at
+    // build time regardless (see the "specified Android SDK Build Tools version is ignored"
+    // warning this was silently hitting before), so pinning it explicitly here just removes
+    // that warning instead of relying on the fallback.
+    buildToolsVersion = "36.0.0"
     kotlinOptions {
         jvmTarget = "1.8"
     }

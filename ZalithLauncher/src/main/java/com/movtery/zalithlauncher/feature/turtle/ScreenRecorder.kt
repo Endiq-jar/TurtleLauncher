@@ -177,7 +177,7 @@ object ScreenRecorder {
 
         // Drain and tear down on a background thread - MediaCodec/MediaMuxer teardown can
         // block briefly and this is invoked directly from a UI click listener.
-        TaskExecutors.getIOExecutor().execute {
+        TaskExecutors.getDefault().execute {
             try {
                 drainEncoder(endOfStream = true)
             } catch (t: Throwable) {

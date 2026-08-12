@@ -398,15 +398,16 @@ dependencies {
     // Declared and ready; no call site uses it yet - see notes on the wider dependency list.
     implementation("com.jakewharton:process-phoenix:3.0.0")
 
-    // SkinViewAndroid (JitPack, multi-module repo -> com.github.USER.REPO:MODULE:VERSION per
-    // JitPack's own docs, not the single-artifact form the library's own README shows - verified
-    // against its actual settings.gradle, which declares :app and :library as separate modules).
-    // No GitHub Releases exist for this repo, so per JitPack's docs this uses master-SNAPSHOT
-    // rather than a guessed version tag. Real Android-native 2D/3D Minecraft skin renderer
-    // (OpenGL ES 3.0, SkinView3DSurfaceView.render(bitmap)) - the actual skinview3d project is
-    // Three.js/web-only and has no Android build, so this is the closest real equivalent. Wired
-    // into the account detail panel - see SkinLoader.getSkinBitmap() and view_account_detail.xml.
-    implementation("com.github.storeforminecraft.SkinViewAndroid:library:master-SNAPSHOT")
+    // SkinViewAndroid (JitPack). Coordinate corrected: the previous
+    // com.github.storeforminecraft.SkinViewAndroid:library:master-SNAPSHOT form doesn't resolve -
+    // confirmed against the repo's own README/JitPack badge, which publishes the root project as
+    // a single artifact (group = com.github.storeforminecraft, artifact = SkinViewAndroid), not
+    // the per-module com.github.USER.REPO:MODULE form. No GitHub Releases exist, so master-SNAPSHOT
+    // is still the right version. Real Android-native 2D/3D Minecraft skin renderer (OpenGL ES 3.0,
+    // SkinView3DSurfaceView.render(bitmap)) - the actual skinview3d project is Three.js/web-only
+    // and has no Android build, so this is the closest real equivalent. Wired into the account
+    // detail panel - see SkinLoader.getSkinBitmap() and view_account_detail.xml.
+    implementation("com.github.storeforminecraft:SkinViewAndroid:master-SNAPSHOT")
 
     // NBT (Querz/NBT) - standalone Java NBT reader/writer, real tagged release. Declared and
     // ready; no current call site reads a .dat/level file anywhere in this codebase, so nothing

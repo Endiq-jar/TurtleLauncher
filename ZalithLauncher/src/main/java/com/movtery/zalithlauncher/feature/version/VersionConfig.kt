@@ -65,7 +65,7 @@ class VersionConfig(private var versionPath: File) : Parcelable {
         getStringNotNull(control),
         getStringNotNull(customPath),
         getStringNotNull(customInfo),
-        cpuCoreOverride
+        getCpuCoreOverride()
     )
 
     fun save() {
@@ -164,7 +164,7 @@ class VersionConfig(private var versionPath: File) : Parcelable {
         dest.writeString(getStringNotNull(control))
         dest.writeString(getStringNotNull(customPath))
         dest.writeString(getStringNotNull(customInfo))
-        dest.writeInt(cpuCoreOverride)
+        dest.writeInt(getCpuCoreOverride())
     }
 
     companion object CREATOR : Parcelable.Creator<VersionConfig> {

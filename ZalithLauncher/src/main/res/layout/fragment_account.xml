@@ -167,7 +167,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 tools:ignore="MissingConstraints" />
 
-<<<<<<< HEAD
             <androidx.core.widget.NestedScrollView
                 android:id="@+id/view_account_detail_scroll"
                 android:layout_width="0dp"
@@ -188,18 +187,6 @@
                     android:layout_marginHorizontal="@dimen/space_l" />
 
             </androidx.core.widget.NestedScrollView>
-=======
-            <include
-                android:id="@+id/view_account_detail"
-                layout="@layout/view_account_detail"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/space_l"
-                app:layout_constraintBottom_toTopOf="@id/return_button"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
->>>>>>> 05d8bea664da14ee613d64720365415577c59bd3
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

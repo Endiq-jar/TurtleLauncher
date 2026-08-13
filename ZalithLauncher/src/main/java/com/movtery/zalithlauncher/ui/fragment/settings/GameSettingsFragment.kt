@@ -266,6 +266,7 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
         SwitchSettingsWrapper(context, AllSettings.showRamGraphHud, binding.showRamGraphHudLayout, binding.showRamGraphHud)
         SwitchSettingsWrapper(context, AllSettings.showPingHud, binding.showPingHudLayout, binding.showPingHud)
         SwitchSettingsWrapper(context, AllSettings.showScreenshotButtonHud, binding.showScreenshotButtonHudLayout, binding.showScreenshotButtonHud)
+        SwitchSettingsWrapper(context, AllSettings.showRecordButtonHud, binding.showRecordButtonHudLayout, binding.showRecordButtonHud)
         // Independent HUD Dragging removed outright (was here) - see GameMenuViewWrapper.kt
         SeekBarSettingsWrapper(
             context,

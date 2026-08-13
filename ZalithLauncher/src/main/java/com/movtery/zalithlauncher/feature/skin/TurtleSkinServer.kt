@@ -265,7 +265,21 @@ object TurtleSkinServer {
         return JSONObject()
             .put("meta", meta)
             .put("skinDomains", domains)
-            .put("signaturePublickey", Base64.encodeToString(publicKey.encoded, Base64.NO_WRAP))
+            .put("signaturePublickey", pemPublicKey(publicKey))
+    }
+
+    /**
+     * authlib-injector's metadata parser expects "signaturePublickey" as a full PEM
+     * string (BEGIN/END markers + 64-char-wrapped base64 body), not a bare base64
+     * blob - a raw blob fails with "Bad signature public key" even though the
+     * underlying X.509 bytes are perfectly valid. See real-world server responses
+     * from Blessing Skin / LittleSkin for the expected shape.
+     */
+    private fun pemPublicKey(key: PublicKey): String {
+        val body = Base64.encodeToString(key.encoded, Base64.NO_WRAP)
+            .chunked(64)
+            .joinToString("\n")
+        return "-----BEGIN PUBLIC KEY-----\n$body\n-----END PUBLIC KEY-----\n"
     }
 
     private fun writeJson(sock: Socket, status: Int, body: JSONObject?) {

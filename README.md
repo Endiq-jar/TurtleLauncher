@@ -8,11 +8,11 @@
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android)
 ![Last Commit](https://img.shields.io/github/last-commit/Endiq-jar/TurtleLauncher?style=for-the-badge)
 
-> **A modern, high-performance Android launcher for Minecraft: Java Edition.**
+<H1 ALIGN= "CENTER">A modern, high-performance Android launcher for Minecraft: Java Edition.</H1>
 
 Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher built for Android. Inspired by the open-source launcher **Zalith Launcher**, it combines a modern Material 3 interface with powerful customization, performance optimizations, and extensive modding support.
 
-![Turtle Launcher Banner](1.jpg)
+![Minecraft](1.jpg) ![Ranking](2.jpeg)
 ---
 
 ## ✨ Features
@@ -101,27 +101,26 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 
 ## 🗺 Roadmap
 
-### Current
+### Completed
 
 - [X] Modern UI
 - [x] Theme engine
 - [x] Instance Manager
 - [x] Ai intregation
-- [ ] Performance improvements
-- [ ] ANGLE
-- [ ] Mesa3D
-- [ ] LTW Renderer
-- [ ] MobileGlues Renderer
+- [x] Performance improvements
+- [x] Mesa3D
+- [x] LTW Renderer
+- [x] MobileGlues Renderer
 - [x] Cleanroom Integration
 - [x] Terracotta Integration
-- [ ] mclo.gs Integration
+- [x] mclo.gs Integration
 
-### Planned
+### Current
 
 - [ ] Cloud Sync
-- [ ] Skin & Cape Manager
+- [x] Skin & Cape Manager
 - [ ] Turtle Client integration
-- [ ] Replace OSMesa with a real EGL implementation
+- [x] Replace OSMesa with a real EGL implementation
 
 ---
 

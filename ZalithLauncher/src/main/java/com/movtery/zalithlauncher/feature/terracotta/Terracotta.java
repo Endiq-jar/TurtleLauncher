@@ -90,6 +90,7 @@ public class Terracotta {
                             for (StateListener listener : LISTENERS) listener.onStateChanged(next);
                         });
                     }
+<<<<<<< HEAD
                 } catch (Throwable t) {
                     // TurtleLauncher: was `catch (Exception e)` - too narrow. This loop starts
                     // the instant the Friends/LAN screen opens (initialize() is called from
@@ -106,6 +107,10 @@ public class Terracotta {
                     // subsystem since every other Terracotta thread only starts after the user
                     // actively hosts/joins, not the instant the screen opens.
                     Logging.e("Terracotta", "State poll failed: " + t);
+=======
+                } catch (Exception e) {
+                    Logging.e("Terracotta", "State poll failed: " + e);
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                 }
                 LockSupport.parkNanos(500_000);
             }

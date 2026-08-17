@@ -464,7 +464,10 @@
     <string name="main_open_main_dir">Open main directory</string>
     <string name="main_install_jar_file">Execute .jar file</string>
     <string name="main_share_logs">Share log files</string>
+<<<<<<< HEAD
     <string name="main_modpack_import">Import Modpack</string>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <string name="main_launch">Launch Game</string>
     <string name="main_nav_home">Home</string>
     <string name="main_nav_files">Files</string>
@@ -480,7 +483,10 @@
     <string name="terracotta_join_code_invalid">Not a recognized invite code format.</string>
     <string name="terracotta_join_known_issue">Joining a session can fail to connect on some networks (known upstream Terracotta/EasyTier issue) - hosting is unaffected. If joining keeps failing, try enabling a custom EasyTier server node below.</string>
     <string name="terracotta_custom_node_list">Custom EasyTier server node</string>
+<<<<<<< HEAD
     <string name="terracotta_use_easytier_node">Use EasyTier public node</string>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <string name="terracotta_custom_node_list_hint">Leave empty to keep using the default node</string>
     <string name="terracotta_join_code_legacy">Legacy Terracotta code - should still work.</string>
     <string name="terracotta_join_code_pcl2ce">PCL CE code - should still work.</string>
@@ -514,6 +520,7 @@
     <string name="main_section_selected_version">Selected Version</string>
     <string name="main_welcome_back">Welcome back!</string>
     <string name="main_welcome_subtitle">Ready to play Minecraft Java Edition</string>
+<<<<<<< HEAD
     <!-- Home screen dashboard (top bar + statistics cards) -->
     <string name="main_top_bar_title">TurtleLauncher</string>
     <string name="main_top_bar_subtitle">A fork of ZalithLauncher / PojavLauncher</string>
@@ -526,6 +533,8 @@
     <string name="main_click_for_more">Click for more</string>
     <string name="main_last_log_label">Last Game Log</string>
     <string name="main_last_log_none">No log available yet</string>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <string name="setting_category_control">Control settings</string>
 
     <!-- New grouped Settings main-menu screen -->
@@ -670,7 +679,11 @@
 
     <!-- Phone Settings: JNI Optimization -->
     <string name="setting_category_phone_jni">JNI Optimization</string>
+<<<<<<< HEAD
     <string name="setting_jni_optimization_desc">GL4ES-family renderers only (Holy GL4ES). No effect on LTW, MobileGlues, Zink, VirGL, VGPU, or Freedreno.</string>
+=======
+    <string name="setting_jni_optimization_desc">GL4ES-family renderers only (Holy GL4ES, Krypton Wrapper). No effect on Zink, VirGL, VGPU, or Freedreno.</string>
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <string name="setting_category_fps_boost">FPS Boost (Game Performance)</string>
     <string name="setting_fps_unlimited_title">Unlimited FPS Mode</string>
     <string name="setting_fps_unlimited_desc">Removes Minecraft\'s 300-FPS cap and disables explicit GC pauses. May increase heat and battery drain.</string>
@@ -790,8 +803,11 @@
     <string name="setting_version_isolation_desc">Enable version isolation for the game version\nWhen disabled, the game path will be .minecraft/\nWhen enabled, the game path will change to .minecraft/versions/&lt;version name&gt;/</string>
     <string name="setting_version_custom_info_title">Custom Info</string>
     <string name="setting_version_custom_info_desc">Custom info will be displayed in the lower-left corner of the game’s main menu and the upper-left corner of the F3 debug screen. After adding the [zl_version] field, the launcher will replace it with the launcher version number.</string>
+<<<<<<< HEAD
     <string name="setting_curseforge_api_key_title">CurseForge API Key</string>
     <string name="setting_curseforge_api_key_desc">Optional - only needed so the Modpack Importer can auto-download mods from CurseForge-format packs (overrides and the mod loader install fine either way). Get a key from console.curseforge.com if you have one.</string>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <string name="setting_set_game_language_title">Auto Set Game Language</string>
     <string name="setting_set_game_language_desc">Automatically set the game language to the selected language when the game starts</string>
     <string name="setting_set_game_language_list">Set Game Language</string>
@@ -915,10 +931,14 @@
     <string name="download_install_unpack_world_error">Unable to recognize file structure, automatic unpacking failed, please handle the file manually!</string>
     <!-- ModPack -->
     <string name="select_modpack_local_tip">Please select a modpack file that the launcher supports importing!</string>
+<<<<<<< HEAD
     <string name="select_modpack_local_not_supported">This file doesn\'t look like a modpack the launcher recognizes. Supported formats: Modrinth (.mrpack), CurseForge (manifest.json), MCBBS, and a plain ZIP of mod/config folders.</string>
     <string name="curseforge_import_partial_title">Modpack imported (mods need a follow-up)</string>
     <string name="curseforge_import_no_api_key">Overrides and the mod loader are installed. %1$d mod(s) from this CurseForge pack weren\'t downloaded, though - that needs a CurseForge API key, which you can add in Settings. Until then, add those mods manually.</string>
     <string name="curseforge_import_mods_failed">Overrides and the mod loader are installed. %1$d mod(s) from this CurseForge pack couldn\'t be resolved (may have been removed from CurseForge, or blocked from third-party downloads by the author) - add those manually if needed.</string>
+=======
+    <string name="select_modpack_local_not_supported">This modpack is not supported by the launcher! The launcher only supports importing modpacks in Modrinth and MCBBS formats. Please check if your modpack is made according to the specified formats!</string>
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <string name="select_modpack_local_installing_files">Installing game files… (%d / %d)</string>
     <string name="modpack_download_downloading_metadata">Downloading modpack metadata (%.2fMB / %.2fMB, speed: %s/s)</string>
     <string name="modpack_download_downloading_mods">Downloading mods (%.2fMB / %.2fMB, speed: %s/s)</string>
@@ -1045,6 +1065,7 @@
     <string name="skin_cape_url_label">Enter image URL (PNG):</string>
     <string name="skin_cape_apply_url">Apply from URL</string>
     <string name="skin_cape_pick_gallery">Pick from Gallery</string>
+<<<<<<< HEAD
     <string name="skin_cape_browse_label">Browse by username (LabyMod cape lookup):</string>
     <string name="skin_cape_browse_username_hint">Minecraft username</string>
     <string name="skin_cape_browse_search">Search</string>
@@ -1053,6 +1074,8 @@
     <string name="skin_cape_browse_no_cape">Found the player, but they have no LabyMod cape</string>
     <string name="skin_cape_browse_found_skin">Found %1$s\'s current skin</string>
     <string name="skin_cape_browse_found_cape">Found %1$s\'s LabyMod cape</string>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <string name="skin_cape_skin_applied">Skin applied! Restart game to see changes.</string>
     <string name="skin_cape_cape_applied">Cape applied! Restart game to see changes.</string>
     <string name="skin_cape_apply_failed">Failed to apply image</string>

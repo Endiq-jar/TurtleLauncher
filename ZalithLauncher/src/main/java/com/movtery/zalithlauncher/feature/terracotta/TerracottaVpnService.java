@@ -70,10 +70,15 @@ public class TerracottaVpnService extends VpnService {
         try {
             TerracottaAndroidAPI.VpnServiceRequest request = TerracottaAndroidAPI.getPendingVpnServiceRequest();
             vpnInterface = request.startVpnService(vpnBuilder);
+<<<<<<< HEAD
         } catch (Throwable t) {
             // TurtleLauncher: was catch (Exception) - same Error-vs-Exception gap as
             // Terracotta.java's poll daemon and TerracottaChat.kt's connection threads.
             Logging.e(TAG, "Failed to start VPN interface: " + t);
+=======
+        } catch (Exception e) {
+            Logging.e(TAG, "Failed to start VPN interface: " + e);
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
             cleanup();
             stopForeground(true);
             stopSelf();

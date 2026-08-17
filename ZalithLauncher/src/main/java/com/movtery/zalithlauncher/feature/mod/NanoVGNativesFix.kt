@@ -33,6 +33,7 @@ import java.io.File
  * from Maven Central. Bundled here as a compat_mods asset rather than fetched at install time
  * since it's a tiny (~500KB), rarely-updated, correctness fix rather than user-facing content -
  * same reasoning as bundling the renderer .so files directly instead of downloading them.
+<<<<<<< HEAD
  *
  * TurtleLauncher patch (see latestlog.txt bug report): upstream's fabric.mod.json shipped with
  * `"minecraft": "~26.1.2"` in its depends block, which is wrong for a plain native-library
@@ -42,6 +43,8 @@ import java.io.File
  * {depends minecraft @ [~26.1.2]}` on 1.21.11. The bundled jar here has that one line removed
  * from its fabric.mod.json (repackaged, natives/icon/everything else untouched) - if this asset
  * is ever re-synced from upstream, re-apply that edit or the crash comes back.
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
  */
 object NanoVGNativesFix {
     private const val TAG = "NanoVGNativesFix"

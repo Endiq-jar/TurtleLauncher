@@ -5,7 +5,10 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.utils.LauncherProfiles
 import com.movtery.zalithlauncher.feature.download.item.ModLoaderWrapper
 import com.movtery.zalithlauncher.feature.log.Logging
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.feature.mod.models.CurseForgeManifest
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.feature.mod.models.MCBBSPackMeta
 import com.movtery.zalithlauncher.utils.runtime.SelectRuntimeUtils
 import net.kdt.pojavlaunch.JavaGUILauncherActivity
@@ -31,6 +34,7 @@ class ModPackUtils {
                             )
                             if (verifyMCBBSPackMeta(mcbbsPackMeta)) return ModPackInfo(mcbbsPackMeta.name, ModPackEnum.MCBBS)
                         }
+<<<<<<< HEAD
 
                         val manifestEntry = modpackZipFile.getEntry("manifest.json")
                         if (manifestEntry != null) {
@@ -47,6 +51,8 @@ class ModPackUtils {
                         // detection possible without a manifest, so the person picks one
                         // afterward same as any manually-created instance.
                         return ModPackInfo(null, ModPackEnum.GENERIC_ZIP)
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                     } else if (suffix == ".mrpack") {
                         val entry = modpackZipFile.getEntry("modrinth.index.json")
                         if (entry != null) {
@@ -80,6 +86,7 @@ class ModPackUtils {
             return (mcbbsPackMeta.addons[0].version != null)
         }
 
+<<<<<<< HEAD
         /** Detects a CurseForge modpack export by its manifest.json (checked *after* MCBBS's
          *  mcbbs.packmeta, since both formats use plain .zip - a file can only be one or the
          *  other, this is just which signature file to look for). */
@@ -90,6 +97,8 @@ class ModPackUtils {
             return true
         }
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         @JvmStatic
         @Throws(Throwable::class)
         fun startModLoaderInstall(modLoader: ModLoaderWrapper, activity: Activity, modInstallFile: File, customName: String) {
@@ -104,6 +113,10 @@ class ModPackUtils {
     }
 
     enum class ModPackEnum {
+<<<<<<< HEAD
         UNKNOWN, MCBBS, MODRINTH, CURSEFORGE, GENERIC_ZIP
+=======
+        UNKNOWN, MCBBS, MODRINTH
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     }
 }

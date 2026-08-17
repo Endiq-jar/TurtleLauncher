@@ -117,18 +117,28 @@ object TerracottaChat {
                 while (running) {
                     val client = try {
                         socket.accept()
+<<<<<<< HEAD
                     } catch (t: Throwable) {
                         if (running) Logging.w("TerracottaChat", "Host accept loop stopped", t)
+=======
+                    } catch (e: Exception) {
+                        if (running) Logging.w("TerracottaChat", "Host accept loop stopped", e)
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                         break
                     }
                     handleHostClient(client)
                 }
+<<<<<<< HEAD
             } catch (t: Throwable) {
                 // TurtleLauncher: was catch (Exception) - same Error-vs-Exception gap as
                 // Terracotta.java's poll daemon (see its comment). This thread pool has no
                 // custom UncaughtExceptionHandler, so anything that slips past a narrower
                 // catch here still takes the whole app down, not just this connection.
                 Logging.w("TerracottaChat", "Failed to start chat host server", t)
+=======
+            } catch (e: Exception) {
+                Logging.w("TerracottaChat", "Failed to start chat host server", e)
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                 running = false
             }
         }
@@ -147,8 +157,13 @@ object TerracottaChat {
                         broadcastFromHost(line + "\n", exclude = client.getOutputStream())
                     }
                 }
+<<<<<<< HEAD
             } catch (t: Throwable) {
                 Logging.w("TerracottaChat", "Chat client connection dropped", t)
+=======
+            } catch (e: Exception) {
+                Logging.w("TerracottaChat", "Chat client connection dropped", e)
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
             } finally {
                 hostClientWriters.remove(client.getOutputStream())
                 runCatching { client.close() }
@@ -189,8 +204,13 @@ object TerracottaChat {
                         notifyListeners(message)
                     }
                 }
+<<<<<<< HEAD
             } catch (t: Throwable) {
                 if (running) Logging.w("TerracottaChat", "Guest chat connection failed", t)
+=======
+            } catch (e: Exception) {
+                if (running) Logging.w("TerracottaChat", "Guest chat connection failed", e)
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
             } finally {
                 running = false
             }

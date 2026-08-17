@@ -99,11 +99,20 @@ public final class ZHTools {
             return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_mouse_pointer, context.getTheme());
         }
 
+<<<<<<< HEAD
         // TurtleLauncher: routes through CustomCursorLoader instead of a bare
         // Drawable.createFromPath() so .cur/.ani cursors actually decode - the plain
         // Android codecs this used to rely on have never understood either format and
         // would just silently return null for them.
         return com.movtery.zalithlauncher.feature.turtle.cursor.CustomCursorLoader.INSTANCE.load(context, mouseFile);
+=======
+        // 鼠标：自定义鼠标图片
+        if (mouseFile.exists()) {
+            return Drawable.createFromPath(mouseFile.getAbsolutePath());
+        } else {
+            return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_mouse_pointer, context.getTheme());
+        }
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     }
 
     public static File getCustomMouse() {

@@ -4,8 +4,12 @@ import android.content.Context
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.renderer.renderers.FreedrenoRenderer
 import com.movtery.zalithlauncher.renderer.renderers.HolyGL4ESRenderer
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.renderer.renderers.LTWRenderer
 import com.movtery.zalithlauncher.renderer.renderers.MobileGluesRenderer
+=======
+import com.movtery.zalithlauncher.renderer.renderers.KryptonWrapperRenderer
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.renderer.renderers.VGPURenderer
 import com.movtery.zalithlauncher.renderer.renderers.VirGLRenderer
 import com.movtery.zalithlauncher.renderer.renderers.ZinkRenderer
@@ -16,6 +20,7 @@ import java.io.File
 /**
  * 启动器所有渲染器总管理者，启动器内置的渲染器与渲染器插件加载的渲染器，都会加载到这里
  *
+<<<<<<< HEAD
  * TurtleLauncher: this renderer set was originally the six renderers
  * FCL-Team/FoldCraftLauncher ships (Holy GL4ES, VirGL, VGPU, Zink, Freedreno, Krypton
  * Wrapper). Krypton Wrapper was removed as a built-in (its native libng_gl4es.so backend
@@ -26,6 +31,12 @@ import java.io.File
  * built-ins - see each class in renderer/renderers/ for its sourcing (FCL's
  * RendererManager.kt where it exists, otherwise upstream + real binary inspection), and
  * [RendererCatalog] for compatibility ranges/badges.
+=======
+ * TurtleLauncher: this renderer set was fully replaced with the six renderers
+ * FCL-Team/FoldCraftLauncher ships (Holy GL4ES, VirGL, VGPU, Zink, Freedreno, Krypton
+ * Wrapper) - see each class in renderer/renderers/ for its FCL-sourced library names and
+ * unique identifier, and [RendererCatalog] for compatibility ranges/badges.
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
  * The registry/plugin architecture below (RendererInterface + this object) is unchanged -
  * it was already an isolated, one-class-per-renderer design, so nothing about *how*
  * renderers plug in needed to change, only *which* renderers are registered.
@@ -41,6 +52,7 @@ import java.io.File
  * function pointer - guaranteed SIGSEGV at pc=0x0, every device, every time. None of the
  * six renderer classes' own getRendererId() values match any of those six strings, so
  * each one below overrides getNativeRendererId() to send the right one instead:
+<<<<<<< HEAD
  *   HolyGL4ESRenderer     "GL4ES"       -> "opengles"         (plain GLESv2/EGL underneath)
  *   LTWRenderer            "LTW"        -> "opengles"         (thin interposer over a
  *                                                              dlopen'd-by-itself system
@@ -52,6 +64,15 @@ import java.io.File
  *   ZinkRenderer          "ZINK"        -> "vulkan_zink"
  *   FreedrenoRenderer     "FREEDRENO"   -> "gallium_freedreno"
  *   VGPURenderer          "VGPU"        -> "opengles"         (lower confidence - no VGPU
+=======
+ *   HolyGL4ESRenderer     "GL4ES"     -> "opengles"           (plain GLESv2/EGL underneath)
+ *   KryptonWrapperRenderer "NGGL4ES"  -> "opengles"           (same - confirmed via its
+ *                                                              own launch-log output)
+ *   VirGLRenderer         "VIRGL"     -> "gallium_virgl"
+ *   ZinkRenderer          "ZINK"      -> "vulkan_zink"
+ *   FreedrenoRenderer     "FREEDRENO" -> "gallium_freedreno"
+ *   VGPURenderer          "VGPU"      -> "opengles"           (lower confidence - no VGPU
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
  *                                                              launch log to confirm
  *                                                              against; see its own doc
  *                                                              comment)
@@ -76,12 +97,19 @@ object Renderers {
 
         // Order here is display order in the picker, not priority - HolyGL4ES first since
         // it's the RECOMMENDED-badged default (see RendererCatalog), matching FCL's own
+<<<<<<< HEAD
         // convention of putting GL4ES first. LTW/MobileGlues placed right after it, in
         // Krypton Wrapper's old slot.
         addRenderers(
             HolyGL4ESRenderer(),
             LTWRenderer(),
             MobileGluesRenderer(),
+=======
+        // convention of putting Krypton Wrapper/GL4ES first.
+        addRenderers(
+            HolyGL4ESRenderer(),
+            KryptonWrapperRenderer(),
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
             VirGLRenderer(),
             ZinkRenderer(),
             FreedrenoRenderer(),

@@ -29,6 +29,10 @@ import com.movtery.zalithlauncher.plugins.renderer.RendererPlugin;
 import com.movtery.zalithlauncher.renderer.RendererInterface;
 import com.movtery.zalithlauncher.renderer.Renderers;
 import com.movtery.zalithlauncher.renderer.renderers.HolyGL4ESRenderer;
+<<<<<<< HEAD
+=======
+import com.movtery.zalithlauncher.renderer.renderers.KryptonWrapperRenderer;
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.renderer.renderers.ZinkRenderer;
 import com.movtery.zalithlauncher.setting.AllSettings;
 import com.movtery.zalithlauncher.ui.activity.ErrorActivity;
@@ -245,10 +249,13 @@ public final class JREUtils {
             envMap.put("POJAV_ZINK_PREFER_SYSTEM_DRIVER", "1");
         if (AllSettings.getVsyncInZink().getValue())
             envMap.put("POJAV_VSYNC_IN_ZINK", "1");
+<<<<<<< HEAD
         if (AllSettings.getAdaptiveVsync().getValue())
             envMap.put("POJAV_ADAPTIVE_VSYNC", "1");
         if (AllSettings.getLowLatencyRendering().getValue())
             envMap.put("POJAV_LOW_LATENCY_RENDERING", "1");
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         if (AllSettings.getBigCoreAffinity().getValue())
             envMap.put("POJAV_BIG_CORE_AFFINITY", "1");
         // TurtleLauncher Phone Settings: Scheduler Tuning - only meaningful once Advanced
@@ -264,6 +271,7 @@ public final class JREUtils {
         RendererInterface currentRenderer = Renderers.INSTANCE.getCurrentRenderer();
         String rendererId = currentRenderer.getRendererId();
 
+<<<<<<< HEAD
         // TurtleLauncher: Holy GL4ES is the only remaining renderer that speaks through the
         // GL4ES translation layer and needs its LIBGL_ES/mipmap/compat flags. Krypton
         // Wrapper (the other former GL4ES-family renderer) was removed as a built-in; LTW
@@ -271,6 +279,13 @@ public final class JREUtils {
         // belongs in this check. VirGL, VGPU, Zink and Freedreno are all Mesa-gallium-based
         // and never touch these either.
         boolean isGl4esRenderer = rendererId.equals(HolyGL4ESRenderer.ID);
+=======
+        // TurtleLauncher: GL4ES-family renderers (Holy GL4ES, Krypton Wrapper) are the only
+        // two of the six that speak through the GL4ES translation layer and need its
+        // LIBGL_ES/mipmap/compat flags. VirGL, VGPU, Zink and Freedreno are all
+        // Mesa-gallium-based and never touch these.
+        boolean isGl4esRenderer = rendererId.equals(HolyGL4ESRenderer.ID) || rendererId.equals(KryptonWrapperRenderer.ID);
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 
         if (isGl4esRenderer) {
             envMap.put("LIBGL_ES", "2");

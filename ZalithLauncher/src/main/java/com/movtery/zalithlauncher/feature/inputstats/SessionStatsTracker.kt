@@ -1,6 +1,9 @@
 package com.movtery.zalithlauncher.feature.inputstats
 
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.feature.turtle.DailyPlaytimeStats
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.setting.AllSettings
 
 /**
@@ -24,11 +27,15 @@ object SessionStatsTracker {
     @JvmStatic
     fun stop() {
         if (running) {
+<<<<<<< HEAD
             val elapsed = getSessionElapsedMs()
             AllSettings.totalPlaytimeMs.put(AllSettings.totalPlaytimeMs.getValue() + elapsed).save()
             // TurtleLauncher: also bucket this session into today's total for the home
             // screen's weekly stats card - see DailyPlaytimeStats.
             DailyPlaytimeStats.recordSession(elapsed)
+=======
+            AllSettings.totalPlaytimeMs.put(AllSettings.totalPlaytimeMs.getValue() + getSessionElapsedMs()).save()
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         }
         running = false
         sessionStartMs = 0L

@@ -142,6 +142,7 @@
                         android:background="@drawable/background_edit_box"
                         android:paddingHorizontal="@dimen/_8sdp" />
                 </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+<<<<<<< HEAD
 
                 <!-- TurtleLauncher: CurseForge API key, optional - only needed for the
                      Modpack Importer to auto-download mods from a CurseForge-format pack.
@@ -181,6 +182,8 @@
                         android:inputType="textPassword"
                         android:paddingHorizontal="@dimen/_8sdp" />
                 </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     
             </androidx.appcompat.widget.LinearLayoutCompat>
     

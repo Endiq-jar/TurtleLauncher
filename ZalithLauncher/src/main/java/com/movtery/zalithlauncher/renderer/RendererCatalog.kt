@@ -2,8 +2,12 @@ package com.movtery.zalithlauncher.renderer
 
 import com.movtery.zalithlauncher.renderer.renderers.FreedrenoRenderer
 import com.movtery.zalithlauncher.renderer.renderers.HolyGL4ESRenderer
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.renderer.renderers.LTWRenderer
 import com.movtery.zalithlauncher.renderer.renderers.MobileGluesRenderer
+=======
+import com.movtery.zalithlauncher.renderer.renderers.KryptonWrapperRenderer
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.renderer.renderers.VGPURenderer
 import com.movtery.zalithlauncher.renderer.renderers.VirGLRenderer
 import com.movtery.zalithlauncher.renderer.renderers.ZinkRenderer
@@ -33,6 +37,7 @@ object RendererCatalog {
             maxMinecraftVersion = "1.21.4",
             badge = Badge.RECOMMENDED
         ),
+<<<<<<< HEAD
         // LTW: actively maintained upstream (MojoLauncher's own featured renderer,
         // ongoing changelog entries), badged the same as Krypton Wrapper's old slot.
         LTWRenderer.ID to Entry(badge = Badge.STABLE),
@@ -40,6 +45,9 @@ object RendererCatalog {
         // its own changelog still describes features graduating out of "experimental" as
         // of 2.0.0 - no TurtleLauncher-specific track record yet, so kept cautious.
         MobileGluesRenderer.ID to Entry(badge = Badge.EXPERIMENTAL),
+=======
+        KryptonWrapperRenderer.ID to Entry(badge = Badge.STABLE),
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         VirGLRenderer.ID to Entry(badge = Badge.EXPERIMENTAL),
         ZinkRenderer.ID to Entry(badge = Badge.STABLE),
         FreedrenoRenderer.ID to Entry(badge = Badge.EXPERIMENTAL),

@@ -30,7 +30,10 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+<<<<<<< HEAD
 import androidx.activity.OnBackPressedCallback;
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -147,6 +150,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         CallbackBridge.addGrabListener(binding.mainGameRenderView);
         mGyroControl = new GyroControl(this);
 
+<<<<<<< HEAD
         /* TurtleLauncher: dispatchKeyEvent()'s KEYCODE_BACK handling below only ever runs for
          * a legacy hardware KeyEvent. Now that the manifest opts this app into predictive back
          * (android:enableOnBackInvokedCallback="true"), both the gesture *and* the physical
@@ -173,6 +177,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             }
         });
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         Window window = getWindow();
         // Enabling this on TextureView results in a broken white result
         if(AllSettings.getAlternateSurface().getValue()) window.setBackgroundDrawable(null);
@@ -584,6 +590,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         }
         boolean handleEvent;
         if(!(handleEvent = binding.mainGameRenderView.processKeyEvent(event))) {
+<<<<<<< HEAD
             if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                 if (binding.mainTouchCharInput.isEnabled()) {
                     // Chat input is open - consume the press and just close it here.
@@ -595,6 +602,9 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
                     }
                     return true;
                 }
+=======
+            if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && !binding.mainTouchCharInput.isEnabled()) {
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                 if(event.getAction() != KeyEvent.ACTION_UP) return true; // We eat it anyway
                 sendKeyPress(LwjglGlfwKeycode.GLFW_KEY_ESCAPE);
                 return true;

@@ -42,11 +42,19 @@ class AllSettings {
          *  need support from the renderer libraries themselves, which this launcher can't add. */
         @JvmStatic val rendererDebugLogging = BooleanSettingUnit("rendererDebugLogging", false)
         // ── TurtleLauncher JNI Optimization (Phone Settings) ────────────────────
+<<<<<<< HEAD
         // GL4ES-family renderers (Holy GL4ES only now - Krypton Wrapper was removed as a
         // built-in) - replaces the old single gl4esPerformanceTweaks toggle with four
         // granular switches over the same real libgl4es env vars (all four confirmed
         // present via `strings` on the actual bundled libgl4es_114/115.so). No equivalent
         // for LTW/MobileGlues/Zink/VirGL/VGPU/Freedreno since those never touch libgl4es.
+=======
+        // GL4ES-family renderers (Holy GL4ES, Krypton Wrapper) only - replaces the old
+        // single gl4esPerformanceTweaks toggle with four granular switches over the same
+        // real libgl4es env vars (all four confirmed present via `strings` on the actual
+        // bundled libgl4es_114/115.so). No equivalent for Zink/VirGL/VGPU/Freedreno since
+        // those never touch libgl4es.
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         /** LIBGL_BATCH: batches GL calls instead of issuing them one at a time. */
         @JvmStatic val jniBatching              = BooleanSettingUnit("jniBatching", true)
         /** LIBGL_USEVBO: routes vertex data through VBOs instead of re-uploading client-side
@@ -65,6 +73,7 @@ class AllSettings {
         @JvmStatic val alternateSurface         = BooleanSettingUnit("alternate_surface", false)
         @JvmStatic val forceVsync               = BooleanSettingUnit("force_vsync", false)
         @JvmStatic val vsyncInZink              = BooleanSettingUnit("vsync_in_zink", false)
+<<<<<<< HEAD
         /** Requests adaptive vsync (EGL_EXT_swap_control_tear) instead of a flat on/off - only
          *  takes effect while vsync is otherwise on, and only on drivers that advertise the
          *  extension; silently falls back to regular vsync elsewhere. See gl_swap_interval(). */
@@ -74,6 +83,8 @@ class AllSettings {
          *  tearing risk for lower input latency by skipping the swap-chain wait. See
          *  apply_low_latency_mode() in gl_bridge.c. */
         @JvmStatic val lowLatencyRendering      = BooleanSettingUnit("low_latency_rendering", false)
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         @JvmStatic val zinkPreferSystemDriver   = BooleanSettingUnit("zinkPreferSystemDriver", false)
 
         /** Auto Settings Optimizer: automatically tunes renderer/driver, RAM allocation, resolution scale, and FPS boost flags for this device at launch. */
@@ -89,6 +100,7 @@ class AllSettings {
         @JvmStatic val mouseSpeed               = IntSettingUnit("mousespeed", 100)
         @JvmStatic val virtualMouseStart        = BooleanSettingUnit("mouse_start", true)
         @JvmStatic val customMouse              = StringSettingUnit("custom_mouse", "")
+<<<<<<< HEAD
         /** Optional. CurseForge's v1 API requires a key (issued to registered apps by
          *  Overwolf/CurseForge Core) to resolve a mod's actual download URL from its
          *  project/file ID - there's no keyless path anymore, the old addons-ecs.forgesvc.net
@@ -96,6 +108,8 @@ class AllSettings {
          *  modpack imports still install overrides + the correct mod loader, they just can't
          *  auto-download the mods themselves - see CurseForgeModPackInstallHelper. */
         @JvmStatic val curseForgeApiKey         = StringSettingUnit("curseforge_api_key", "")
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         @JvmStatic val enableGyro               = BooleanSettingUnit("enableGyro", false)
         @JvmStatic val gyroSensitivity          = IntSettingUnit("gyroSensitivity", 100)
         @JvmStatic val gyroSampleRate           = IntSettingUnit("gyroSampleRate", 16)
@@ -285,8 +299,11 @@ class AllSettings {
         @JvmStatic val showTimeHud               = BooleanSettingUnit("showTimeHud", false)
         /** Persisted cumulative playtime in milliseconds, across all sessions. */
         @JvmStatic val totalPlaytimeMs           = LongSettingUnit("totalPlaytimeMs", 0L)
+<<<<<<< HEAD
         /** Per-day playtime buckets (JSON, "yyyy-MM-dd" -> ms) backing the home screen's weekly chart. */
         @JvmStatic val dailyPlaytimeJson         = StringSettingUnit("dailyPlaytimeJson", "")
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 
         // ── Other ─────────────────────────────────────────────────────────────
         @JvmStatic val tcVibrateDuration        = IntSettingUnit("tcVibrateDuration", 100)

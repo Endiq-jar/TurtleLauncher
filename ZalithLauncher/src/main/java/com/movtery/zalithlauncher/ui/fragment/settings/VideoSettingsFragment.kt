@@ -233,12 +233,15 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         SwitchSettingsWrapper(context, AllSettings.vsyncInZink,
             binding.vsyncInZinkLayout, binding.vsyncInZink)
 
+<<<<<<< HEAD
         SwitchSettingsWrapper(context, AllSettings.adaptiveVsync,
             binding.adaptiveVsyncLayout, binding.adaptiveVsync)
 
         SwitchSettingsWrapper(context, AllSettings.lowLatencyRendering,
             binding.lowLatencyRenderingLayout, binding.lowLatencyRendering)
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         val zinkPreferSystemDriver = SwitchSettingsWrapper(
             context, AllSettings.zinkPreferSystemDriver,
             binding.zinkPreferSystemDriverLayout, binding.zinkPreferSystemDriver

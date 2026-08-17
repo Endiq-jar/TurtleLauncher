@@ -6,7 +6,11 @@ import android.os.Build
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.renderer.renderers.FreedrenoRenderer
 import com.movtery.zalithlauncher.renderer.renderers.HolyGL4ESRenderer
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.renderer.renderers.LTWRenderer
+=======
+import com.movtery.zalithlauncher.renderer.renderers.KryptonWrapperRenderer
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.renderer.renderers.ZinkRenderer
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.utils.platform.BatterySaverManager
@@ -26,8 +30,12 @@ import net.kdt.pojavlaunch.prefs.LauncherPreferences
  * Renderer/driver selection maps detected GPU vendor to one of the six FCL-sourced
  * renderers (see renderer/renderers/ and RendererCatalog):
  *   Adreno GPU     → Freedreno, driver = Turnip (if Vulkan available)
+<<<<<<< HEAD
  *   Mali/ARM GPU   → Zink if Vulkan available, else LTW (Krypton Wrapper's old slot -
  *                    Krypton was removed as a built-in, see LTWRenderer's doc comment)
+=======
+ *   Mali/ARM GPU   → Zink if Vulkan available, else Krypton Wrapper
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
  *   PowerVR/other  → Holy GL4ES, driver = default
  *   Unknown        → renderer left as-is
  *
@@ -123,7 +131,11 @@ object AutoSettingsOptimizer {
                 if (hasVulkan) {
                     Pair(ZinkRenderer().getUniqueIdentifier(), "default")
                 } else {
+<<<<<<< HEAD
                     Pair(LTWRenderer().getUniqueIdentifier(), "default")
+=======
+                    Pair(KryptonWrapperRenderer().getUniqueIdentifier(), "default")
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                 }
             }
             gpu.contains("powervr", ignoreCase = true) ||

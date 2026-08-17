@@ -159,7 +159,11 @@ object CrashAnalyzer {
                         "through an uninitialized function pointer, crashing at pc=0x0 on every launch, " +
                         "regardless of device or GPU.",
                     listOf(
+<<<<<<< HEAD
                         "If you're on a built-in renderer (Holy GL4ES, LTW, MobileGlues, VirGL, Zink, Freedreno, VGPU), update to the latest TurtleLauncher build — this is fixed in RendererInterface.getNativeRendererId().",
+=======
+                        "If you're on a built-in renderer (Holy GL4ES, Krypton Wrapper, VirGL, Zink, Freedreno, VGPU), update to the latest TurtleLauncher build — this is fixed in RendererInterface.getNativeRendererId().",
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                         "If you're on a renderer plugin: check the plugin's declared POJAV_RENDERER value against the six libpojavexec.so recognizes (opengles, custom_gallium, vulkan_zink, gallium_freedreno, gallium_panfrost, gallium_virgl) and report a mismatch to the plugin's author.",
                         "As an immediate workaround, reset this version's renderer override below, or pick a different one manually in Settings → Video → Renderer."
                     ),
@@ -167,17 +171,23 @@ object CrashAnalyzer {
                 )
             ),
             // 2b. Krypton Wrapper's native GL4ES backend (libng_gl4es.so) SIGSEGV - seen in an
+<<<<<<< HEAD
             // uploaded log on a PowerVR Rogue GPU, back when Krypton Wrapper was still a
             // built-in renderer. It was removed as a built-in for exactly this crash (replaced
             // with LTW/MobileGlues in Renderers.kt) but can still be reached through an
             // external renderer plugin (RendererPluginManager still recognizes Krypton's own
             // plugin package, com.bzlzhh.plugin.ngg) - kept as diagnosis/redirection for that
             // path. No native source for this prebuilt library to patch either way.
+=======
+            // uploaded log on a PowerVR Rogue GPU. No native source for this prebuilt library to
+            // patch, so this is diagnosis/redirection, not a fix.
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
             Rule(
                 title = "krypton_libng_gl4es_sigsegv",
                 matches = { has(it, "libng_gl4es.so") && has(it, "SIGSEGV") },
                 diagnosis = fixed(
                     "Krypton Wrapper's native GL4ES backend crashed (libng_gl4es.so)",
+<<<<<<< HEAD
                     "This is a native SIGSEGV inside libng_gl4es.so itself, which backs the Krypton Wrapper renderer " +
                         "plugin. It's a prebuilt upstream binary with no native source in this project to patch - " +
                         "seen so far on PowerVR Rogue GPUs, may affect other GPUs too.",
@@ -185,6 +195,15 @@ object CrashAnalyzer {
                         "Switch to a built-in renderer instead: Settings → Video → Renderer → Holy GL4ES, LTW, or MobileGlues.",
                         "Enable the Auto Graphics Optimizer (Settings → Video) so the launcher avoids Krypton-based renderers on GPUs where it's known to crash.",
                         "If you specifically need the Krypton Wrapper plugin, wait for an updated libng_gl4es.so build from its author."
+=======
+                    "This is a native SIGSEGV inside libng_gl4es.so itself, which backs the Krypton Wrapper renderer. " +
+                        "It's a prebuilt upstream binary with no native source in this project to patch - seen so far " +
+                        "on PowerVR Rogue GPUs, may affect other GPUs too.",
+                    listOf(
+                        "Switch renderer: Settings → Video → Renderer, try Holy GL4ES or another non-Krypton option.",
+                        "Enable the Auto Graphics Optimizer (Settings → Video) so the launcher avoids Krypton Wrapper on GPUs where it's known to crash.",
+                        "If you specifically need Krypton Wrapper, wait for an updated libng_gl4es.so build."
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                     ),
                     repairActions = listOf(RepairAction(RepairActionType.RESET_RENDERER_OVERRIDE, "Reset renderer override"))
                 )

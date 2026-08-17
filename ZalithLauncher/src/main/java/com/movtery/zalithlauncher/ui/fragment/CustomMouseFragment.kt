@@ -30,7 +30,11 @@ import com.movtery.zalithlauncher.utils.path.PathManager
 import com.movtery.zalithlauncher.utils.ZHTools
 import com.movtery.zalithlauncher.utils.file.FileTools
 import com.movtery.zalithlauncher.utils.file.FileTools.Companion.mkdirs
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.feature.turtle.cursor.CustomCursorLoader
+=======
+import com.movtery.zalithlauncher.utils.image.ImageUtils.Companion.isImage
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
 import net.kdt.pojavlaunch.Tools
 import java.io.File
@@ -77,11 +81,15 @@ class CustomMouseFragment : FragmentWithAnim(R.layout.fragment_custom_mouse) {
 
         binding.actionBar.apply {
             returnButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
+<<<<<<< HEAD
             // TurtleLauncher: broadened from "image/*" so .cur/.ani cursor files show up too -
             // neither has a standard registered MIME type, so most document providers would
             // otherwise filter them out of the picker entirely. CustomCursorLoader validates
             // (and safely falls back to the default pointer for) whatever actually gets picked.
             addFileButton.setOnClickListener { openDocumentLauncher.launch(arrayOf("*/*")) }
+=======
+            addFileButton.setOnClickListener { openDocumentLauncher.launch(arrayOf("image/*")) }
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
             refreshButton.setOnClickListener { loadData() }
         }
 
@@ -164,7 +172,11 @@ class CustomMouseFragment : FragmentWithAnim(R.layout.fragment_custom_mouse) {
 
                 val filesButton = FilesButton()
                 filesButton.setButtonVisibility(false, false,
+<<<<<<< HEAD
                     !isDefaultMouse, !isDefaultMouse, !isDefaultMouse, (isDefaultMouse || CustomCursorLoader.isSupportedCursorFile(file))) //默认虚拟鼠标不支持分享、重命名、删除操作
+=======
+                    !isDefaultMouse, !isDefaultMouse, !isDefaultMouse, (isDefaultMouse || isImage(file))) //默认虚拟鼠标不支持分享、重命名、删除操作
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 
                 //如果选中的虚拟鼠标是默认的虚拟鼠标，那么将加上额外的提醒
                 var message = getString(R.string.file_message)

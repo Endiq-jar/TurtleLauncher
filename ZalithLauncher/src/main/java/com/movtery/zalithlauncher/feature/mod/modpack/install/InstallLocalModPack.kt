@@ -3,7 +3,10 @@ package com.movtery.zalithlauncher.feature.mod.modpack.install
 import android.content.Context
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.feature.download.item.ModLoaderWrapper
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.feature.download.platform.curseforge.CurseForgeModPackInstallHelper
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.feature.download.platform.modrinth.ModrinthModPackInstallHelper
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.mod.models.MCBBSPackMeta
@@ -15,7 +18,10 @@ import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.dialog.TipDialog
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
 import net.kdt.pojavlaunch.Tools
+<<<<<<< HEAD
 import net.kdt.pojavlaunch.utils.ZipUtils
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.util.zip.ZipFile
@@ -68,6 +74,7 @@ class InstallLocalModPack {
                             return modLoader
                         }
 
+<<<<<<< HEAD
                         ModPackEnum.CURSEFORGE -> {
                             // Unlike the others, a CurseForge install can legitimately return
                             // null here (createLoaderInfo() failing to parse an unrecognized
@@ -89,6 +96,8 @@ class InstallLocalModPack {
                             return null
                         }
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                         else -> {
                             TaskExecutors.runInUIThread {
                                 showUnSupportDialog(context)
@@ -125,6 +134,7 @@ class InstallLocalModPack {
         }
 
         @Throws(Exception::class)
+<<<<<<< HEAD
         private fun curseForgeModPack(
             context: Context,
             zipFile: File,
@@ -141,6 +151,8 @@ class InstallLocalModPack {
         }
 
         @Throws(Exception::class)
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         private fun mcbbsModPack(context: Context, zipFile: File, versionPath: File): ModLoaderWrapper? {
             val mcbbsModPack = MCBBSModPack(context, zipFile)
             return mcbbsModPack.install(versionPath)

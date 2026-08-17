@@ -55,6 +55,7 @@
         android:background="@color/turtle_highlight_subtle"
         android:layout_marginVertical="@dimen/_8sdp"/>
 
+<<<<<<< HEAD
     <!-- Browse (LabyMod) row -->
     <TextView
         android:layout_width="match_parent"
@@ -135,6 +136,8 @@
         android:background="@color/turtle_highlight_subtle"
         android:layout_marginVertical="@dimen/_8sdp"/>
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     <com.movtery.zalithlauncher.ui.view.AnimButton
         android:id="@+id/button_gallery"
         android:layout_width="match_parent"

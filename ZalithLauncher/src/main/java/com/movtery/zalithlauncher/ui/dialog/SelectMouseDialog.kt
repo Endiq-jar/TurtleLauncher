@@ -10,7 +10,11 @@ import com.movtery.zalithlauncher.ui.subassembly.filelist.FileItemBean
 import com.movtery.zalithlauncher.ui.subassembly.filelist.FileRecyclerViewCreator
 import com.movtery.zalithlauncher.utils.path.PathManager
 import com.movtery.zalithlauncher.utils.file.FileTools.Companion.mkdirs
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.feature.turtle.cursor.CustomCursorLoader
+=======
+import com.movtery.zalithlauncher.utils.image.ImageUtils.Companion.isImage
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import java.io.File
 
 class SelectMouseDialog(
@@ -36,7 +40,11 @@ class SelectMouseDialog(
             { position: Int, fileItemBean: FileItemBean ->
                 val file = fileItemBean.file
                 file?.apply {
+<<<<<<< HEAD
                     if (exists() && CustomCursorLoader.isSupportedCursorFile(this)) {
+=======
+                    if (exists() && isImage(this)) {
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
                         AllSettings.customMouse.put(name).save()
                         listener.onSelectedListener()
                         dismiss()

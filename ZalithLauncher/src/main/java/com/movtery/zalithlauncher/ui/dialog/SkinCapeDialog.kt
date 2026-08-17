@@ -5,8 +5,11 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+<<<<<<< HEAD
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -20,7 +23,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.DialogSkinCapeBinding
 import com.movtery.zalithlauncher.feature.log.Logging
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.feature.skin.LabyModSkinApi
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.feature.skin.TurtleSkinServer
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.Task
@@ -44,8 +50,11 @@ class SkinCapeDialog(
 
     private val binding = DialogSkinCapeBinding.inflate(LayoutInflater.from(activity))
     private var galleryLauncher: ActivityResultLauncher<Intent>? = null
+<<<<<<< HEAD
     /** The URL a successful Browse search resolved to (skin or cape, per [mode]); null until a search succeeds. */
     private var browseResolvedUrl: String? = null
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +87,7 @@ class SkinCapeDialog(
             applyFromUrl(url)
         }
 
+<<<<<<< HEAD
         binding.buttonBrowseSearch.setOnClickListener {
             val username = binding.browseUsernameEdit.text.toString().trim()
             if (username.isEmpty()) {
@@ -91,6 +101,8 @@ class SkinCapeDialog(
             browseResolvedUrl?.let { url -> applyFromUrl(url) }
         }
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         binding.buttonCancel.setOnClickListener { dismiss() }
 
         setupLanVisibilityControls()
@@ -149,6 +161,7 @@ class SkinCapeDialog(
         }.execute()
     }
 
+<<<<<<< HEAD
     /** Bundles what the background lookup produces so the UI-thread callback only has to render it. */
     private data class BrowseSearchResult(
         val lookup: LabyModSkinApi.PlayerLookup?,
@@ -210,6 +223,8 @@ class SkinCapeDialog(
         browseResolvedUrl = result.resolvedUrl
     }
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     private fun applyFromUri(uri: Uri) {
         val destFile = getDestFile()
         showProgress(true)
@@ -246,9 +261,12 @@ class SkinCapeDialog(
         binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
         binding.buttonApplyUrl.isEnabled = !show
         binding.buttonGallery.isEnabled = !show
+<<<<<<< HEAD
         binding.buttonBrowseSearch.isEnabled = !show
         // buttonBrowseApply is re-enabled by renderBrowseResult() only when there's something to apply
         if (show) binding.buttonBrowseApply.isEnabled = false
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     }
 
     private fun notifySuccess() {

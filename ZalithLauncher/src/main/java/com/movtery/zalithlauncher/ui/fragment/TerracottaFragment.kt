@@ -40,8 +40,11 @@ import net.burningtnt.terracotta.TerracottaAndroidAPI
 class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
     companion object {
         const val TAG = "TerracottaFragment"
+<<<<<<< HEAD
         /** EasyTier's own official public shared node - see https://easytier.rs. */
         private const val EASYTIER_PUBLIC_NODE = "tcp://public.easytier.top:11010"
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     }
 
     private enum class Group { WAITING, LOADING, CONNECTED, EXCEPTION }
@@ -133,23 +136,32 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         val enabled = com.movtery.zalithlauncher.setting.AllSettings.enableTerracottaNodes.getValue()
         binding.customNodeSwitch.isChecked = enabled
         binding.customNodeInput.visibility = if (enabled) View.VISIBLE else View.GONE
+<<<<<<< HEAD
         binding.customNodeEasytierPreset.visibility = if (enabled) View.VISIBLE else View.GONE
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         binding.customNodeInput.setText(com.movtery.zalithlauncher.setting.AllSettings.terracottaNodes.getValue())
 
         binding.customNodeSwitch.setOnCheckedChangeListener { _, checked ->
             com.movtery.zalithlauncher.setting.AllSettings.enableTerracottaNodes.put(checked).save()
             binding.customNodeInput.visibility = if (checked) View.VISIBLE else View.GONE
+<<<<<<< HEAD
             binding.customNodeEasytierPreset.visibility = if (checked) View.VISIBLE else View.GONE
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
             TerracottaNodeList.invalidateCache()
         }
         binding.customNodeInput.doAfterTextChanged { text ->
             com.movtery.zalithlauncher.setting.AllSettings.terracottaNodes.put(text?.toString().orEmpty()).save()
             TerracottaNodeList.invalidateCache()
         }
+<<<<<<< HEAD
         // One-tap fill for EasyTier's official public shared node - see the layout comment.
         binding.customNodeEasytierPreset.setOnClickListener {
             binding.customNodeInput.setText(EASYTIER_PUBLIC_NODE)
         }
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     }
 
     override fun onStart() {

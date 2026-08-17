@@ -571,6 +571,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true" />
                 </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+<<<<<<< HEAD
 
                 <!-- Adaptive VSync -->
                 <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
@@ -643,6 +644,8 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true" />
                 </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     
                 <!-- Zink Prefer System Driver -->
                 <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout

@@ -203,6 +203,7 @@
             android:visibility="gone"
             android:layout_marginTop="@dimen/space_xs"/>
 
+<<<<<<< HEAD
         <!-- TurtleLauncher: one-tap preset for EasyTier's official public shared node
              (tcp://public.easytier.top:11010), so people hitting the known join-failure
              issue above don't have to go find/type a node URL by hand. Purely a shortcut
@@ -223,6 +224,8 @@
             android:textColor="@color/accent_primary"
             android:visibility="gone"/>
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     </LinearLayout>
 
     <!-- ===================== Loading: any in-between state ===================== -->

@@ -97,12 +97,15 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
             binding.versionCustomInfoEdittext
         )
 
+<<<<<<< HEAD
         EditTextSettingsWrapper(
             AllSettings.curseForgeApiKey,
             binding.curseForgeApiKeyLayout,
             binding.curseForgeApiKeyEdittext
         )
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         SwitchSettingsWrapper(
             context,
             AllSettings.autoSetGameLanguage,

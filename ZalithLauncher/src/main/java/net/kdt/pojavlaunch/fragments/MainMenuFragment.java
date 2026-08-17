@@ -10,7 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+<<<<<<< HEAD
 import androidx.activity.result.ActivityResultLauncher;
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -22,6 +25,7 @@ import com.movtery.zalithlauncher.databinding.FragmentLauncherBinding;
 import com.movtery.zalithlauncher.event.single.AccountUpdateEvent;
 import com.movtery.zalithlauncher.event.single.LaunchGameEvent;
 import com.movtery.zalithlauncher.event.single.RefreshVersionsEvent;
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.event.value.InstallLocalModpackEvent;
 import com.movtery.zalithlauncher.feature.mod.modpack.install.InstallExtra;
 import com.movtery.zalithlauncher.feature.inputstats.SessionStatsTracker;
@@ -29,12 +33,15 @@ import com.movtery.zalithlauncher.feature.log.CrashAnalyzer;
 import com.movtery.zalithlauncher.feature.turtle.DailyPlaytimeStats;
 import com.movtery.zalithlauncher.feature.turtle.HomeChangelog;
 import com.movtery.zalithlauncher.feature.turtle.ScreenRecorder;
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.feature.version.Version;
 import com.movtery.zalithlauncher.feature.version.utils.VersionIconUtils;
 import com.movtery.zalithlauncher.feature.version.VersionInfo;
 import com.movtery.zalithlauncher.feature.version.VersionsManager;
 import com.movtery.zalithlauncher.task.TaskExecutors;
 import com.movtery.zalithlauncher.ui.fragment.AboutFragment;
+<<<<<<< HEAD
 import com.movtery.zalithlauncher.ui.fragment.AccountFragment;
 import com.movtery.zalithlauncher.ui.fragment.ControlButtonFragment;
 import com.movtery.zalithlauncher.ui.fragment.FilesFragment;
@@ -44,31 +51,49 @@ import com.movtery.zalithlauncher.ui.fragment.VersionManagerFragment;
 import com.movtery.zalithlauncher.ui.fragment.VersionsListFragment;
 import com.movtery.zalithlauncher.ui.subassembly.account.AccountViewWrapper;
 import com.movtery.zalithlauncher.utils.file.FileTools;
+=======
+import com.movtery.zalithlauncher.ui.fragment.ControlButtonFragment;
+import com.movtery.zalithlauncher.ui.fragment.FilesFragment;
+import com.movtery.zalithlauncher.ui.fragment.FragmentWithAnim;
+import com.movtery.zalithlauncher.ui.fragment.VersionManagerFragment;
+import com.movtery.zalithlauncher.ui.fragment.VersionsListFragment;
+import com.movtery.zalithlauncher.ui.subassembly.account.AccountViewWrapper;
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import com.movtery.zalithlauncher.utils.path.PathManager;
 import com.movtery.zalithlauncher.utils.ZHTools;
 import com.movtery.zalithlauncher.utils.anim.ViewAnimUtils;
 
 import net.kdt.pojavlaunch.Tools;
+<<<<<<< HEAD
 import net.kdt.pojavlaunch.contracts.OpenDocumentWithExtension;
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 import net.kdt.pojavlaunch.progresskeeper.ProgressKeeper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+<<<<<<< HEAD
 import java.io.File;
 import java.util.Locale;
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 public class MainMenuFragment extends FragmentWithAnim {
     public static final String TAG = "MainMenuFragment";
     private FragmentLauncherBinding binding;
     private AccountViewWrapper accountViewWrapper;
+<<<<<<< HEAD
     private ActivityResultLauncher<Object> modpackImportLauncher;
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
 
     public MainMenuFragment() {
         super(R.layout.fragment_launcher);
     }
 
+<<<<<<< HEAD
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +108,8 @@ public class MainMenuFragment extends FragmentWithAnim {
         });
     }
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -103,6 +130,7 @@ public class MainMenuFragment extends FragmentWithAnim {
             return true;
         });
         binding.shareLogsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this, com.movtery.zalithlauncher.ui.fragment.ShareLogsFragment.class, com.movtery.zalithlauncher.ui.fragment.ShareLogsFragment.TAG, null));
+<<<<<<< HEAD
         binding.modpackImportButton.setOnClickListener(v -> {
             if (ProgressKeeper.getTaskCount() == 0) {
                 modpackImportLauncher.launch(null);
@@ -110,6 +138,8 @@ public class MainMenuFragment extends FragmentWithAnim {
                 Toast.makeText(requireContext(), R.string.tasks_ongoing, Toast.LENGTH_LONG).show();
             }
         });
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         binding.friendsLanButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.class,
             com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.TAG, null));
@@ -172,6 +202,7 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.versionName.setSelected(true);
         binding.versionInfo.setSelected(true);
 
+<<<<<<< HEAD
         // Top app bar: title/subtitle + quick-action icon row
         binding.homeTopBarTitle.setText(com.movtery.zalithlauncher.InfoDistributor.LAUNCHER_NAME);
         binding.topBarStorageButton.setOnClickListener(v -> {
@@ -202,10 +233,13 @@ public class MainMenuFragment extends FragmentWithAnim {
         refreshStatistics();
         refreshLastGameLog();
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
         populateFeaturePlugins();
         refreshCurrentVersion();
     }
 
+<<<<<<< HEAD
     /** Populates the weekly playtime chart and today's total from {@link DailyPlaytimeStats}. */
     private void refreshStatistics() {
         long[] weekMs = DailyPlaytimeStats.getThisWeekMs();
@@ -243,6 +277,8 @@ public class MainMenuFragment extends FragmentWithAnim {
         });
     }
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     /**
      * Adds one Quick Actions row per discovered {@link com.movtery.zalithlauncher.plugins.feature.FeaturePlugin}
      * (see {@link com.movtery.zalithlauncher.plugins.feature.FeaturePluginManager} for the discovery
@@ -354,6 +390,7 @@ public class MainMenuFragment extends FragmentWithAnim {
             Toast.makeText(requireContext(), R.string.tasks_ongoing, Toast.LENGTH_LONG).show();
     }
 
+<<<<<<< HEAD
     /**
      * TurtleLauncher: Modpack Importer. Copies whatever was picked (a content:// URI, since
      * it came from the system file picker) into DIR_CACHE as a real file - everything past
@@ -376,6 +413,8 @@ public class MainMenuFragment extends FragmentWithAnim {
         });
     }
 
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     @Override
     public void slideIn(AnimPlayer animPlayer) {
         animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, Animations.BounceInDown))

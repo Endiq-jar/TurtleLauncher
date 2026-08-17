@@ -33,6 +33,7 @@
         <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Turtle.Small</item>
         <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Turtle.Medium</item>
         <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Turtle.Large</item>
+<<<<<<< HEAD
         <!-- TurtleLauncher: pixel-art switch/slider skin, applied app-wide via the theme
              default style so every settings screen's <Switch>/<SeekBar> picks it up
              automatically without touching each layout individually. -->
@@ -53,6 +54,8 @@
         <item name="android:thumb">@drawable/seekbar_thumb</item>
         <item name="android:progressTint">@color/accent_primary</item>
         <item name="android:progressBackgroundTint">@color/turtle_border_default</item>
+=======
+>>>>>>> 9c5f2f7990cd79a948e952a67446595d42eab51e
     </style>
 
     <!-- TurtleLauncher: Accessibility - High Contrast Mode (roadmap item 22). Applied at

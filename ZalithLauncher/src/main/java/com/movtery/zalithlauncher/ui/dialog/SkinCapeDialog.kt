@@ -17,10 +17,12 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.DialogSkinCapeBinding
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.skin.LabyModSkinApi
+import com.movtery.zalithlauncher.feature.skin.SkinCapeHistoryStore
 import com.movtery.zalithlauncher.feature.skin.TurtleSkinServer
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.Task
@@ -46,6 +48,8 @@ class SkinCapeDialog(
     private var galleryLauncher: ActivityResultLauncher<Intent>? = null
     /** The URL a successful Browse search resolved to (skin or cape, per [mode]); null until a search succeeds. */
     private var browseResolvedUrl: String? = null
+    /** The username that resolved [browseResolvedUrl], kept alongside it for history labeling. */
+    private var browseResolvedUsername: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,13 +92,17 @@ class SkinCapeDialog(
         }
 
         binding.buttonBrowseApply.setOnClickListener {
-            browseResolvedUrl?.let { url -> applyFromUrl(url) }
+            val url = browseResolvedUrl ?: return@setOnClickListener
+            val label = browseResolvedUsername ?: context.getString(R.string.skin_cape_gallery_source_lookup)
+            applyFromUrl(url, label)
         }
 
         binding.buttonCancel.setOnClickListener { dismiss() }
 
         setupLanVisibilityControls()
+        setupGallerySection()
 
+        checkHeight(binding.root, binding.contentView, binding.scrollView)
         DraggableDialog.initDialog(this)
     }
 
@@ -126,12 +134,17 @@ class SkinCapeDialog(
         binding.buttonCopyLanInstructions.visibility = visibility
     }
 
-    private fun applyFromUrl(url: String) {
+    private fun urlLabel(url: String): String =
+        url.substringAfterLast('/').substringBefore('?').takeIf { it.isNotBlank() }
+            ?: context.getString(R.string.skin_cape_gallery_source_url)
+
+    private fun applyFromUrl(url: String, label: String = urlLabel(url)) {
         val destFile = getDestFile()
         showProgress(true)
         Task.runTask {
             destFile.parentFile?.mkdirs()
             DownloadUtils.downloadFile(url, destFile)
+            SkinCapeHistoryStore.recordApplied(mode, destFile, label)
         }.ended(TaskExecutors.getAndroidUI()) {
             showProgress(false)
             notifySuccess()
@@ -160,6 +173,7 @@ class SkinCapeDialog(
         showProgress(true)
         binding.browseResultRow.visibility = View.GONE
         browseResolvedUrl = null
+        browseResolvedUsername = null
 
         Task.runTask {
             val lookup = LabyModSkinApi.lookupPlayer(username)
@@ -200,6 +214,7 @@ class SkinCapeDialog(
             binding.browsePreviewImage.setImageBitmap(null)
             binding.buttonBrowseApply.isEnabled = false
             browseResolvedUrl = null
+            browseResolvedUsername = null
             return
         }
 
@@ -208,6 +223,7 @@ class SkinCapeDialog(
         binding.browsePreviewImage.setImageBitmap(result.previewBitmap)
         binding.buttonBrowseApply.isEnabled = true
         browseResolvedUrl = result.resolvedUrl
+        browseResolvedUsername = username
     }
 
     private fun applyFromUri(uri: Uri) {
@@ -218,6 +234,7 @@ class SkinCapeDialog(
                 destFile.parentFile?.mkdirs()
                 FileOutputStream(destFile).use { out -> input.copyTo(out) }
             } ?: throw RuntimeException("Cannot open image")
+            SkinCapeHistoryStore.recordApplied(mode, destFile, context.getString(R.string.skin_cape_gallery_source_gallery))
         }.ended(TaskExecutors.getAndroidUI()) {
             showProgress(false)
             notifySuccess()
@@ -230,6 +247,87 @@ class SkinCapeDialog(
                     context.getString(R.string.skin_cape_apply_failed) + ": " + e.message,
                     Toast.LENGTH_LONG
                 ).show()
+            }
+        }.execute()
+    }
+
+    /** One tile in the gallery grid: either the bundled default skin, or a real applied-history entry. */
+    private data class GalleryDisplayItem(
+        val entry: SkinCapeHistoryStore.HistoryEntry?,
+        val isDefault: Boolean,
+        val label: String,
+        val bitmap: Bitmap?
+    )
+
+    private fun setupGallerySection() {
+        binding.galleryRecycler.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        Task.runTask {
+            buildGalleryItems()
+        }.ended(TaskExecutors.getAndroidUI()) { items ->
+            renderGallery(items)
+        }.onThrowable { e ->
+            TaskExecutors.runInUIThread { Logging.e("SkinCapeDialog", "Failed to load gallery", e) }
+        }.execute()
+    }
+
+    private fun buildGalleryItems(): List<GalleryDisplayItem> {
+        val items = mutableListOf<GalleryDisplayItem>()
+        // Only skins have a real, always-available bundled default (steve.png, shipped with the
+        // app) - Mojang doesn't ship a swappable "default cape" the same way, so cape mode is
+        // history-only.
+        if (mode == "skin") {
+            val defaultBitmap = runCatching {
+                context.assets.open("steve.png").use { BitmapFactory.decodeStream(it) }
+            }.onFailure { e -> Logging.e("SkinCapeDialog", "Failed to load bundled default skin", e) }.getOrNull()
+            items += GalleryDisplayItem(null, true, context.getString(R.string.skin_cape_gallery_default_label), defaultBitmap)
+        }
+        SkinCapeHistoryStore.loadHistory(mode).forEach { entry ->
+            val bitmap = runCatching {
+                BitmapFactory.decodeFile(SkinCapeHistoryStore.thumbFile(mode, entry).absolutePath)
+            }.onFailure { e -> Logging.e("SkinCapeDialog", "Failed to load history thumb for ${entry.label}", e) }.getOrNull()
+            items += GalleryDisplayItem(entry, false, entry.label, bitmap)
+        }
+        return items
+    }
+
+    private fun renderGallery(items: List<GalleryDisplayItem>) {
+        val hasAny = items.isNotEmpty()
+        binding.galleryEmptyText.visibility = if (hasAny) View.GONE else View.VISIBLE
+        binding.galleryRecycler.visibility = if (hasAny) View.VISIBLE else View.GONE
+        binding.galleryRecycler.adapter = SkinCapeGalleryAdapter(items.map { it.label to it.bitmap }) { position ->
+            applyGalleryItem(items[position])
+        }
+    }
+
+    private fun applyGalleryItem(item: GalleryDisplayItem) {
+        if (binding.progressBar.visibility == View.VISIBLE) return // an apply is already in flight
+        val destFile = getDestFile()
+        showProgress(true)
+        Task.runTask {
+            destFile.parentFile?.mkdirs()
+            if (item.isDefault) {
+                context.assets.open("steve.png").use { input ->
+                    FileOutputStream(destFile).use { out -> input.copyTo(out) }
+                }
+                // No need to record the bundled default into history - it's already a permanent gallery tile.
+            } else {
+                val entry = requireNotNull(item.entry)
+                SkinCapeHistoryStore.thumbFile(mode, entry).copyTo(destFile, overwrite = true)
+                SkinCapeHistoryStore.recordApplied(mode, destFile, item.label)
+            }
+        }.ended(TaskExecutors.getAndroidUI()) {
+            showProgress(false)
+            notifySuccess()
+            dismiss()
+        }.onThrowable { e ->
+            TaskExecutors.runInUIThread {
+                showProgress(false)
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.skin_cape_apply_failed) + ": " + e.message,
+                    Toast.LENGTH_LONG
+                ).show()
+                Logging.e("SkinCapeDialog", "Failed to apply gallery item", e)
             }
         }.execute()
     }

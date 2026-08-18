@@ -1060,7 +1060,13 @@
     <string name="skin_cape_url_label">Enter image URL (PNG):</string>
     <string name="skin_cape_apply_url">Apply from URL</string>
     <string name="skin_cape_pick_gallery">Pick from Gallery</string>
-    <string name="skin_cape_browse_label">Browse by username (LabyMod cape lookup):</string>
+    <string name="skin_cape_gallery_label">Gallery (tap to apply):</string>
+    <string name="skin_cape_gallery_empty">Nothing here yet — skins and capes you apply will show up for quick reuse.</string>
+    <string name="skin_cape_gallery_default_label">Default</string>
+    <string name="skin_cape_gallery_source_url">From URL</string>
+    <string name="skin_cape_gallery_source_gallery">From Gallery</string>
+    <string name="skin_cape_gallery_source_lookup">From lookup</string>
+    <string name="skin_cape_browse_label">Or look up a specific player:</string>
     <string name="skin_cape_browse_username_hint">Minecraft username</string>
     <string name="skin_cape_browse_search">Search</string>
     <string name="skin_cape_browse_apply">Apply</string>

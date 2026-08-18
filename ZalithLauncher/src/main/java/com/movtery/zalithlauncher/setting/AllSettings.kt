@@ -72,8 +72,18 @@ class AllSettings {
         /** Front-buffer / low-latency rendering (EGL_KHR_mutable_render_buffer +
          *  EGL_ANDROID_front_buffer_auto_refresh where available). Trades a small amount of
          *  tearing risk for lower input latency by skipping the swap-chain wait. See
-         *  apply_low_latency_mode() in gl_bridge.c. */
-        @JvmStatic val lowLatencyRendering      = BooleanSettingUnit("low_latency_rendering", false)
+         *  apply_low_latency_mode() in gl_bridge.c.
+         *  TurtleLauncher bugfix: was also named lowLatencyRendering, colliding with the
+         *  unrelated FPS Boost setting further down this file (JVM string/compile
+         *  optimizations - see its own doc comment) - two @JvmStatic vals with the same name
+         *  in the same companion object is a hard "Conflicting declarations" compile error,
+         *  and every AllSettings.lowLatencyRendering call site in the project became an
+         *  unresolvable "Overload resolution ambiguity" as a result. Renamed to
+         *  lowLatencyFrontBuffer to disambiguate; the persisted key ("low_latency_rendering")
+         *  is unchanged so this doesn't reset anyone's existing saved preference. This EGL
+         *  setting currently has no exposed UI toggle (see VideoSettingsFragment's bugfix
+         *  comment) - it's set programmatically only for now. */
+        @JvmStatic val lowLatencyFrontBuffer    = BooleanSettingUnit("low_latency_rendering", false)
         @JvmStatic val zinkPreferSystemDriver   = BooleanSettingUnit("zinkPreferSystemDriver", false)
 
         /** Auto Settings Optimizer: automatically tunes renderer/driver, RAM allocation, resolution scale, and FPS boost flags for this device at launch. */

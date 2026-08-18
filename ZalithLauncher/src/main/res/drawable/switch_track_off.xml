@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- TurtleLauncher: wraps the raw pixel-art switch sprite with filtering disabled so it
-     stays crisp (nearest-neighbor) when the system Switch widget scales it up, matching
-     the turtle mascot's pixel-art style instead of coming out blurry. -->
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/switch_off_raw"
-    android:filter="false"
-    android:gravity="fill"/>

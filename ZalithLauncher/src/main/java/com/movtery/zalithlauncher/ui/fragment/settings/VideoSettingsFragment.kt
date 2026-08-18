@@ -236,8 +236,16 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         SwitchSettingsWrapper(context, AllSettings.adaptiveVsync,
             binding.adaptiveVsyncLayout, binding.adaptiveVsync)
 
-        SwitchSettingsWrapper(context, AllSettings.lowLatencyRendering,
-            binding.lowLatencyRenderingLayout, binding.lowLatencyRendering)
+        // TurtleLauncher bugfix: this used to also wire AllSettings.lowLatencyRendering to
+        // binding.lowLatencyRenderingLayout/binding.lowLatencyRendering right here - but
+        // that's the exact same view IDs the real "Low Latency Rendering" switch under the
+        // FPS Boost section further down (see setting_category_fps_boost) already wires up.
+        // There's only one such switch in this layout; this block was a duplicate that also
+        // happened to reference AllSettings.lowLatencyRendering by the same name as an
+        // unrelated EGL front-buffer setting (see AllSettings.lowLatencyFrontBuffer's own
+        // bugfix comment) - together those two problems are what broke the build. Removed
+        // rather than repointed: the EGL front-buffer setting has no UI element of its own
+        // here to bind to.
 
         val zinkPreferSystemDriver = SwitchSettingsWrapper(
             context, AllSettings.zinkPreferSystemDriver,

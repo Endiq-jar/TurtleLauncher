@@ -17,10 +17,12 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.DialogSkinCapeBinding
 import com.movtery.zalithlauncher.feature.log.Logging
+import com.movtery.zalithlauncher.feature.skin.LabyModGalleryApi
 import com.movtery.zalithlauncher.feature.skin.LabyModSkinApi
 import com.movtery.zalithlauncher.feature.skin.SkinCapeHistoryStore
 import com.movtery.zalithlauncher.feature.skin.TurtleSkinServer
@@ -101,6 +103,7 @@ class SkinCapeDialog(
 
         setupLanVisibilityControls()
         setupGallerySection()
+        setupLabyGallerySection()
 
         checkHeight(binding.root, binding.contentView, binding.scrollView)
         DraggableDialog.initDialog(this)
@@ -332,6 +335,84 @@ class SkinCapeDialog(
         }.execute()
     }
 
+    // ── Live laby.net/skins gallery browsing ────────────────────────────────
+    // See LabyModGalleryApi's doc comment for how this actually works without a documented
+    // public API. Skin-only - laby.net doesn't have a cape library the way it has a skin one.
+
+    private fun setupLabyGallerySection() {
+        if (mode != "skin") {
+            binding.labyGalleryLabel.visibility = View.GONE
+            binding.labyGallerySearchRow.visibility = View.GONE
+            binding.labyGalleryRecycler.visibility = View.GONE
+            binding.labyGalleryEmptyText.visibility = View.GONE
+            binding.labyGalleryProgress.visibility = View.GONE
+            return
+        }
+
+        binding.labyGalleryRecycler.layoutManager = GridLayoutManager(context, 4)
+
+        binding.buttonLabyGallerySearch.setOnClickListener {
+            val text = binding.labyGallerySearchEdit.text.toString().trim()
+            val query = if (text.isEmpty()) LabyModGalleryApi.GalleryQuery.Trending
+                        else LabyModGalleryApi.GalleryQuery.Search(text)
+            loadLabyGallery(query)
+        }
+
+        loadLabyGallery(LabyModGalleryApi.GalleryQuery.Trending)
+    }
+
+    private fun loadLabyGallery(query: LabyModGalleryApi.GalleryQuery) {
+        binding.labyGalleryProgress.visibility = View.VISIBLE
+        binding.labyGalleryEmptyText.visibility = View.GONE
+        Task.runTask {
+            LabyModGalleryApi.fetchGallery(query)
+        }.ended(TaskExecutors.getAndroidUI()) { skins ->
+            renderLabyGallery(skins)
+        }.onThrowable { e ->
+            TaskExecutors.runInUIThread {
+                renderLabyGallery(emptyList())
+                Logging.e("SkinCapeDialog", "Failed to load laby.net gallery", e)
+            }
+        }.execute()
+    }
+
+    private fun renderLabyGallery(skins: List<LabyModGalleryApi.GallerySkin>) {
+        binding.labyGalleryProgress.visibility = View.GONE
+        val hasAny = skins.isNotEmpty()
+        binding.labyGalleryEmptyText.visibility = if (hasAny) View.GONE else View.VISIBLE
+        binding.labyGalleryRecycler.visibility = if (hasAny) View.VISIBLE else View.GONE
+        binding.labyGalleryRecycler.adapter = LabyModGalleryGridAdapter(skins) { position ->
+            applyLabyGallerySkin(skins[position])
+        }
+    }
+
+    private fun applyLabyGallerySkin(skin: LabyModGalleryApi.GallerySkin) {
+        if (binding.progressBar.visibility == View.VISIBLE) return // an apply is already in flight
+        val destFile = getDestFile()
+        showProgress(true)
+        Task.runTask {
+            val textureBytes = LabyModGalleryApi.resolveApplyTexture(skin.hash)
+                ?: throw RuntimeException("Couldn't resolve a raw texture for this skin")
+            destFile.parentFile?.mkdirs()
+            destFile.writeBytes(textureBytes)
+            SkinCapeHistoryStore.recordApplied(mode, destFile, context.getString(R.string.skin_cape_laby_gallery_source, skin.label))
+        }.ended(TaskExecutors.getAndroidUI()) {
+            showProgress(false)
+            notifySuccess()
+            dismiss()
+        }.onThrowable { e ->
+            TaskExecutors.runInUIThread {
+                showProgress(false)
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.skin_cape_laby_gallery_apply_failed),
+                    Toast.LENGTH_LONG
+                ).show()
+                Logging.e("SkinCapeDialog", "Failed to apply laby.net gallery skin ${skin.hash}", e)
+            }
+        }.execute()
+    }
+
     private fun getDestFile(): File {
         return if (mode == "cape") {
             File(PathManager.DIR_USER_SKIN, account.uniqueUUID + "_cape.png")
@@ -345,6 +426,7 @@ class SkinCapeDialog(
         binding.buttonApplyUrl.isEnabled = !show
         binding.buttonGallery.isEnabled = !show
         binding.buttonBrowseSearch.isEnabled = !show
+        binding.buttonLabyGallerySearch.isEnabled = !show
         // buttonBrowseApply is re-enabled by renderBrowseResult() only when there's something to apply
         if (show) binding.buttonBrowseApply.isEnabled = false
     }

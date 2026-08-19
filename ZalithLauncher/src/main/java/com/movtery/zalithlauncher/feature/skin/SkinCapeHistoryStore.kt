@@ -11,14 +11,15 @@ import java.security.MessageDigest
  * Local "recently applied" history backing the tap-to-apply gallery in
  * [com.movtery.zalithlauncher.ui.dialog.SkinCapeDialog].
  *
- * There is no free/stable/official public API to browse a gallery of arbitrary community
- * skins/capes - checked before building this. Every "browse" service found is either a
- * per-player lookup (like [LabyModSkinApi] itself, see its own doc comment) or a paid
- * third-party service scraping NameMC. Same shape of finding as the 9minecraft.net platform
- * check elsewhere in this project: no real API, so don't build a fragile/borrowed-legitimacy
- * scraper. Instead this stores what the user has *actually* applied before (from a URL, the
- * device gallery, or a player lookup) as a real, always-available, offline gallery - entirely
- * local, no network involved.
+ * There's no *documented* public API for browsing laby.net's skin gallery either - see
+ * [com.movtery.zalithlauncher.feature.skin.LabyModGalleryApi]'s doc comment for what that
+ * class does instead (scraping laby.net's own page data, no private/internal endpoints). That
+ * covers live community browsing now, but it's still a best-effort scrape of an undocumented
+ * site, not a guaranteed-stable API - and it only ever shows *other people's* skins/capes, not
+ * what this user has actually applied before. This store is what actually is: a real,
+ * always-available, fully offline gallery of whatever the user has applied before (from a URL,
+ * the device gallery, a player lookup, or the laby.net browser above), independent of network
+ * or any one third-party site's uptime.
  */
 internal object SkinCapeHistoryStore {
     private const val MAX_ENTRIES = 16

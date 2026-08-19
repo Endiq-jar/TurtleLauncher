@@ -69,10 +69,9 @@
                 android:background="@color/turtle_highlight_subtle"
                 android:layout_marginVertical="@dimen/_8sdp"/>
 
-            <!-- TurtleLauncher: real tap-to-apply gallery (bundled default + local "recently
-                 applied" history) - replaces the old username-only "browse" flow, which was
-                 never actually a browsable gallery (see SkinCapeHistoryStore's doc comment for
-                 why: no free/stable public API exists for browsing arbitrary skins/capes). -->
+            <!-- TurtleLauncher: local "recently applied" tap-to-apply gallery (bundled default
+                 + history) - offline and always available, independent of the live laby.net
+                 browser section further down. See SkinCapeHistoryStore's doc comment. -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -185,6 +184,86 @@
                     android:enabled="false"/>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/turtle_highlight_subtle"
+                android:layout_marginVertical="@dimen/_8sdp"/>
+
+            <!-- TurtleLauncher: live laby.net/skins gallery browsing - an actual grid of
+                 arbitrary community skins to page through and tap-apply, not just the
+                 per-player lookup above. Skin-only (laby.net doesn't have a cape library);
+                 SkinCapeDialog hides this whole block in cape mode. -->
+            <TextView
+                android:id="@+id/laby_gallery_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/skin_cape_laby_gallery_label"
+                android:textColor="@color/turtle_text_secondary"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginHorizontal="@dimen/_4sdp"
+                android:layout_marginBottom="@dimen/_4sdp"/>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/laby_gallery_search_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginHorizontal="@dimen/_4sdp"
+                android:layout_marginBottom="@dimen/_4sdp">
+
+                <com.movtery.zalithlauncher.ui.view.AnimEditText
+                    android:id="@+id/laby_gallery_search_edit"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_38sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/background_edit_box"
+                    android:hint="@string/skin_cape_laby_gallery_search_hint"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch|flagNoExtractUi"
+                    android:paddingHorizontal="@dimen/_8sdp"
+                    android:layout_marginEnd="@dimen/_4sdp"/>
+
+                <com.movtery.zalithlauncher.ui.view.AnimButton
+                    android:id="@+id/button_laby_gallery_search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_38sdp"
+                    android:text="@string/skin_cape_browse_search"/>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/laby_gallery_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxHeight="@dimen/_240sdp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="@dimen/_2sdp"
+                android:layout_marginBottom="@dimen/_4sdp"
+                tools:listitem="@layout/item_skin_cape_gallery"
+                tools:spanCount="4"/>
+
+            <TextView
+                android:id="@+id/laby_gallery_empty_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/skin_cape_laby_gallery_empty"
+                android:textColor="@color/turtle_text_secondary"
+                android:textSize="@dimen/_10ssp"
+                android:gravity="center"
+                android:layout_marginHorizontal="@dimen/_4sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
+                android:visibility="gone"/>
+
+            <ProgressBar
+                android:id="@+id/laby_gallery_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_marginBottom="@dimen/_8sdp"/>
 
             <!-- Divider -->
             <View

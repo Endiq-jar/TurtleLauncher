@@ -1074,6 +1074,11 @@
     <string name="skin_cape_browse_no_cape">Found the player, but they have no LabyMod cape</string>
     <string name="skin_cape_browse_found_skin">Found %1$s\'s current skin</string>
     <string name="skin_cape_browse_found_cape">Found %1$s\'s LabyMod cape</string>
+    <string name="skin_cape_laby_gallery_label">Browse LabyMod\'s skin library (laby.net):</string>
+    <string name="skin_cape_laby_gallery_search_hint">Search skins, or leave blank for Trending</string>
+    <string name="skin_cape_laby_gallery_empty">Couldn\'t load any skins right now — check your connection and try again.</string>
+    <string name="skin_cape_laby_gallery_apply_failed">Couldn\'t fetch that skin from laby.net</string>
+    <string name="skin_cape_laby_gallery_source">From laby.net (%1$s)</string>
     <string name="skin_cape_skin_applied">Skin applied! Restart game to see changes.</string>
     <string name="skin_cape_cape_applied">Cape applied! Restart game to see changes.</string>
     <string name="skin_cape_apply_failed">Failed to apply image</string>

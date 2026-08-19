@@ -267,7 +267,7 @@ class SkinCapeDialog(
         Task.runTask {
             buildGalleryItems()
         }.ended(TaskExecutors.getAndroidUI()) { items ->
-            renderGallery(items)
+            renderGallery(items ?: emptyList())
         }.onThrowable { e ->
             TaskExecutors.runInUIThread { Logging.e("SkinCapeDialog", "Failed to load gallery", e) }
         }.execute()
@@ -367,7 +367,7 @@ class SkinCapeDialog(
         Task.runTask {
             LabyModGalleryApi.fetchGallery(query)
         }.ended(TaskExecutors.getAndroidUI()) { skins ->
-            renderLabyGallery(skins)
+            renderLabyGallery(skins ?: emptyList())
         }.onThrowable { e ->
             TaskExecutors.runInUIThread {
                 renderLabyGallery(emptyList())

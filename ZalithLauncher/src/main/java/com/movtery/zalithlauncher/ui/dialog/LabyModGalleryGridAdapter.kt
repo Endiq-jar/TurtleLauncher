@@ -16,7 +16,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
  * page can be dozens of remote images - loading them all before showing anything would make
  * the grid feel like it hung.
  */
-class LabyModGalleryGridAdapter(
+internal class LabyModGalleryGridAdapter(
     private val items: List<LabyModGalleryApi.GallerySkin>,
     private val onItemClick: (position: Int) -> Unit
 ) : RecyclerView.Adapter<LabyModGalleryGridAdapter.ViewHolder>() {

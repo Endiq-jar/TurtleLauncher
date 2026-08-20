@@ -24,18 +24,15 @@ import com.movtery.zalithlauncher.event.single.LaunchGameEvent;
 import com.movtery.zalithlauncher.event.single.RefreshVersionsEvent;
 import com.movtery.zalithlauncher.event.value.InstallLocalModpackEvent;
 import com.movtery.zalithlauncher.feature.mod.modpack.install.InstallExtra;
-import com.movtery.zalithlauncher.feature.inputstats.SessionStatsTracker;
 import com.movtery.zalithlauncher.feature.log.CrashAnalyzer;
 import com.movtery.zalithlauncher.feature.turtle.DailyPlaytimeStats;
 import com.movtery.zalithlauncher.feature.turtle.HomeChangelog;
-import com.movtery.zalithlauncher.feature.turtle.ScreenRecorder;
 import com.movtery.zalithlauncher.feature.version.Version;
 import com.movtery.zalithlauncher.feature.version.utils.VersionIconUtils;
 import com.movtery.zalithlauncher.feature.version.VersionInfo;
 import com.movtery.zalithlauncher.feature.version.VersionsManager;
 import com.movtery.zalithlauncher.task.TaskExecutors;
 import com.movtery.zalithlauncher.ui.fragment.AboutFragment;
-import com.movtery.zalithlauncher.ui.fragment.AccountFragment;
 import com.movtery.zalithlauncher.ui.fragment.ControlButtonFragment;
 import com.movtery.zalithlauncher.ui.fragment.FilesFragment;
 import com.movtery.zalithlauncher.ui.fragment.FragmentWithAnim;
@@ -57,7 +54,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
-import java.util.Locale;
 
 public class MainMenuFragment extends FragmentWithAnim {
     public static final String TAG = "MainMenuFragment";
@@ -110,10 +106,6 @@ public class MainMenuFragment extends FragmentWithAnim {
                 Toast.makeText(requireContext(), R.string.tasks_ongoing, Toast.LENGTH_LONG).show();
             }
         });
-        binding.friendsLanButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
-            com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.class,
-            com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.TAG, null));
-
         // Footer: launcher name, version string, and GitHub link
         binding.footerAppName.setText(com.movtery.zalithlauncher.InfoDistributor.LAUNCHER_NAME);
         binding.footerVersionText.setText("v" + com.movtery.zalithlauncher.BuildConfig.VERSION_NAME);
@@ -179,11 +171,6 @@ public class MainMenuFragment extends FragmentWithAnim {
             bundle.putString(FilesFragment.BUNDLE_LIST_PATH, PathManager.DIR_GAME_HOME);
             ZHTools.swapFragmentWithAnim(this, FilesFragment.class, FilesFragment.TAG, bundle);
         });
-        binding.topBarRecordButton.setOnClickListener(v -> {
-            if (getActivity() != null) ScreenRecorder.INSTANCE.toggle(requireActivity());
-        });
-        binding.topBarAccountsButton.setOnClickListener(v ->
-            ZHTools.swapFragmentWithAnim(this, AccountFragment.class, AccountFragment.TAG, null));
         binding.topBarDownloadButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.movtery.zalithlauncher.ui.fragment.DownloadFragment.class,
             com.movtery.zalithlauncher.ui.fragment.DownloadFragment.TAG, null));
@@ -196,9 +183,6 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.changelogSummary.setText(HomeChangelog.getSummary());
         binding.changelogCard.setOnClickListener(v ->
             ZHTools.openLink(requireActivity(), com.movtery.zalithlauncher.utils.path.UrlManager.URL_HOME));
-        binding.todayPlaytimeCard.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
-            com.movtery.zalithlauncher.ui.fragment.settings.GameSettingsFragment.class,
-            com.movtery.zalithlauncher.ui.fragment.settings.GameSettingsFragment.TAG, null));
         refreshStatistics();
         refreshLastGameLog();
 
@@ -212,9 +196,6 @@ public class MainMenuFragment extends FragmentWithAnim {
         float[] weekHours = new float[weekMs.length];
         for (int i = 0; i < weekMs.length; i++) weekHours[i] = weekMs[i] / 3600000f;
         binding.statsChart.setData(weekHours);
-
-        long todayMs = DailyPlaytimeStats.getTodayMs() + SessionStatsTracker.getSessionElapsedMs();
-        binding.todayPlaytimeText.setText(String.format(Locale.getDefault(), "%.1f h", todayMs / 3600000f));
     }
 
     /**

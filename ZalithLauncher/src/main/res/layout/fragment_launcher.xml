@@ -68,26 +68,6 @@
                 android:contentDescription="@string/main_nav_files"/>
 
             <ImageButton
-                android:id="@+id/top_bar_record_button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_setting_recording"
-                android:padding="9dp"
-                android:tint="@color/turtle_text_secondary"
-                android:contentDescription="@string/main_top_bar_record"/>
-
-            <ImageButton
-                android:id="@+id/top_bar_accounts_button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_menu_accounts"
-                android:padding="9dp"
-                android:tint="@color/turtle_text_secondary"
-                android:contentDescription="@string/main_top_bar_accounts"/>
-
-            <ImageButton
                 android:id="@+id/top_bar_download_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -551,52 +531,12 @@
 
                     </LinearLayout>
 
-                    <!-- Row 2: today's total playtime + last game log -->
+                    <!-- Row 2: last game log -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:layout_marginBottom="@dimen/space_l">
-
-                        <!-- Today's total playtime -->
-                        <LinearLayout
-                            android:id="@+id/today_playtime_card"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="@dimen/space_s"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="@dimen/space_m"
-                            android:background="@drawable/background_grid_card">
-
-                            <TextView
-                                android:id="@+id/today_playtime_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="26sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/turtle_primary_text"
-                                tools:text="0.0 h"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/main_stats_today_label"
-                                android:textSize="12sp"
-                                android:textColor="@color/turtle_text_secondary"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/space_s"
-                                android:text="@string/main_click_for_more"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/accent_primary"/>
-
-                        </LinearLayout>
 
                         <!-- Last Game Log -->
                         <LinearLayout
@@ -639,35 +579,6 @@
                         android:orientation="vertical"
                         android:visibility="gone"
                         tools:ignore="UselessParent"/>
-
-                    <!-- Friends / LAN -->
-                    <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
-                        android:id="@+id/friends_lan_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:background="@drawable/background_grid_card"
-                        android:layout_marginTop="@dimen/space_xs"
-                        android:layout_marginBottom="@dimen/space_l"
-                        app:ripple_for_relative="true">
-                        <ImageView
-                            android:id="@+id/friends_lan_icon"
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:layout_centerVertical="true"
-                            android:layout_marginStart="@dimen/space_m"
-                            android:src="@drawable/ic_globe"
-                            android:tint="@color/accent_primary"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_toEndOf="@id/friends_lan_icon"
-                            android:layout_marginStart="@dimen/space_m"
-                            android:text="@string/main_friends_lan"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/turtle_primary_text"/>
-                    </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
 
                     <!-- COMMUNITY header -->
                     <TextView

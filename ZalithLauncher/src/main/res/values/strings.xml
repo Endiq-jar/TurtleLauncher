@@ -482,7 +482,6 @@
     <string name="main_nav_download">Download</string>
     <string name="main_nav_settings">Settings</string>
     <string name="main_section_quick_actions">Quick Actions</string>
-    <string name="main_friends_lan">Friends / LAN</string>
     <string name="terracotta_title">Friends / LAN</string>
     <string name="terracotta_waiting_subtitle">Play together over a direct P2P connection - no port forwarding needed.</string>
     <string name="terracotta_host_button">Host a Game</string>
@@ -528,11 +527,8 @@
     <!-- Home screen dashboard (top bar + statistics cards) -->
     <string name="main_top_bar_title">TurtleLauncher</string>
     <string name="main_top_bar_subtitle">A fork of ZalithLauncher / PojavLauncher</string>
-    <string name="main_top_bar_record">Record screen</string>
-    <string name="main_top_bar_accounts">Accounts</string>
     <string name="main_section_statistics">Today\'s Statistics</string>
     <string name="main_stats_weekly_label">Play Time (Last 7 Days)</string>
-    <string name="main_stats_today_label">Today</string>
     <string name="main_changelog_label">Changelog</string>
     <string name="main_click_for_more">Click for more</string>
     <string name="main_last_log_label">Last Game Log</string>

@@ -43,7 +43,7 @@ import kotlin.math.abs
  * about whether Minecraft itself had already hit a real, diagnosable game-side problem (a
  * bad mod, a corrupted resource, an OOM) moments before something native finished the job.
  * So on top of the OS-level trace, this also checks for a Minecraft-written crash-report
- * file (crash-reports/*.txt, wherever this install's game dir/version isolation puts it)
+ * file (crash-reports folder's .txt files, wherever this install's game dir/version isolation puts it)
  * with a timestamp close enough to the process death to plausibly be the same event, and
  * runs it through the *same* CrashAnalyzer rule engine analyzeGameExit() already uses for
  * the graceful-exit path - so a launch that ends this way gets the real "your mod X is
@@ -58,7 +58,7 @@ object NativeCrashCapture {
     private const val KEY_LAST_REPORTED_TIMESTAMP = "last_reported_timestamp"
     private const val MAX_LOG_CHARS = 64 * 1024
     private const val MAX_CRASH_REPORT_CHARS = 48 * 1024
-    /** How close a crash-reports/*.txt file's mtime must be to the recorded process-death
+    /** How close a crash-reports folder's .txt file's mtime must be to the recorded process-death
      *  timestamp to be trusted as "this is the report for THIS death" rather than some
      *  unrelated older crash still sitting on disk. */
     private const val CRASH_REPORT_MATCH_WINDOW_MS = 3 * 60 * 1000L

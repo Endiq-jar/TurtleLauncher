@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Build
 import com.movtery.zalithlauncher.ui.activity.ErrorActivity
 import com.movtery.zalithlauncher.utils.path.PathManager
-import org.apache.commons.io.FileUtils
 import java.io.File
 import java.text.DateFormat
 import java.util.Date
@@ -104,7 +103,7 @@ object NativeCrashCapture {
 
             val crashFile = File(PathManager.DIR_LAUNCHER_LOG, CRASH_FILE_NAME)
             runCatching {
-                FileUtils.ensureParentDirectory(crashFile)
+                crashFile.parentFile?.takeIf { !it.exists() }?.mkdirs()
                 crashFile.writeText(reportText)
             }.onFailure { Logging.e(TAG, "Failed to write native crash report", it) }
 

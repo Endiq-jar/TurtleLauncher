@@ -4,11 +4,13 @@ import android.app.ActivityManager
 import android.app.ApplicationExitInfo
 import android.content.Context
 import android.os.Build
+import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome
 import com.movtery.zalithlauncher.ui.activity.ErrorActivity
 import com.movtery.zalithlauncher.utils.path.PathManager
 import java.io.File
 import java.text.DateFormat
 import java.util.Date
+import kotlin.math.abs
 
 /**
  * TurtleLauncher Native Crash Capture.
@@ -36,11 +38,30 @@ import java.util.Date
  * Call [checkAndReport] once, early in app startup, after PathManager.DIR_DATA/DIR_LAUNCHER_LOG
  * are resolvable (see TurtleStartupInitializer, which already documents that exact ordering
  * constraint for the same reason).
+ *
+ * IMPORTANT: this only tells us the *launcher process* died via a signal - it says nothing
+ * about whether Minecraft itself had already hit a real, diagnosable game-side problem (a
+ * bad mod, a corrupted resource, an OOM) moments before something native finished the job.
+ * So on top of the OS-level trace, this also checks for a Minecraft-written crash-report
+ * file (crash-reports/*.txt, wherever this install's game dir/version isolation puts it)
+ * with a timestamp close enough to the process death to plausibly be the same event, and
+ * runs it through the *same* CrashAnalyzer rule engine analyzeGameExit() already uses for
+ * the graceful-exit path - so a launch that ends this way gets the real "your mod X is
+ * incompatible" style diagnosis when Minecraft managed to write one, not just a raw native
+ * backtrace. Shown via ErrorActivity.showExitMessage (the game-crash screen), not
+ * showLauncherCrash (the launcher-crash screen) - this failure mode lives in the
+ * game/renderer layer, not launcher code, and should read that way to the user.
  */
 object NativeCrashCapture {
     private const val TAG = "NativeCrashCapture"
     private const val PREFS_NAME = "native_crash_capture"
     private const val KEY_LAST_REPORTED_TIMESTAMP = "last_reported_timestamp"
+    private const val MAX_LOG_CHARS = 64 * 1024
+    private const val MAX_CRASH_REPORT_CHARS = 48 * 1024
+    /** How close a crash-reports/*.txt file's mtime must be to the recorded process-death
+     *  timestamp to be trusted as "this is the report for THIS death" rather than some
+     *  unrelated older crash still sitting on disk. */
+    private const val CRASH_REPORT_MATCH_WINDOW_MS = 3 * 60 * 1000L
 
     /** Real file, not "latestcrash.txt" - that name is already owned by the Java-uncaught-
      *  exception handler in PojavApplication and has its own (different) format. Keeping
@@ -85,6 +106,29 @@ object NativeCrashCapture {
                 newest.traceInputStream?.use { it.bufferedReader().readText() }
             }.getOrNull()
 
+            // The launcher's own raw stdout/stderr capture - whatever Minecraft printed right
+            // up to the moment it died. Same file analyzeGameExit() reads for the graceful-exit
+            // path, so a launch that ends via a signal instead gets the same source consulted.
+            val logTail = runCatching {
+                File(PathManager.DIR_GAME_HOME, "latestlog.txt").takeIf { it.isFile }
+                    ?.readText()?.takeLast(MAX_LOG_CHARS)
+            }.getOrNull().orEmpty()
+
+            val mcCrashFile = findRecentMinecraftCrashReport(newest.timestamp)
+            val mcCrashText = mcCrashFile?.let {
+                runCatching { it.readText().takeLast(MAX_CRASH_REPORT_CHARS) }.getOrNull()
+            }
+
+            // Same rule engine analyzeGameExit() uses for the graceful-exit path - a real
+            // "your mod X is incompatible" diagnosis when Minecraft got far enough to write one,
+            // not just a raw native backtrace with no explanation attached.
+            val diagnoses = runCatching {
+                val combinedLog = if (traceText.isNullOrBlank()) logTail else "$logTail\n$traceText"
+                CrashAnalyzer.analyze(combinedLog, mcCrashText, null)
+            }.getOrDefault(emptyList())
+            val diagnosisText = diagnoses.takeIf { it.isNotEmpty() }
+                ?.let { runCatching { CrashAnalyzer.formatForDisplay(it, null) }.getOrNull() }
+
             val reportText = buildString {
                 appendLine("TurtleLauncher native crash report")
                 appendLine(" - Time: ${DateFormat.getDateTimeInstance().format(Date(newest.timestamp))}")
@@ -93,6 +137,12 @@ object NativeCrashCapture {
                 appendLine(" - Process importance at death: ${newest.importance}")
                 appendLine(" - Device: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE}")
                 appendLine()
+                if (!mcCrashText.isNullOrBlank()) {
+                    appendLine("── Minecraft's own crash report (${mcCrashFile?.name}) ──")
+                    append(mcCrashText)
+                    appendLine()
+                    appendLine()
+                }
                 if (traceText.isNullOrBlank()) {
                     appendLine("<no native trace was attached to this exit by the system>")
                 } else {
@@ -109,17 +159,43 @@ object NativeCrashCapture {
 
             prefs.edit().putLong(KEY_LAST_REPORTED_TIMESTAMP, newest.timestamp).apply()
 
-            // Reuses the exact same "launcher crash" display ErrorActivity already has (Advanced
-            // Log, Copy, Share, CrashAnalyzer pattern matching) rather than building a second UI
-            // for this. CrashAnalyzer.analyze() runs against the Throwable's own message text,
-            // so a trimmed slice of the real trace is embedded in it (not just the reason name)
-            // to give the existing rule engine an actual shot at recognizing it - e.g. a known
-            // "libSDL3.so"/"libEGL" signature, if one gets added to CrashAnalyzer's knowledge
-            // base later.
-            val summary = "Native crash: ${reasonName(newest.reason)} - ${newest.description ?: "no system description"}\n\n" +
-                (traceText?.take(4000) ?: "")
-            ErrorActivity.showLauncherCrash(context, crashFile.absolutePath, RuntimeException(summary))
+            // showExitMessage, not showLauncherCrash: this reads as a GAME crash (SDL/renderer/
+            // native layer, or Minecraft's own reported problem when we found a matching
+            // crash-report), using the exact same screen + diagnosis format the graceful-exit
+            // path already shows, rather than the separate "the launcher itself crashed" screen.
+            ErrorActivity.showExitMessage(context, newest.status, true, diagnosisText)
         }.onFailure { Logging.e(TAG, "checkAndReport failed", it) }
+    }
+
+    /**
+     * Scans every crash-reports folder this install could plausibly have written to - the
+     * shared/default game dir plus every per-version isolated one - without going through
+     * VersionsManager (its in-memory version list isn't guaranteed loaded yet this early in
+     * startup; this reads the folders directly off disk instead). Returns the single
+     * newest file found, but only if its mtime falls within [CRASH_REPORT_MATCH_WINDOW_MS]
+     * of [nearTimestamp] - otherwise it's some earlier, unrelated crash still sitting on disk
+     * and returning it would misattribute it to this death.
+     */
+    private fun findRecentMinecraftCrashReport(nearTimestamp: Long): File? {
+        val candidates = mutableListOf<File>()
+
+        fun collectFrom(gameDir: File) {
+            File(gameDir, "crash-reports")
+                .takeIf { it.isDirectory }
+                ?.listFiles { f -> f.isFile && f.name.endsWith(".txt") }
+                ?.let { candidates.addAll(it) }
+        }
+
+        // No version isolation / custom path unset - the shared .minecraft/
+        collectFrom(File(ProfilePathHome.getGameHome()))
+        // Each isolated version's own folder - .minecraft/versions/<name>/
+        File(ProfilePathHome.getVersionsHome())
+            .takeIf { it.isDirectory }
+            ?.listFiles { f -> f.isDirectory }
+            ?.forEach { collectFrom(it) }
+
+        val newest = candidates.maxByOrNull { it.lastModified() } ?: return null
+        return newest.takeIf { abs(it.lastModified() - nearTimestamp) <= CRASH_REPORT_MATCH_WINDOW_MS }
     }
 
     private fun reasonName(reason: Int): String = when (reason) {

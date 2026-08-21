@@ -402,7 +402,12 @@ public final class ZHTools {
                         if (logsFolder.exists() && logsFolder.isDirectory()) {
                             FileTools.zipDirectory(logsFolder, "launcher_logs/", file -> {
                                 String fileName = file.getName();
-                                return fileName.equals("latestcrash.txt") || (fileName.startsWith("log") && fileName.endsWith(".txt"));
+                                // latest_native_crash.txt: see NativeCrashCapture - a native
+                                // (SIGSEGV/ANR-level) death the OS recorded, not a Java exception,
+                                // so it lives in its own file next to latestcrash.txt rather than
+                                // sharing it.
+                                return fileName.equals("latestcrash.txt") || fileName.equals("latest_native_crash.txt")
+                                    || (fileName.startsWith("log") && fileName.endsWith(".txt"));
                             }, zos);
                         } else Log.d("Zip Log", "The launcher log does not exist or is not available");
 

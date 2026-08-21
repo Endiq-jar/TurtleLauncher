@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.startup.Initializer
 import com.google.android.material.color.DynamicColors
 import com.movtery.zalithlauncher.feature.log.Logging
+import com.movtery.zalithlauncher.feature.log.NativeCrashCapture
 import com.movtery.zalithlauncher.feature.turtle.AnrWatchdog
 
 /**
@@ -45,6 +46,12 @@ class TurtleStartupInitializer : Initializer<Unit> {
         }
 
         AnrWatchdog.start()
+
+        // TurtleLauncher: surfaces the *previous* run's death if it was a native crash the OS
+        // killed the whole process for (no Java code could run at that instant to log it
+        // itself - see NativeCrashCapture's own doc comment). Same PathManager.DIR_DATA
+        // ordering requirement as everything else in this initializer.
+        NativeCrashCapture.checkAndReport(context)
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()

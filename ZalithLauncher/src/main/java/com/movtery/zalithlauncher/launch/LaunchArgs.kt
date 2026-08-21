@@ -2,6 +2,7 @@ package com.movtery.zalithlauncher.launch
 
 import androidx.collection.ArrayMap
 import com.movtery.zalithlauncher.InfoDistributor
+import com.movtery.zalithlauncher.feature.accounts.AccountType
 import com.movtery.zalithlauncher.feature.accounts.AccountUtils
 import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome
 import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome.Companion.getLibrariesHome
@@ -236,7 +237,16 @@ class LaunchArgs(
         verArgMap["game_assets"] = ProfilePathHome.getAssetsHome()
         verArgMap["game_directory"] = gameDirPath.absolutePath
         verArgMap["user_properties"] = "{}"
-        verArgMap["user_type"] = "msa"
+        // TurtleLauncher fix: this was hardcoded "msa" for every account, Microsoft or not.
+        // user_type is what Minecraft's own client uses internally to decide whether it's
+        // holding a real Microsoft-authenticated session - a Local/offline or Other Login
+        // (authlib-injector) account isn't one (accessToken is just the "0" placeholder, no
+        // real Mojang session behind it), so telling the game it's "msa" anyway makes the
+        // client itself believe it should behave like a premium account - matches the exact
+        // "every server treats it as premium" symptom this was reported as. AccountType only
+        // has MICROSOFT/LOCAL (see AccountType.kt) - Other Login accounts are stored as LOCAL
+        // with otherBaseUrl set, so this same branch correctly covers both as "legacy".
+        verArgMap["user_type"] = if (account.accountType == AccountType.MICROSOFT.type) "msa" else "legacy"
         verArgMap["version_name"] = versionInfo.inheritsFrom ?: versionInfo.id
 
         setLauncherInfo(verArgMap)

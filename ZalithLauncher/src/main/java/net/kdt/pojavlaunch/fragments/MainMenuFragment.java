@@ -174,6 +174,11 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.topBarDownloadButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.movtery.zalithlauncher.ui.fragment.DownloadFragment.class,
             com.movtery.zalithlauncher.ui.fragment.DownloadFragment.TAG, null));
+        // TurtleLauncher: top-bar shortcut straight to the cursor manager/editor - previously
+        // only reachable via Settings -> Control Settings -> Custom Mouse, several taps deep.
+        binding.topBarCursorButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
+            com.movtery.zalithlauncher.ui.fragment.CustomMouseFragment.class,
+            com.movtery.zalithlauncher.ui.fragment.CustomMouseFragment.TAG, null));
         binding.topBarSettingsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.class,
             com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.TAG, null));

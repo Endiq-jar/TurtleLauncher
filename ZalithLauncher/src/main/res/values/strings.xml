@@ -419,6 +419,7 @@
     <string name="mouse_settings_speed_name">Virtual Mouse Speed</string>
     <string name="mouse_settings_scale_name">Virtual Mouse Scale</string>
     <string name="custom_mouse_add">Add Virtual Mouse</string>
+    <string name="custom_mouse_draw">Draw Virtual Mouse</string>
     <string name="custom_mouse_added">Successfully set virtual mouse:</string>
     <string name="custom_mouse_default">Default Virtual Mouse</string>
     <string name="custom_mouse_title">Custom Virtual Mouse</string>
@@ -480,6 +481,7 @@
     <string name="main_nav_home">Home</string>
     <string name="main_nav_files">Files</string>
     <string name="main_nav_download">Download</string>
+    <string name="main_nav_cursor">Cursor</string>
     <string name="main_nav_settings">Settings</string>
     <string name="main_section_quick_actions">Quick Actions</string>
     <string name="terracotta_title">Friends / LAN</string>

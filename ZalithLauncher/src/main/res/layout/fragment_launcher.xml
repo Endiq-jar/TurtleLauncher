@@ -78,6 +78,16 @@
                 android:contentDescription="@string/main_nav_download"/>
 
             <ImageButton
+                android:id="@+id/top_bar_cursor_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_cursor"
+                android:padding="9dp"
+                android:tint="@color/turtle_text_secondary"
+                android:contentDescription="@string/main_nav_cursor"/>
+
+            <ImageButton
                 android:id="@+id/top_bar_settings_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"

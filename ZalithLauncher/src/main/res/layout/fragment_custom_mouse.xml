@@ -109,6 +109,22 @@
                 tools:srcCompat="@tools:sample/avatars"
                 tools:ignore="ContentDescription" />
 
+            <!-- TurtleLauncher: opens the pixel-art editor (same PixelEditorDialog used for
+                 custom control-button icons) so a cursor can be drawn in-app, as a complement
+                 to importing a file via the action bar's add-file button. -->
+            <TextView
+                android:id="@+id/draw_cursor_button"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_35sdp"
+                android:layout_marginTop="@dimen/_16sdp"
+                android:layout_marginHorizontal="@dimen/_16sdp"
+                android:background="@drawable/background_edit_box"
+                android:gravity="center"
+                android:text="@string/custom_mouse_draw"
+                app:layout_constraintEnd_toEndOf="@+id/operate_main_layout"
+                app:layout_constraintStart_toStartOf="@+id/operate_main_layout"
+                app:layout_constraintTop_toBottomOf="@+id/mouse_icon" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

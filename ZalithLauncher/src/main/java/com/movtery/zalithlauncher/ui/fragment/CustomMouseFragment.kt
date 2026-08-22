@@ -1,6 +1,8 @@
 package com.movtery.zalithlauncher.ui.fragment
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -17,11 +19,13 @@ import com.movtery.anim.AnimPlayer
 import com.movtery.anim.animations.Animations
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.FragmentCustomMouseBinding
+import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.Task
 import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.dialog.FilesDialog
 import com.movtery.zalithlauncher.ui.dialog.FilesDialog.FilesButton
+import com.movtery.zalithlauncher.ui.dialog.PixelEditorDialog
 import com.movtery.zalithlauncher.ui.subassembly.filelist.FileIcon
 import com.movtery.zalithlauncher.ui.subassembly.filelist.FileItemBean
 import com.movtery.zalithlauncher.ui.subassembly.filelist.FileRecyclerViewCreator
@@ -34,6 +38,11 @@ import com.movtery.zalithlauncher.feature.turtle.cursor.CustomCursorLoader
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
 import net.kdt.pojavlaunch.Tools
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class CustomMouseFragment : FragmentWithAnim(R.layout.fragment_custom_mouse) {
     companion object {
@@ -85,6 +94,8 @@ class CustomMouseFragment : FragmentWithAnim(R.layout.fragment_custom_mouse) {
             refreshButton.setOnClickListener { loadData() }
         }
 
+        binding.drawCursorButton.setOnClickListener { openPixelEditor() }
+
         loadData()
 
         startNewbieGuide()
@@ -127,6 +138,43 @@ class CustomMouseFragment : FragmentWithAnim(R.layout.fragment_custom_mouse) {
         val path = File(PathManager.DIR_CUSTOM_MOUSE)
         if (!path.exists()) mkdirs(path)
         return path
+    }
+
+    /**
+     * TurtleLauncher: opens the same pixel-art editor used for custom control-button icons,
+     * pre-loading the currently active cursor if it happens to be a plain raster (.cur/.ani
+     * frames aren't decodable by BitmapFactory, so those just open the editor blank - same
+     * null-safe pattern EditControlPopup uses for its own "Draw" entry point).
+     */
+    private fun openPixelEditor() {
+        val dialog = PixelEditorDialog(requireContext())
+            .setOnSaveListener { bitmap -> saveCursorBitmap(bitmap) }
+        ZHTools.getCustomMouse()?.let { file ->
+            val existing = runCatching { BitmapFactory.decodeFile(file.absolutePath) }.getOrNull()
+            if (existing != null) dialog.withInitialBitmap(existing)
+        }
+        dialog.show()
+    }
+
+    /** Saves the drawn bitmap as a new virtual mouse file and immediately selects it. */
+    private fun saveCursorBitmap(bitmap: Bitmap?) {
+        if (bitmap == null) return
+        val fileName = "drawn_cursor_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ROOT).format(Date()) + ".png"
+        val dest = File(mousePath(), fileName)
+        try {
+            FileOutputStream(dest).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+        } catch (e: IOException) {
+            Logging.e("CustomMouseFragment", "Failed to save the drawn cursor", e)
+            Tools.showErrorRemote(e)
+            return
+        }
+        AllSettings.customMouse.put(fileName).save()
+        loadData()
+        Toast.makeText(requireActivity(),
+            StringUtils.insertSpace(getString(R.string.custom_mouse_added), fileName),
+            Toast.LENGTH_SHORT).show()
     }
 
     private fun refreshIcon() {

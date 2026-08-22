@@ -535,6 +535,19 @@ public class LauncherActivity extends BaseActivity {
         com.movtery.zalithlauncher.feature.turtle.AssetPrefetcher.prefetch(this);
         com.movtery.zalithlauncher.feature.turtle.LauncherWarmStart.warmStart(this);
         com.movtery.zalithlauncher.feature.maintenance.AutoCleanup.runIfDue();
+
+        //TurtleLauncher: onCreate's check only ever fires once at cold start. This activity
+        //stays alive in the background for the whole length of a Minecraft session (MainActivity
+        //is the one actually running the game), so onResume is what actually fires every time
+        //the user lands back on the home screen not playing - right after this method's own
+        //setGameSessionActive(false)/onGameSessionEnd() calls above mark that a session just
+        //ended, and also on every other return to the home screen. Same quiet, non-forced,
+        //cooldown-gated check as onCreate (checkCooling()'s 5-minute gate still applies), so
+        //this can't spam GitHub's API just from switching apps back and forth.
+        Task.runTask(() -> {
+            UpdateUtils.checkDownloadedPackage(this, false, true);
+            return null;
+        }).execute();
     }
 
     @Override

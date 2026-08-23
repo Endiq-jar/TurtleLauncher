@@ -62,6 +62,40 @@ class LaunchGame {
                 NanoVGNativesFix.ensureInstalled(context, loader, File(version.getGameDir(), "mods"))
             }.onFailure { e -> Logging.e("LaunchGame", "NanoVGNativesFix check failed", e) }
 
+            // TurtleLauncher: renderer/MC-version compatibility warning. RendererCatalog's
+            // minMinecraftVersion/maxMinecraftVersion (see that class) were, until now, only
+            // ever read by RendererManagerFragment to print a caption in the renderer picker -
+            // Renderers.getCompatibleRenderers() doesn't consult them, so nothing actually
+            // stopped a renderer from being selected and launched well outside its documented
+            // range. Real-world hit: a submitted crash log (OPPO CPH2285, PowerVR Rogue,
+            // Holy GL4ES - documented max 1.21.4) launching MC 1.21.11 and dying ~9s into game
+            // startup with "Can't map buffer, opengl error 0" (glMapBufferRange support
+            // Holy GL4ES 1.1.5 doesn't have) - a renderer chosen before the range existed, or
+            // just never revisited after an MC version bump, with zero warning either way.
+            // Not turned into a hard block: EXPERIMENTAL/STABLE badges are hints, not
+            // guarantees, and some device/version combos outside the documented range may
+            // still work - runCatching so a parsing hiccup on some odd version-folder name
+            // (e.g. a modpack named non-numerically) can't break launch entirely; it only
+            // costs the warning.
+            runCatching {
+                val rendererId = version.getRenderer()
+                val catalogEntry = com.movtery.zalithlauncher.renderer.RendererCatalog.get(rendererId)
+                val mcVersion = version.getVersionName()
+                val maxVersion = catalogEntry?.maxMinecraftVersion
+                val minVersion = catalogEntry?.minMinecraftVersion
+                val exceedsMax = maxVersion != null &&
+                        org.jackhuang.hmcl.util.versioning.VersionNumber.compare(mcVersion, maxVersion) > 0
+                val belowMin = !exceedsMax && minVersion != null &&
+                        org.jackhuang.hmcl.util.versioning.VersionNumber.compare(mcVersion, minVersion) < 0
+                if (exceedsMax || belowMin) {
+                    val boundary = if (exceedsMax) maxVersion else minVersion
+                    val warningRes = if (exceedsMax) R.string.renderer_compat_launch_warning_max else R.string.renderer_compat_launch_warning_min
+                    Logging.w("LaunchGame", "Renderer $rendererId is outside its documented RendererCatalog range " +
+                            "(max=$maxVersion, min=$minVersion) for MC $mcVersion - warning shown, launch not blocked")
+                    Toast.makeText(context, context.getString(warningRes, rendererId, boundary, mcVersion), Toast.LENGTH_LONG).show()
+                }
+            }.onFailure { e -> Logging.e("LaunchGame", "Renderer/MC-version compatibility check failed", e) }
+
             val networkAvailable = NetworkUtils.isNetworkAvailable(context)
 
             fun launch(setOfflineAccount: Boolean = false) {

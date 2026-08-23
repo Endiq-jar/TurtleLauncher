@@ -4,9 +4,11 @@ import android.app.Activity
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.utils.LauncherProfiles
 import com.movtery.zalithlauncher.feature.download.item.ModLoaderWrapper
+import com.movtery.zalithlauncher.feature.download.platform.multimc.MultiMCModPackInstallHelper
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.mod.models.CurseForgeManifest
 import com.movtery.zalithlauncher.feature.mod.models.MCBBSPackMeta
+import com.movtery.zalithlauncher.feature.mod.models.MMCPackMeta
 import com.movtery.zalithlauncher.utils.runtime.SelectRuntimeUtils
 import net.kdt.pojavlaunch.JavaGUILauncherActivity
 import net.kdt.pojavlaunch.Tools
@@ -39,6 +41,22 @@ class ModPackUtils {
                                 CurseForgeManifest::class.java
                             )
                             if (verifyCurseForgeManifest(manifest)) return ModPackInfo(manifest.name, ModPackEnum.CURSEFORGE)
+                        }
+
+                        // MultiMC/PrismLauncher "Export Instance" zips wrap everything in a
+                        // top-level folder named after the instance (occasionally at the
+                        // root for a hand-built zip) - unlike mcbbs.packmeta/manifest.json
+                        // above, this can't be a fixed-path getEntry() lookup.
+                        val mmcBasePath = MultiMCModPackInstallHelper.findBasePath(modpackZipFile)
+                        if (mmcBasePath != null) {
+                            val mmcPackMeta = Tools.GLOBAL_GSON.fromJson(
+                                Tools.read(modpackZipFile.getInputStream(modpackZipFile.getEntry("${mmcBasePath}mmc-pack.json"))),
+                                MMCPackMeta::class.java
+                            )
+                            if (verifyMMCPack(mmcPackMeta)) {
+                                val instanceName = MultiMCModPackInstallHelper.readInstanceName(modpackZipFile, mmcBasePath)
+                                return ModPackInfo(instanceName, ModPackEnum.MULTIMC)
+                            }
                         }
 
                         // Doesn't match a known modpack manifest, but it's still a real zip -
@@ -90,6 +108,15 @@ class ModPackUtils {
             return true
         }
 
+        /** Detects a MultiMC/PrismLauncher instance export by its mmc-pack.json (real,
+         *  external, documented format - see MMCPackMeta's doc comment). A "net.minecraft"
+         *  component with a real version is the one thing every such export has, loader
+         *  components are optional (a vanilla instance export has none). */
+        @JvmStatic
+        fun verifyMMCPack(packMeta: MMCPackMeta): Boolean {
+            return MultiMCModPackInstallHelper.verify(packMeta)
+        }
+
         @JvmStatic
         @Throws(Throwable::class)
         fun startModLoaderInstall(modLoader: ModLoaderWrapper, activity: Activity, modInstallFile: File, customName: String) {
@@ -104,6 +131,6 @@ class ModPackUtils {
     }
 
     enum class ModPackEnum {
-        UNKNOWN, MCBBS, MODRINTH, CURSEFORGE, GENERIC_ZIP
+        UNKNOWN, MCBBS, MODRINTH, CURSEFORGE, MULTIMC, GENERIC_ZIP
     }
 }

@@ -5,6 +5,7 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.feature.download.item.ModLoaderWrapper
 import com.movtery.zalithlauncher.feature.download.platform.curseforge.CurseForgeModPackInstallHelper
 import com.movtery.zalithlauncher.feature.download.platform.modrinth.ModrinthModPackInstallHelper
+import com.movtery.zalithlauncher.feature.download.platform.multimc.MultiMCModPackInstallHelper
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.mod.models.MCBBSPackMeta
 import com.movtery.zalithlauncher.feature.mod.modpack.MCBBSModPack
@@ -74,6 +75,17 @@ class InstallLocalModPack {
                             // loader id) while still having installed overrides successfully -
                             // that's still useful, so don't bail out before saving isolation.
                             modLoader = curseForgeModPack(context, zipFile, versionPath)
+                            VersionConfig.createIsolation(versionPath).save()
+
+                            return modLoader
+                        }
+
+                        ModPackEnum.MULTIMC -> {
+                            // Same "null loader is still a useful result" tolerance as
+                            // CurseForge above (a vanilla MultiMC instance, or one on a
+                            // loader this launcher doesn't support, still gets its
+                            // mods/saves/configs extracted).
+                            modLoader = MultiMCModPackInstallHelper.installZip(zipFile, versionPath)
                             VersionConfig.createIsolation(versionPath).save()
 
                             return modLoader

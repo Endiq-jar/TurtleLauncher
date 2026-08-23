@@ -148,6 +148,8 @@
     <string name="renderer_compat_requires_vulkan">Requires Vulkan support</string>
     <string name="renderer_compat_max_version">Recommended for MC %1$s and below</string>
     <string name="renderer_compat_min_version">Recommended for MC %1$s and up</string>
+    <string name="renderer_compat_launch_warning_max">%1$s is only recommended up to MC %2$s - you\'re launching %3$s, which may crash or render incorrectly. Consider switching renderers in Video Settings.</string>
+    <string name="renderer_compat_launch_warning_min">%1$s is only recommended from MC %2$s onward - you\'re launching %3$s, which may crash or render incorrectly. Consider switching renderers in Video Settings.</string>
     <string name="notif_error_occured">An error occurred</string>
     <string name="notif_error_occured_desc">Click to view details</string>
     <string name="input_preview_tip">Input preview box, capturing soft keyboard input, for reference only:</string>
@@ -892,6 +894,7 @@
     <string name="download_classify_resource_pack">Download Resource Pack</string>
     <string name="download_classify_world">Download World</string>
     <string name="download_classify_shader_pack">Download Shader Pack</string>
+    <string name="download_shader_pack_renderer_warning">The current renderer (%1$s) doesn\'t support shader packs. Switch to VirGL, Zink, or MobileGlues in renderer settings for shaders to work.</string>
     <string name="download_ui_install_local">Install from local</string>
     <string name="download_ui_search">Search Name</string>
     <string name="download_ui_mc_version">MC Version</string>
@@ -928,7 +931,7 @@
     <string name="download_install_unpack_world_error">Unable to recognize file structure, automatic unpacking failed, please handle the file manually!</string>
     <!-- ModPack -->
     <string name="select_modpack_local_tip">Please select a modpack file that the launcher supports importing!</string>
-    <string name="select_modpack_local_not_supported">This file doesn\'t look like a modpack the launcher recognizes. Supported formats: Modrinth (.mrpack), CurseForge (manifest.json), MCBBS, and a plain ZIP of mod/config folders.</string>
+    <string name="select_modpack_local_not_supported">This file doesn\'t look like a modpack the launcher recognizes. Supported formats: Modrinth (.mrpack), CurseForge (manifest.json), MCBBS, MultiMC/PrismLauncher instance export, and a plain ZIP of mod/config folders.</string>
     <string name="curseforge_import_partial_title">Modpack imported (mods need a follow-up)</string>
     <string name="curseforge_import_no_api_key">Overrides and the mod loader are installed. %1$d mod(s) from this CurseForge pack weren\'t downloaded, though - that needs a CurseForge API key, which you can add in Settings. Until then, add those mods manually.</string>
     <string name="curseforge_import_mods_failed">Overrides and the mod loader are installed. %1$d mod(s) from this CurseForge pack couldn\'t be resolved (may have been removed from CurseForge, or blocked from third-party downloads by the author) - add those manually if needed.</string>

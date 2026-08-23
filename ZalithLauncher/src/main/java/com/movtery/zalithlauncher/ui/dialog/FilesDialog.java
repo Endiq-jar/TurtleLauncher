@@ -105,27 +105,32 @@ public class FilesDialog extends FullScreenDialog implements DraggableDialog.Dia
             dismiss();
         });
 
+        // A selected "file" can legitimately be null (e.g. CustomMouseFragment's
+        // synthetic default-mouse entry, which has a label/icon but no backing File).
+        // Guard every File method call below instead of assuming a real file.
+        File firstFile = mSelectedFiles.size() == 1 ? mSelectedFiles.get(0) : null;
+
         // Extract — only enabled for single .zip file
-        boolean isZipFile = mSelectedFiles.size() == 1
-                && mSelectedFiles.get(0).isFile()
-                && mSelectedFiles.get(0).getName().toLowerCase().endsWith(".zip");
+        boolean isZipFile = firstFile != null
+                && firstFile.isFile()
+                && firstFile.getName().toLowerCase().endsWith(".zip");
         setButtonClickable(mFilesButton.extract && isZipFile, binding.extractView);
         binding.extractView.setOnClickListener(v -> {
-            if (mExtractClick != null) mExtractClick.onButtonClick(mSelectedFiles.get(0), mRoot);
+            if (mExtractClick != null && firstFile != null) mExtractClick.onButtonClick(firstFile, mRoot);
             dismiss();
         });
 
         // Edit — open in the in-launcher text editor; single non-directory file only
-        boolean isSingleFile = mSelectedFiles.size() == 1 && mSelectedFiles.get(0).isFile();
+        boolean isSingleFile = firstFile != null && firstFile.isFile();
         setButtonClickable(mFilesButton.edit && isSingleFile, binding.editView);
         binding.editView.setOnClickListener(v -> {
-            if (isSingleFile && mEditClick != null) mEditClick.onButtonClick(mSelectedFiles.get(0));
+            if (isSingleFile && mEditClick != null) mEditClick.onButtonClick(firstFile);
             dismiss();
         });
 
         // Share / Rename — single file only
-        if (mSelectedFiles.size() == 1) {
-            File file = mSelectedFiles.get(0);
+        if (firstFile != null) {
+            File file = firstFile;
             binding.shareView.setOnClickListener(v -> {
                 FileTools.shareFile(getContext(), file);
                 dismiss();
@@ -162,7 +167,7 @@ public class FilesDialog extends FullScreenDialog implements DraggableDialog.Dia
         if (mFilesButton.messageText != null)    binding.messageView.setText(mFilesButton.messageText);
         if (mFilesButton.moreButtonText != null) binding.moreTextView.setText(mFilesButton.moreButtonText);
 
-        if (!mSelectedFiles.isEmpty() && mSelectedFiles.get(0).isDirectory()) {
+        if (!mSelectedFiles.isEmpty() && mSelectedFiles.get(0) != null && mSelectedFiles.get(0).isDirectory()) {
             binding.titleView.setText(getContext().getString(R.string.file_folder_tips));
         }
     }

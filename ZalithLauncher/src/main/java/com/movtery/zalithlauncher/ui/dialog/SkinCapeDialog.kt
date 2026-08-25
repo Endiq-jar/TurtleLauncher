@@ -24,6 +24,7 @@ import com.movtery.zalithlauncher.databinding.DialogSkinCapeBinding
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.skin.LabyModGalleryApi
 import com.movtery.zalithlauncher.feature.skin.LabyModSkinApi
+import com.movtery.zalithlauncher.feature.skin.LittleSkinGalleryApi
 import com.movtery.zalithlauncher.feature.skin.SkinCapeHistoryStore
 import com.movtery.zalithlauncher.feature.skin.TurtleSkinServer
 import com.movtery.zalithlauncher.setting.AllSettings
@@ -104,6 +105,7 @@ class SkinCapeDialog(
         setupLanVisibilityControls()
         setupGallerySection()
         setupLabyGallerySection()
+        setupLittleSkinGallerySection()
 
         checkHeight(binding.root, binding.contentView, binding.scrollView)
         DraggableDialog.initDialog(this)
@@ -413,6 +415,75 @@ class SkinCapeDialog(
         }.execute()
     }
 
+    // ── Live littleskin.cn skin/cape library browsing ───────────────────────
+    // See LittleSkinGalleryApi's doc comment for how this works without a documented public
+    // API. Unlike the laby.net section above, this works for BOTH skin and cape mode.
+
+    private fun setupLittleSkinGallerySection() {
+        binding.littleskinGalleryRecycler.layoutManager = GridLayoutManager(context, 4)
+
+        binding.buttonLittleskinGallerySearch.setOnClickListener {
+            val text = binding.littleskinGallerySearchEdit.text.toString().trim()
+            val query = if (text.isEmpty()) LittleSkinGalleryApi.GalleryQuery.Trending
+                        else LittleSkinGalleryApi.GalleryQuery.Search(text)
+            loadLittleSkinGallery(query)
+        }
+
+        loadLittleSkinGallery(LittleSkinGalleryApi.GalleryQuery.Trending)
+    }
+
+    private fun loadLittleSkinGallery(query: LittleSkinGalleryApi.GalleryQuery) {
+        binding.littleskinGalleryProgress.visibility = View.VISIBLE
+        binding.littleskinGalleryEmptyText.visibility = View.GONE
+        Task.runTask {
+            LittleSkinGalleryApi.fetchGallery(mode, query)
+        }.ended(TaskExecutors.getAndroidUI()) { skins ->
+            renderLittleSkinGallery(skins ?: emptyList())
+        }.onThrowable { e ->
+            TaskExecutors.runInUIThread {
+                renderLittleSkinGallery(emptyList())
+                Logging.e("SkinCapeDialog", "Failed to load littleskin.cn gallery", e)
+            }
+        }.execute()
+    }
+
+    private fun renderLittleSkinGallery(skins: List<LittleSkinGalleryApi.GallerySkin>) {
+        binding.littleskinGalleryProgress.visibility = View.GONE
+        val hasAny = skins.isNotEmpty()
+        binding.littleskinGalleryEmptyText.visibility = if (hasAny) View.GONE else View.VISIBLE
+        binding.littleskinGalleryRecycler.visibility = if (hasAny) View.VISIBLE else View.GONE
+        binding.littleskinGalleryRecycler.adapter = LittleSkinGalleryGridAdapter(skins) { position ->
+            applyLittleSkinGallerySkin(skins[position])
+        }
+    }
+
+    private fun applyLittleSkinGallerySkin(skin: LittleSkinGalleryApi.GallerySkin) {
+        if (binding.progressBar.visibility == View.VISIBLE) return // an apply is already in flight
+        val destFile = getDestFile()
+        showProgress(true)
+        Task.runTask {
+            val textureBytes = LittleSkinGalleryApi.resolveApplyTexture(skin.tid)
+                ?: throw RuntimeException("Couldn't resolve a raw texture for this skin")
+            destFile.parentFile?.mkdirs()
+            destFile.writeBytes(textureBytes)
+            SkinCapeHistoryStore.recordApplied(mode, destFile, context.getString(R.string.skin_cape_littleskin_gallery_source, skin.label))
+        }.ended(TaskExecutors.getAndroidUI()) {
+            showProgress(false)
+            notifySuccess()
+            dismiss()
+        }.onThrowable { e ->
+            TaskExecutors.runInUIThread {
+                showProgress(false)
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.skin_cape_littleskin_gallery_apply_failed),
+                    Toast.LENGTH_LONG
+                ).show()
+                Logging.e("SkinCapeDialog", "Failed to apply littleskin.cn gallery skin ${skin.tid}", e)
+            }
+        }.execute()
+    }
+
     private fun getDestFile(): File {
         return if (mode == "cape") {
             File(PathManager.DIR_USER_SKIN, account.uniqueUUID + "_cape.png")
@@ -427,6 +498,7 @@ class SkinCapeDialog(
         binding.buttonGallery.isEnabled = !show
         binding.buttonBrowseSearch.isEnabled = !show
         binding.buttonLabyGallerySearch.isEnabled = !show
+        binding.buttonLittleskinGallerySearch.isEnabled = !show
         // buttonBrowseApply is re-enabled by renderBrowseResult() only when there's something to apply
         if (show) binding.buttonBrowseApply.isEnabled = false
     }

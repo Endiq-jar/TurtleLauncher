@@ -1080,6 +1080,11 @@
     <string name="skin_cape_laby_gallery_empty">Couldn\'t load any skins right now — check your connection and try again.</string>
     <string name="skin_cape_laby_gallery_apply_failed">Couldn\'t fetch that skin from laby.net</string>
     <string name="skin_cape_laby_gallery_source">From laby.net (%1$s)</string>
+    <string name="skin_cape_littleskin_gallery_label">Browse LittleSkin\'s skin/cape library (littleskin.cn):</string>
+    <string name="skin_cape_littleskin_gallery_search_hint">Search skins/capes, or leave blank for Trending</string>
+    <string name="skin_cape_littleskin_gallery_empty">Couldn\'t load anything right now — check your connection and try again.</string>
+    <string name="skin_cape_littleskin_gallery_apply_failed">Couldn\'t fetch that from littleskin.cn</string>
+    <string name="skin_cape_littleskin_gallery_source">From littleskin.cn (%1$s)</string>
     <string name="skin_cape_skin_applied">Skin applied! Restart game to see changes.</string>
     <string name="skin_cape_cape_applied">Cape applied! Restart game to see changes.</string>
     <string name="skin_cape_apply_failed">Failed to apply image</string>

@@ -74,7 +74,10 @@ object CrashAnalyzer {
         /** Self-Healing Launcher: if this version's pinned Java runtime is missing or
          *  broken on disk, removes it and clears the pin so the next launch re-provisions
          *  a working runtime automatically via TurtleJREAutoInstaller. */
-        REPAIR_RUNTIME
+        REPAIR_RUNTIME,
+        /** Flips Settings → Video → Performance → "Native object pooling" off, i.e.
+         *  AllSettings.nativeObjectPooling → LIBGL_RECYCLEFBO=0 on next launch. */
+        DISABLE_FBO_RECYCLING
     }
 
     data class RepairAction(
@@ -596,6 +599,88 @@ object CrashAnalyzer {
                         )
                     )
                 }
+            ),
+            // 21. Holy GL4ES (libgl4es_114.so) SIGSEGV inside glDeleteFramebuffersEXT, seen on
+            // a real device log right at Minecraft startup (RenderTarget's very first
+            // create-then-immediately-resize sequence, which deletes the just-created FBO
+            // before making the real one). Prebuilt binary, no native source in this project
+            // to patch or debug further - but there IS a real, already-wired-up, user-facing
+            // lever worth trying first: Settings → Video → Performance already has a
+            // "native object pooling" switch (AllSettings.nativeObjectPooling) that's the
+            // literal thing controlling LIBGL_RECYCLEFBO (see JREUtils.launchJavaVM) - FBO
+            // *recycling* being on is what makes the just-created FBO's handle eligible for
+            // reuse/deletion in the first place, so it's the most directly implicated existing
+            // setting for a crash inside FBO deletion specifically, even though this hasn't
+            // been confirmed against a real device with it turned off yet.
+            Rule(
+                title = "gl4es_delete_framebuffers_sigsegv",
+                matches = { has(it, "glDeleteFramebuffersEXT") && has(it, "libgl4es", "SIGSEGV") },
+                diagnosis = fixed(
+                    "Holy GL4ES crashed deleting a framebuffer object (glDeleteFramebuffersEXT)",
+                    "A native SIGSEGV inside libgl4es_114.so itself, not a Java exception - happens right at " +
+                        "Minecraft startup, in the framebuffer create-then-resize sequence RenderTarget always " +
+                        "runs once during init. It's a prebuilt upstream binary with no native source in this " +
+                        "project to patch. The most directly implicated lever already in this launcher is FBO " +
+                        "recycling (LIBGL_RECYCLEFBO) - candidate fix below, not yet confirmed against a real " +
+                        "device with it off.",
+                    listOf(
+                        "Try Settings → Video → Performance → turn off \"Native object pooling\" (this is the switch " +
+                            "that sets LIBGL_RECYCLEFBO), then relaunch - it directly controls FBO reuse, the exact " +
+                            "operation that's crashing.",
+                        "If that doesn't help, try a different renderer for this version instead (LTW or MobileGlues).",
+                        "Report back either way - this rule's fix step is a reasoned guess based on what the setting " +
+                            "actually does, not a confirmed fix yet."
+                    ),
+                    repairActions = listOf(RepairAction(RepairActionType.DISABLE_FBO_RECYCLING, "Turn off native object pooling"))
+                )
+            ),
+            // 22. MC 26.3+'s new SDL3-based LWJGL backend (org.lwjgl.sdl.SDLInit.SDL_Init)
+            // SIGSEGV inside libSDL3.so's Android backend init path, confirmed via a real
+            // device hs_err_pid*.log (si_addr=0x0, SEGV_MAPERR - a straightforward null
+            // pointer dereference, not memory corruption) at the exact same offset across
+            // two separate crash logs on two separate launches, so this is consistently
+            // reproducible, not a flaky/rare fault. Call chain confirmed from the log itself:
+            // SDL_Init -> SDL_InitSubSystem -> three internal (unexported, stripped) helper
+            // functions -> crash, landing (per this project's own bundled libSDL3.so symbol
+            // table) in an unexported static function between JNI_OnLoad and
+            // SDL_SendAndroidMessage - i.e. inside SDL's Android JNI backend code. Root cause:
+            // SDL's Android backend expects a real Android JNIEnv/Activity pair (normally
+            // supplied by SDL's own SDLActivity Java glue layer during a real
+            // ANativeActivity-driven app), which never gets set up here since LWJGL calls
+            // SDL_Init as a plain downcall from a guest-JVM thread with no SDLActivity
+            // lifecycle behind it at all - the null pointer this dereferences is presumably
+            // exactly that missing Activity/JNIEnv reference. This is NOT the same bug as the
+            // now-disabled SdlAndroidJniPrep hack (that was a real, different, ALSO confirmed
+            // crash - a Java/native ABI mismatch causing a JNI-checked abort before this code
+            // ever ran); disabling that hack was necessary but not sufficient, since it just
+            // uncovered this pre-existing, deeper issue underneath. No confirmed fix exists
+            // yet - genuinely needs either a real (currently unbuilt) SDLActivity-equivalent
+            // JNI bridge, or an SDL-side Android backend hint/API this project hasn't found,
+            // to skip requiring that Activity. Diagnosis-only rule, not a fix.
+            Rule(
+                title = "sdl3_android_init_sigsegv",
+                matches = { has(it, "libSDL3.so") && has(it, "SDL_InitSubSystem", "SDL_Init") && has(it, "SIGSEGV") },
+                diagnosis = { _ ->
+                    Diagnosis(
+                        title = "MC 26.3+'s SDL3 backend crashes on Android during SDL_Init (libSDL3.so)",
+                        cause = "A null-pointer SIGSEGV inside libSDL3.so's own Android backend init code, triggered " +
+                            "every time by LWJGL's org.lwjgl.sdl.SDLInit.SDL_Init(). SDL's Android backend expects a " +
+                            "real Android JNIEnv/Activity pair (normally supplied by SDL's own Java glue layer during " +
+                            "a real SDLActivity-driven app), which this launcher's guest-JVM SDL_Init call never " +
+                            "provides - there's no SDLActivity lifecycle behind it at all, only a plain native " +
+                            "downcall. Blocked: still needs a real Android JNI/Activity bridge this project doesn't " +
+                            "have built yet, not a quick env-var or setting fix.",
+                        fixSteps = listOf(
+                            "This is a known, currently-unresolved limitation of running MC 26.3+ (SDL3/LWJGL 3.4.2) " +
+                                "on this launcher - there is no working fix yet, built-in or otherwise.",
+                            "Use an MC version at or below 26.2 (pre-SDL3/GLFW-based LWJGL) until this is resolved.",
+                            "If you can attach gdb/lldb to a launch and get a real native backtrace with symbols for " +
+                                "the three unexported frames below SDL_InitSubSystem, that would give far more to go " +
+                                "on than the stripped binary's own symbol table can."
+                        ),
+                        severity = Severity.CRITICAL
+                    )
+                }
             )
         )
     }
@@ -1000,6 +1085,11 @@ object CrashAnalyzer {
                 RepairActionType.DISABLE_FAST_BOOT -> {
                     AllSettings.fastBoot.put(false).save()
                     RepairResult(true, "Fast Boot turned off. Try launching again.")
+                }
+
+                RepairActionType.DISABLE_FBO_RECYCLING -> {
+                    AllSettings.nativeObjectPooling.put(false).save()
+                    RepairResult(true, "Native object pooling (FBO recycling) turned off. Try launching again - this is an unconfirmed candidate fix, so please report back either way.")
                 }
 
                 RepairActionType.DELETE_FILE -> {

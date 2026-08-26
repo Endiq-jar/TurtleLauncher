@@ -54,6 +54,11 @@ class SkinCapeDialog(
     /** The username that resolved [browseResolvedUrl], kept alongside it for history labeling. */
     private var browseResolvedUsername: String? = null
 
+    private var labyGalleryPage = 1
+    private var labyGalleryQuery: LabyModGalleryApi.GalleryQuery = LabyModGalleryApi.GalleryQuery.Trending
+    private var littleskinGalleryPage = 1
+    private var littleskinGalleryQuery: LittleSkinGalleryApi.GalleryQuery = LittleSkinGalleryApi.GalleryQuery.Trending
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -355,19 +360,33 @@ class SkinCapeDialog(
 
         binding.buttonLabyGallerySearch.setOnClickListener {
             val text = binding.labyGallerySearchEdit.text.toString().trim()
-            val query = if (text.isEmpty()) LabyModGalleryApi.GalleryQuery.Trending
+            labyGalleryQuery = if (text.isEmpty()) LabyModGalleryApi.GalleryQuery.Trending
                         else LabyModGalleryApi.GalleryQuery.Search(text)
-            loadLabyGallery(query)
+            labyGalleryPage = 1
+            loadLabyGallery()
         }
 
-        loadLabyGallery(LabyModGalleryApi.GalleryQuery.Trending)
+        binding.buttonLabyGalleryPrev.setOnClickListener {
+            if (labyGalleryPage > 1) {
+                labyGalleryPage--
+                loadLabyGallery()
+            }
+        }
+        binding.buttonLabyGalleryNext.setOnClickListener {
+            labyGalleryPage++
+            loadLabyGallery()
+        }
+
+        loadLabyGallery()
     }
 
-    private fun loadLabyGallery(query: LabyModGalleryApi.GalleryQuery) {
+    private fun loadLabyGallery() {
         binding.labyGalleryProgress.visibility = View.VISIBLE
         binding.labyGalleryEmptyText.visibility = View.GONE
+        val query = labyGalleryQuery
+        val page = labyGalleryPage
         Task.runTask {
-            LabyModGalleryApi.fetchGallery(query)
+            LabyModGalleryApi.fetchGallery(query, page)
         }.ended(TaskExecutors.getAndroidUI()) { skins ->
             renderLabyGallery(skins ?: emptyList())
         }.onThrowable { e ->
@@ -381,11 +400,20 @@ class SkinCapeDialog(
     private fun renderLabyGallery(skins: List<LabyModGalleryApi.GallerySkin>) {
         binding.labyGalleryProgress.visibility = View.GONE
         val hasAny = skins.isNotEmpty()
+        // An empty page here (rather than page 1) most likely means we've paged past the end,
+        // since a genuinely broken/unreachable source fails the same way at page 1 too - either
+        // way there's nothing to show, so step back and let the user retry from there.
+        if (!hasAny && labyGalleryPage > 1) {
+            labyGalleryPage--
+        }
         binding.labyGalleryEmptyText.visibility = if (hasAny) View.GONE else View.VISIBLE
         binding.labyGalleryRecycler.visibility = if (hasAny) View.VISIBLE else View.GONE
         binding.labyGalleryRecycler.adapter = LabyModGalleryGridAdapter(skins) { position ->
             applyLabyGallerySkin(skins[position])
         }
+        binding.labyGalleryPageLabel.text = context.getString(R.string.skin_cape_gallery_page_label, labyGalleryPage)
+        binding.buttonLabyGalleryPrev.isEnabled = labyGalleryPage > 1
+        binding.buttonLabyGalleryNext.isEnabled = hasAny
     }
 
     private fun applyLabyGallerySkin(skin: LabyModGalleryApi.GallerySkin) {
@@ -424,19 +452,33 @@ class SkinCapeDialog(
 
         binding.buttonLittleskinGallerySearch.setOnClickListener {
             val text = binding.littleskinGallerySearchEdit.text.toString().trim()
-            val query = if (text.isEmpty()) LittleSkinGalleryApi.GalleryQuery.Trending
+            littleskinGalleryQuery = if (text.isEmpty()) LittleSkinGalleryApi.GalleryQuery.Trending
                         else LittleSkinGalleryApi.GalleryQuery.Search(text)
-            loadLittleSkinGallery(query)
+            littleskinGalleryPage = 1
+            loadLittleSkinGallery()
         }
 
-        loadLittleSkinGallery(LittleSkinGalleryApi.GalleryQuery.Trending)
+        binding.buttonLittleskinGalleryPrev.setOnClickListener {
+            if (littleskinGalleryPage > 1) {
+                littleskinGalleryPage--
+                loadLittleSkinGallery()
+            }
+        }
+        binding.buttonLittleskinGalleryNext.setOnClickListener {
+            littleskinGalleryPage++
+            loadLittleSkinGallery()
+        }
+
+        loadLittleSkinGallery()
     }
 
-    private fun loadLittleSkinGallery(query: LittleSkinGalleryApi.GalleryQuery) {
+    private fun loadLittleSkinGallery() {
         binding.littleskinGalleryProgress.visibility = View.VISIBLE
         binding.littleskinGalleryEmptyText.visibility = View.GONE
+        val query = littleskinGalleryQuery
+        val page = littleskinGalleryPage
         Task.runTask {
-            LittleSkinGalleryApi.fetchGallery(mode, query)
+            LittleSkinGalleryApi.fetchGallery(mode, query, page)
         }.ended(TaskExecutors.getAndroidUI()) { skins ->
             renderLittleSkinGallery(skins ?: emptyList())
         }.onThrowable { e ->
@@ -450,11 +492,20 @@ class SkinCapeDialog(
     private fun renderLittleSkinGallery(skins: List<LittleSkinGalleryApi.GallerySkin>) {
         binding.littleskinGalleryProgress.visibility = View.GONE
         val hasAny = skins.isNotEmpty()
+        // littleskin.cn's `page` param is a real, confirmed Laravel paginate() page number, so
+        // (unlike laby.net) an empty non-first page unambiguously means "past the last page" -
+        // same step-back behavior as the laby.net section for a consistent feel either way.
+        if (!hasAny && littleskinGalleryPage > 1) {
+            littleskinGalleryPage--
+        }
         binding.littleskinGalleryEmptyText.visibility = if (hasAny) View.GONE else View.VISIBLE
         binding.littleskinGalleryRecycler.visibility = if (hasAny) View.VISIBLE else View.GONE
         binding.littleskinGalleryRecycler.adapter = LittleSkinGalleryGridAdapter(skins) { position ->
             applyLittleSkinGallerySkin(skins[position])
         }
+        binding.littleskinGalleryPageLabel.text = context.getString(R.string.skin_cape_gallery_page_label, littleskinGalleryPage)
+        binding.buttonLittleskinGalleryPrev.isEnabled = littleskinGalleryPage > 1
+        binding.buttonLittleskinGalleryNext.isEnabled = hasAny
     }
 
     private fun applyLittleSkinGallerySkin(skin: LittleSkinGalleryApi.GallerySkin) {
@@ -499,6 +550,10 @@ class SkinCapeDialog(
         binding.buttonBrowseSearch.isEnabled = !show
         binding.buttonLabyGallerySearch.isEnabled = !show
         binding.buttonLittleskinGallerySearch.isEnabled = !show
+        // Prev/Next aren't touched here: this flag guards URL/gallery-tile *apply* actions,
+        // which either dismiss the dialog on success or just toast on failure - the page
+        // buttons' own enabled state (driven by renderLabyGallery/renderLittleSkinGallery) is
+        // unrelated and shouldn't be clobbered by an unrelated apply in flight.
         // buttonBrowseApply is re-enabled by renderBrowseResult() only when there's something to apply
         if (show) binding.buttonBrowseApply.isEnabled = false
     }

@@ -63,11 +63,13 @@ object NativeCrashCapture {
      *  unrelated older crash still sitting on disk. */
     private const val CRASH_REPORT_MATCH_WINDOW_MS = 3 * 60 * 1000L
 
-    /** Real file, not "latestcrash.txt" - that name is already owned by the Java-uncaught-
-     *  exception handler in PojavApplication and has its own (different) format. Keeping
-     *  these separate avoids one silently overwriting the other if both happen to fire across
-     *  two different app runs before the user opens Share Logs. */
-    private const val CRASH_FILE_NAME = "latest_native_crash.txt"
+    /** Same file PojavApplication's Java-uncaught-exception handler uses. They used to be
+     *  kept apart specifically to avoid one overwriting the other - see git history - but
+     *  Endiq asked for every crash type to land under one name. To keep that safe, both
+     *  writers now PREPEND their new report (newest report first, older ones kept below a
+     *  separator) instead of truncating the file, capped at [MAX_CRASH_FILE_CHARS] total. */
+    private const val CRASH_FILE_NAME = "latestcrash.txt"
+    private const val MAX_CRASH_FILE_CHARS = 256 * 1024
 
     @JvmStatic
     fun checkAndReport(context: Context) {
@@ -154,7 +156,10 @@ object NativeCrashCapture {
             val crashFile = File(PathManager.DIR_LAUNCHER_LOG, CRASH_FILE_NAME)
             runCatching {
                 crashFile.parentFile?.takeIf { !it.exists() }?.mkdirs()
-                crashFile.writeText(reportText)
+                val previous = if (crashFile.isFile) runCatching { crashFile.readText() }.getOrNull() else null
+                val combined = if (previous.isNullOrBlank()) reportText
+                    else "$reportText\n\n════════ earlier report(s) below ════════\n\n$previous"
+                crashFile.writeText(combined.take(MAX_CRASH_FILE_CHARS))
             }.onFailure { Logging.e(TAG, "Failed to write native crash report", it) }
 
             prefs.edit().putLong(KEY_LAST_REPORTED_TIMESTAMP, newest.timestamp).apply()

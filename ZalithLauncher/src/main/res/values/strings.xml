@@ -1085,6 +1085,9 @@
     <string name="skin_cape_littleskin_gallery_empty">Couldn\'t load anything right now — check your connection and try again.</string>
     <string name="skin_cape_littleskin_gallery_apply_failed">Couldn\'t fetch that from littleskin.cn</string>
     <string name="skin_cape_littleskin_gallery_source">From littleskin.cn (%1$s)</string>
+    <string name="skin_cape_gallery_page_prev">◀ Prev</string>
+    <string name="skin_cape_gallery_page_next">Next ▶</string>
+    <string name="skin_cape_gallery_page_label">Page %1$d</string>
     <string name="skin_cape_skin_applied">Skin applied! Restart game to see changes.</string>
     <string name="skin_cape_cape_applied">Cape applied! Restart game to see changes.</string>
     <string name="skin_cape_apply_failed">Failed to apply image</string>

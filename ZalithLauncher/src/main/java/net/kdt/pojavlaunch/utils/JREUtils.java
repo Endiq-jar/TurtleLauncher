@@ -414,12 +414,25 @@ public final class JREUtils {
             // depend on) - which lines up with the SIGSEGV happening immediately
             // after SDL's own system/driver-info logging step, i.e. right as it
             // tries to actually open a GL/EGL library that was never routed through
-            // our bridge. This is a real, confirmed-in-code fix, not a guess like
-            // the earlier SdlAndroidJniPrep attempt (kept in place as a harmless
-            // second line of defense - see its own doc comment for why it alone
-            // wasn't enough: it primes the HOST app's JNIEnv, not the separate guest
-            // JVM's, so it can't register anything the guest JVM's own JNI calls
-            // would ever see).
+            // our bridge. This is a real, confirmed-in-code fix.
+            //
+            // UPDATE (Aug 2026): the "second line of defense" that used to run
+            // alongside this - SdlAndroidJniPrep.setup() - is now DISABLED, not just
+            // unhelpful. A real native crash report showed it aborting the whole
+            // process with a JNI-checked SIGABRT ("no static or non-static method
+            // Lorg/libsdl/app/SDLActivity;.nativeSetupJNI()I") before the game even
+            // got as far as the EGL fix above. Root cause confirmed by parsing our
+            // own bundled libs/sdl3-android-classes.jar: its SDLActivity.class
+            // declares nativeSetupJNI as `()V` (void-returning), but our bundled
+            // libSDL3.so's own JNI_OnLoad looks up an `()I` (int-returning) overload
+            // - the two bundled artifacts are from different SDL3 revisions and were
+            // never a matched pair. Because the mismatch is detected inside the
+            // native library's own JNI_OnLoad (a FindClass call made while a
+            // NoSuchMethodError from that failed lookup is still pending, which is
+            // itself a JNI-usage violation), Android's JNI checker hard-aborts the
+            // process - a fatal native abort, which happens before the try/catch
+            // inside SdlAndroidJniPrep.setup() can ever run. See that class's own doc
+            // comment for the full (now superseded) hypothesis it was trying to test.
             String eglLibraryName = envMap.get("POJAVEXEC_EGL");
             if (eglLibraryName != null) {
                 envMap.put("SDL_EGL_LIBRARY", DIR_NATIVE_LIB + "/" + eglLibraryName);
@@ -548,13 +561,17 @@ public final class JREUtils {
         chdir(gameVersion == null ? ProfilePathHome.getGameHome() : gameVersion.getGameDir().getAbsolutePath());
         userArgs.add(0,"java"); //argv[0] is the program name according to C standard.
 
-        // TurtleLauncher CRASH FIX ATTEMPT (MC 26.3+ SDL native crash): see
-        // SdlAndroidJniPrep for the full story. Only for SDL versions - a
-        // no-op call for GLFW versions wouldn't help and isn't worth the risk
-        // of an unnecessary side effect on versions that already work fine.
-        if (gameVersion != null && Tools.resolveLwjglMode(Tools.getVersionInfo(gameVersion)) == Tools.LwjglMode.NEW_SDL) {
-            com.movtery.zalithlauncher.launch.SdlAndroidJniPrep.setup(activity);
-        }
+        // TurtleLauncher CRASH FIX ATTEMPT (MC 26.3+ SDL native crash): DISABLED
+        // Aug 2026 - see the crash-fix comment above (near POJAVEXEC_EGL) and
+        // SdlAndroidJniPrep's own doc comment for the full story. This call is now
+        // confirmed to hard-crash NEW_SDL launches via a real Java/native ABI
+        // mismatch in our own bundled sdl3-android-classes.jar + libSDL3.so pairing,
+        // NOT the SIGSEGV it was meant to guard against - do not re-enable without
+        // first fixing that mismatch (or replacing the bundled jar/so with a matched
+        // pair) and confirming via a real device crash log that it no longer aborts.
+        // if (gameVersion != null && Tools.resolveLwjglMode(Tools.getVersionInfo(gameVersion)) == Tools.LwjglMode.NEW_SDL) {
+        //     com.movtery.zalithlauncher.launch.SdlAndroidJniPrep.setup(activity);
+        // }
 
         final int exitCode = VMLauncher.launchJVM(userArgs.toArray(new String[0]));
         Logger.appendToLog("Java Exit code: " + exitCode);

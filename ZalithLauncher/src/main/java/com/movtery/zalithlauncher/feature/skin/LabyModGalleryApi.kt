@@ -68,20 +68,30 @@ internal object LabyModGalleryApi {
     private val PNG_URL_REGEX = Regex("""https?://[^"'\s\\]+?\.png""")
 
     /**
-     * Fetches a page of gallery tiles for [query]. Best-effort: returns whatever hashes could
-     * be scraped, empty if laby.net is unreachable or its markup changed shape entirely (the
-     * dialog just shows its existing "empty" state in that case, same as any other empty
-     * network result elsewhere in this dialog).
+     * Fetches one [page] (1-indexed) of gallery tiles for [query]. UNLIKE [LittleSkinGalleryApi]'s
+     * `page` param, laby.net's own `page` query param here is NOT confirmed against any known
+     * route/controller name the way the rest of this file's URLs are - it's the standard
+     * Next.js App Router convention (`?page=N` alongside existing query params) and nothing
+     * more. If laby.net doesn't actually honor it, the practical failure mode is just "every
+     * page after 1 repeats page 1's tiles" (same hashes re-scraped), not a crash or an empty
+     * result - low risk to ship, but Endiq should know this one wasn't verified like the rest.
+     * Best-effort otherwise: returns whatever hashes could be scraped, empty if laby.net is
+     * unreachable or its markup changed shape entirely (the dialog just shows its existing
+     * "empty" state in that case, same as any other empty network result elsewhere in this
+     * dialog). No text field exists in this payload to run [ContentFilter] against (see
+     * [GallerySkin]'s doc comment - laby.net's gallery has no per-tile name, only a hash), so
+     * unlike the littleskin.cn gallery, nothing here can filter tiles by content - only a real
+     * image classifier could, and this file doesn't have one.
      */
-    fun fetchGallery(query: GalleryQuery): List<GallerySkin> = runCatching {
+    fun fetchGallery(query: GalleryQuery, page: Int = 1): List<GallerySkin> = runCatching {
         val url = when (query) {
-            is GalleryQuery.Trending -> "$BASE/skins/tag/Trending"
-            is GalleryQuery.Tag -> "$BASE/skins/tag/${encode(query.tag)}"
-            is GalleryQuery.Search -> "$BASE/skins?input=${encode(query.text)}"
+            is GalleryQuery.Trending -> "$BASE/skins/tag/Trending?page=$page"
+            is GalleryQuery.Tag -> "$BASE/skins/tag/${encode(query.tag)}?page=$page"
+            is GalleryQuery.Search -> "$BASE/skins?input=${encode(query.text)}&page=$page"
         }
         val html = fetchBody(url) ?: return@runCatching emptyList()
         scrapeSkinHashes(html).map { GallerySkin(it) }
-    }.onFailure { e -> Logging.e("LabyModGalleryApi", "Gallery fetch failed for $query", e) }.getOrDefault(emptyList())
+    }.onFailure { e -> Logging.e("LabyModGalleryApi", "Gallery fetch failed for $query page $page", e) }.getOrDefault(emptyList())
 
     /** Confirmed render endpoint - safe to use directly, no guessing involved. */
     fun thumbnailUrl(hash: String, sizePx: Int = 160): String =

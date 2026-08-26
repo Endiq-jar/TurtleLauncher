@@ -245,6 +245,39 @@
                 tools:listitem="@layout/item_skin_cape_gallery"
                 tools:spanCount="4"/>
 
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/laby_gallery_page_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginHorizontal="@dimen/_4sdp"
+                android:layout_marginBottom="@dimen/_4sdp">
+
+                <com.movtery.zalithlauncher.ui.view.AnimButton
+                    android:id="@+id/button_laby_gallery_prev"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_32sdp"
+                    android:text="@string/skin_cape_gallery_page_prev"/>
+
+                <TextView
+                    android:id="@+id/laby_gallery_page_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textColor="@color/turtle_text_secondary"
+                    android:textSize="@dimen/_10ssp"
+                    tools:text="1"/>
+
+                <com.movtery.zalithlauncher.ui.view.AnimButton
+                    android:id="@+id/button_laby_gallery_next"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_32sdp"
+                    android:text="@string/skin_cape_gallery_page_next"/>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
             <TextView
                 android:id="@+id/laby_gallery_empty_text"
                 android:layout_width="match_parent"
@@ -323,6 +356,39 @@
                 android:layout_marginBottom="@dimen/_4sdp"
                 tools:listitem="@layout/item_skin_cape_gallery"
                 tools:spanCount="4"/>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/littleskin_gallery_page_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginHorizontal="@dimen/_4sdp"
+                android:layout_marginBottom="@dimen/_4sdp">
+
+                <com.movtery.zalithlauncher.ui.view.AnimButton
+                    android:id="@+id/button_littleskin_gallery_prev"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_32sdp"
+                    android:text="@string/skin_cape_gallery_page_prev"/>
+
+                <TextView
+                    android:id="@+id/littleskin_gallery_page_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textColor="@color/turtle_text_secondary"
+                    android:textSize="@dimen/_10ssp"
+                    tools:text="1"/>
+
+                <com.movtery.zalithlauncher.ui.view.AnimButton
+                    android:id="@+id/button_littleskin_gallery_next"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_32sdp"
+                    android:text="@string/skin_cape_gallery_page_next"/>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
             <TextView
                 android:id="@+id/littleskin_gallery_empty_text"

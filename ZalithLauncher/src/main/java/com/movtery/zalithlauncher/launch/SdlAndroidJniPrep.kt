@@ -4,6 +4,33 @@ import android.app.Activity
 import org.libsdl.app.SDL
 
 /**
+ * DISABLED - Aug 2026, see JREUtils.launchJavaVM's call site (now commented out) and
+ * git history. This was a speculative crash-fix attempt; it is now CONFIRMED HARMFUL,
+ * not just unconfirmed:
+ *
+ * A real device native-crash report (`latestcrash.txt` via NativeCrashCapture) showed
+ * `System.loadLibrary("SDL3")` on line 44 below aborting the whole process with a
+ * JNI-checked SIGABRT: "no static or non-static method
+ * Lorg/libsdl/app/SDLActivity;.nativeSetupJNI()I". Root-caused by parsing the actual
+ * bundled `libs/sdl3-android-classes.jar`: its `SDLActivity.class` declares
+ * `nativeSetupJNI` as `()V` (void-returning, confirmed via the classfile's own
+ * method_info table - native, static, access flags 0x0109), but the bundled
+ * `libSDL3.so` (all ABIs) expects an `()I` (int-returning) overload when it resolves
+ * that method during its own JNI_OnLoad. The jar and the .so are not a matched pair.
+ * Because the failed lookup's resulting NoSuchMethodError is left pending when the
+ * native code goes on to make another JNI call anyway, Android's JNI checker treats
+ * that as a JNI-usage violation and hard-aborts the process - before the try/catch in
+ * [setup] below ever gets a chance to run. A native abort at that level can't be
+ * caught from managed code, so the "best-effort, swallow any failure" design this
+ * class describes never had a chance to work for this particular failure mode.
+ *
+ * Do not re-enable this without either (a) replacing libs/sdl3-android-classes.jar
+ * with one whose SDLActivity.nativeSetupJNI() signature actually matches the bundled
+ * libSDL3.so's JNI_OnLoad expectations, or (b) confirming via a real device crash log
+ * that the mismatch is gone. The original hypothesis text below is kept for context
+ * but is now superseded by the finding above.
+ *
+ * ── Original doc comment (Aug 2026, pre-disable) ──
  * TurtleLauncher CRASH FIX ATTEMPT (MC 26.3+ SDL native crash):
  *
  * Minecraft 26.3+'s SDL_Init() eventually SIGSEGVs inside libSDL3.so itself

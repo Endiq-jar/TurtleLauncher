@@ -42,16 +42,34 @@ public class PojavApplication extends Application {
 			boolean storagePermAllowed = (Build.VERSION.SDK_INT >= 29 || ActivityCompat.checkSelfPermission(PojavApplication.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) && Tools.checkStorageRoot();
 			File crashFile = new File(storagePermAllowed ? PathManager.DIR_LAUNCHER_LOG : PathManager.DIR_DATA, "latestcrash.txt");
 			try {
-				// Write to file, since some devices may not able to show error
+				// Same file NativeCrashCapture writes native/ANR deaths to - they used to have
+				// separate filenames specifically to avoid overwriting each other; now that
+				// they share one name, PREPEND (newest report first) and cap total size instead
+				// of truncating on write, so this crash doesn't erase a different-typed one.
 				FileUtils.ensureParentDirectory(crashFile);
+				StringBuilder report = new StringBuilder();
+				report.append(InfoDistributor.APP_NAME).append(" crash report\n");
+				report.append(" - Time: ").append(DateFormat.getDateTimeInstance().format(new Date())).append("\n");
+				report.append(" - Device: ").append(Build.PRODUCT).append(" ").append(Build.MODEL).append("\n");
+				report.append(" - Android version: ").append(Build.VERSION.RELEASE).append("\n");
+				report.append(" - Launcher version: ").append(getVersionName()).append(" (").append(String.valueOf(getVersionCode())).append(")").append("\n");
+				report.append(" - Crash stack trace:\n");
+				report.append(Log.getStackTraceString(th));
+
+				String previous = null;
+				if (crashFile.isFile()) {
+					try {
+						previous = new String(java.nio.file.Files.readAllBytes(crashFile.toPath()));
+					} catch (Throwable ignored) { /* fall through with previous == null */ }
+				}
+				String combined = (previous == null || previous.trim().isEmpty())
+					? report.toString()
+					: report + "\n\n════════ earlier report(s) below ════════\n\n" + previous;
+				final int maxChars = 256 * 1024;
+				if (combined.length() > maxChars) combined = combined.substring(0, maxChars);
+
 				PrintStream crashStream = new PrintStream(crashFile);
-				crashStream.append(InfoDistributor.APP_NAME + " crash report\n");
-				crashStream.append(" - Time: ").append(DateFormat.getDateTimeInstance().format(new Date())).append("\n");
-				crashStream.append(" - Device: ").append(Build.PRODUCT).append(" ").append(Build.MODEL).append("\n");
-				crashStream.append(" - Android version: ").append(Build.VERSION.RELEASE).append("\n");
-				crashStream.append(" - Launcher version: ").append(getVersionName()).append(" (").append(String.valueOf(getVersionCode())).append(")").append("\n");
-				crashStream.append(" - Crash stack trace:\n");
-				crashStream.append(Log.getStackTraceString(th));
+				crashStream.print(combined);
 				crashStream.close();
 			} catch (Throwable throwable) {
 				Logging.e(CRASH_REPORT_TAG, " - Exception attempt saving crash stack trace:", throwable);

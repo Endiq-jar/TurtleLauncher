@@ -68,19 +68,23 @@ internal object LittleSkinGalleryApi {
     }
 
     /**
-     * Fetches a page of gallery tiles for [query]. [mode] is "skin" or "cape" (same string
-     * [SkinCapeDialog] already uses elsewhere) and maps directly onto the `filter` param.
+     * Fetches one [page] (1-indexed, matching the real `page` param in Blessing Skin's
+     * `SkinlibController::library()`) of gallery tiles for [query]. [mode] is "skin" or "cape"
+     * (same string [SkinCapeDialog] already uses elsewhere) and maps directly onto the `filter`
+     * param. Names that trip [ContentFilter.isBlockedName] are dropped while parsing - see
+     * that object's doc comment for what it does and doesn't catch - and surviving names are
+     * normalized via [ContentFilter.toDisplayLabel].
      * Best-effort: returns whatever could be parsed, empty if littleskin.cn is unreachable or
      * its response shape changed - the dialog just shows its existing "empty" state.
      */
-    fun fetchGallery(mode: String, query: GalleryQuery): List<GallerySkin> = runCatching {
+    fun fetchGallery(mode: String, query: GalleryQuery, page: Int = 1): List<GallerySkin> = runCatching {
         val filter = if (mode == "cape") "cape" else "skin"
         val sort = if (query is GalleryQuery.Search) "time" else "likes"
         val keyword = (query as? GalleryQuery.Search)?.text.orEmpty()
-        val url = "$BASE/skinlib/list?filter=$filter&sort=$sort&keyword=${encode(keyword)}&page=1"
+        val url = "$BASE/skinlib/list?filter=$filter&sort=$sort&keyword=${encode(keyword)}&page=$page"
         val body = fetchBody(url) ?: return@runCatching emptyList()
         parseListResponse(body)
-    }.onFailure { e -> Logging.e("LittleSkinGalleryApi", "Gallery fetch failed for $query", e) }.getOrDefault(emptyList())
+    }.onFailure { e -> Logging.e("LittleSkinGalleryApi", "Gallery fetch failed for $query page $page", e) }.getOrDefault(emptyList())
 
     /** Confirmed render endpoint - safe to use directly, no guessing involved. */
     fun thumbnailUrl(tid: Long, heightPx: Int = 160): String = "$BASE/preview/$tid?height=$heightPx"
@@ -104,8 +108,9 @@ internal object LittleSkinGalleryApi {
         (0 until data.length()).mapNotNull { i ->
             val item = data.optJSONObject(i) ?: return@mapNotNull null
             val tid = item.optLong("tid", -1L).takeIf { it >= 0 } ?: return@mapNotNull null
-            val name = item.optString("name").takeIf { it.isNotBlank() } ?: "#$tid"
-            GallerySkin(tid, name)
+            val rawName = item.optString("name").takeIf { it.isNotBlank() } ?: "#$tid"
+            if (ContentFilter.isBlockedName(rawName)) return@mapNotNull null
+            GallerySkin(tid, ContentFilter.toDisplayLabel(rawName, tid.toString()))
         }
     }.onFailure { e -> Logging.e("LittleSkinGalleryApi", "Failed to parse skinlib/list response", e) }
         .getOrDefault(emptyList())

@@ -1156,6 +1156,8 @@
     <string name="setting_crash_rule_editor_desc">Add custom pattern → tip mappings to the crash analyzer without rebuilding the app.</string>
     <string name="setting_ai_crash_help_title">AI Crash Help (experimental)</string>
     <string name="setting_ai_crash_help_desc">Only used when no known crash pattern matches. Sends the crash log tail to OpenAI using the API key below. Off by default.</string>
+    <string name="setting_ai_skin_filter_title">AI Skin/Cape Filter (experimental)</string>
+    <string name="setting_ai_skin_filter_desc">Sends each gallery thumbnail to OpenAI (using the API key above) to screen out inappropriate skins/capes before they\'re shown. Uses your own API key/quota - one request per image. Off by default.</string>
     <string name="setting_ai_crash_help_key_title">OpenAI API Key</string>
     <string name="setting_ai_crash_help_key_desc">Tap to set the API key used for AI crash help and AI Chat. Stored only on this device, never sent anywhere except directly to OpenAI. Get one at platform.openai.com.</string>
     <string name="setting_config_editor_title">File Editor</string>

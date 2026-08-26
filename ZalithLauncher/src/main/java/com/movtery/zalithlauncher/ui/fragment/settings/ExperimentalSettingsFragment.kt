@@ -212,6 +212,13 @@ class ExperimentalSettingsFragment :
             promptSetAiCrashHelpApiKey(context)
         }
 
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.aiSkinFilterEnabled,
+            binding.aiSkinFilterLayout,
+            binding.aiSkinFilter
+        )
+
         BaseSettingsWrapper(context, binding.dependencyGraphLayout) {
             val version = com.movtery.zalithlauncher.feature.version.VersionsManager.getCurrentVersion()
             if (version == null) {

@@ -80,8 +80,9 @@ internal object LabyModGalleryApi {
      * "empty" state in that case, same as any other empty network result elsewhere in this
      * dialog). No text field exists in this payload to run [ContentFilter] against (see
      * [GallerySkin]'s doc comment - laby.net's gallery has no per-tile name, only a hash), so
-     * unlike the littleskin.cn gallery, nothing here can filter tiles by content - only a real
-     * image classifier could, and this file doesn't have one.
+     * unlike the littleskin.cn gallery, the keyword pass can't help here at all - but
+     * [AiContentModerator] (opt-in, see its own doc comment) CAN still look at the actual
+     * texture pixels regardless of there being no name, and is applied below when enabled.
      */
     fun fetchGallery(query: GalleryQuery, page: Int = 1): List<GallerySkin> = runCatching {
         val url = when (query) {
@@ -90,7 +91,9 @@ internal object LabyModGalleryApi {
             is GalleryQuery.Search -> "$BASE/skins?input=${encode(query.text)}&page=$page"
         }
         val html = fetchBody(url) ?: return@runCatching emptyList()
-        scrapeSkinHashes(html).map { GallerySkin(it) }
+        scrapeSkinHashes(html).map { GallerySkin(it) }.filter { skin ->
+            AiContentModerator.fetchAndCheck("laby:${skin.hash}", thumbnailUrl(skin.hash)) != false
+        }
     }.onFailure { e -> Logging.e("LabyModGalleryApi", "Gallery fetch failed for $query page $page", e) }.getOrDefault(emptyList())
 
     /** Confirmed render endpoint - safe to use directly, no guessing involved. */

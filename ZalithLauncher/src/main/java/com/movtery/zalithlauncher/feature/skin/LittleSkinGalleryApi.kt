@@ -73,7 +73,11 @@ internal object LittleSkinGalleryApi {
      * (same string [SkinCapeDialog] already uses elsewhere) and maps directly onto the `filter`
      * param. Names that trip [ContentFilter.isBlockedName] are dropped while parsing - see
      * that object's doc comment for what it does and doesn't catch - and surviving names are
-     * normalized via [ContentFilter.toDisplayLabel].
+     * normalized via [ContentFilter.toDisplayLabel]. If [AiContentModerator] is enabled
+     * (opt-in, see its own doc comment), each surviving tile's actual texture is also run
+     * through it and dropped on a confirmed "inappropriate" verdict - a real pixel-level
+     * check the keyword pass above can't do, at the cost of one extra request+API call per
+     * tile, only when the user has turned that on.
      * Best-effort: returns whatever could be parsed, empty if littleskin.cn is unreachable or
      * its response shape changed - the dialog just shows its existing "empty" state.
      */
@@ -83,7 +87,9 @@ internal object LittleSkinGalleryApi {
         val keyword = (query as? GalleryQuery.Search)?.text.orEmpty()
         val url = "$BASE/skinlib/list?filter=$filter&sort=$sort&keyword=${encode(keyword)}&page=$page"
         val body = fetchBody(url) ?: return@runCatching emptyList()
-        parseListResponse(body)
+        parseListResponse(body).filter { skin ->
+            AiContentModerator.fetchAndCheck("littleskin:${skin.tid}", thumbnailUrl(skin.tid)) != false
+        }
     }.onFailure { e -> Logging.e("LittleSkinGalleryApi", "Gallery fetch failed for $query page $page", e) }.getOrDefault(emptyList())
 
     /** Confirmed render endpoint - safe to use directly, no guessing involved. */

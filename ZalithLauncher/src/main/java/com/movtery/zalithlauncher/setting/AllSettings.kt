@@ -401,6 +401,13 @@ class AllSettings {
         // rather than a hardcoded constant, same as before.
         @JvmStatic val aiApiKey                 = StringSettingUnit("aiApiKey", "")
         @JvmStatic val aiModel                  = StringSettingUnit("aiModel", "gpt-4o-mini")
+        // TurtleLauncher: separate opt-in from aiCrashHelpEnabled above, deliberately - this one
+        // sends actual skin/cape texture images (not just a text crash log) to whatever
+        // third-party endpoint aiApiKey/aiModel point at, and each classification is a real
+        // per-image API call/cost, so it shouldn't piggyback on the crash-help toggle's consent.
+        // Reuses the same aiApiKey/aiModel as crash help, since both assume an OpenAI-compatible
+        // Chat Completions endpoint. See AiContentModerator for what "appropriate" means here.
+        @JvmStatic val aiSkinFilterEnabled       = BooleanSettingUnit("aiSkinFilterEnabled", false)
 
         // Custom DNS resolver for the launcher's own network requests (downloads/API
         // calls), independent of the download-source (BMCLAPI) mirror above.

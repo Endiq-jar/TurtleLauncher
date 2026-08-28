@@ -377,6 +377,23 @@ class AllSettings {
         @JvmStatic val customBackgroundIsVideo  = BooleanSettingUnit("customBackgroundIsVideo", false)
         @JvmStatic val iconPackPath             = StringSettingUnit("iconPackPath", "")
 
+        // TurtleLauncher: Display tab in the in-game menu, added to match a reference screenshot
+        // of another app's settings UI. These persist like every other setting here, but only
+        // guiScale has a real consumer right now (MCOptions.getGuiScale() reads the vanilla
+        // options.txt key directly, not this value) - the rest (opacity/blur/window
+        // mode/framerate-limit-when-inactive) are stored but not yet wired to any actual
+        // rendering behavior. See DisplaySettingsInitListener in MainActivity.
+        @JvmStatic val guiScalePercent          = IntSettingUnit("guiScalePercent", 250)
+        @JvmStatic val menuBackgroundOpacity    = IntSettingUnit("menuBackgroundOpacity", 0)
+        @JvmStatic val menuBackgroundFadeMs     = IntSettingUnit("menuBackgroundFadeMs", 200)
+        @JvmStatic val menuBlurEffect           = BooleanSettingUnit("menuBlurEffect", true)
+        @JvmStatic val menuAdditionalBlurEffect = BooleanSettingUnit("menuAdditionalBlurEffect", false)
+        @JvmStatic val menuOverrideVanillaBlur  = BooleanSettingUnit("menuOverrideVanillaBlur", true)
+        @JvmStatic val menuBlurRadius           = IntSettingUnit("menuBlurRadius", 7)
+        @JvmStatic val windowMode               = StringSettingUnit("windowMode", "Normal")
+        @JvmStatic val framerateLimitInactive   = IntSettingUnit("framerateLimitInactive", 30)
+        @JvmStatic val framerateLimitMinimized  = IntSettingUnit("framerateLimitMinimized", 0) // 0 = unlimited
+
         // Diagnostics
         @JvmStatic val offlineModeFallback      = BooleanSettingUnit("offlineModeFallback", true)
         @JvmStatic val crashHistoryList         = StringSettingUnit("crashHistoryList", "[]")

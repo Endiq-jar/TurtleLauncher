@@ -373,6 +373,11 @@ class AllSettings {
         @JvmStatic val recordingResolutionScale = IntSettingUnit("recordingResolutionScale", 100)
         @JvmStatic val recordingMaxDurationMin  = IntSettingUnit("recordingMaxDurationMin", 0) // 0 = unlimited
         @JvmStatic val recordingShowTimer       = BooleanSettingUnit("recordingShowTimer", true)
+        // TurtleLauncher: capture in-game audio alongside video (see ScreenRecorder's class doc
+        // for how - AudioPlaybackCaptureConfiguration via a MediaProjection consent prompt, not
+        // the microphone). Default on; turning this off skips the consent prompt entirely and
+        // records video-only, same as before this existed.
+        @JvmStatic val recordingCaptureAudio    = BooleanSettingUnit("recordingCaptureAudio", true)
         @JvmStatic val customBackgroundPath     = StringSettingUnit("customBackgroundPath", "")
         @JvmStatic val customBackgroundIsVideo  = BooleanSettingUnit("customBackgroundIsVideo", false)
         @JvmStatic val iconPackPath             = StringSettingUnit("iconPackPath", "")

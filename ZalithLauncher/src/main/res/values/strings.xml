@@ -642,6 +642,8 @@
     <string name="setting_recording_max_duration_desc">Auto-stops after this long. 0 = unlimited</string>
     <string name="setting_recording_show_timer_title">Show Timer While Recording</string>
     <string name="setting_recording_show_timer_desc">Displays elapsed recording time next to the record button</string>
+    <string name="setting_recording_capture_audio_title">Capture Audio</string>
+    <string name="setting_recording_capture_audio_desc">Records in-game sound. Shows a one-time system prompt each recording to allow it - your microphone is never used</string>
 
     <!-- Phone Settings: CPU -->
     <string name="setting_category_phone_cpu">CPU</string>

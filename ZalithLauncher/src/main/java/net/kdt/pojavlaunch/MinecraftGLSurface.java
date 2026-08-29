@@ -129,7 +129,7 @@ public class MinecraftGLSurface extends View implements GrabListener {
      * never runs for anything except the SDL launch path it exists for.
      */
     private void publishSurfaceToSdl(Surface surface) {
-        if (!SdlAndroidJniPrep.isActive) return;
+        if (!SdlAndroidJniPrep.isActive()) return;
         try {
             SDLActivity.setDroidBridgeNativeSurface(surface);
         } catch (Throwable t) {

@@ -293,6 +293,8 @@ class SDLJoystickHandler {
 /* Actual joystick functionality available for API >= 12 devices */
 class SDLJoystickHandler_API16 extends SDLJoystickHandler {
 
+    private static final String TAG = "SDLControllerManager";
+
     static class SDLJoystick {
         public int device_id;
         public String name;

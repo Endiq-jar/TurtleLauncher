@@ -18,6 +18,10 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <!-- Required since targetSdk 34/Android 14 to run a foregroundServiceType="mediaProjection"
+         service - see ScreenRecorderAudioService's class doc for why ScreenRecorder's in-game
+         audio capture needs one even though it never mirrors the display. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE"/>
 
@@ -148,6 +152,13 @@
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="This application is intended to run a 3rd-party piece of software which cannot be managed using the activity's saved instance state. This service is used for background persistence of this piece of software."/>
         </service>
+        <!-- TurtleLauncher: see ScreenRecorderAudioService's class doc - required so
+             ScreenRecorder's in-game audio capture (MediaProjection-authorized, audio only,
+             no display mirroring) is allowed to use the MediaProjection it obtains. -->
+        <service
+            android:name="net.kdt.pojavlaunch.services.ScreenRecorderAudioService"
+            android:foregroundServiceType="mediaProjection"
+            android:exported="false"/>
 
         <!-- Terracotta P2P connection for the Friends/LAN feature. permission+intent-filter
              here are mandatory Android requirements for every VpnService subclass, not

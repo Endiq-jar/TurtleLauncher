@@ -544,6 +544,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             } catch (IOException e) {
                 Logging.e("LoadLayout", Tools.printToString(e));
             }
+        } else if (requestCode == com.movtery.zalithlauncher.feature.turtle.ScreenRecorder.REQUEST_CODE_AUDIO_CAPTURE) {
+            com.movtery.zalithlauncher.feature.turtle.ScreenRecorder.INSTANCE.onActivityResult(this, requestCode, resultCode, data);
         }
     }
 

@@ -99,6 +99,42 @@
                         android:layout_centerVertical="true" />
                 </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
 
+                <!-- Capture audio -->
+                <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/recordingCaptureAudio_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/recordingCaptureAudio_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/recordingCaptureAudio"
+                        android:text="@string/setting_recording_capture_audio_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/recordingCaptureAudio_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/recordingCaptureAudio_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/recordingCaptureAudio"
+                        android:text="@string/setting_recording_capture_audio_desc" />
+
+                    <Switch
+                        android:id="@+id/recordingCaptureAudio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true" />
+                </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
                 <!-- Show timer while recording -->
                 <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
                     android:id="@+id/recordingShowTimer_layout"

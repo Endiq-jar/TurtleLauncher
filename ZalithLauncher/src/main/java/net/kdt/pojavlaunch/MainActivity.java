@@ -744,16 +744,6 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             MenuUtils.initSeekBarValue(this.binding.hotbarHeight, AllSettings.getHotbarHeight().getValue().getValue(), this.binding.hotbarHeightValue, "px");
             MenuUtils.initSeekBarValue(this.binding.hotbarWidth, AllSettings.getHotbarWidth().getValue().getValue(), this.binding.hotbarWidthValue, "px");
 
-            //TurtleLauncher: Display tab seekbars (see AllSettings.kt for what's actually wired
-            //to real behavior right now - only guiScale has any real-world effect via MCOptions;
-            //the rest just persist).
-            MenuUtils.initSeekBarValue(this.binding.guiScale, AllSettings.getGuiScalePercent().getValue(), this.binding.guiScaleValue, "%");
-            MenuUtils.initSeekBarValue(this.binding.menuBackgroundOpacity, AllSettings.getMenuBackgroundOpacity().getValue(), this.binding.menuBackgroundOpacityValue, "%");
-            MenuUtils.initSeekBarValue(this.binding.menuBackgroundFade, AllSettings.getMenuBackgroundFadeMs().getValue(), this.binding.menuBackgroundFadeValue, "ms");
-            MenuUtils.initSeekBarValue(this.binding.menuBlurRadius, AllSettings.getMenuBlurRadius().getValue(), this.binding.menuBlurRadiusValue, "");
-            MenuUtils.initSeekBarValue(this.binding.framerateLimitInactive, AllSettings.getFramerateLimitInactive().getValue(), this.binding.framerateLimitInactiveValue, "fps");
-            MenuUtils.initSeekBarValue(this.binding.framerateLimitMinimized, AllSettings.getFramerateLimitMinimized().getValue(), this.binding.framerateLimitMinimizedValue, "fps");
-
             //初始化Switch的状态
             this.binding.openMemoryInfo.setChecked(AllSettings.getGameMenuShowMemory().getValue());
             this.binding.openFpsInfo.setChecked(AllSettings.getGameMenuShowFPS().getValue());
@@ -772,39 +762,18 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             this.binding.enableGyro.setChecked(AllSettings.getEnableGyro().getValue());
             this.binding.gyroInvertX.setChecked(AllSettings.getGyroInvertX().getValue());
             this.binding.gyroInvertY.setChecked(AllSettings.getGyroInvertY().getValue());
-            this.binding.menuBlurEffect.setChecked(AllSettings.getMenuBlurEffect().getValue());
-            this.binding.menuAdditionalBlurEffect.setChecked(AllSettings.getMenuAdditionalBlurEffect().getValue());
-            this.binding.menuOverrideVanillaBlur.setChecked(AllSettings.getMenuOverrideVanillaBlur().getValue());
 
             refreshLayoutVisible(this.binding.timeLongPressTriggerLayout, !AllSettings.getDisableGestures().getValue());
             refreshLayoutVisible(this.binding.gyroLayout, AllSettings.getEnableGyro().getValue());
 
             //TurtleLauncher: tab bar - each button shows its own tab_page_* group and hides the
-            //other four. tab_page_debug starts visible (matches the XML default), so select
+            //other three. tab_page_debug starts visible (matches the XML default), so select
             //that tab's button to match on open.
             this.binding.tabBtnDebug.setOnClickListener(v -> selectTab(this.binding.tabBtnDebug));
             this.binding.tabBtnRecording.setOnClickListener(v -> selectTab(this.binding.tabBtnRecording));
             this.binding.tabBtnControl.setOnClickListener(v -> selectTab(this.binding.tabBtnControl));
             this.binding.tabBtnHotbar.setOnClickListener(v -> selectTab(this.binding.tabBtnHotbar));
-            this.binding.tabBtnDisplay.setOnClickListener(v -> selectTab(this.binding.tabBtnDisplay));
             selectTab(this.binding.tabBtnDebug);
-
-            //TurtleLauncher: Window Mode dropdown. Uses its own inline listener rather than
-            //implementing OnSpinnerItemSelectedListener<String> on this class, since it already
-            //implements OnSpinnerItemSelectedListener<HotbarType> for hotbarType below and Java
-            //doesn't allow implementing the same generic interface twice with different type args.
-            java.util.List<String> windowModeOptions = java.util.Arrays.asList("Normal", "Fullscreen", "Borderless");
-            ObjectSpinnerAdapter<String> windowModeAdapter = new ObjectSpinnerAdapter<>(this.binding.windowMode, mode -> mode);
-            windowModeAdapter.setItems(windowModeOptions);
-            this.binding.windowMode.setSpinnerAdapter(windowModeAdapter);
-            this.binding.windowMode.setIsFocusable(true);
-            this.binding.windowMode.setOnSpinnerItemSelectedListener(new OnSpinnerItemSelectedListener<String>() {
-                @Override public void onItemSelected(int oldIndex, @Nullable String oldItem, int newIndex, String newItem) {
-                    AllSettings.getWindowMode().put(newItem).save();
-                }
-            });
-            int savedWindowModeIndex = windowModeOptions.indexOf(AllSettings.getWindowMode().getValue());
-            this.binding.windowMode.selectItemByIndex(savedWindowModeIndex < 0 ? 0 : savedWindowModeIndex);
 
             //初始化点击事件
             this.binding.forceClose.setOnClickListener(this);
@@ -891,38 +860,6 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             this.binding.hotbarWidth.setOnSeekBarChangeListener(this);
             this.binding.hotbarWidthRemove.setOnClickListener(this);
             this.binding.hotbarWidthAdd.setOnClickListener(this);
-
-            //TurtleLauncher: Display tab listener registration
-            this.binding.guiScale.setOnSeekBarChangeListener(this);
-            this.binding.guiScaleRemove.setOnClickListener(this);
-            this.binding.guiScaleAdd.setOnClickListener(this);
-
-            this.binding.menuBackgroundOpacity.setOnSeekBarChangeListener(this);
-            this.binding.menuBackgroundOpacityRemove.setOnClickListener(this);
-            this.binding.menuBackgroundOpacityAdd.setOnClickListener(this);
-
-            this.binding.menuBackgroundFade.setOnSeekBarChangeListener(this);
-            this.binding.menuBackgroundFadeRemove.setOnClickListener(this);
-            this.binding.menuBackgroundFadeAdd.setOnClickListener(this);
-
-            this.binding.menuBlurRadius.setOnSeekBarChangeListener(this);
-            this.binding.menuBlurRadiusRemove.setOnClickListener(this);
-            this.binding.menuBlurRadiusAdd.setOnClickListener(this);
-
-            this.binding.framerateLimitInactive.setOnSeekBarChangeListener(this);
-            this.binding.framerateLimitInactiveRemove.setOnClickListener(this);
-            this.binding.framerateLimitInactiveAdd.setOnClickListener(this);
-
-            this.binding.framerateLimitMinimized.setOnSeekBarChangeListener(this);
-            this.binding.framerateLimitMinimizedRemove.setOnClickListener(this);
-            this.binding.framerateLimitMinimizedAdd.setOnClickListener(this);
-
-            this.binding.menuBlurEffect.setOnCheckedChangeListener(this);
-            this.binding.menuAdditionalBlurEffect.setOnCheckedChangeListener(this);
-            this.binding.menuOverrideVanillaBlur.setOnCheckedChangeListener(this);
-            this.binding.menuBlurEffectLayout.setOnClickListener(this);
-            this.binding.menuAdditionalBlurEffectLayout.setOnClickListener(this);
-            this.binding.menuOverrideVanillaBlurLayout.setOnClickListener(this);
         }
 
         private void dialogSendCustomKey() {
@@ -1015,21 +952,6 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             else if (v == binding.hotbarWidthAdd) MenuUtils.adjustSeekbar(binding.hotbarWidth, 1);
             else if (v == binding.hotbarHeightRemove) MenuUtils.adjustSeekbar(binding.hotbarHeight, -1);
             else if (v == binding.hotbarHeightAdd) MenuUtils.adjustSeekbar(binding.hotbarHeight, 1);
-            else if (v == binding.guiScaleRemove) MenuUtils.adjustSeekbar(binding.guiScale, -1);
-            else if (v == binding.guiScaleAdd) MenuUtils.adjustSeekbar(binding.guiScale, 1);
-            else if (v == binding.menuBackgroundOpacityRemove) MenuUtils.adjustSeekbar(binding.menuBackgroundOpacity, -1);
-            else if (v == binding.menuBackgroundOpacityAdd) MenuUtils.adjustSeekbar(binding.menuBackgroundOpacity, 1);
-            else if (v == binding.menuBackgroundFadeRemove) MenuUtils.adjustSeekbar(binding.menuBackgroundFade, -1);
-            else if (v == binding.menuBackgroundFadeAdd) MenuUtils.adjustSeekbar(binding.menuBackgroundFade, 1);
-            else if (v == binding.menuBlurRadiusRemove) MenuUtils.adjustSeekbar(binding.menuBlurRadius, -1);
-            else if (v == binding.menuBlurRadiusAdd) MenuUtils.adjustSeekbar(binding.menuBlurRadius, 1);
-            else if (v == binding.framerateLimitInactiveRemove) MenuUtils.adjustSeekbar(binding.framerateLimitInactive, -1);
-            else if (v == binding.framerateLimitInactiveAdd) MenuUtils.adjustSeekbar(binding.framerateLimitInactive, 1);
-            else if (v == binding.framerateLimitMinimizedRemove) MenuUtils.adjustSeekbar(binding.framerateLimitMinimized, -1);
-            else if (v == binding.framerateLimitMinimizedAdd) MenuUtils.adjustSeekbar(binding.framerateLimitMinimized, 1);
-            else if (v == binding.menuBlurEffectLayout) MenuUtils.toggleSwitchState(binding.menuBlurEffect);
-            else if (v == binding.menuAdditionalBlurEffectLayout) MenuUtils.toggleSwitchState(binding.menuAdditionalBlurEffect);
-            else if (v == binding.menuOverrideVanillaBlurLayout) MenuUtils.toggleSwitchState(binding.menuOverrideVanillaBlur);
         }
 
         @Override
@@ -1077,30 +999,6 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
                 MenuUtils.updateSeekbarValue(progress, binding.hotbarHeightValue, "px");
                 EventBus.getDefault().post(new HotbarChangeEvent(binding.hotbarWidth.getProgress(), progress));
-            } else if (seekbar == binding.guiScale) {
-                if (saveValue) AllSettings.getGuiScalePercent().put(progress).save();
-
-                MenuUtils.updateSeekbarValue(progress, binding.guiScaleValue, "%");
-            } else if (seekbar == binding.menuBackgroundOpacity) {
-                if (saveValue) AllSettings.getMenuBackgroundOpacity().put(progress).save();
-
-                MenuUtils.updateSeekbarValue(progress, binding.menuBackgroundOpacityValue, "%");
-            } else if (seekbar == binding.menuBackgroundFade) {
-                if (saveValue) AllSettings.getMenuBackgroundFadeMs().put(progress).save();
-
-                MenuUtils.updateSeekbarValue(progress, binding.menuBackgroundFadeValue, "ms");
-            } else if (seekbar == binding.menuBlurRadius) {
-                if (saveValue) AllSettings.getMenuBlurRadius().put(progress).save();
-
-                MenuUtils.updateSeekbarValue(progress, binding.menuBlurRadiusValue, "");
-            } else if (seekbar == binding.framerateLimitInactive) {
-                if (saveValue) AllSettings.getFramerateLimitInactive().put(progress).save();
-
-                MenuUtils.updateSeekbarValue(progress, binding.framerateLimitInactiveValue, "fps");
-            } else if (seekbar == binding.framerateLimitMinimized) {
-                if (saveValue) AllSettings.getFramerateLimitMinimized().put(progress).save();
-
-                MenuUtils.updateSeekbarValue(progress, binding.framerateLimitMinimizedValue, progress == 0 ? " (unlimited)" : "fps");
             }
         }
 
@@ -1161,12 +1059,6 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             } else if (v == binding.gyroInvertY) {
                 AllSettings.getGyroInvertY().put(isChecked).save();
                 AllStaticSettings.gyroInvertY = isChecked;
-            } else if (v == binding.menuBlurEffect) {
-                AllSettings.getMenuBlurEffect().put(isChecked).save();
-            } else if (v == binding.menuAdditionalBlurEffect) {
-                AllSettings.getMenuAdditionalBlurEffect().put(isChecked).save();
-            } else if (v == binding.menuOverrideVanillaBlur) {
-                AllSettings.getMenuOverrideVanillaBlur().put(isChecked).save();
             }
         }
 
@@ -1183,8 +1075,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
          * in the XML) so it's clear which tab is open.
          */
         private void selectTab(TextView selected) {
-            TextView[] buttons = { binding.tabBtnDebug, binding.tabBtnRecording, binding.tabBtnControl, binding.tabBtnHotbar, binding.tabBtnDisplay };
-            View[] pages = { binding.tabPageDebug, binding.tabPageRecording, binding.tabPageControl, binding.tabPageHotbar, binding.tabPageDisplay };
+            TextView[] buttons = { binding.tabBtnDebug, binding.tabBtnRecording, binding.tabBtnControl, binding.tabBtnHotbar };
+            View[] pages = { binding.tabPageDebug, binding.tabPageRecording, binding.tabPageControl, binding.tabPageHotbar };
             for (int i = 0; i < buttons.length; i++) {
                 boolean isSelected = buttons[i] == selected;
                 buttons[i].setTypeface(null, isSelected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);

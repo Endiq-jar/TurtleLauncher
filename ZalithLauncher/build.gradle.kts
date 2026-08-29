@@ -305,12 +305,12 @@ tasks.named("preBuild") {
 }
 
 dependencies {
-    // TurtleLauncher CRASH FIX (MC 26.3+ SDL): official org.libsdl.app.* classes
-    // from SDL 3.4.12's own Android AAR (libs/sdl3-android-classes.jar), needed
-    // to call SDL.setContext()+SDL.setupJNI() from the app's own real Activity
-    // before launching the game - see SdlAndroidJniPrep for why. A real compile-
-    // time dependency (not reflection) since this jar is bundled directly.
-    implementation(files("libs/sdl3-android-classes.jar"))
+    // TurtleLauncher CRASH FIX (MC 26.3+ SDL): org.libsdl.app.* classes now live as real
+    // source under src/main/java/org/libsdl/app (adapted from DroidBridge Launcher's public
+    // source, itself based on SDL's official Android glue) instead of the precompiled
+    // libs/sdl3-android-classes.jar this used to be - that jar's SDLActivity.nativeSetupJNI()
+    // was compiled ()V but the bundled libSDL3.so's JNI_OnLoad expects ()I, a version
+    // mismatch that hard-aborted the process. See SdlAndroidJniPrep for the rest of the story.
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("commons-codec:commons-codec:1.17.1")
     // implementation("com.wu-man:android-bsf-api:3.1.3")

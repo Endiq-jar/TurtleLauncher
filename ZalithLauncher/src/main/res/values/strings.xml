@@ -85,17 +85,6 @@
     <string name="option_stop_recording">Stop Recording</string>
     <string name="option_category_control">Control</string>
     <string name="option_category_hotbar">Hotbar Detection Box</string>
-    <string name="option_category_display">Display</string>
-    <string name="option_gui_scale">GUI Scale</string>
-    <string name="option_menu_background_opacity">Background Opacity</string>
-    <string name="option_menu_background_fade">Background Fade-in Duration</string>
-    <string name="option_menu_blur_effect">Blur Effect</string>
-    <string name="option_menu_additional_blur_effect">Additional Blur Effect</string>
-    <string name="option_menu_override_vanilla_blur">Override Vanilla Blur Effect</string>
-    <string name="option_menu_blur_radius">Blur Radius</string>
-    <string name="option_window_mode">Window Mode</string>
-    <string name="option_framerate_limit_inactive">Framerate Limit (Window Inactive)</string>
-    <string name="option_framerate_limit_minimized">Framerate Limit (Window Minimized)</string>
     <string name="option_force_close">Force Close</string>
     <string name="option_log_out">Log Output</string>
     <string name="option_send_custom_key">Send Custom Key Code</string>

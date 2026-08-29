@@ -38,6 +38,9 @@ import net.kdt.pojavlaunch.customcontrols.mouse.InGameEventProcessor;
 import net.kdt.pojavlaunch.customcontrols.mouse.TouchEventProcessor;
 import net.kdt.pojavlaunch.utils.JREUtils;
 
+import com.movtery.zalithlauncher.launch.SdlAndroidJniPrep;
+import org.libsdl.app.SDLActivity;
+
 import org.greenrobot.eventbus.EventBus;
 import org.lwjgl.glfw.CallbackBridge;
 
@@ -118,6 +121,23 @@ public class MinecraftGLSurface extends View implements GrabListener {
     }
 
     /**
+     * TurtleLauncher CRASH FIX (MC 26.3+ SDL): best-effort hand-off of this view's
+     * real Android Surface to SDLActivity.setDroidBridgeNativeSurface(), so it's
+     * available to whatever calls org.libsdl.app.SDLActivity.getNativeSurface() -
+     * see SdlAndroidJniPrep's class doc for how much this does and doesn't actually
+     * fix. No-op (SdlAndroidJniPrep.isActive stays false) for GLFW versions, so this
+     * never runs for anything except the SDL launch path it exists for.
+     */
+    private void publishSurfaceToSdl(Surface surface) {
+        if (!SdlAndroidJniPrep.isActive) return;
+        try {
+            SDLActivity.setDroidBridgeNativeSurface(surface);
+        } catch (Throwable t) {
+            Logging.e("MGLSurface", "publishSurfaceToSdl() failed", t);
+        }
+    }
+
+    /**
      * TurtleLauncher: tells the native side to drop its EGL binding to this Android Surface
      * *before* Android finishes tearing it down, instead of never telling it at all -
      * JREUtils.releaseBridgeWindow() was declared as a native method but was dead code
@@ -134,6 +154,7 @@ public class MinecraftGLSurface extends View implements GrabListener {
     private void markSurfaceDestroyed() {
         if (!mSurfaceValid) return;
         mSurfaceValid = false;
+        publishSurfaceToSdl(null);
         try {
             JREUtils.releaseBridgeWindow();
         } catch (Throwable t) {
@@ -160,12 +181,14 @@ public class MinecraftGLSurface extends View implements GrabListener {
                 public void surfaceCreated(@NonNull SurfaceHolder holder) {
                     if(isCalled) {
                         JREUtils.setupBridgeWindow(surfaceView.getHolder().getSurface());
+                        publishSurfaceToSdl(surfaceView.getHolder().getSurface());
                         markSurfaceValid();
                         return;
                     }
                     isCalled = true;
 
                     realStart(surfaceView.getHolder().getSurface());
+                    publishSurfaceToSdl(surfaceView.getHolder().getSurface());
                     markSurfaceValid();
                 }
 
@@ -194,12 +217,14 @@ public class MinecraftGLSurface extends View implements GrabListener {
                     Surface tSurface = new Surface(surface);
                     if(isCalled) {
                         JREUtils.setupBridgeWindow(tSurface);
+                        publishSurfaceToSdl(tSurface);
                         markSurfaceValid();
                         return;
                     }
                     isCalled = true;
 
                     realStart(tSurface);
+                    publishSurfaceToSdl(tSurface);
                     markSurfaceValid();
                 }
 

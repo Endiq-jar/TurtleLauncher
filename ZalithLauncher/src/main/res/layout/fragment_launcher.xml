@@ -111,157 +111,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/home_top_bar">
 
-        <!-- Nav bar (fixed, does not scroll) -->
-        <LinearLayout
-            android:id="@+id/launcher_nav_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/background_card"
-            android:paddingTop="@dimen/space_s"
-            android:paddingBottom="@dimen/space_xs"
-            android:layout_margin="@dimen/space_m"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <!-- Home (active tab: this fragment IS the home screen) -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <ImageButton
-                    android:id="@+id/home_button"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_menu_home"
-                    android:padding="2dp"
-                    android:tint="@color/accent_primary"
-                    android:scaleType="fitCenter"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/main_nav_home"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/accent_primary"/>
-
-                <View
-                    android:layout_width="20dp"
-                    android:layout_height="2dp"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:background="@color/accent_primary"/>
-            </LinearLayout>
-
-            <!-- Files -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="?attr/selectableItemBackgroundBorderless">
-
-                <ImageButton
-                    android:id="@+id/storage_button"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:background="@null"
-                    android:src="@drawable/ic_folder"
-                    android:padding="2dp"
-                    android:tint="@color/turtle_text_secondary"
-                    android:scaleType="fitCenter"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/main_nav_files"
-                    android:textSize="11sp"
-                    android:textColor="@color/turtle_text_secondary"/>
-
-                <View
-                    android:layout_width="20dp"
-                    android:layout_height="2dp"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:background="@android:color/transparent"/>
-            </LinearLayout>
-
-            <!-- Download -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="?attr/selectableItemBackgroundBorderless">
-
-                <ImageButton
-                    android:id="@+id/download_button"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:background="@null"
-                    android:src="@drawable/ic_download"
-                    android:padding="2dp"
-                    android:tint="@color/turtle_text_secondary"
-                    android:scaleType="fitCenter"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/main_nav_download"
-                    android:textSize="11sp"
-                    android:textColor="@color/turtle_text_secondary"/>
-
-                <View
-                    android:layout_width="20dp"
-                    android:layout_height="2dp"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:background="@android:color/transparent"/>
-            </LinearLayout>
-
-            <!-- Settings -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="?attr/selectableItemBackgroundBorderless">
-
-                <ImageButton
-                    android:id="@+id/setting_button"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:background="@null"
-                    android:src="@drawable/ic_menu_settings"
-                    android:padding="2dp"
-                    android:tint="@color/turtle_text_secondary"
-                    android:scaleType="fitCenter"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/main_nav_settings"
-                    android:textSize="11sp"
-                    android:textColor="@color/turtle_text_secondary"/>
-
-                <View
-                    android:layout_width="20dp"
-                    android:layout_height="2dp"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:background="@android:color/transparent"/>
-            </LinearLayout>
-
-        </LinearLayout>
+        <!-- TurtleLauncher: launcher_nav_bar (Home/Files/Download/Settings tab strip) removed
+             per Endiq's request - it visually overlapped the account panel in the top-right
+             corner. Home/Files/Download/Settings are still reachable via the equivalent
+             top_bar_storage_button/top_bar_download_button/top_bar_settings_button icons in
+             home_top_bar_actions above, which already duplicated this same functionality. -->
 
         <!-- TurtleLauncher: quick actions used to be a 2x2 grid of 88dp cards inline in the
              scrolling content - per user request, replaced with a small, icon-only square
@@ -275,7 +129,7 @@
             android:id="@+id/launcher_content_row"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@id/launcher_nav_bar"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/launcher_footer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">

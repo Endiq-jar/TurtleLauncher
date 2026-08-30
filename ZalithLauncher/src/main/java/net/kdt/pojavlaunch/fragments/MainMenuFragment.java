@@ -137,29 +137,10 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.linkWebsiteButton.setOnClickListener(v -> openUrl("https://endiq-jar.github.io/endiq-shop/"));
         binding.linkYoutubeButton.setOnClickListener(v -> openUrl("https://youtube.com/@endiq-jar?si=9sb9OnKDJG2kUnO1"));
 
-        // Nav buttons in left panel
-        binding.homeButton.setOnClickListener(v -> {
-            ViewAnimUtils.setViewAnim(binding.homeButton, Animations.Pulse);
-            Tools.backToMainMenu(requireActivity());
-        });
-        binding.storageButton.setOnClickListener(v -> {
-            ViewAnimUtils.setViewAnim(binding.storageButton, Animations.Pulse);
-            Bundle bundle = new Bundle();
-            bundle.putString(FilesFragment.BUNDLE_LIST_PATH, com.movtery.zalithlauncher.utils.path.PathManager.DIR_GAME_HOME);
-            ZHTools.swapFragmentWithAnim(this, FilesFragment.class, FilesFragment.TAG, bundle);
-        });
-        binding.downloadButton.setOnClickListener(v -> {
-            ViewAnimUtils.setViewAnim(binding.downloadButton, Animations.Pulse);
-            ZHTools.swapFragmentWithAnim(this,
-                com.movtery.zalithlauncher.ui.fragment.DownloadFragment.class,
-                com.movtery.zalithlauncher.ui.fragment.DownloadFragment.TAG, null);
-        });
-        binding.settingButton.setOnClickListener(v -> {
-            ViewAnimUtils.setViewAnim(binding.settingButton, Animations.Pulse);
-            ZHTools.swapFragmentWithAnim(this,
-                com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.class,
-                com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.TAG, null);
-        });
+        // TurtleLauncher: launcher_nav_bar (home/storage/download/setting_button tab strip)
+        // was removed from fragment_launcher.xml - the equivalent topBarStorageButton/
+        // topBarDownloadButton/topBarSettingsButton listeners further below already cover
+        // the same navigation, so no functionality is lost.
 
         binding.versionName.setSelected(true);
         binding.versionInfo.setSelected(true);

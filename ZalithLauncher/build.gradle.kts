@@ -204,13 +204,13 @@ android {
         }
     }
 
-    // ndkVersion = "25.2.9519653"
+    ndkVersion = "25.2.9519653"
 
-    // externalNativeBuild {
-    //     ndkBuild {
-    //         path = file("src/main/jni/Android.mk")
-    //     }
-    // }
+    externalNativeBuild {
+        ndkBuild {
+            path = file("src/main/jni/Android.mk")
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -221,7 +221,20 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            pickFirsts += listOf("**/libbytehook.so")
+            // TurtleLauncher SDL3 fix: re-enabling externalNativeBuild below means these
+            // 7 modules are now actually compiled from src/main/jni/ (Android.mk) instead
+            // of only existing as prebuilt jniLibs/*.so - safety net in case anything else
+            // (a stale local build cache, a dependency AAR) also supplies one of these.
+            pickFirsts += listOf(
+                "**/libbytehook.so",
+                "**/libpojavexec.so",
+                "**/libexithook.so",
+                "**/libdriver_helper.so",
+                "**/liblinkerhook.so",
+                "**/libpojavexec_awt.so",
+                "**/libawt_headless.so",
+                "**/libawt_xawt.so"
+            )
         }
     }
 

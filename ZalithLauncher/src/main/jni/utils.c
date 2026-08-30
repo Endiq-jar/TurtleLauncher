@@ -59,6 +59,26 @@ jstring convertStringJVM(JNIEnv* srcEnv, JNIEnv* dstEnv, jstring srcStr) {
     return dstStr;
 }
 
+// TurtleLauncher SDL3 fix: attaches (or reuses an existing attach of) the calling
+// native thread to the given JavaVM, returning a usable JNIEnv*. Used by
+// TRY_ATTACH_ENV in utils.h so sdl_hook.c can call back into Dalvik-side Java code
+// (CallbackBridge.notifyLauncher) from whatever thread/JVM context a bytehook fires
+// on - GetEnv() alone only works if the calling thread happens to already be
+// attached to that exact JVM, which isn't guaranteed for a hook firing from within
+// Minecraft's own embedded JVM.
+JNIEnv* get_attached_env(JavaVM* jvm) {
+    JNIEnv *jvm_env = NULL;
+    jint env_result = (*jvm)->GetEnv(jvm, (void**)&jvm_env, JNI_VERSION_1_4);
+    if (env_result == JNI_EDETACHED) {
+        env_result = (*jvm)->AttachCurrentThread(jvm, &jvm_env, NULL);
+    }
+    if (env_result != JNI_OK) {
+        LOG_TO_E("get_attached_env failed: %i", env_result);
+        return NULL;
+    }
+    return jvm_env;
+}
+
 JNIEXPORT jlong JNICALL Java_android_view_Surface_nativeGetBridgeSurfaceAWT(JNIEnv *env, jclass clazz) {
 	return (jlong) shared_awt_surface;
 }

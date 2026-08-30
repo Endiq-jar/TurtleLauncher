@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include "stdio_is.h"
 
+// TurtleLauncher SDL3 fix: defined in sdl_hook.c, installed via the same
+// bytehook instance this file already sets up for the exit hook below.
+void create_sdl_hooks(bytehook_stub_t (*bytehook_hook_all_p)(const char *callee_path_name, const char *sym_name, void *new_func,
+                                                              bytehook_hooked_t hooked, void *hooked_arg));
+
 static _Atomic bool exit_tripped = false;
 
 typedef void (*exit_func)(int);
@@ -57,6 +62,10 @@ static bool init_exit_hook() {
     if(bhook_status == BYTEHOOK_STATUS_CODE_OK) {
         bytehook_stub_t stub = bytehook_hook_all_p(NULL, "exit", &custom_exit, NULL, NULL);
         __android_log_print(ANDROID_LOG_INFO, "exit_hook", "Successfully initialized exit hook, stub=%p", stub);
+        // TurtleLauncher SDL3 fix: install the SDL_InitSubSystem hook (sdl_hook.c)
+        // through this same already-initialized bytehook instance, rather than
+        // calling bytehook_init a second time.
+        create_sdl_hooks(bytehook_hook_all_p);
         return true;
     } else {
         __android_log_print(ANDROID_LOG_INFO, "exit_hook", "bytehook_init failed (%i)", bhook_status);

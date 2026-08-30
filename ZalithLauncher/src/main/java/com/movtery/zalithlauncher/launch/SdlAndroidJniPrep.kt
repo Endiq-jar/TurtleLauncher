@@ -7,56 +7,30 @@ import org.libsdl.app.SDL
 import org.libsdl.app.SDLActivity
 
 /**
- * TurtleLauncher CRASH FIX (MC 26.3+ SDL native crash) - RE-ENABLED Aug 2026, PARTIAL FIX ONLY.
+ * TurtleLauncher CRASH FIX (MC 26.3+ SDL native crash) - SUPERSEDED Aug 2026 by the real
+ * fix in sdl_hook.c (native SDL_InitSubSystem bytehook + CallbackBridge.notifyLauncher).
  *
- * ── What was actually broken, and what's fixed now ──
+ * ── Why this class's approach could never fully work ──
  *
- * This was disabled after a real device crash log showed it hard-aborting the process
- * with a JNI-checked SIGABRT: "no static or non-static method
- * Lorg/libsdl/app/SDLActivity;.nativeSetupJNI()I". Root cause, confirmed by parsing the
- * actual bundled files: the old `libs/sdl3-android-classes.jar`'s `SDLActivity.class`
- * declared `nativeSetupJNI` as `()V` (void), but the bundled `libSDL3.so` (all ABIs)
- * looks up an `()I` (int-returning) overload during its own JNI_OnLoad - the jar and the
- * .so were never a matched pair.
+ * Minecraft's SDL_Init() runs inside a *separate embedded JVM* (see VMLauncher /
+ * JNI_CreateJavaVM), not the launcher's own real Activity/JVM. This class calls
+ * SDL.setupJNI() ahead of time, here, on the real JVM - but each JVM instance has its
+ * own independent static state, even for identically-named/loaded classes. So this
+ * priming was never actually visible to whichever JVM instance runs Minecraft's own
+ * SDL_Init() - confirmed by porting AngelAuraMC/Amethyst-Android's real, shipping fix
+ * for the exact same crash and seeing how they solve it: a native (C-level) bytehook on
+ * SDL_InitSubSystem that fires in-process regardless of which JVM's thread called it,
+ * and can freely attach to the real JavaVM* (a native global, not a Java static field -
+ * the crucial difference) to run the equivalent of this class's setup() from the
+ * correct side of the VM boundary, every time SDL actually initializes. See sdl_hook.c
+ * for the full explanation and the real fix.
  *
- * That jar has been replaced with real source (org.libsdl.app.SDL/SDLActivity/etc.,
- * adapted from DroidBridge Launcher's public source - see that package's file headers
- * for attribution) whose `nativeSetupJNI()` is confirmed, by direct inspection of the
- * source, to return `int` - matching what this launcher's bundled libSDL3.so expects.
- * That specific abort is fixed for real, not just hypothesized.
- *
- * ── What is very likely still broken ──
- *
- * Fixing the abort does not mean the original SIGSEGV this class was written to prevent
- * is actually gone. Digging into DroidBridge Launcher's own production code (which does
- * successfully run MC 26.3+'s SDL backend) turned up something this class's previous
- * doc comment only guessed at: Minecraft's SDL calls run inside a *separate* embedded
- * JVM (see VMLauncher / JNI_CreateJavaVM), not the app's own real Activity/JVM. DroidBridge's
- * actual fix for that is a native (C-level) cross-VM bridge - their own
- * `droidbridge_runtime.so` intercepts libSDL3.so's `ANativeWindow_fromSurface` at the
- * binary level so it can hand over an Android Surface published from the *other* JVM,
- * because plain Java static fields (like the ones `setDroidBridgeNativeSurface` below
- * sets) are NOT visible across separate JVM instances - only same-process native globals
- * can be, and only when both JVMs' copies of libSDL3.so land in the same linker
- * namespace, which DroidBridge's own comments say isn't guaranteed either.
- *
- * That native hook is NOT ported here - it needs an NDK toolchain and real-device
- * verification this environment doesn't have, and DroidBridge's C source for it wasn't
- * available to port from. What this class does now (real JNI registration, plus
- * best-effort Activity/Surface bookkeeping via setDroidBridgeHostActivity/
- * setDroidBridgeNativeSurface) is a genuine improvement over the old broken jar, but it
- * may well not be sufficient to prevent the SIGSEGV on its own, since the Java-side
- * state it sets may simply never be visible to whichever JVM instance actually runs
- * Minecraft's SDL_Init(). Do not describe this as "the crash is fixed" without a real
- * device test confirming it - describe it as "the confirmed abort is fixed; the
- * original SIGSEGV this class exists to prevent may or may not still happen."
- *
- * Call setup(activity) once, on the real app UI thread, before VMLauncher.launchJVM()
- * runs - but only for SDL versions (see Tools.versionUsesLwjglSdl); calling it for GLFW
- * versions would be a no-op at best. Best-effort throughout: any failure here is
- * swallowed so a problem with this priming step can't block the game from launching at
- * all - worst case, the original SIGSEGV still happens, exactly as before this fix
- * existed.
+ * This class is kept only as a defensive no-op-if-redundant fallback (SDL.setupJNI() is
+ * safe to call twice) in case the native hook fails to install on a given device/build
+ * (e.g. bytehook_init() itself fails) - it is NOT relied upon as the actual fix anymore.
+ * The `isActive`/token-surface logic below predates the real fix and its actual
+ * effectiveness was always unconfirmed; left in place only because removing it isn't
+ * needed to ship the real fix and doing so hasn't been verified safe on its own.
  */
 object SdlAndroidJniPrep {
     /**

@@ -23,7 +23,43 @@ public class CallbackBridge {
     public static final int CLIPBOARD_COPY = 2000;
     public static final int CLIPBOARD_PASTE = 2001;
     public static final int CLIPBOARD_OPEN = 2002;
-    
+
+    // TurtleLauncher SDL3 fix (MC 26.3+ SIGSEGV inside libSDL3.so): notification
+    // type/action codes for notifyLauncher() below. Values must match sdl_hook.c's
+    // NOTIF_TYPE_SDL/ACTION_INIT_LAUNCHER_INTEGRATION exactly - see that file for why
+    // this exists (SDL_Init runs inside a separate embedded JVM that can't see any
+    // setup done ahead of time on this, the real app JVM).
+    public static final int NOTIF_TYPE_SDL = 0;
+    public static final int ACTION_INIT_LAUNCHER_INTEGRATION = 0;
+
+    /**
+     * TurtleLauncher SDL3 fix: called from native code (sdl_hook.c's SDL_InitSubSystem
+     * bytehook, via a JNIEnv attached to this, the real Dalvik JVM - not the separate
+     * embedded JVM Minecraft's SDL calls actually run in) right before SDL_Init
+     * actually proceeds. Ported from AngelAuraMC/Amethyst-Android's CallbackBridge,
+     * trimmed to only what this launcher's own architecture needs: this launcher
+     * renders through its own MinecraftGLSurface/EGL bridge rather than SDL's own
+     * SDLSurface (see SdlAndroidJniPrep.kt), so the surface-resize call Amethyst also
+     * does here isn't applicable and was left out rather than guessed at.
+     * @return whether the requested action was recognized and handled
+     */
+    @SuppressWarnings("unused") // called from native code
+    @Keep
+    public static boolean notifyLauncher(int type, int... action) {
+        if (type == NOTIF_TYPE_SDL && action.length > 0 && action[0] == ACTION_INIT_LAUNCHER_INTEGRATION) {
+            try {
+                // Some mods skip loading this themselves due to broken logic, so the
+                // launcher loads it directly to be sure it's present before setupJNI().
+                System.loadLibrary("SDL3");
+                org.libsdl.app.SDL.setupJNI();
+                return true;
+            } catch (Throwable t) {
+                android.util.Log.e("CallbackBridge", "Failed to initialize SDL launcher-side integration, the game will likely crash", t);
+            }
+        }
+        return false;
+    }
+
     public static volatile int windowWidth, windowHeight;
     public static volatile int physicalWidth, physicalHeight;
     public static float mouseX, mouseY;

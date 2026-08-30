@@ -1,6 +1,8 @@
 package com.movtery.zalithlauncher.launch
 
 import android.app.Activity
+import android.graphics.SurfaceTexture
+import android.view.Surface
 import org.libsdl.app.SDL
 import org.libsdl.app.SDLActivity
 
@@ -85,6 +87,21 @@ object SdlAndroidJniPrep {
             // sites for setDroidBridgeNativeSurface(), not here (the real render
             // Surface doesn't exist yet at this point in the launch sequence).
             SDLActivity.setDroidBridgeExternalSurfaceMode(true)
+
+            // TurtleLauncher CRASH FIX (MC 26.3+ SDL native crash): provide SDL_Init
+            // with a non-null token native Surface so its Android JNI backend
+            // doesn't dereference a null pointer during init (see SDLActivity's
+            // getNativeSurface() and CrashAnalyzer rule 22). Best-effort only,
+            // since the real Surface comes from MinecraftGLSurface later.
+            try {
+                val tokenTexture = SurfaceTexture(0)
+                val tokenSurface = Surface(tokenTexture)
+                SDLActivity.setDroidBridgeNativeSurface(tokenSurface)
+            } catch (ignored: Throwable) {
+                // If token creation fails, fall through - the original crash may
+                // still occur, which is exactly the pre-existing behavior.
+            }
+
             isActive = true
         } catch (t: Throwable) {
             // Best effort - see class doc. Deliberately not logged as an error: a

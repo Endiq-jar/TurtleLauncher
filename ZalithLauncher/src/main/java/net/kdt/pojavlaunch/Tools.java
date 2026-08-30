@@ -564,7 +564,16 @@ public final class Tools {
             String libName = libItem.name;
             if (libName == null) continue;
 
-            if ((libName.contains("org.lwjgl") && !isLwjglAbiCriticalModule(libName, versionUsesSdl)) ||
+            // TurtleLauncher FIX: was libName.contains("org.lwjgl"), which also matched the
+            // OLD LWJGL 2 group id "org.lwjgl.lwjgl:" (e.g. legacy MC 1.8.9's
+            // org.lwjgl.lwjgl:lwjgl:2.9.4 / lwjgl_util / lwjgl-platform). The bundled
+            // Android-native replacement in assets/components/lwjgl3/ only contains
+            // lwjgl-glfw-classes.jar - it does NOT reimplement the old LWJGL2 API - so
+            // stripping those real jars left nothing providing org.lwjgl.LWJGLException,
+            // causing "NoClassDefFoundError: org/lwjgl/LWJGLException" on every legacy
+            // (pre-1.13-ish) version launch. startsWith("org.lwjgl:") only matches the
+            // NEW LWJGL3 namespace this bundled shim is actually meant to replace.
+            if ((libName.startsWith("org.lwjgl:") && !isLwjglAbiCriticalModule(libName, versionUsesSdl)) ||
                 libName.contains("jinput-platform") ||
                 libName.contains("twitch-platform")
             ) {
@@ -772,14 +781,24 @@ public final class Tools {
     }
 
     // Prevent NullPointerException
+    // TurtleLauncher FIX: was getClass().getDeclaredField(key), which only looks at a
+    // class's OWN declared fields, not inherited ones. "id" (plus sha1/url/size) is
+    // declared on JMinecraftVersionList.FileProperties, the superclass of Version, not
+    // on Version itself - so every call with "id" in keyArr (the version-inheritance
+    // path in getVersionInfo()) always threw NoSuchFieldException here, silently caught
+    // below and logged as "Unable to insert id=null", meaning a custom/modded version
+    // that inherits from a vanilla one never actually got the parent's id copied over.
+    // getField() walks up the class hierarchy for public fields (all of these model
+    // fields are public, per the @Keep/JSON-model classes above), so it finds
+    // superclass-declared fields too.
     private static void insertSafety(JMinecraftVersionList.Version targetVer, JMinecraftVersionList.Version fromVer, String... keyArr) {
         for (String key : keyArr) {
             Object value = null;
             try {
-                Field fieldA = fromVer.getClass().getDeclaredField(key);
+                Field fieldA = fromVer.getClass().getField(key);
                 value = fieldA.get(fromVer);
                 if (((value instanceof String) && !((String) value).isEmpty()) || value != null) {
-                    Field fieldB = targetVer.getClass().getDeclaredField(key);
+                    Field fieldB = targetVer.getClass().getField(key);
                     fieldB.set(targetVer, value);
                 }
             } catch (Throwable th) {

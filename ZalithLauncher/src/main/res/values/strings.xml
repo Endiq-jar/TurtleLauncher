@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Turtle Launcher -->
+    <!-- general -->
     <string name="generic_open">Open</string>
     <string name="generic_close">Close</string>
     <string name="generic_return">Return</string>
@@ -86,7 +86,7 @@
     <string name="option_category_control">Control</string>
     <string name="option_category_hotbar">Hotbar Detection Box</string>
     <string name="option_force_close">Force Close</string>
-    <string name="option_log_out">Log Output</string>
+    <string name="option_log_out">Live Logs</string>
     <string name="option_send_custom_key">Send Custom Key Code</string>
     <string name="option_edit_controls">Edit Control Layout</string>
     <string name="option_hotbar_type">Hotbar Detection Mode</string>
@@ -121,7 +121,7 @@
     <string name="mc_download_failed">Failed to download Minecraft! This may be due to poor network connection, incorrect file placement, etc.</string>
     <string name="microsoft_login_retry_later">Your actions are too frequent, please try again later</string>
     <string name="storage_required">%s requires external storage, please reconnect and restart the software</string>
-    <string name="dialog_select_jar">Select Jar File</string>
+    <string name="dialog_select_jar">Select .Jar File</string>
     <string name="percent_format" translatable="false">%d%%</string>
     <string name="version_select_hint">Select version (Long press to reset)</string>
     <string name="version_series_screen_title">Select a version series</string>
@@ -150,7 +150,7 @@
     <string name="renderer_compat_min_version">Recommended for MC %1$s and up</string>
     <string name="renderer_compat_launch_warning_max">%1$s is only recommended up to MC %2$s - you\'re launching %3$s, which may crash or render incorrectly. Consider switching renderers in Video Settings.</string>
     <string name="renderer_compat_launch_warning_min">%1$s is only recommended from MC %2$s onward - you\'re launching %3$s, which may crash or render incorrectly. Consider switching renderers in Video Settings.</string>
-    <string name="notif_error_occured">An error occurred</string>
+    <string name="notif_error_occured">An error occurred!</string>
     <string name="notif_error_occured_desc">Click to view details</string>
     <string name="input_preview_tip">Input preview box, capturing soft keyboard input, for reference only:</string>
     <string name="dl_tampered_manifest_title">File Verification Warning</string>
@@ -190,7 +190,7 @@
     <string name="mod_check_sodium_or_embeddium">Detected installed Sodium or Embeddium mod (%s). The launcher will disable this mod\'s warnings or prevent it from intentionally crashing on Android devices. However, please note that the mod\'s community has explicitly stated that they will no longer accept any issues related to Android devices. Therefore, if you encounter any problems while using this mod, do not report them to the mod\'s community!</string>
     <string name="mod_check_physics">The currently used physics mod (%s) is unpatched (replacing libPhysXJniBindings_64.so from x86_64 architecture to arm64), will crash on launch.</string>
     <string name="mod_check_mcef">MCEF (%s) cannot run on Android. It is usually used as a prerequisite dependency for WebDisplays/In-game Browser (browser).</string>
-    <string name="mod_check_valkyrien_skies">Valkyrien Skies/Valkyrien Warfare (%s) cannot run directly in single-player mode. You must run it on a server (Termux can be used), otherwise the game will crash.</string>
+    <string name="mod_check_valkyrien_skies">Valkyrien Skies/Valkyrien Warfare (%s) cannot run directly in single-player mode. You must run it on a server otherwise the game will crash.</string>
     <string name="mod_check_yes_steve_model">Yes, Steve Model (%s) 2.2.2–2.5.1 cannot run on the Android system.</string>
     <string name="mod_check_imblocker">IMBlocker/In-GameIME (%s) is not compatible with Android and will cause the game to crash during startup.</string>
     <string name="mod_check_replay_mod">ReplayMod (%s) requires FFmpeg to render videos. Please install the FFmpeg plugin separately\n%s\n%s</string>
@@ -236,7 +236,7 @@
     <string name="controls_add_control_drawer">Drawer</string>
     <string name="controls_visibility">Visibility</string>
     <string name="controls_in_game">In-Game</string>
-    <string name="controls_in_menu">In-Menu</string>
+    <string name="controls_in_menu">In-Game-Menus</string>
     <string name="controls_orientation_up">Up</string>
     <string name="controls_orientation_down">Down</string>
     <string name="controls_orientation_left">Left</string>
@@ -530,7 +530,7 @@
     <string name="main_welcome_subtitle">Ready to play Minecraft Java Edition</string>
     <!-- Home screen dashboard (top bar + statistics cards) -->
     <string name="main_top_bar_title">TurtleLauncher</string>
-    <string name="main_top_bar_subtitle">A fork of ZalithLauncher / PojavLauncher</string>
+    <string name="main_top_bar_subtitle">Smooth • Fast • Modern </string>
     <string name="main_section_statistics">Today\'s Statistics</string>
     <string name="main_stats_weekly_label">Play Time (Last 7 Days)</string>
     <string name="main_changelog_label">Changelog</string>
@@ -697,7 +697,7 @@
     <string name="setting_fps_adaptive_desc">Uses G1GC with short max-pause targets (10ms) to prevent garbage collection from stalling mid-frame.</string>
     <string name="setting_fps_auto_memory_cleanup_title">Auto Memory Cleanup</string>
     <string name="setting_fps_auto_memory_cleanup_desc">Periodically runs a G1 garbage collection during idle stretches to release memory back to the system, instead of holding onto peak usage all session.</string>
-    <!-- Auto Graphics Optimizer (from Zyron) -->
+    <!-- Auto Graphics Optimizer -->
     <string name="setting_category_auto_graphics">Auto Graphics</string>
     <string name="setting_auto_settings_optimizer_title">Auto Settings Optimizer</string>
     <string name="setting_auto_settings_optimizer_desc">Automatically tunes renderer, driver, RAM allocation, resolution scale, and FPS Boost flags for your device at launch. Recommended for most users.</string>
@@ -858,8 +858,8 @@
     <string name="setting_lwjgl_compat_mode_title">LWJGL Version</string>
     <string name="setting_lwjgl_compat_mode_summary">Which bundled LWJGL native to use. Auto picks based on what each Minecraft version actually declares needing (LWJGL 26.3+ SDL vs the older pre-SDL build) — only override this if a specific version misbehaves with the auto-detected one.</string>
     <string name="setting_lwjgl_compat_mode_auto">Auto (Recommended)</string>
-    <string name="setting_lwjgl_compat_mode_new">New (SDL, MC 26.3+)</string>
-    <string name="setting_lwjgl_compat_mode_legacy">Legacy (pre-SDL)</string>
+    <string name="setting_lwjgl_compat_mode_new">Latest (SDL)</string>
+    <string name="setting_lwjgl_compat_mode_legacy">Legacy (GLFW)</string>
     <string name="setting_background_service_optimization_title">Background Service Optimization</string>
     <string name="setting_background_service_optimization_summary">While Minecraft is running, pause launcher animations, the plugin-update check, and background file indexing, and trim launcher memory — freeing CPU/RAM for the game. Automatically restores when you return to the launcher.</string>
     <!-- Game -->
@@ -869,7 +869,7 @@
     <string name="game_exit_no_screenshot">Please don\'t just take a screenshot of the current app interface; otherwise, no one will know what happened. Share your log file or crash report!</string>
     <string name="game_autopick_runtime_failed">No suitable runtime environment found, set to the runtime environment selected for the current version</string>
     <string name="game_requires_java_version">this version needs Java %d</string>
-    <string name="game_tip">The game is currently running. You can enable log output via the menu to check the game\'s status.</string>
+    <string name="game_tip">The game is currently running. You can see logs via the menu to check the game\'s status.</string>
     <!-- Crash/Black-screen watchdog -->
     <string name="watchdog_frozen_title">Game seems frozen</string>
     <string name="watchdog_force_close">Force Close</string>
@@ -996,7 +996,7 @@
     <string name="splash_screen_cacio">Provides a portable GUI backend for OpenJDK.</string>
     <string name="splash_screen_authlib_injector">Injects authlib via runtime to enable login outside the game.</string>
     <string name="splash_screen_components">Some components that the launcher depends on.</string>
-    <string name="splash_screen_jre8">Java 8 environment, Minecraft 1.16- depends on Java 8.</string>
+    <string name="splash_screen_jre8">Java 8 environment, Minecraft -1.16 depends on Java 8.</string>
     <string name="splash_screen_jre17">Java 17 environment, Minecraft 1.17+ depends on Java 17.</string>
     <string name="splash_screen_jre21">Java 21 environment, Minecraft 1.20.5+ depends on Java 21.</string>
     <string name="splash_screen_jre25">Java 25 environment, Minecraft 26.1+ depends on Java 25.</string>
@@ -1051,7 +1051,7 @@
     <string name="cancel">Cancel</string>
     <string name="copy">Copy</string>
     <string name="ok">OK</string>
-    <string name="storageProviderAuthorities">com.movtery.zalithlauncher.storageprovider</string>
+    <string name="storageProviderAuthorities">com.endiq.turtlelauncher.storageprovider</string>
     <!-- TurtleLauncher: Java auto-install progress strings -->
     <string name="downloading_java_runtime_uni">Downloading Java runtime (universal)…</string>
     <string name="downloading_java_runtime_platform">Downloading Java runtime (platform binaries)…</string>
@@ -1102,7 +1102,7 @@
 
     <!-- TurtleLauncher: What\'s New -->
     <string name="whats_new_title">🐢 What\'s New in TurtleLauncher</string>
-    <string name="whats_new_version">v7.0</string>
+    <string name="whats_new_version">v3.0</string>
     <string name="whats_new_skin_cape">🎨 Skin &amp; Cape Manager</string>
     <string name="whats_new_skin_cape_desc">Change your skin or cape from a URL or pick directly from your gallery. Applies instantly to the account file — no game restart needed to switch.</string>
     <string name="whats_new_other_login">🔑 Third-Party Login (authlib-injector / nide8auth)</string>
@@ -1156,7 +1156,7 @@
     <string name="setting_crash_history_desc">View the last 20 crashes with timestamps, not just the most recent one.</string>
     <string name="setting_crash_rule_editor_title">Crash Rule Editor</string>
     <string name="setting_crash_rule_editor_desc">Add custom pattern → tip mappings to the crash analyzer without rebuilding the app.</string>
-    <string name="setting_ai_crash_help_title">AI Crash Help (experimental)</string>
+    <string name="setting_ai_crash_help_title">AI Crash Help</string>
     <string name="setting_ai_crash_help_desc">Only used when no known crash pattern matches. Sends the crash log tail to OpenAI using the API key below. Off by default.</string>
     <string name="setting_ai_skin_filter_title">AI Skin/Cape Filter (experimental)</string>
     <string name="setting_ai_skin_filter_desc">Sends each gallery thumbnail to OpenAI (using the API key above) to screen out inappropriate skins/capes before they\'re shown. Uses your own API key/quota - one request per image. Off by default.</string>

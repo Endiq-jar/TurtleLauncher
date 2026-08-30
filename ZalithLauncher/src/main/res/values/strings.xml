@@ -64,11 +64,11 @@
     <!-- Error -->
     <string name="error_fatal">%s crashed unexpectedly</string>
     <string name="crash_how_to_fix">How to fix this</string>
-    <string name="crash_no_diagnosis">No specific cause was recognised automatically. Use Advanced Log below to see the full details, and share it if you need help.</string>
-    <string name="crash_show_advanced_log">Advanced Log</string>
+    <string name="crash_no_diagnosis">No specific cause was recognised automatically. Use Advanced Log below to see the full details, and share it developers if you need help.</string>
+    <string name="crash_show_advanced_log">Show Advanced Log</string>
     <string name="crash_hide_advanced_log">Hide Advanced Log</string>
     <string name="crash_copy_log">Copy</string>
-    <string name="crash_log_copied">Log copied to clipboard</string>
+    <string name="crash_log_copied">Logs copied to clipboard</string>
     <string name="crash_repair_button">Fix it</string>
     <string name="self_heal_repairing">Issues Found.\nRepairing automatically...</string>
     <string name="crash_search_online_button">Search online</string>

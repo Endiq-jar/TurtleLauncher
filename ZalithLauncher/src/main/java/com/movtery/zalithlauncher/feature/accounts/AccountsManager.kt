@@ -105,6 +105,11 @@ object AccountsManager {
             ?.forEach { file ->
                 try {
                     MinecraftAccount.parse(Tools.read(file))?.let {
+                        // Repair any legacy account state on load (notably the all-zero
+                        // profileId on old local/"cracked" accounts - see
+                        // MinecraftAccount.normalize()) so every account the launcher
+                        // holds, regardless of load path, gets the same fix applied.
+                        it.normalize()
                         if (!accounts.contains(it)) accounts.add(it)
                     }
                 } catch (e: IOException) {

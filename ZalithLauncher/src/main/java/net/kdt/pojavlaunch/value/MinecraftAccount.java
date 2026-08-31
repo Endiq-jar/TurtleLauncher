@@ -35,6 +35,13 @@ public class MinecraftAccount {
     private final String uniqueUUID = UUID.randomUUID().toString().toLowerCase(Locale.ROOT);
 
     /**
+     * The all-zero placeholder profile UUID that local accounts were saved with before
+     * the offline-UUID fix below landed. Checked explicitly (not just null) because this
+     * exact string is the field's default and was persisted to disk for every account.
+     */
+    public static final String NULL_PROFILE_ID = "00000000-0000-0000-0000-000000000000";
+
+    /**
      * TurtleLauncher CRASH/BUG FIX: LOCAL (offline) accounts were being created with
      * profileId left at its default "00000000-0000-0000-0000-000000000000" (see
      * MinecraftAccount field default above) — every single local account launched
@@ -52,6 +59,49 @@ public class MinecraftAccount {
         return java.util.UUID.nameUUIDFromBytes(
             ("OfflinePlayer:" + username).getBytes(java.nio.charset.StandardCharsets.UTF_8)
         );
+    }
+
+    /**
+     * True for plain offline/local ("cracked") accounts. Other-Login (authlib-injector)
+     * accounts store the server name as their accountType and carry a real profileId from
+     * that server, so they must NOT be treated as local; neither must Microsoft accounts
+     * ("Microsoft"). Only the exact LOCAL type string marks a cracked account.
+     */
+    public boolean isLocalAccount() {
+        return com.movtery.zalithlauncher.feature.accounts.AccountType.LOCAL.getType().equals(accountType);
+    }
+
+    /**
+     * The profileId that should actually be used as the game's auth_uuid (and as the key
+     * for local skin/cape textures). This is the single choke point for the "cracked
+     * account can't join servers" bug: accounts created BEFORE the offline-UUID fix still
+     * sit on disk with {@link #NULL_PROFILE_ID}, and the launcher used to send that
+     * all-zero UUID to the game for every one of them. Many cracked servers (and their
+     * anti-cheat/auth plugins) reject the null UUID outright, and every such account
+     * collided on the same identity for save data. Regenerating the deterministic vanilla
+     * offline UUID here means both freshly created AND pre-existing local accounts always
+     * launch with a real, stable, per-username identity.
+     */
+    public String getEffectiveProfileId() {
+        if (isLocalAccount() && (profileId == null || NULL_PROFILE_ID.equals(profileId))) {
+            return generateOfflineUUID(username == null ? "Steve" : username).toString();
+        }
+        return profileId == null ? NULL_PROFILE_ID : profileId;
+    }
+
+    /**
+     * Fills in any null/legacy field values (and repairs a null/zero profileId on local
+     * accounts) after the account is read back from disk. Kept idempotent so it's safe to
+     * call on accounts that were already correct. Used by both load paths -
+     * {@link #loadFromUniqueUUID} and AccountsManager#reloadInternal - so a fix applied
+     * here covers every account object the launcher ever holds.
+     */
+    public void normalize() {
+        if (accessToken == null) accessToken = "0";
+        if (clientToken == null) clientToken = "0";
+        if (username == null) username = "0";
+        if (msaRefreshToken == null) msaRefreshToken = "0";
+        profileId = getEffectiveProfileId();
     }
 
     public void updateMicrosoftSkin() {
@@ -92,21 +142,8 @@ public class MinecraftAccount {
         if(!accountExists(uniqueUUID)) return null;
         try {
             MinecraftAccount acc = parse(Tools.read(PathManager.DIR_ACCOUNT_NEW + "/" + uniqueUUID));
-            if (acc.accessToken == null) {
-                acc.accessToken = "0";
-            }
-            if (acc.clientToken == null) {
-                acc.clientToken = "0";
-            }
-            if (acc.profileId == null) {
-                acc.profileId = "00000000-0000-0000-0000-000000000000";
-            }
-            if (acc.username == null) {
-                acc.username = "0";
-            }
-            if (acc.msaRefreshToken == null) {
-                acc.msaRefreshToken = "0";
-            }
+            if (acc == null) return null;
+            acc.normalize();
             return acc;
         } catch(IOException | JsonSyntaxException e) {
             Logging.e(MinecraftAccount.class.getName(), "Caught an exception while loading the profile",e);

@@ -479,6 +479,21 @@ dependencies {
     implementation("net.sourceforge.htmlcleaner:htmlcleaner:2.6.1")
     implementation("com.bytedance:bytehook:1.0.10")
 
+    // PhysX (NVIDIA) Java bindings - https://github.com/fabmax/physx-jni. The Android
+    // flavor ships as a single self-contained AAR (java classes + native libs), MIT
+    // licensed, published on Maven Central. Added per request. Declared and ready; no
+    // call site uses the physics API yet.
+    // CAVEAT (real): the Android AAR only bundles arm64-v8a (aarch64) natives (per the
+    // upstream README) - fine for the primary arm64 build this project ships, but the
+    // armeabi-v7a / x86 / x86_64 APKs would carry the classes with no matching .so. No
+    // load call exists today so nothing crashes, but don't wire PhysX into a 32-bit path
+    // without first getting upstream (or building) those ABIs.
+    implementation("de.fabmax:physx-jni-android:2.7.2")
+
+    // (imgui-java deliberately NOT added: it has no Android native build upstream, so the
+    // binding would be compile-only and any call would UnsatisfiedLinkError - dropped per
+    // request in favor of keeping only PhysX.)
+
     // implementation("net.sourceforge.streamsupport:streamsupport-cfuture:1.7.0")
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"), "exclude" to listOf("ExagearApacheCommons.jar"))))

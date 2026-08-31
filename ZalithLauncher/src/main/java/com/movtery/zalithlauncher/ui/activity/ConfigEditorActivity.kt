@@ -155,7 +155,11 @@ class ConfigEditorActivity : BaseActivity() {
 
     private fun openFile(file: File) {
         if (looksBinary(file)) {
-            AlertDialog.Builder(this)
+            // TurtleLauncher: theme the binary-file warning with the same dark
+            // CustomAlertDialogTheme used by every other AlertDialog in the app (ZHTools,
+            // MultiRTConfigDialog, ListSettingsWrapper, etc.) so it doesn't pop up in the
+            // default light Material dialog that clashes with the rest of the launcher.
+            AlertDialog.Builder(this, R.style.CustomAlertDialogTheme)
                 .setTitle(file.name)
                 .setMessage(R.string.config_editor_binary_warning)
                 .setPositiveButton(R.string.generic_ok) { _, _ -> loadFile(file) }

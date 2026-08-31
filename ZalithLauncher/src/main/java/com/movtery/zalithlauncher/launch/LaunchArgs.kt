@@ -230,7 +230,13 @@ class LaunchArgs(
         verArgMap["auth_session"] = account.accessToken
         verArgMap["auth_access_token"] = account.accessToken
         verArgMap["auth_player_name"] = account.username
-        verArgMap["auth_uuid"] = account.profileId.replace("-", "")
+        // TurtleLauncher fix: use the effective profile id (getEffectiveProfileId) rather
+        // than the raw field - accounts saved before the offline-UUID fix still carry the
+        // all-zero placeholder profileId, and sending that as auth_uuid is what made many
+        // cracked servers reject the join. getEffectiveProfileId regenerates the vanilla
+        // offline UUID for any local account still on the null placeholder, so this is
+        // correct for both new and pre-existing accounts.
+        verArgMap["auth_uuid"] = account.getEffectiveProfileId().replace("-", "")
         verArgMap["auth_xuid"] = account.xuid
         verArgMap["assets_root"] = ProfilePathHome.getAssetsHome()
         verArgMap["assets_index_name"] = versionInfo.assets

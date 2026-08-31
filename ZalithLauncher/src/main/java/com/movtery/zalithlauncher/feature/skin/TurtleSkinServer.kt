@@ -200,13 +200,13 @@ object TurtleSkinServer {
     private fun findLocalAccountByUuid(noDashUuid: String): MinecraftAccount? {
         return runCatching {
             com.movtery.zalithlauncher.feature.accounts.AccountsManager.allAccounts.firstOrNull { acc ->
-                acc.profileId.replace("-", "").lowercase(Locale.ROOT) == noDashUuid
+                acc.getEffectiveProfileId().replace("-", "").lowercase(Locale.ROOT) == noDashUuid
             }
         }.getOrNull()
     }
 
     private fun buildProfileResponse(account: MinecraftAccount): JSONObject {
-        val noDashUuid = account.profileId.replace("-", "").lowercase(Locale.ROOT)
+        val noDashUuid = account.getEffectiveProfileId().replace("-", "").lowercase(Locale.ROOT)
         val skinFile = File(PathManager.DIR_USER_SKIN, account.uniqueUUID + ".png")
         val capeFile = File(PathManager.DIR_USER_SKIN, account.uniqueUUID + "_cape.png")
 

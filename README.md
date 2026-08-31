@@ -10,6 +10,9 @@
 
 <H1 ALIGN= "CENTER">A modern, high-performance Android launcher for Minecraft: Java Edition.</H1>
 
+> Some Part of this launcher is made using ai.<br>
+> Don't consider is dangerous it is 100% safe and secure.
+
 Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher built for Android. Inspired by the open-source launcher **Zalith Launcher**, it combines a modern Material 3 interface with powerful customization, performance optimizations, and extensive modding support.
 
 ![Minecraft](1.jpg)

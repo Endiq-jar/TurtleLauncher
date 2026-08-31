@@ -54,7 +54,13 @@ class ModPackUtils {
                                 MMCPackMeta::class.java
                             )
                             if (verifyMMCPack(mmcPackMeta)) {
+                                // Real MultiMC/Prism exports carry the instance name in
+                                // instance.cfg; fall back to the top-level folder name (which
+                                // MultiMC also names after the instance) and then to the zip
+                                // file's own name, so a hand-built zip still gets a usable name.
                                 val instanceName = MultiMCModPackInstallHelper.readInstanceName(modpackZipFile, mmcBasePath)
+                                    ?: mmcBasePath.trimEnd('/').substringAfterLast('/').takeIf { it.isNotEmpty() }
+                                    ?: zipName.substringBeforeLast('.')
                                 return ModPackInfo(instanceName, ModPackEnum.MULTIMC)
                             }
                         }

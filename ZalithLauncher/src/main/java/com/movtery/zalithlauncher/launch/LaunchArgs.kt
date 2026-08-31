@@ -35,6 +35,7 @@ class LaunchArgs(
         argsList.addAll(getJavaArgs())
         argsList.addAll(getMinecraftJVMArgs())
         argsList.addAll(getCdsArgs())
+        logMissingStandardLibraries()
 
         // ── TurtleLauncher CRASH FIX ────────────────────────────────────────
         // Minecraft's own version JSON (since ~1.19, and especially MC 26.x's
@@ -169,11 +170,34 @@ class LaunchArgs(
      * APK native library folder where liblwjgl.so, libpojavexec.so, libopenal.so,
      * libfreetype.so etc. are installed. Both must be present for the game to find
      * every native library it needs.
+     *
+     * The path composition rule itself now lives in
+     * [com.movtery.zalithlauncher.utils.path.CommonNativeLibraries.nativeLibraryPath] —
+     * the single home of the Pojav-family "common native library standard" — so the
+     * game's launch args and any native-lib validation build from the same source of
+     * truth instead of duplicating the `cache:natives:<nativeLibDir>` string here.
      */
     private fun resolveNativeLibraryPath(): String {
         val versionSpecificNativesDir = File(PathManager.DIR_CACHE, "natives/${minecraftVersion.getVersionName()}")
         if (!versionSpecificNativesDir.exists()) versionSpecificNativesDir.mkdirs()
-        return "${versionSpecificNativesDir.absolutePath}:${PathManager.DIR_NATIVE_LIB}"
+        return com.movtery.zalithlauncher.utils.path.CommonNativeLibraries.nativeLibraryPath(
+            versionSpecificNativesDir,
+            PathManager.DIR_NATIVE_LIB
+        )
+    }
+
+    /**
+     * One-time, log-only validation of the common native library standard: lists any of
+     * the standard Pojav-family libraries missing from the APK's native-lib dir so a
+     * broken/partial native build surfaces as an actionable warning here instead of a
+     * bare UnsatisfiedLinkError mid-launch. Never throws, never blocks the launch.
+     */
+    private fun logMissingStandardLibraries() {
+        val missing = com.movtery.zalithlauncher.utils.path.CommonNativeLibraries
+            .missingStandardLibraries(PathManager.DIR_NATIVE_LIB)
+        if (missing.isNotEmpty()) {
+            Logging.e("LaunchArgs", "Missing standard native libraries from ${PathManager.DIR_NATIVE_LIB}: ${missing.joinToString(", ")}")
+        }
     }
 
     /**

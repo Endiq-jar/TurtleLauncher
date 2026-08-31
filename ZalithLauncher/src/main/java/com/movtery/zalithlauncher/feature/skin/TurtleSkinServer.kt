@@ -234,6 +234,13 @@ object TurtleSkinServer {
             .put("profileName", account.username)
             .put("textures", textures)
 
+        // Slim (Alex) arm model metadata - Mojang's own payload shape. Without this a slim
+        // skin is rendered at classic arm width, which is what "the skin looks stretched /
+        // wrong in-game" actually is. Only emitted when the account is marked slim.
+        if (account.slimModel) {
+            texturesPayload.put("metadata", JSONObject().put("model", "slim"))
+        }
+
         val value = Base64.encodeToString(texturesPayload.toString().toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
         val signature = sign(value)
 
@@ -260,7 +267,7 @@ object TurtleSkinServer {
 
     private fun rootMetadata(): JSONObject {
         val meta = JSONObject()
-            .put("serverName", "TurtleLauncher Local Skin Server")
+            .put("serverName", "Turtle Server")
             .put("implementationName", "turtle-skin-server")
             .put("implementationVersion", "1.0")
             .put("feature.non_email_login", true)

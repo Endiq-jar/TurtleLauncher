@@ -57,7 +57,11 @@ internal object LittleSkinGalleryApi {
         val tid: Long,
         /** Real uploader-given name, unlike laby.net's gallery which has no per-tile name and
          *  falls back to a hash prefix - LittleSkin's `list` response includes `name` directly. */
-        val label: String
+        val label: String,
+        /** Whether this skin is the slim (Alex) arm model - LittleSkin's `type` field is
+         *  `alex` (slim) or `steve` (classic). Carried through so the dialog can mark the
+         *  account slim, otherwise a slim skin renders stretched at classic arm width. */
+        val isSlim: Boolean = false
     )
 
     /** [Trending] mirrors the site's own default "sort by likes" library view; [Search] maps
@@ -116,7 +120,8 @@ internal object LittleSkinGalleryApi {
             val tid = item.optLong("tid", -1L).takeIf { it >= 0 } ?: return@mapNotNull null
             val rawName = item.optString("name").takeIf { it.isNotBlank() } ?: "#$tid"
             if (ContentFilter.isBlockedName(rawName)) return@mapNotNull null
-            GallerySkin(tid, ContentFilter.toDisplayLabel(rawName, tid.toString()))
+            val isSlim = item.optString("type") == "alex"
+            GallerySkin(tid, ContentFilter.toDisplayLabel(rawName, tid.toString()), isSlim)
         }
     }.onFailure { e -> Logging.e("LittleSkinGalleryApi", "Failed to parse skinlib/list response", e) }
         .getOrDefault(emptyList())

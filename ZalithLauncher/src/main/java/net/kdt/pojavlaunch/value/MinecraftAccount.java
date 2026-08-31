@@ -32,6 +32,15 @@ public class MinecraftAccount {
     public String otherAccount;
     public String otherPassword;
     public String accountType;
+    /**
+     * Whether this account's skin uses the slim (Alex) arm model. Emitted by
+     * TurtleSkinServer as textures metadata `"model": "slim"` so the in-game renderer
+     * draws the arms at slim width instead of the default classic width - a mismatch here
+     * is the usual cause of a skin looking "stretched"/wrong in-game even though the PNG
+     * itself is fine. Persisted in the account file like every other field; old accounts
+     * load as false (classic), which is the safe default.
+     */
+    public boolean slimModel = false;
     private final String uniqueUUID = UUID.randomUUID().toString().toLowerCase(Locale.ROOT);
 
     /**

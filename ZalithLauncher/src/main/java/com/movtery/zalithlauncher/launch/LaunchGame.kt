@@ -55,12 +55,15 @@ class LaunchGame {
             // for Fabric/Quilt instances before every launch - see NanoVGNativesFix for why.
             // Local file copy only, no network, so this is safe to run unconditionally and
             // before the network-dependent branches below.
-            runCatching {
-                val loader = version.getVersionInfo()?.loaderInfo?.firstNotNullOfOrNull {
-                    com.movtery.zalithlauncher.feature.download.utils.ModLoaderUtils.getModLoader(it.name)
-                }
-                NanoVGNativesFix.ensureInstalled(context, loader, File(version.getGameDir(), "mods"))
-            }.onFailure { e -> Logging.e("LaunchGame", "NanoVGNativesFix check failed", e) }
+            // Fast Boot: skip this (and every other) pre-launch check entirely.
+            if (!AllSettings.fastBoot.getValue()) {
+                runCatching {
+                    val loader = version.getVersionInfo()?.loaderInfo?.firstNotNullOfOrNull {
+                        com.movtery.zalithlauncher.feature.download.utils.ModLoaderUtils.getModLoader(it.name)
+                    }
+                    NanoVGNativesFix.ensureInstalled(context, loader, File(version.getGameDir(), "mods"))
+                }.onFailure { e -> Logging.e("LaunchGame", "NanoVGNativesFix check failed", e) }
+            }
 
             // TurtleLauncher: renderer/MC-version compatibility warning. RendererCatalog's
             // minMinecraftVersion/maxMinecraftVersion (see that class) were, until now, only
@@ -77,24 +80,27 @@ class LaunchGame {
             // still work - runCatching so a parsing hiccup on some odd version-folder name
             // (e.g. a modpack named non-numerically) can't break launch entirely; it only
             // costs the warning.
-            runCatching {
-                val rendererId = version.getRenderer()
-                val catalogEntry = com.movtery.zalithlauncher.renderer.RendererCatalog.get(rendererId)
-                val mcVersion = version.getVersionName()
-                val maxVersion = catalogEntry?.maxMinecraftVersion
-                val minVersion = catalogEntry?.minMinecraftVersion
-                val exceedsMax = maxVersion != null &&
-                        org.jackhuang.hmcl.util.versioning.VersionNumber.compare(mcVersion, maxVersion) > 0
-                val belowMin = !exceedsMax && minVersion != null &&
-                        org.jackhuang.hmcl.util.versioning.VersionNumber.compare(mcVersion, minVersion) < 0
-                if (exceedsMax || belowMin) {
-                    val boundary = if (exceedsMax) maxVersion else minVersion
-                    val warningRes = if (exceedsMax) R.string.renderer_compat_launch_warning_max else R.string.renderer_compat_launch_warning_min
-                    Logging.w("LaunchGame", "Renderer $rendererId is outside its documented RendererCatalog range " +
-                            "(max=$maxVersion, min=$minVersion) for MC $mcVersion - warning shown, launch not blocked")
-                    Toast.makeText(context, context.getString(warningRes, rendererId, boundary, mcVersion), Toast.LENGTH_LONG).show()
-                }
-            }.onFailure { e -> Logging.e("LaunchGame", "Renderer/MC-version compatibility check failed", e) }
+            // Fast Boot: skipped entirely - this is a diagnostic, not a launch requirement.
+            if (!AllSettings.fastBoot.getValue()) {
+                runCatching {
+                    val rendererId = version.getRenderer()
+                    val catalogEntry = com.movtery.zalithlauncher.renderer.RendererCatalog.get(rendererId)
+                    val mcVersion = version.getVersionName()
+                    val maxVersion = catalogEntry?.maxMinecraftVersion
+                    val minVersion = catalogEntry?.minMinecraftVersion
+                    val exceedsMax = maxVersion != null &&
+                            org.jackhuang.hmcl.util.versioning.VersionNumber.compare(mcVersion, maxVersion) > 0
+                    val belowMin = !exceedsMax && minVersion != null &&
+                            org.jackhuang.hmcl.util.versioning.VersionNumber.compare(mcVersion, minVersion) < 0
+                    if (exceedsMax || belowMin) {
+                        val boundary = if (exceedsMax) maxVersion else minVersion
+                        val warningRes = if (exceedsMax) R.string.renderer_compat_launch_warning_max else R.string.renderer_compat_launch_warning_min
+                        Logging.w("LaunchGame", "Renderer $rendererId is outside its documented RendererCatalog range " +
+                                "(max=$maxVersion, min=$minVersion) for MC $mcVersion - warning shown, launch not blocked")
+                        Toast.makeText(context, context.getString(warningRes, rendererId, boundary, mcVersion), Toast.LENGTH_LONG).show()
+                    }
+                }.onFailure { e -> Logging.e("LaunchGame", "Renderer/MC-version compatibility check failed", e) }
+            }
 
             val networkAvailable = NetworkUtils.isNetworkAvailable(context)
 
@@ -167,12 +173,16 @@ class LaunchGame {
         @Throws(Throwable::class)
         @JvmStatic
         fun runGame(activity: AppCompatActivity, minecraftVersion: Version, version: JMinecraftVersionList.Version) {
-            // Auto Settings Optimizer: pick best renderer+driver+RAM+FPS Boost flags for this device
-            if (AllSettings.autoSettingsOptimizer.getValue()) {
+            // Auto Settings Optimizer: pick best renderer+driver+RAM+FPS Boost flags for this device.
+            // Fast Boot: skip the whole optimizer (GPU probe + RAM tier math) — the user asked
+            // Fast Boot to skip every check so Minecraft boots as fast as possible.
+            if (!AllSettings.fastBoot.getValue() && AllSettings.autoSettingsOptimizer.getValue()) {
                 AutoSettingsOptimizer.apply(activity, version.id ?: "")
             }
 
-            if (!Renderers.isCurrentRendererValid()) {
+            // Fast Boot: skip the renderer-validity check too; use whatever renderer is
+            // already selected without re-validating it first.
+            if (!AllSettings.fastBoot.getValue() && !Renderers.isCurrentRendererValid()) {
                 Renderers.setCurrentRenderer(activity, AllSettings.renderer.getValue())
             }
 

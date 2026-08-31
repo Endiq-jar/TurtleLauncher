@@ -116,7 +116,12 @@ class AllSettings {
 
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
-        @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")
+        /** TurtleLauncher: the "Custom Info" string shown in the lower-left corner of the
+         *  game's main menu (and upper-left of the F3 debug screen). The user asked this to be
+         *  `Turtle Server` only - replacing the old `<mcversion>modded(if modded)TurtleLauncher
+         *  Skin Server` composition. Launcher-name branding elsewhere stays "Turtle Launcher";
+         *  this specific in-game label is deliberately "Turtle Server" per that request. */
+        @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "Turtle Server")
         @JvmStatic val autoSetGameLanguage      = BooleanSettingUnit("autoSetGameLanguage", true)
         @JvmStatic val gameLanguageOverridden   = BooleanSettingUnit("gameLanguageOverridden", false)
         @JvmStatic val setGameLanguage          = StringSettingUnit("setGameLanguage", "system")

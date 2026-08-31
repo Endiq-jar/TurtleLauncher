@@ -79,6 +79,16 @@ public class KeyboardDialog extends FullScreenDialog implements View.OnClickList
             specialButtons.add(getKey(getString(R.string.keycode_scroll_up)));
             specialButtons.add(getKey(getString(R.string.keycode_scroll_down)));
         } else {
+            // TurtleLauncher FIX: this list was missing "Cancel" and "Exit" - ControlData.
+            // getSpecialButtons() (the real source of truth EditControlPopup's Spinner/
+            // mSpecialArray uses) has 11 special entries, but this hardcoded list only had
+            // 9. Since every tag below this point is computed as an offset starting from
+            // specialButtons.size(), being 2 short here silently shifted EVERY regular key's
+            // tag down by 2 relative to what the Spinner-based code expects - e.g. tapping
+            // "K" in this on-screen keyboard actually resolved to "I" (2 letters earlier),
+            // and every other key was off by the same 2-position offset. Order must exactly
+            // mirror ControlData.getSpecialButtons()'s order (that method's own
+            // Collections.reverse() call depends on it).
             specialButtons.add(getKey(getString(R.string.keycode_special_keyboard)));
             specialButtons.add(getKey("GUI"));
             specialButtons.add(getKey(getString(R.string.keycode_special_pri)));
@@ -88,6 +98,8 @@ public class KeyboardDialog extends FullScreenDialog implements View.OnClickList
             specialButtons.add(getKey(getString(R.string.keycode_special_scrollup)));
             specialButtons.add(getKey(getString(R.string.keycode_special_scrolldown)));
             specialButtons.add(getKey(getString(R.string.keycode_special_menu)));
+            specialButtons.add(getKey(getString(R.string.keycode_special_cancel)));
+            specialButtons.add(getKey(getString(R.string.keycode_special_exit)));
         }
 
         List<View> buttons = new ArrayList<>(List.of(

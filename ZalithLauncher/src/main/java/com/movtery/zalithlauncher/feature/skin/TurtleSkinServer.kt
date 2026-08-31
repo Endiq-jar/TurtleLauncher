@@ -206,7 +206,16 @@ object TurtleSkinServer {
     }
 
     private fun buildProfileResponse(account: MinecraftAccount): JSONObject {
-        val noDashUuid = account.getEffectiveProfileId().replace("-", "").lowercase(Locale.ROOT)
+        // Mojang's real response (and what authlib-injector's signature/profileId
+        // validation expects) uses the FULL dashed UUID in both the "id" field and the
+        // textures payload's "profileId". Serving a no-dash UUID there can make
+        // authlib-injector reject the texture property (profileId mismatch against the
+        // requested profile), which shows up in-game as the default Steve/Alex skin
+        // instead of the custom one. The no-dash form is only correct for the texture
+        // URL path (our own internal route) and the request-path UUIDs, which are already
+        // normalized in handleProfileRequest/findLocalAccountByUuid.
+        val dashedUuid = account.getEffectiveProfileId()
+        val noDashUuid = dashedUuid.replace("-", "").lowercase(Locale.ROOT)
         val skinFile = File(PathManager.DIR_USER_SKIN, account.uniqueUUID + ".png")
         val capeFile = File(PathManager.DIR_USER_SKIN, account.uniqueUUID + "_cape.png")
 
@@ -221,7 +230,7 @@ object TurtleSkinServer {
 
         val texturesPayload = JSONObject()
             .put("timestamp", System.currentTimeMillis())
-            .put("profileId", noDashUuid)
+            .put("profileId", dashedUuid)
             .put("profileName", account.username)
             .put("textures", textures)
 
@@ -234,7 +243,7 @@ object TurtleSkinServer {
             .put("signature", signature)
 
         return JSONObject()
-            .put("id", noDashUuid)
+            .put("id", dashedUuid)
             .put("name", account.username)
             .put("properties", JSONArray().put(property))
     }

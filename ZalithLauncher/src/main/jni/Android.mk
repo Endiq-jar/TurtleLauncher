@@ -11,8 +11,14 @@ LOCAL_PATH := $(HERE_PATH)
 $(call import-module,prefab/bytehook)
 LOCAL_PATH := $(HERE_PATH)
 
+# headers are referenced as <ctxbridges/...>, <environ/...>, <logger/...> etc.
+# from inside those subdirectories, so every module needs the jni root on its
+# include path.
+COMMON_C_INCLUDES := $(HERE_PATH)
+
 
 include $(CLEAR_VARS)
+LOCAL_C_INCLUDES := $(COMMON_C_INCLUDES)
 LOCAL_LDLIBS := -ldl -llog -landroid
 LOCAL_MODULE := pojavexec
 LOCAL_SHARED_LIBRARIES := driver_helper
@@ -43,6 +49,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
+LOCAL_C_INCLUDES := $(COMMON_C_INCLUDES)
 LOCAL_MODULE := exithook
 LOCAL_LDLIBS := -ldl -llog
 LOCAL_SHARED_LIBRARIES := bytehook pojavexec
@@ -51,6 +58,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
+LOCAL_C_INCLUDES := $(COMMON_C_INCLUDES)
 LOCAL_LDLIBS := -ldl -llog -landroid
 LOCAL_MODULE := driver_helper
 LOCAL_SRC_FILES := \
@@ -66,6 +74,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
+LOCAL_C_INCLUDES := $(COMMON_C_INCLUDES)
 LOCAL_MODULE := linkerhook
 LOCAL_SRC_FILES := \
     linkerhook/linkerhook.cpp \
@@ -75,6 +84,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
+LOCAL_C_INCLUDES := $(COMMON_C_INCLUDES)
 LOCAL_MODULE := pojavexec_awt
 LOCAL_SRC_FILES := \
     awt_bridge.c
@@ -82,12 +92,15 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
+LOCAL_C_INCLUDES := $(COMMON_C_INCLUDES)
 LOCAL_MODULE := awt_headless
+LOCAL_SRC_FILES := awt_headless_stub.c
 include $(BUILD_SHARED_LIBRARY)
 
 
 LOCAL_PATH := $(HERE_PATH)/awt_xawt
 include $(CLEAR_VARS)
+LOCAL_C_INCLUDES := $(COMMON_C_INCLUDES)
 LOCAL_MODULE := awt_xawt
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_SHARED_LIBRARIES := awt_headless

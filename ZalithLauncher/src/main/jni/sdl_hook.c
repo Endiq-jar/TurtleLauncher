@@ -53,10 +53,9 @@ typedef void (*SDL_SetHint_t)(const char *name, const char *value);
 typedef bool (*SDL_SetError_t)(const char *fmt, ...);
 typedef const char* (*SDL_GetError_t)(void);
 
-DECL_DLSYM(SDL_InitSubSystem)
-DECL_DLSYM(SDL_SetHint)
-DECL_DLSYM(SDL_SetError)
-DECL_DLSYM(SDL_GetError)
+static SDL_SetHint_t SDL_SetHint_p = NULL;
+static SDL_SetError_t SDL_SetError_p = NULL;
+static SDL_GetError_t SDL_GetError_p = NULL;
 
 static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     // Run CallbackBridge.notifyLauncher() on the real Dalvik JNIEnv before
@@ -65,7 +64,7 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     TRY_ATTACH_ENV(dvm_env, pojav_environ->dalvikJavaVMPtr, "SDL_InitSubSystem: failed to attach to the launcher's JVM, SDL launcher-integration setup was skipped",
             void* sdl3_handle = dlopen("libSDL3.so", RTLD_NOLOAD);
             if (sdl3_handle) {
-                SET_DLSYM_PTR(sdl3_handle, SDL_SetError);
+                SET_DLSYM_PTR(SDL_SetError_p, sdl3_handle, SDL_SetError);
                 if (SDL_SetError_p) SDL_SetError_p("Failed to attach to the launcher's JVM for SDL setup - this is not an SDL bug, please report it to the launcher developer.");
             }
             return false;
@@ -78,13 +77,13 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     // (false) default.
     void* sdl3_handle = dlopen("libSDL3.so", RTLD_NOLOAD);
     if (sdl3_handle) {
-        SET_DLSYM_PTR(sdl3_handle, SDL_SetHint);
+        SET_DLSYM_PTR(SDL_SetHint_p, sdl3_handle, SDL_SetHint);
         if (SDL_SetHint_p) SDL_SetHint_p("SDL_RETURN_KEY_HIDES_IME", "true");
     }
 
     bool r = BYTEHOOK_CALL_PREV(custom_SDL_InitSubSystem_Func, SDL_InitSubSystem_t, flags);
     if (!r && sdl3_handle) {
-        SET_DLSYM_PTR(sdl3_handle, SDL_GetError);
+        SET_DLSYM_PTR(SDL_GetError_p, sdl3_handle, SDL_GetError);
         if (SDL_GetError_p) LOG_TO_E("SDL_InitSubSystem error: %s", SDL_GetError_p());
     }
     BYTEHOOK_POP_STACK();

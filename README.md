@@ -7,6 +7,8 @@
 ![License](https://img.shields.io/github/license/Endiq-jar/TurtleLauncher?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android)
 ![Last Commit](https://img.shields.io/github/last-commit/Endiq-jar/TurtleLauncher?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/Turtle-Officials-brightgreen?style=for-the-badge&logoColor=red)
+
 
 <H1 ALIGN= "CENTER">A modern, high-performance Android launcher for Minecraft: Java Edition.</H1>
 

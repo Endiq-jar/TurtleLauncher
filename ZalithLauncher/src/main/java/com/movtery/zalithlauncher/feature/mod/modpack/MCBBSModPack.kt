@@ -46,6 +46,11 @@ class MCBBSModPack(private val context: Context, private val zipFile: File?) {
                 val fileCounters = AtomicInteger() //文件数量计数
                 val length = mcbbsPackMeta.files.size
 
+                // Zip-slip guard (same rule as ZipUtils.zipExtract): file.path comes from the
+                // pack's manifest, so a malicious pack can name a "../"-style path and write
+                // outside the instance folder. Resolve canonically and reject escapes.
+                val canonicalVersionFolder = versionFolder.canonicalFile
+
                 for (file in mcbbsPackMeta.files) {
                     if (isCanceled) {
                         cancel(versionFolder)
@@ -55,7 +60,8 @@ class MCBBSModPack(private val context: Context, private val zipFile: File?) {
                     val entry = modpackZipFile.getEntry(overridesDir + file.path)
                     if (entry != null) {
                         val entryName = entry.name
-                        val zipDestination = File(versionFolder, entryName.substring(dirNameLen))
+                        val zipDestination = File(versionFolder, entryName.substring(dirNameLen)).canonicalFile
+                        if (!zipDestination.startsWith(canonicalVersionFolder)) continue // path traversal attempt
                         if (zipDestination.exists() && !file.force) continue
 
                         val fileHash = FileTools.calculateFileHash(modpackZipFile.getInputStream(entry), "SHA-1")
@@ -118,16 +124,20 @@ class MCBBSModPack(private val context: Context, private val zipFile: File?) {
         var version = ""
         var modLoader = ""
         var modLoaderVersion = ""
-        for (i in 0..addons.size) {
-            if (addons[i]!!.id == "game") {
-                version = addons[i]!!.version
+        // TurtleLauncher bugfix: was `for (i in 0..addons.size)` - an inclusive range that
+        // iterates one past the end, throwing ArrayIndexOutOfBoundsException at i == addons.size
+        // on every MCBBS import. Also dereferenced `addons[i]!!` before the null check, so a
+        // null addon entry (legal after index 0 - verifyMCBBSPackMeta only validates addons[0])
+        // threw NPE. Iterate elements directly and skip nulls.
+        for (addon in addons) {
+            addon ?: continue
+            if (addon.id == "game") {
+                version = addon.version
                 continue
             }
-            if (addons[i] != null) {
-                modLoader = addons[i]!!.id
-                modLoaderVersion = addons[i]!!.version
-                break
-            }
+            modLoader = addon.id
+            modLoaderVersion = addon.version
+            break
         }
         val modloader = when (modLoader) {
             "forge" -> ModLoader.FORGE

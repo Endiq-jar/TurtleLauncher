@@ -8,10 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # TurtleLauncher APK size: build one small per-ABI APK instead of a single
-    # giant universal APK. Every architecture is still produced - arm64
-    # (~95% of devices), armeabi-v7a (32-bit ARM), x86, x86_64 - just as
-    # separate downloads so nobody loses support.
     strategy:
       fail-fast: false
       matrix:
@@ -25,8 +21,6 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # Works whether gradlew lives at the repo root or one level down
-      # (e.g. TurtleLauncher/gradlew) - no need to hardcode the layout.
       - name: Locate the Android project root
         id: locate
         run: |
@@ -47,13 +41,6 @@ jobs:
           echo "gradle_version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Target Gradle version: $VERSION"
 
-      # Fixes: "Could not find or load main class org.gradle.wrapper.GradleWrapperMain"
-      # That error means gradle/wrapper/gradle-wrapper.jar is missing, empty, or corrupt
-      # in the repo - common with GitHub's web "Add files via upload" flow, which can
-      # silently drop or mangle binary files. Rather than debug how it got lost, this
-      # provisions a real Gradle install and has it write a fresh, correct wrapper jar
-      # before gradlew is ever invoked, so the build no longer depends on whatever
-      # actually made it into the repo.
       - name: Provision Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -62,18 +49,21 @@ jobs:
       - name: Regenerate the Gradle wrapper jar
         working-directory: ${{ steps.locate.outputs.dir }}
         run: gradle wrapper --gradle-version ${{ steps.locate.outputs.gradle_version }}
-
-      # The Termux build pins aapt2 to a Termux-only ARM64 binary path that doesn't
-      # exist on a normal Linux runner. Strip it so AGP falls back to the standard
-      # aapt2 pulled from Google's Maven repo. Harmless no-op if the line isn't there.
+        
       - name: Remove Termux-only aapt2 override
         run: sed -i '/android.aapt2FromMavenOverride/d' "${{ steps.locate.outputs.dir }}/gradle.properties" || true
 
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 
-      # -Darch maps to build.gradle.kts's splits block:
-      #   arm64 -> arm64-v8a, arm -> armeabi-v7a, x86 -> x86, x86_64 -> x86_64
+      - name: Set up Android SDK (sdkmanager on PATH)
+        uses: android-actions/setup-android@v3
+
+      - name: Accept SDK licenses and install pinned SDK/NDK components
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "ndk;25.2.9519653"
+
       - name: Build debug APK (${{ matrix.arch }})
         working-directory: ${{ steps.locate.outputs.dir }}
         env:

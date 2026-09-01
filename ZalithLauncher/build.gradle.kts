@@ -258,6 +258,14 @@ android {
     }
 
     buildFeatures {
+        // prefab imports bytehook (see src/main/jni/Android.mk: import-module,prefab/bytehook).
+        // NOTE: with prefab + externalNativeBuild enabled, AGP validates EVERY prefab package
+        // in the dependency graph against the native build. MMKV (com.tencent:mmkv:2.4.1) used
+        // to be declared here and failed that validation - its prefab libs ship a statically
+        // linked STL and no 32-bit variants, so configureNdkBuildDebug died with CXX1210
+        // (armeabi-v7a/x86) and CXX1211 (arm64-v8a/x86_64). It was unused ("declared and
+        // ready" only), so it was removed; if real MMKV integration ever lands, use the 1.3.x
+        // LTS line (32-bit + dynamic-STL prefab) or drop the 32-bit ABIs.
         prefab = true
         buildConfig = true
         viewBinding = true
@@ -413,17 +421,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
-    // MMKV - fast mmap-backed key-value store from Tencent. Declared and ready; AllSettings'
-    // existing SettingUnit classes (BooleanSettingUnit/StringSettingUnit/etc.) are still on
-    // SharedPreferences underneath - migrating them to MMKV is a real, separate change (their
-    // read/write internals, not just the dependency) that hasn't been done this round.
-    // CAVEAT (real, unresolved): MMKV dropped 32-bit arch + API<23 support as of v2.0.0 per its
-    // own docs - this project still ships armeabi-v7a/x86 (32-bit) builds per the jniLibs ABI
-    // set. Using this version as-is on a 32-bit device would be a real crash risk once anything
-    // actually calls into it. The 1.3.x LTS line keeps 32-bit support if that matters more than
-    // being on latest - flagging rather than picking silently.
-    implementation("com.tencent:mmkv:2.4.1")
-
     // Okio - modern I/O library from Square. Already present transitively via OkHttp 4.12.0
     // (which depends on an older 3.x Okio internally), but relying on a transitive version
     // means it can shift under this project any time the OkHttp version changes, with no
@@ -438,8 +435,8 @@ dependencies {
     // AndroidX DataStore (Preferences variant) - SharedPreferences replacement with a
     // coroutines/Flow-based API and no synchronous-disk-I/O-on-main-thread footgun (which
     // SharedPreferences' commit()/apply() edge cases have). AllSettings' SettingUnit classes
-    // are still on SharedPreferences underneath, same as the MMKV note above - migrating them
-    // is a real, separate change to SettingUnit's internals, not done this round. Requires
+    // are still on SharedPreferences underneath - migrating them is a real, separate change
+    // to SettingUnit's internals, not done this round. Requires
     // kotlinx-coroutines (already present above) to actually use its Flow-based read API.
     implementation("androidx.datastore:datastore-preferences:1.2.1")
 

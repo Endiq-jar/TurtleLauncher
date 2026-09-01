@@ -116,7 +116,12 @@ class AllSettings {
 
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
-        @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")
+        /** TurtleLauncher: the "Custom Info" string shown in the lower-left corner of the
+         *  game's main menu (and upper-left of the F3 debug screen). The user asked this to be
+         *  `Turtle Server` only - replacing the old `<mcversion>modded(if modded)TurtleLauncher
+         *  Skin Server` composition. Launcher-name branding elsewhere stays "Turtle Launcher";
+         *  this specific in-game label is deliberately "Turtle Server" per that request. */
+        @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "Turtle Server")
         @JvmStatic val autoSetGameLanguage      = BooleanSettingUnit("autoSetGameLanguage", true)
         @JvmStatic val gameLanguageOverridden   = BooleanSettingUnit("gameLanguageOverridden", false)
         @JvmStatic val setGameLanguage          = StringSettingUnit("setGameLanguage", "system")
@@ -151,7 +156,10 @@ class AllSettings {
         // too if the LAN toggle below is on and whoever runs the multiplayer server points
         // their own authlib-injector at this device's LAN address).
         @JvmStatic val localSkinServerEnabled   = BooleanSettingUnit("localSkinServerEnabled", true)
-        @JvmStatic val localSkinServerLanVisible = BooleanSettingUnit("localSkinServerLanVisible", false)
+        /** TurtleLauncher: default ON (per user request) - bind the local skin server to
+         *  0.0.0.0 so other players on the same LAN can reach it (and a multiplayer server
+         *  whose authlib-injector points here can serve this account's skin server-side). */
+        @JvmStatic val localSkinServerLanVisible = BooleanSettingUnit("localSkinServerLanVisible", true)
         /** Epoch millis of the last automatic cleanup run - rate-limits AutoCleanup to once a
          *  day so it doesn't re-scan every version's crash-reports folder on every single launch. */
         @JvmStatic val lastAutoCleanupTime      = LongSettingUnit("lastAutoCleanupTime", 0L)

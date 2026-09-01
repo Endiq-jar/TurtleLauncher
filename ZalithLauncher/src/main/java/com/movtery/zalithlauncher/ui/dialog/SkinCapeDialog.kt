@@ -53,6 +53,8 @@ class SkinCapeDialog(
     private var browseResolvedUrl: String? = null
     /** The username that resolved [browseResolvedUrl], kept alongside it for history labeling. */
     private var browseResolvedUsername: String? = null
+    /** Whether the last successful Browse search resolved to a slim (Alex) skin. */
+    private var browseResolvedSlim: Boolean = false
 
     private var labyGalleryPage = 1
     private var labyGalleryQuery: LabyModGalleryApi.GalleryQuery = LabyModGalleryApi.GalleryQuery.Trending
@@ -65,6 +67,17 @@ class SkinCapeDialog(
 
         val titleRes = if (mode == "cape") R.string.skin_cape_change_cape else R.string.skin_cape_change_skin
         binding.title.setText(titleRes)
+
+        // Slim (Alex) arm model toggle - skin mode only. Marks the account so
+        // TurtleSkinServer emits "metadata":{"model":"slim"} and the game doesn't render a
+        // slim skin at classic arm width (the "stretched" look).
+        if (mode == "skin") {
+            binding.checkSlimModel.visibility = View.VISIBLE
+            binding.checkSlimModel.isChecked = account.slimModel
+            binding.checkSlimModel.setOnCheckedChangeListener { _, isChecked ->
+                applySlimModel(isChecked)
+            }
+        }
 
         galleryLauncher = activity.activityResultRegistry.register(
             "SkinCapeGallery_$mode",
@@ -102,6 +115,9 @@ class SkinCapeDialog(
         binding.buttonBrowseApply.setOnClickListener {
             val url = browseResolvedUrl ?: return@setOnClickListener
             val label = browseResolvedUsername ?: context.getString(R.string.skin_cape_gallery_source_lookup)
+            // Browse search resolves the slim/classic model from Mojang - carry it over so a
+            // slim skin doesn't render stretched at classic arm width.
+            applySlimModel(browseResolvedSlim)
             applyFromUrl(url, label)
         }
 
@@ -133,7 +149,7 @@ class SkinCapeDialog(
             TurtleSkinServer.ensureStarted(true)
             val instructions = TurtleSkinServer.lanInstructions()
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("TurtleLauncher skin server", instructions))
+            clipboard.setPrimaryClip(ClipData.newPlainText("Turtle Server", instructions))
             Toast.makeText(context, R.string.skin_cape_instructions_copied, Toast.LENGTH_SHORT).show()
         }
     }
@@ -225,6 +241,7 @@ class SkinCapeDialog(
             binding.buttonBrowseApply.isEnabled = false
             browseResolvedUrl = null
             browseResolvedUsername = null
+            browseResolvedSlim = false
             return
         }
 
@@ -234,6 +251,18 @@ class SkinCapeDialog(
         binding.buttonBrowseApply.isEnabled = true
         browseResolvedUrl = result.resolvedUrl
         browseResolvedUsername = username
+        browseResolvedSlim = lookup.isSlim
+    }
+
+    /** Applies the slim/classic arm-model choice to the account and keeps the checkbox in sync. */
+    private fun applySlimModel(slim: Boolean) {
+        if (mode != "skin") return
+        account.slimModel = slim
+        runCatching { account.save() }
+            .onFailure { e -> Logging.e("SkinCapeDialog", "Failed to save slim model setting", e) }
+        binding.checkSlimModel.setOnCheckedChangeListener(null)
+        binding.checkSlimModel.isChecked = slim
+        binding.checkSlimModel.setOnCheckedChangeListener { _, isChecked -> applySlimModel(isChecked) }
     }
 
     private fun applyFromUri(uri: Uri) {
@@ -511,6 +540,9 @@ class SkinCapeDialog(
     private fun applyLittleSkinGallerySkin(skin: LittleSkinGalleryApi.GallerySkin) {
         if (binding.progressBar.visibility == View.VISIBLE) return // an apply is already in flight
         val destFile = getDestFile()
+        // LittleSkin reports the arm model per skin (alex = slim) - carry it over so a slim
+        // skin isn't rendered stretched at classic arm width.
+        applySlimModel(skin.isSlim)
         showProgress(true)
         Task.runTask {
             val textureBytes = LittleSkinGalleryApi.resolveApplyTexture(skin.tid)

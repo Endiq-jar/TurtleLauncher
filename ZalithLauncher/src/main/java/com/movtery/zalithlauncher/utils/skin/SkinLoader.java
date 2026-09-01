@@ -59,9 +59,11 @@ public class SkinLoader {
     }
 
     private static Drawable getDefaultAvatar(Context context, int size) throws Exception {
-        InputStream is = context.getAssets().open("steve.png");
-        Bitmap bitmap = BitmapFactory.decodeStream(is);
-        return new BitmapDrawable(context.getResources(), getAvatar(bitmap, size));
+        // TurtleLauncher: close the asset stream (was leaked on every default-avatar load).
+        try (InputStream is = context.getAssets().open("steve.png")) {
+            Bitmap bitmap = BitmapFactory.decodeStream(is);
+            return new BitmapDrawable(context.getResources(), getAvatar(bitmap, size));
+        }
     }
 
     public static Bitmap getAvatar(@NotNull Bitmap skin, int size) {

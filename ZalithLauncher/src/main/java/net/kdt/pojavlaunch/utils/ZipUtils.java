@@ -39,12 +39,24 @@ public class ZipUtils {
     public static void zipExtract(ZipFile zipFile, String dirName, File destination) throws IOException {
         Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
 
+        // Resolved once up front - the zip-slip guard below compares every entry against it.
+        // TurtleLauncher: this used to be `new File(destination, entryName.substring(dirNameLen))`
+        // with no validation, so a zip entry named e.g. "../../../../data/..." could escape the
+        // destination directory and write files anywhere the app can reach (the classic
+        // "zip-slip" path-traversal). Every modpack/world/plugin import goes through here, so a
+        // malicious archive was a real, reachable arbitrary-file-write. Entry paths that don't
+        // stay inside the destination are now skipped.
+        File canonicalDestination = destination.getCanonicalFile();
+
         int dirNameLen = dirName.length();
         while(zipEntries.hasMoreElements()) {
             ZipEntry zipEntry = zipEntries.nextElement();
             String entryName = zipEntry.getName();
             if(!entryName.startsWith(dirName) || zipEntry.isDirectory()) continue;
-            File zipDestination = new File(destination, entryName.substring(dirNameLen));
+            File zipDestination = new File(destination, entryName.substring(dirNameLen)).getCanonicalFile();
+            if(!zipDestination.startsWith(canonicalDestination)) {
+                continue; // path traversal attempt - never write outside the destination
+            }
             FileUtils.ensureParentDirectory(zipDestination);
             try (InputStream inputStream = zipFile.getInputStream(zipEntry);
                  OutputStream outputStream = new FileOutputStream(zipDestination)) {

@@ -59,6 +59,10 @@ object TurtleSkinServer {
     private var serverSocket: ServerSocket? = null
     private val running = AtomicBoolean(false)
     private val executor = Executors.newCachedThreadPool()
+    // Written only under @Synchronized (ensureStarted) but read on request-handler threads
+    // (rootMetadata) and anywhere lanInstructions() is called, so it must be volatile for
+    // safe cross-thread visibility.
+    @Volatile
     private var boundLan = false
 
     @Volatile private var port: Int = -1
@@ -200,13 +204,22 @@ object TurtleSkinServer {
     private fun findLocalAccountByUuid(noDashUuid: String): MinecraftAccount? {
         return runCatching {
             com.movtery.zalithlauncher.feature.accounts.AccountsManager.allAccounts.firstOrNull { acc ->
-                acc.profileId.replace("-", "").lowercase(Locale.ROOT) == noDashUuid
+                acc.getEffectiveProfileId().replace("-", "").lowercase(Locale.ROOT) == noDashUuid
             }
         }.getOrNull()
     }
 
     private fun buildProfileResponse(account: MinecraftAccount): JSONObject {
-        val noDashUuid = account.profileId.replace("-", "").lowercase(Locale.ROOT)
+        // Mojang's real response (and what authlib-injector's signature/profileId
+        // validation expects) uses the FULL dashed UUID in both the "id" field and the
+        // textures payload's "profileId". Serving a no-dash UUID there can make
+        // authlib-injector reject the texture property (profileId mismatch against the
+        // requested profile), which shows up in-game as the default Steve/Alex skin
+        // instead of the custom one. The no-dash form is only correct for the texture
+        // URL path (our own internal route) and the request-path UUIDs, which are already
+        // normalized in handleProfileRequest/findLocalAccountByUuid.
+        val dashedUuid = account.getEffectiveProfileId()
+        val noDashUuid = dashedUuid.replace("-", "").lowercase(Locale.ROOT)
         val skinFile = File(PathManager.DIR_USER_SKIN, account.uniqueUUID + ".png")
         val capeFile = File(PathManager.DIR_USER_SKIN, account.uniqueUUID + "_cape.png")
 
@@ -221,9 +234,16 @@ object TurtleSkinServer {
 
         val texturesPayload = JSONObject()
             .put("timestamp", System.currentTimeMillis())
-            .put("profileId", noDashUuid)
+            .put("profileId", dashedUuid)
             .put("profileName", account.username)
             .put("textures", textures)
+
+        // Slim (Alex) arm model metadata - Mojang's own payload shape. Without this a slim
+        // skin is rendered at classic arm width, which is what "the skin looks stretched /
+        // wrong in-game" actually is. Only emitted when the account is marked slim.
+        if (account.slimModel) {
+            texturesPayload.put("metadata", JSONObject().put("model", "slim"))
+        }
 
         val value = Base64.encodeToString(texturesPayload.toString().toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
         val signature = sign(value)
@@ -234,7 +254,7 @@ object TurtleSkinServer {
             .put("signature", signature)
 
         return JSONObject()
-            .put("id", noDashUuid)
+            .put("id", dashedUuid)
             .put("name", account.username)
             .put("properties", JSONArray().put(property))
     }
@@ -251,7 +271,7 @@ object TurtleSkinServer {
 
     private fun rootMetadata(): JSONObject {
         val meta = JSONObject()
-            .put("serverName", "TurtleLauncher Local Skin Server")
+            .put("serverName", "Turtle Server")
             .put("implementationName", "turtle-skin-server")
             .put("implementationVersion", "1.0")
             .put("feature.non_email_login", true)

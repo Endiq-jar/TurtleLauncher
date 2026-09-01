@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.utils.skin
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.utils.path.UrlManager
@@ -15,18 +16,35 @@ class SkinFileDownloader {
 
     /**
      * 尝试下载yggdrasil皮肤
+     *
+     * TurtleLauncher: made defensive - a profile with no skin (empty/missing `properties`),
+     * or one whose `properties` array doesn't lead with the `textures` entry, used to throw
+     * here (IndexOutOfBounds / NPE on `properties.get(0)` / missing `SKIN`). That's the
+     * normal case for any account that simply hasn't set a custom skin, so it should be a
+     * quiet no-op (keep the default skin) rather than an exception. Only a genuinely
+     * malformed response that fails to parse as JSON still throws, which the caller's
+     * try/catch logs.
      */
     @Throws(Exception::class)
     fun yggdrasil(url: String, skinFile: File, uuid: String) {
         val profileJson = DownloadUtils.downloadString("${url.removeSuffix("/")}/session/minecraft/profile/$uuid")
         val profileObject = Tools.GLOBAL_GSON.fromJson(profileJson, JsonObject::class.java)
-        val properties = profileObject.get("properties").asJsonArray
-        val rawValue = properties.get(0).asJsonObject.get("value").asString
 
+        val properties = profileObject?.get("properties") as? JsonArray ?: return
+        // Find the "textures" property by name instead of assuming index 0 - the array order
+        // isn't part of the Yggdrasil contract, only that one entry is named "textures".
+        val texturesProperty = (0 until properties.size())
+            .mapNotNull { properties.get(it) as? JsonObject }
+            .firstOrNull { it.get("name")?.asString == "textures" }
+            ?: return
+
+        val rawValue = texturesProperty.get("value")?.asString ?: return
         val value = StringUtils.decodeBase64(rawValue)
 
         val valueObject = Tools.GLOBAL_GSON.fromJson(value, JsonObject::class.java)
-        val skinUrl = valueObject.get("textures").asJsonObject.get("SKIN").asJsonObject.get("url").asString
+        val textures = valueObject?.get("textures") as? JsonObject ?: return
+        val skin = textures.get("SKIN") as? JsonObject ?: return
+        val skinUrl = skin.get("url")?.asString ?: return
 
         downloadSkin(skinUrl, skinFile)
     }

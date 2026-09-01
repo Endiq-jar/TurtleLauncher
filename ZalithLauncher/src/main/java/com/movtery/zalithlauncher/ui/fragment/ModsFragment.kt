@@ -16,11 +16,16 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.FragmentModsBinding
 import com.movtery.zalithlauncher.feature.download.enums.ModLoader
 import com.movtery.zalithlauncher.feature.download.utils.ModLoaderUtils
+import com.movtery.zalithlauncher.feature.mod.ModAutoMaintenance
 import com.movtery.zalithlauncher.feature.mod.ModToggleHandler
 import com.movtery.zalithlauncher.feature.mod.ModUtils
 import com.movtery.zalithlauncher.feature.mod.RecommendedContentInstaller
+import com.movtery.zalithlauncher.feature.mod.parser.ModInfo
+import com.movtery.zalithlauncher.feature.mod.parser.ModParser
+import com.movtery.zalithlauncher.feature.mod.parser.ModParserListener
 import com.movtery.zalithlauncher.feature.version.Version
 import com.movtery.zalithlauncher.feature.version.VersionsManager
+import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.Task
 import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.dialog.FilesDialog
@@ -262,7 +267,47 @@ class ModsFragment : FragmentWithAnim(R.layout.fragment_mods) {
             fileRecyclerView.lockAndListAt(File(mRootPath), File(mRootPath))
         }
 
+        runModAutoMaintenance()
+
         startNewbieGuide()
+    }
+
+    /**
+     * TurtleLauncher: run the same automatic mod maintenance (missing-dependency install +
+     * update check + conflict scan) that normally only runs before launch, when the player
+     * opens this instance's mods directory. Opening the Mods screen is now enough to surface
+     * "X mods need dependencies" / "updates available" without having to launch the game first.
+     * Best-effort and non-blocking: mods are parsed on a background task, then handed to
+     * [ModAutoMaintenance.runForVersion], which rate-limits itself via its own marker file so
+     * this doesn't spam Modrinth every time the screen is reopened.
+     */
+    private fun runModAutoMaintenance() {
+        val version = resolveVersionForModsRoot() ?: return
+        val dependencyEnabled = AllSettings.autoDependencyInstall.getValue()
+        val updateEnabled = AllSettings.autoModUpdateCheck.getValue()
+        val conflictEnabled = AllSettings.modConflictDetection.getValue()
+        if (!dependencyEnabled && !updateEnabled && !conflictEnabled) return
+
+        // Capture the activity context up front (fragment is attached here) so the dialogs
+        // ModAutoMaintenance shows still have a valid themed context even if the user
+        // navigates away while parsing is still in flight.
+        val dialogContext = requireContext()
+
+        ModParser.checkAllMods(version, object : ModParserListener {
+            override fun onProgress(recentlyParsedModInfo: ModInfo, totalFileCount: Int) {}
+
+            override fun onParseEnded(modInfoList: List<ModInfo>) {
+                if (modInfoList.isEmpty()) return
+                ModAutoMaintenance.runForVersion(
+                    dialogContext, version, modInfoList, Runnable {
+                        // Refresh so any dependency jars installed by maintenance appear at once.
+                        TaskExecutors.getAndroidUI().execute {
+                            if (isAdded) binding.fileRecyclerView.refreshPath()
+                        }
+                    }
+                )
+            }
+        })
     }
 
     private fun startNewbieGuide() {

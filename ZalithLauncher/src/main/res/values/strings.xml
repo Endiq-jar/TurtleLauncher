@@ -529,7 +529,7 @@
     <string name="main_welcome_back">Welcome back!</string>
     <string name="main_welcome_subtitle">Ready to play Minecraft Java Edition</string>
     <!-- Home screen dashboard (top bar + statistics cards) -->
-    <string name="main_top_bar_title">TurtleLauncher</string>
+    <string name="main_top_bar_title">Turtle Launcher</string>
     <string name="main_top_bar_subtitle">Smooth • Fast • Modern </string>
     <string name="main_section_statistics">Today\'s Statistics</string>
     <string name="main_stats_weekly_label">Play Time (Last 7 Days)</string>
@@ -1062,6 +1062,7 @@
     <string name="skin_cape_change_cape">Change Cape</string>
     <string name="skin_cape_url_label">Enter image URL (PNG):</string>
     <string name="skin_cape_apply_url">Apply from URL</string>
+    <string name="skin_cape_slim_model">Slim arms (Alex model)</string>
     <string name="skin_cape_pick_gallery">Pick from Gallery</string>
     <string name="skin_cape_gallery_label">Gallery (tap to apply):</string>
     <string name="skin_cape_gallery_empty">Nothing here yet — skins and capes you apply will show up for quick reuse.</string>

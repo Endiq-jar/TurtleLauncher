@@ -51,7 +51,21 @@ class MultiMCModPackInstallHelper {
                 if (contentPrefix != null) {
                     ZipUtils.zipExtract(zip, contentPrefix, targetPath)
                 } else {
-                    Logging.i(TAG, "No .minecraft/ content folder under '$basePath' - importing loader/version only")
+                    // Hand-built / non-standard export where the instance content sits
+                    // directly under the instance folder with no .minecraft/ wrapper.
+                    // Don't throw that content away ("importing loader/version only" used to
+                    // silently drop every mod/save/config in the zip) - extract the whole
+                    // instance folder, skipping only the MultiMC metadata files and the
+                    // loader-internal folders this launcher rebuilds itself on install.
+                    Logging.i(TAG, "No .minecraft/ content folder under '$basePath' - importing instance folder content directly")
+                    extractInstanceContent(zip, basePath, targetPath)
+                }
+
+                // MultiMC instances carry user jar-mods OUTSIDE .minecraft/ (a sibling
+                // "jarmods/" folder at the instance root). These are the user's actual mods,
+                // so preserve them rather than silently dropping them like the old importer.
+                if (entryExistsUnder(zip, "${basePath}jarmods/")) {
+                    ZipUtils.zipExtract(zip, "${basePath}jarmods/", File(targetPath, "jarmods"))
                 }
 
                 return createLoaderInfo(packMeta)
@@ -96,6 +110,42 @@ class MultiMCModPackInstallHelper {
                 if (entries.nextElement().name.startsWith(prefix)) return true
             }
             return false
+        }
+
+        /**
+         * Extracts everything under [basePath] into [targetPath], except the MultiMC metadata
+         * and loader-internal folders this launcher doesn't need (and would otherwise clutter a
+         * fresh instance or fight the loader it installs itself):
+         *  - `mmc-pack.json` / `instance.cfg` — MultiMC's own instance metadata, not game content.
+         *  - `patches/`, `libraries/` — MultiMC's per-component loader patches/extra libraries;
+         *    the launcher reinstalls the loader from mmc-pack.json and manages its own libs.
+         * Kept separate from ZipUtils.zipExtract (which has no exclusion support) so the
+         * "no .minecraft/ wrapper" fallback path doesn't pull MultiMC internals into the game dir.
+         */
+        private fun extractInstanceContent(zip: ZipFile, basePath: String, targetPath: File) {
+            val excluded = setOf(
+                "${basePath}mmc-pack.json",
+                "${basePath}instance.cfg",
+                "${basePath}patches/",
+                "${basePath}libraries/"
+            )
+            // Zip-slip guard (same rule as ZipUtils.zipExtract): a malicious instance zip with a
+            // "../"-style entry must not be allowed to write outside the target game directory.
+            val canonicalTarget = targetPath.canonicalFile
+            val entries = zip.entries()
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                val name = entry.name
+                if (!name.startsWith(basePath) || entry.isDirectory) continue
+                if (excluded.any { name.startsWith(it) }) continue
+                val relative = name.substring(basePath.length)
+                val destination = File(targetPath, relative).canonicalFile
+                if (!destination.startsWith(canonicalTarget)) continue // path traversal attempt
+                File(destination.parent ?: targetPath.path).mkdirs()
+                zip.getInputStream(entry).use { input ->
+                    destination.outputStream().use { output -> input.copyTo(output) }
+                }
+            }
         }
 
         /** Null return means "no recognized loader component" - a vanilla MultiMC instance,

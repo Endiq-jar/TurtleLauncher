@@ -62,6 +62,19 @@
                 android:text="@string/skin_cape_apply_url"
                 android:layout_marginBottom="@dimen/_8sdp"/>
 
+            <!-- TurtleLauncher: slim (Alex) arm model toggle - only shown in skin mode. A slim
+                 skin rendered at classic arm width looks "stretched", so this lets the user
+                 tell the local skin server which model to advertise (see TurtleSkinServer). -->
+            <CheckBox
+                android:id="@+id/check_slim_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_4sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
+                android:text="@string/skin_cape_slim_model"
+                android:visibility="gone"
+                tools:ignore="UseSwitchCompatOrMaterialXml"/>
+
             <!-- Divider -->
             <View
                 android:layout_width="match_parent"

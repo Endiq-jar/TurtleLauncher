@@ -88,6 +88,7 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 * GL4ES
 * Mesa3D
 * OpenJDK
+* NVIDIA PhysX (physx-jni)
 
 ---
 

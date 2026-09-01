@@ -205,9 +205,17 @@ class LaunchGame {
             val baseArgs = minecraftVersion.getJavaArgs().takeIf { it.isNotBlank() } ?: ""
 
             // Resolve actual required Java version — Mojang's JSON still reports 21
-            // for MC 26.x even though 26.1.2+ requires Java 25. Override here.
+            // for MC 26.x even though 26.1+ requires Java 25. Override here.
             val jsonJavaVersion = version.javaVersion?.majorVersion ?: 8
-            val mcId = version.id ?: ""
+            // TurtleLauncher bugfix (MC 26.3 downloaded Java 21 instead of 25): the resolver was
+            // handed version.id, but for a MODDED instance (Fabric/Forge/Quilt/NeoForge/OptiFine)
+            // version.id is the loader's own id (e.g. "fabric-loader-0.16.10-26.3"), which the
+            // numeric parser can't read - so it fell through to jsonJavaVersion (Mojang's stale
+            // "21") and downloaded Java 21. Use the launcher's own detected vanilla MC version
+            // (VersionInfo.minecraftVersion, parsed at install time and correct for both vanilla
+            // and modded instances) instead, falling back to version.id only if that's absent.
+            val mcId = minecraftVersion.getVersionInfo()?.minecraftVersion
+                ?: version.id ?: ""
             val requiredJava = LaunchArgs.resolveRequiredJava(mcId, jsonJavaVersion)
             val javaRuntime = getRuntime(activity, minecraftVersion, requiredJava)
 

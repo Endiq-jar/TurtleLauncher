@@ -163,9 +163,19 @@ android {
                     afterEvaluate {
                         val task = tasks.named("merge${variantName}Assets").get() as MergeSourceSetFolders
                         task.doLast {
-                            val arch = System.getProperty("arch", "all")
+                            // TurtleLauncher APK size: default to arm64-only. "all" was the old
+                            // default and packed every ABI's native libs (~427MB raw) into one
+                            // universal APK. arm64 covers ~95% of devices and is what Mojo
+                            // Launcher-style small APKs target; other ABIs are still buildable
+                            // via -Darch=arm / -Darch=x86 / -Darch=x86_64 / -Darch=all.
+                            val arch = System.getProperty("arch", "arm64")
                             val assetsDir = task.outputDir.get().asFile
-                            val jreList = listOf("jre-8", "jre-17", "jre-21", "jre-25")
+                            // The only bundled JRE is jre8 (JRE 17/21/25 are downloaded at
+                            // runtime by TurtleJREAutoInstaller, not shipped as assets). Prune it
+                            // to just the target ABI's bin-<arch>.tar.xz + the shared
+                            // universal.tar.xz so a per-ABI APK doesn't carry the other three
+                            // ABIs' ~14MB of JRE archives it will never unpack.
+                            val jreList = listOf("jre8")
                             println("arch:$arch")
                             jreList.forEach { jreVersion ->
                                 val runtimeDir = File("$assetsDir/components/$jreVersion")
@@ -189,7 +199,8 @@ android {
     }
 
     splits {
-        val arch = System.getProperty("arch", "all")
+        // Same arm64-only default as the asset pruning above - see that comment.
+        val arch = System.getProperty("arch", "arm64")
         if (arch != "all") {
             abi {
                 isEnable = true
@@ -220,7 +231,15 @@ android {
 
     packaging {
         jniLibs {
-            useLegacyPackaging = true
+            // TurtleLauncher APK size: useLegacyPackaging = true stores every .so UNCOMPRESSED
+            // (page-aligned, for APK-direct mmap), which is why the APK was ballooning to the
+            // full ~150MB of arm64 native libs. The app loads its natives from the extracted
+            // nativeLibraryDir (PathManager.DIR_NATIVE_LIB = context.applicationInfo.
+            // nativeLibraryDir) - it never mmaps them out of the APK - so legacy packaging buys
+            // nothing here except size. Storing them compressed (measured ~28% of raw, i.e. a
+            // ~72% reduction) with the normal extract-at-install behavior is the single biggest
+            // APK-size lever, and matches what Mojo Launcher-sized builds do.
+            useLegacyPackaging = false
             // TurtleLauncher SDL3 fix: re-enabling externalNativeBuild below means these
             // 7 modules are now actually compiled from src/main/jni/ (Android.mk) instead
             // of only existing as prebuilt jniLibs/*.so - safety net in case anything else

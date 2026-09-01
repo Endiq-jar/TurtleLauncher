@@ -8,11 +8,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # TurtleLauncher APK size: build one small per-ABI APK instead of a single
+    # giant universal APK. Every architecture is still produced - arm64
+    # (~95% of devices), armeabi-v7a (32-bit ARM), x86, x86_64 - just as
+    # separate downloads so nobody loses support.
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, arm, x86, x86_64]
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -64,14 +72,16 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 
-      - name: Build debug APK
+      # -Darch maps to build.gradle.kts's splits block:
+      #   arm64 -> arm64-v8a, arm -> armeabi-v7a, x86 -> x86, x86_64 -> x86_64
+      - name: Build debug APK (${{ matrix.arch }})
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon
+        run: ./gradlew :ZalithLauncher:assembleDebug -Darch=${{ matrix.arch }} --no-daemon
 
-      - name: Upload debug APK
+      - name: Upload debug APK (${{ matrix.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: TurtleLauncher-debug-apk
+          name: TurtleLauncher-debug-apk-${{ matrix.arch }}
           path: "**/build/outputs/apk/debug/*.apk"

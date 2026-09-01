@@ -293,7 +293,7 @@ class ModsFragment : FragmentWithAnim(R.layout.fragment_mods) {
         // navigates away while parsing is still in flight.
         val dialogContext = requireContext()
 
-        ModParser.checkAllMods(version, object : ModParserListener() {
+        ModParser.checkAllMods(version, object : ModParserListener {
             override fun onProgress(recentlyParsedModInfo: ModInfo, totalFileCount: Int) {}
 
             override fun onParseEnded(modInfoList: List<ModInfo>) {

@@ -13,13 +13,17 @@
 #define NOTIF_TYPE_SDL 0
 #define ACTION_INIT_LAUNCHER_INTEGRATION 0
 
-// TurtleLauncher SDL3 fix: small dlsym helpers so sdl_hook.c can call the real
+// TurtleLauncher SDL3 fix: small dlsym helper so sdl_hook.c can call the real
 // (un-hooked) libSDL3.so functions it needs (SDL_SetError/SDL_GetError/SDL_SetHint)
-// without linking directly against libSDL3.so at build time.
-#define DECL_DLSYM(fn) typedef typeof(&fn) fn##_t;
-
-#define SET_DLSYM_PTR(handle, fn)                     \
-    fn##_t fn##_p;                                    \
+// without linking directly against libSDL3.so at build time. Fills a file-scope
+// static pointer previously declared by the caller, e.g.:
+//   static SDL_SetError_t SDL_SetError_p = NULL;
+//   SET_DLSYM_PTR(SDL_SetError_p, handle, SDL_SetError);
+// The function symbols are deliberately never referenced directly here - only via
+// the string. The old DECL_DLSYM macro used `typeof(&fn)` on the untouched symbol
+// names, which cannot compile: the SDL functions are never declared (only their
+// _t typedefs exist), so `typeof(&SDL_SetError)` is an "undeclared identifier" error.
+#define SET_DLSYM_PTR(var, handle, fn)                \
     do {                                               \
         dlerror();                                     \
         void *_p = dlsym((handle), #fn);               \
@@ -28,7 +32,7 @@
             LOG_TO_E("dlsym(%s) failed: %s\n",          \
                  #fn, _e ? _e : "unknown error");       \
         }                                                \
-        fn##_p = (fn##_t)_p;                            \
+        var = (__typeof__(var))_p;                     \
     } while (0)
 
 // TurtleLauncher SDL3 fix: attaches the calling native thread to the real (Dalvik)

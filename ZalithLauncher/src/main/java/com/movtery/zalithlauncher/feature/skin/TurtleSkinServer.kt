@@ -59,6 +59,10 @@ object TurtleSkinServer {
     private var serverSocket: ServerSocket? = null
     private val running = AtomicBoolean(false)
     private val executor = Executors.newCachedThreadPool()
+    // Written only under @Synchronized (ensureStarted) but read on request-handler threads
+    // (rootMetadata) and anywhere lanInstructions() is called, so it must be volatile for
+    // safe cross-thread visibility.
+    @Volatile
     private var boundLan = false
 
     @Volatile private var port: Int = -1

@@ -129,6 +129,9 @@ class MultiMCModPackInstallHelper {
                 "${basePath}patches/",
                 "${basePath}libraries/"
             )
+            // Zip-slip guard (same rule as ZipUtils.zipExtract): a malicious instance zip with a
+            // "../"-style entry must not be allowed to write outside the target game directory.
+            val canonicalTarget = targetPath.canonicalFile
             val entries = zip.entries()
             while (entries.hasMoreElements()) {
                 val entry = entries.nextElement()
@@ -136,7 +139,8 @@ class MultiMCModPackInstallHelper {
                 if (!name.startsWith(basePath) || entry.isDirectory) continue
                 if (excluded.any { name.startsWith(it) }) continue
                 val relative = name.substring(basePath.length)
-                val destination = File(targetPath, relative)
+                val destination = File(targetPath, relative).canonicalFile
+                if (!destination.startsWith(canonicalTarget)) continue // path traversal attempt
                 File(destination.parent ?: targetPath.path).mkdirs()
                 zip.getInputStream(entry).use { input ->
                     destination.outputStream().use { output -> input.copyTo(output) }

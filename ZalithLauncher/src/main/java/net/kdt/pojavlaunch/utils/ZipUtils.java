@@ -46,7 +46,7 @@ public class ZipUtils {
         // "zip-slip" path-traversal). Every modpack/world/plugin import goes through here, so a
         // malicious archive was a real, reachable arbitrary-file-write. Entry paths that don't
         // stay inside the destination are now skipped.
-        File canonicalDestination = destination.getCanonicalFile();
+        String canonicalDestinationPath = destination.getCanonicalFile().getPath();
 
         int dirNameLen = dirName.length();
         while(zipEntries.hasMoreElements()) {
@@ -54,7 +54,11 @@ public class ZipUtils {
             String entryName = zipEntry.getName();
             if(!entryName.startsWith(dirName) || zipEntry.isDirectory()) continue;
             File zipDestination = new File(destination, entryName.substring(dirNameLen)).getCanonicalFile();
-            if(!zipDestination.startsWith(canonicalDestination)) {
+            // java.io.File has no startsWith() - compare the canonical paths as strings instead,
+            // making sure we match on a full path segment ("/dest/evil" must not pass for "/dest").
+            String zipDestinationPath = zipDestination.getPath();
+            if(!zipDestinationPath.equals(canonicalDestinationPath)
+                    && !zipDestinationPath.startsWith(canonicalDestinationPath + File.separator)) {
                 continue; // path traversal attempt - never write outside the destination
             }
             FileUtils.ensureParentDirectory(zipDestination);

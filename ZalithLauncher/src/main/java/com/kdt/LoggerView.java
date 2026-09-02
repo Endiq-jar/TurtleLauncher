@@ -31,6 +31,65 @@ public class LoggerView extends ConstraintLayout {
     private final StringBuilder rawLogBuffer = new StringBuilder();
     private java.util.regex.Pattern activeFilter = null;
 
+    // TurtleLauncher perf: log lines are batched instead of being applied one at a time.
+    // A Minecraft launch emits thousands of lines, and each one used to mean its own Handler
+    // post, its own TextView.append() (which re-lays out the entire buffer the view holds, so
+    // O(n) per line and O(n^2) over a session) and its own fullScroll(). Lines now accumulate
+    // in pendingLines from the native logger callback thread and are applied at most once per
+    // FLUSH_INTERVAL_MS, as a single append plus a single scroll.
+    private static final long FLUSH_INTERVAL_MS = 100L;
+    // Bound what stays on screen; the old TODO "clamp the max text so it doesn't go oob" is the
+    // other half of the same problem - an unbounded TextView layout keeps getting slower.
+    private static final int MAX_VISIBLE_CHARS = 200_000;
+    private static final int TRIM_TO_CHARS = 150_000;
+
+    private final Object pendingLock = new Object();
+    private final StringBuilder pendingLines = new StringBuilder();
+    private boolean flushScheduled = false;
+
+    // Must be a stable Runnable instance: removeCallbacks() matches by identity, so
+    // this::method references would not be removable.
+    private final Runnable flushPendingLog = () -> {
+        String batch;
+        synchronized (pendingLock) {
+            flushScheduled = false;
+            if (pendingLines.length() == 0) return;
+            batch = pendingLines.toString();
+            pendingLines.setLength(0);
+        }
+
+        rawLogBuffer.append(batch);
+        if (rawLogBuffer.length() > 2_000_000) {
+            rawLogBuffer.delete(0, rawLogBuffer.length() - 1_500_000);
+        }
+
+        java.util.regex.Pattern filter = activeFilter;
+        if (filter == null) {
+            binding.logView.append(batch);
+        } else {
+            // Same per-line filter decision as before, just applied to the whole batch at once.
+            StringBuilder visible = new StringBuilder();
+            int start = 0;
+            int length = batch.length();
+            while (start <= length) {
+                int end = batch.indexOf('\n', start);
+                if (end < 0) end = length;
+                String line = batch.substring(start, end);
+                if (filter.matcher(line).find()) visible.append(line).append('\n');
+                start = end + 1;
+            }
+            if (visible.length() > 0) binding.logView.append(visible);
+        }
+
+        CharSequence shown = binding.logView.getText();
+        if (shown.length() > MAX_VISIBLE_CHARS) {
+            binding.logView.setText(shown.subSequence(shown.length() - TRIM_TO_CHARS, shown.length()));
+        }
+
+        if (binding.scroll.isKeepFocusing())
+            binding.scroll.fullScroll(View.FOCUS_DOWN);
+    };
+
     public LoggerView(@NonNull Context context) {
         this(context, null);
     }
@@ -91,6 +150,10 @@ public class LoggerView extends ConstraintLayout {
                     } else {
                         binding.logView.setText("");
                         rawLogBuffer.setLength(0);
+                        synchronized (pendingLock) {
+                            pendingLines.setLength(0);
+                        }
+                        removeCallbacks(flushPendingLog);
                         Logger.setLogListener(null); // Makes the JNI code be able to skip expensive logger callbacks
                         // NOTE: was tested by rapidly smashing the log on/off button, no sync issues found :)
                     }
@@ -151,21 +214,16 @@ public class LoggerView extends ConstraintLayout {
         );
         binding.toggleAutoscroll.setChecked(true);
 
-        // Listen to logs
+        // Listen to logs. Called from the native logger callback thread, so pendingLines is
+        // guarded and the actual view work happens on the UI thread in flushPendingLog.
         mLogListener = text -> {
             if (binding.logView.getVisibility() != VISIBLE) return;
-            post(() -> {
-                rawLogBuffer.append(text).append('\n');
-                // Cap the raw buffer so a very long session doesn't grow unbounded.
-                if (rawLogBuffer.length() > 2_000_000) {
-                    rawLogBuffer.delete(0, rawLogBuffer.length() - 1_500_000);
-                }
-                if (activeFilter == null || activeFilter.matcher(text).find()) {
-                    binding.logView.append(text + '\n');
-                    if (binding.scroll.isKeepFocusing())
-                        binding.scroll.fullScroll(View.FOCUS_DOWN);
-                }
-            });
+            synchronized (pendingLock) {
+                pendingLines.append(text).append('\n');
+                if (flushScheduled) return; // a flush is already queued for this burst
+                flushScheduled = true;
+            }
+            postDelayed(flushPendingLog, FLUSH_INTERVAL_MS);
         };
     }
 

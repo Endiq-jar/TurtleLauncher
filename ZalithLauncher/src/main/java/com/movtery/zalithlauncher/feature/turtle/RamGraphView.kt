@@ -33,6 +33,13 @@ class RamGraphView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
+    // TurtleLauncher perf: Path is allocated per draw otherwise. onDraw runs on the UI thread
+    // on every invalidate() - the HUD pushes a sample every refresh tick - so two fresh Path
+    // objects per frame is exactly the kind of short-lived garbage that makes the GC pause
+    // mid-game. Reuse one of each and clear them with reset() instead.
+    private val linePath = Path()
+    private val fillPath = Path()
+
     /** [usedMb]/[maxMb] — pass maxMb <= 0 to clear the graph. */
     fun pushSample(usedMb: Long, maxMb: Long) {
         val ratio = if (maxMb > 0) (usedMb.toFloat() / maxMb.toFloat()).coerceIn(0f, 1f) else 0f
@@ -48,8 +55,10 @@ class RamGraphView @JvmOverloads constructor(
         val stepX = width.toFloat() / (maxSamples - 1).coerceAtLeast(1)
         val startIndex = maxSamples - samples.size
 
-        val line = Path()
-        val fill = Path()
+        val line = linePath
+        val fill = fillPath
+        line.reset()
+        fill.reset()
         samples.forEachIndexed { i, ratio ->
             val x = (startIndex + i) * stepX
             val y = height - (ratio * height)

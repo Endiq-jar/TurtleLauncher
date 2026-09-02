@@ -8,7 +8,6 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.dialog.TipDialog
-import net.kdt.pojavlaunch.Architecture
 import net.kdt.pojavlaunch.Logger
 import net.kdt.pojavlaunch.plugins.FFmpegPlugin
 
@@ -16,7 +15,6 @@ class ModChecker {
     class ModCheckResult() : Parcelable {
         var hasTouchController: Boolean = false
         var hasSodiumOrEmbeddium: Boolean = false
-        var hasPhysics: Boolean = false
         var hasMCEF: Boolean = false
         var hasValkyrienSkies: Boolean = false
         var hasYesSteveModel: Boolean = false
@@ -30,7 +28,6 @@ class ModChecker {
         constructor(parcel: Parcel) : this() {
             hasTouchController = parcel.readInt().toBoolean()
             hasSodiumOrEmbeddium = parcel.readInt().toBoolean()
-            hasPhysics = parcel.readInt().toBoolean()
             hasMCEF = parcel.readInt().toBoolean()
             hasValkyrienSkies = parcel.readInt().toBoolean()
             hasYesSteveModel = parcel.readInt().toBoolean()
@@ -44,7 +41,6 @@ class ModChecker {
         override fun writeToParcel(dest: Parcel, flags: Int) {
             dest.writeInt(hasTouchController.getInt())
             dest.writeInt(hasSodiumOrEmbeddium.getInt())
-            dest.writeInt(hasPhysics.getInt())
             dest.writeInt(hasMCEF.getInt())
             dest.writeInt(hasValkyrienSkies.getInt())
             dest.writeInt(hasYesSteveModel.getInt())
@@ -95,21 +91,6 @@ class ModChecker {
                                 "2",
                                 context.getString(R.string.mod_check_sodium_or_embeddium, mod.file.name)
                             )
-                        }
-                    }
-                    "physicsmod" -> {
-                        if (!modResult.hasPhysics) {
-                            modResult.hasPhysics = true
-                            val arch = AndroidUtil.getElfArchFromZip(
-                                mod.file,
-                                "de/fabmax/physxjni/linux/libPhysXJniBindings_64.so"
-                            )
-                            if (arch.isBlank() or (!Architecture.isx86Device() and arch.contains("x86"))) {
-                                modCheckSettings[AllModCheckSettings.PHYSICS_MOD] = Pair(
-                                    "1",
-                                    context.getString(R.string.mod_check_physics, mod.file.name)
-                                )
-                            }
                         }
                     }
                     "mcef" -> {

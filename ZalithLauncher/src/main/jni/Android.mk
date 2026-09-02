@@ -23,6 +23,12 @@ LOCAL_LDLIBS := -ldl -llog -landroid
 LOCAL_MODULE := pojavexec
 LOCAL_SHARED_LIBRARIES := driver_helper
 LOCAL_CFLAGS += -rdynamic
+# logger/logger.c defines zl_log(), the function every LOG_TO_E/W/I/D macro in
+# logger/logger.h expands to. It was missing from the repo (only the header was
+# committed), so libpojavexec.so failed to link with "ld: error: undefined
+# symbol: zl_log" on all four ABIs. libexithook.so gets the same symbol through
+# its LOCAL_SHARED_LIBRARIES := pojavexec dependency, exactly like the
+# pojav_environ global its sdl_hook.c already uses - so it is listed once here.
 LOCAL_SRC_FILES := \
     bigcoreaffinity.c \
     egl_bridge.c \
@@ -34,6 +40,7 @@ LOCAL_SRC_FILES := \
     ctxbridges/swap_interval_no_egl.c \
     ctxbridges/virgl_bridge.c \
     environ/environ.c \
+    logger/logger.c \
     input_bridge_v3.c \
     jre_launcher.c \
     utils.c \

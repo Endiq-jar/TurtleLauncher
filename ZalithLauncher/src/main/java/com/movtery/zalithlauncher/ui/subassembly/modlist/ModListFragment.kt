@@ -198,7 +198,8 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
     }
 
     protected fun setFailedToLoad(reasons: String?) {
-        val text = fragmentActivity!!.getString(R.string.mod_failed_to_load_list)
+        val activity = fragmentActivity ?: return
+        val text = activity.getString(R.string.mod_failed_to_load_list)
         binding.failedToLoad.text = if (reasons == null) text else StringUtils.insertNewline(text, reasons)
         playVisibilityAnim(binding.failedToLoad, true)
     }

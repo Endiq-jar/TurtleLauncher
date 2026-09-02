@@ -45,12 +45,12 @@ class CheckSponsor {
 
                 @Throws(IOException::class)
                 override fun onResponse(call: Call?, response: Response?) {
-                    if (!response!!.isSuccessful) {
-                        Logging.e("CheckSponsor", "Unexpected code ${response.code}")
+                    if (response == null || !response.isSuccessful) {
+                        Logging.e("CheckSponsor", "Unexpected code ${response?.code}")
                     } else {
                         runCatching {
-                            Objects.requireNonNull(response.body)
-                            val responseBody = response.body!!.string()
+                            val body = response.body ?: return@runCatching
+                            val responseBody = body.string()
 
                             val originJson = JSONObject(responseBody)
                             val rawBase64 = originJson.getString("content")

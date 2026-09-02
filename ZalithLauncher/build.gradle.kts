@@ -252,7 +252,14 @@ android {
                 "**/liblinkerhook.so",
                 "**/libpojavexec_awt.so",
                 "**/libawt_headless.so",
-                "**/libawt_xawt.so"
+                "**/libawt_xawt.so",
+                // libc++_shared.so legitimately has two sources: the copy vendored in
+                // src/main/jniLibs/<abi>/, and the one ndk-build emits into
+                // build/intermediates/cxx/.../obj/local/<abi>/ because Application.mk sets
+                // APP_STL := c++_shared. Without this, mergeDebugNativeLibs fails with
+                // "2 files found with path 'lib/arm64-v8a/libc++_shared.so'". Both are valid
+                // libc++ runtimes, so either satisfies every consumer.
+                "**/libc++_shared.so"
             )
         }
     }

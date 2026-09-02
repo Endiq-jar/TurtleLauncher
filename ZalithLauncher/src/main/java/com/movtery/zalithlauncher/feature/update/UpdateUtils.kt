@@ -96,13 +96,14 @@ class UpdateUtils {
 
                 @Throws(IOException::class)
                 override fun onResponse(call: Call?, response: Response?) {
-                    if (!response!!.isSuccessful) {
-                        showFailToast(context, context.getString(R.string.update_fail_code, response.code))
-                        Logging.e("UpdateLauncher", "Unexpected code " + response.code)
+                    if (response == null || !response.isSuccessful) {
+                        showFailToast(context, context.getString(R.string.update_fail_code, response?.code ?: 0))
+                        Logging.e("UpdateLauncher", "Unexpected code " + response?.code)
                         return
                     }
                     try {
-                        val releases = JSONArray(response.body!!.string())
+                        val body = response.body?.string() ?: return
+                        val releases = JSONArray(body)
                         val launcherVersion = pickLatestRelease(releases)
 
                         if (launcherVersion == null) {

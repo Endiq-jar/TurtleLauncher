@@ -146,17 +146,28 @@ public class CallbackBridge {
     // Called from JRE side
     @SuppressWarnings("unused")
     public static @Nullable String accessAndroidClipboard(int type, String copy) {
+        if (MainActivity.GLOBAL_CLIPBOARD == null) {
+            return type == CLIPBOARD_PASTE ? "" : null;
+        }
         switch (type) {
             case CLIPBOARD_COPY:
-                MainActivity.GLOBAL_CLIPBOARD.setPrimaryClip(ClipData.newPlainText("Copy", copy));
+                try {
+                    MainActivity.GLOBAL_CLIPBOARD.setPrimaryClip(ClipData.newPlainText("Copy", copy));
+                } catch (Throwable ignored) {}
                 return null;
 
             case CLIPBOARD_PASTE:
-                if (MainActivity.GLOBAL_CLIPBOARD.hasPrimaryClip() && MainActivity.GLOBAL_CLIPBOARD.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                    return MainActivity.GLOBAL_CLIPBOARD.getPrimaryClip().getItemAt(0).getText().toString();
-                } else {
-                    return "";
-                }
+                try {
+                    if (MainActivity.GLOBAL_CLIPBOARD.hasPrimaryClip()
+                            && MainActivity.GLOBAL_CLIPBOARD.getPrimaryClipDescription() != null
+                            && MainActivity.GLOBAL_CLIPBOARD.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+                        ClipData clip = MainActivity.GLOBAL_CLIPBOARD.getPrimaryClip();
+                        if (clip != null && clip.getItemCount() > 0 && clip.getItemAt(0) != null && clip.getItemAt(0).getText() != null) {
+                            return clip.getItemAt(0).getText().toString();
+                        }
+                    }
+                } catch (Throwable ignored) {}
+                return "";
 
             case CLIPBOARD_OPEN:
                 MainActivity.openLink(copy);

@@ -100,7 +100,9 @@ class ContextExecutor {
          */
         @JvmStatic
         fun getString(resId: Int): String {
-            return (this.sActivity?.get()?.getString(resId) ?: this.sApplication?.get()?.getString(resId))!!
+            return this.sActivity?.get()?.getString(resId)
+                ?: this.sApplication?.get()?.getString(resId)
+                ?: ""
         }
 
         /**

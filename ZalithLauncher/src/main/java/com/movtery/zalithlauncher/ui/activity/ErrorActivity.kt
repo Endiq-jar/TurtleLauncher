@@ -210,7 +210,14 @@ class ErrorActivity : BaseActivity() {
     private fun showLauncherCrash(extras: Bundle) {
         val context = this
 
-        val throwable = extras.getSerializable(BUNDLE_THROWABLE) as Throwable?
+        val throwable = runCatching {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                extras.getSerializable(BUNDLE_THROWABLE, Throwable::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                extras.getSerializable(BUNDLE_THROWABLE) as? Throwable
+            }
+        }.getOrNull()
         val stackTrace = if (throwable != null) Tools.printToString(throwable) else "<null>"
         val strSavePath = extras.getString(BUNDLE_SAVE_PATH)
 

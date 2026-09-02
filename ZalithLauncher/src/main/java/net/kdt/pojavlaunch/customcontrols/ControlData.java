@@ -43,8 +43,7 @@ public class ControlData {
 
     private static ControlData[] SPECIAL_BUTTONS;
     private static List<String> SPECIAL_BUTTON_NAME_ARRAY;
-    private static WeakReference<ExpressionBuilder> builder = new WeakReference<>(null);
-    private static WeakReference<ArrayMap<String, String>> conversionMap = new WeakReference<>(null);
+    private static ExpressionBuilder sExpressionBuilder;
 
     static {
         buildExpressionBuilder();
@@ -210,8 +209,8 @@ public class ControlData {
     }
 
     private static float calculate(String math) {
-        setExpression(math);
-        return (float) builder.get().build().evaluate();
+        ExpressionBuilder eb = getExpressionBuilder();
+        return (float) eb.expression(math).build().evaluate();
     }
 
     private static int[] inflateKeycodeArray(int[] keycodes) {
@@ -220,11 +219,15 @@ public class ControlData {
         return inflatedArray;
     }
 
-    /**
-     * Create a builder, keep a weak reference to it to use it with all views on first inflation
-     */
+    private static synchronized ExpressionBuilder getExpressionBuilder() {
+        if (sExpressionBuilder == null) {
+            buildExpressionBuilder();
+        }
+        return sExpressionBuilder;
+    }
+
     private static void buildExpressionBuilder() {
-        ExpressionBuilder expressionBuilder = new ExpressionBuilder("1 + 1")
+        sExpressionBuilder = new ExpressionBuilder("1 + 1")
                 .function(new Function("dp", 1) {
                     @Override
                     public double apply(double... args) {
@@ -237,17 +240,10 @@ public class ControlData {
                         return Tools.dpToPx((float) args[0]);
                     }
                 });
-        builder = new WeakReference<>(expressionBuilder);
     }
 
-    /**
-     * wrapper for the WeakReference to the expressionField.
-     *
-     * @param stringExpression the expression to set.
-     */
     private static void setExpression(String stringExpression) {
-        if (builder.get() == null) buildExpressionBuilder();
-        builder.get().expression(stringExpression);
+        getExpressionBuilder().expression(stringExpression);
     }
 
     /**

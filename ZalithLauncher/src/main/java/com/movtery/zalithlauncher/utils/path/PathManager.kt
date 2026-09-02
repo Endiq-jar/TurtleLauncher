@@ -51,7 +51,7 @@ class PathManager {
             DIR_ADDONS_INFO_CACHE = "$DIR_CACHE/addons_info_cache"
             DIR_CUSTOM_MOUSE = "$DIR_GAME_HOME/mouse"
             DIR_BACKGROUND = File("$DIR_GAME_HOME/background")
-            DIR_APP_CACHE = context.externalCacheDir!!
+            DIR_APP_CACHE = context.externalCacheDir ?: File(DIR_CACHE, "external_fallback")
             DIR_USER_SKIN = File(DIR_FILE, "/user_skin")
             DIR_INSTALLED_RENDERER_PLUGIN = File(DIR_FILE, "/renderer_plugins")
             DIR_INSTALLED_DRIVER_PLUGIN = File(DIR_FILE, "/driver_plugins").also { it.mkdirs() }
@@ -75,7 +75,7 @@ class PathManager {
         @JvmStatic
         fun getExternalStorageRoot(ctx: Context): File {
             return if (VERSION.SDK_INT >= 29) {
-                ctx.getExternalFilesDir(null)!!
+                ctx.getExternalFilesDir(null) ?: ctx.filesDir
             } else {
                 File(Environment.getExternalStorageDirectory(), "games/${InfoDistributor.LAUNCHER_NAME}")
             }

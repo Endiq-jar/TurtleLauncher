@@ -32,6 +32,10 @@ class InstallableAdapter(
     }
 
     fun checkAllTask() {
+        if (items.isEmpty()) {
+            updateUI { listener.onAllTasksCompleted() }
+            return
+        }
         items.forEachIndexed { index, item ->
             if (!item.task.isNeedUnpack()) {
                 item.isFinished = true

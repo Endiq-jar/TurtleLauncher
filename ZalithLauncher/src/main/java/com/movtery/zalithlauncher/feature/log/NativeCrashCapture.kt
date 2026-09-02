@@ -164,12 +164,36 @@ object NativeCrashCapture {
 
             prefs.edit().putLong(KEY_LAST_REPORTED_TIMESTAMP, newest.timestamp).apply()
 
-            // showExitMessage, not showLauncherCrash: this reads as a GAME crash (SDL/renderer/
-            // native layer, or Minecraft's own reported problem when we found a matching
-            // crash-report), using the exact same screen + diagnosis format the graceful-exit
-            // path already shows, rather than the separate "the launcher itself crashed" screen.
-            ErrorActivity.showExitMessage(context, newest.status, true, diagnosisText)
+            // Do NOT start ErrorActivity from Application.onCreate. FLAG_ACTIVITY_CLEAR_TASK
+            // there races the launcher Splash intent: ErrorActivity becomes the only task
+            // entry, then if ApplicationExitInfo.status is 0 (common for ANR / some native
+            // deaths) showGameCrash() used to finish() immediately — the task empties and
+            // the app vanishes with no UI and no log. Stash the report; SplashActivity
+            // presents it after the window is actually on screen.
+            pendingStatus = if (newest.status != 0) newest.status else -1
+            pendingDiagnosis = diagnosisText
+            pendingReady = true
         }.onFailure { Logging.e(TAG, "checkAndReport failed", it) }
+    }
+
+    @Volatile private var pendingReady = false
+    @Volatile private var pendingStatus = 0
+    @Volatile private var pendingDiagnosis: String? = null
+
+    /**
+     * @return true if a previous-run native/ANR death was recorded and the crash UI was shown.
+     */
+    @JvmStatic
+    fun consumePendingReport(context: Context): Boolean {
+        if (!pendingReady) return false
+        pendingReady = false
+        val status = pendingStatus
+        val diagnosis = pendingDiagnosis
+        pendingDiagnosis = null
+        runCatching {
+            ErrorActivity.showExitMessage(context, status, true, diagnosis, clearTask = false)
+        }.onFailure { Logging.e(TAG, "Failed to present pending native crash report", it) }
+        return true
     }
 
     /**

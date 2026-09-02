@@ -25,12 +25,19 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE"/>
 
+    <!-- android:extractNativeLibs was removed from <application> here: AGP 9 rejects the
+         attribute outright and fails packageDebug with "android:extractNativeLibs is set to
+         'true' in AndroidManifest.xml". The packaging decision lives in build.gradle.kts as
+         packaging { jniLibs { useLegacyPackaging = false } } (deliberate - it stores the .so
+         files compressed, which is the single biggest APK-size lever here). With
+         useLegacyPackaging = false, AGP writes extractNativeLibs="true" into the merged
+         manifest itself, so the natives are still extracted to nativeLibraryDir at install -
+         exactly where PathManager.DIR_NATIVE_LIB points - and runtime behaviour is unchanged. -->
     <application
         android:name="net.kdt.pojavlaunch.PojavApplication"
         android:allowBackup="true"
         android:allowNativeHeapPointerTagging="false"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:extractNativeLibs="true"
         android:appCategory="game"
         android:hasFragileUserData="true"
         android:requestLegacyExternalStorage="true"

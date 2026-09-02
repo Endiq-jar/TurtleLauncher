@@ -5,7 +5,6 @@ import com.movtery.zalithlauncher.setting.unit.StringSettingUnit
 enum class AllModCheckSettings(val unit: StringSettingUnit) {
     TOUCH_CONTROLLER(StringSettingUnit("modCheckTouchController", "0")),
     SODIUM_OR_EMBEDDIUM(StringSettingUnit("modCheckSodiumOrEmbeddium", "0")),
-    PHYSICS_MOD(StringSettingUnit("modCheckPhysics", "0")),
     MCEF(StringSettingUnit("modCheckMCEF", "0")),
     VALKYRIEN_SKIES(StringSettingUnit("modCheckValkyrienSkies", "0")),
     YES_STEVE_MODEL(StringSettingUnit("modCheckYesSteveModel", "0")),

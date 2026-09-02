@@ -8,10 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [arm64, arm, x86, x86_64]
     steps:
       - uses: actions/checkout@v4
 
@@ -83,14 +79,15 @@ jobs:
             sleep 15
           done
 
-      - name: Build debug APK (${{ matrix.arch }})
+      - name: Build universal debug APK (all ABIs in one file)
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: ./gradlew :ZalithLauncher:assembleDebug -Darch=${{ matrix.arch }} --no-daemon
+        run: ./gradlew :ZalithLauncher:assembleDebug -Darch=all --no-daemon
 
-      - name: Upload debug APK (${{ matrix.arch }})
+      - name: Upload universal debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: TurtleLauncher-debug-apk-${{ matrix.arch }}
+          name: TurtleLauncher-debug-apk-universal
           path: "**/build/outputs/apk/debug/*.apk"
+          

@@ -234,10 +234,8 @@ class ErrorActivity : BaseActivity() {
 
     private fun showGameCrash(extras: Bundle) {
         val code = extras.getInt(BUNDLE_CODE, 0)
-        if (code == 0) {
-            finish()
-            return
-        }
+        // status 0 is a valid ApplicationExitInfo value for ANR / some native deaths.
+        // Finishing here used to close the entire task (CLEAR_TASK) with no UI.
         val errorText = if (extras.getBoolean(BUNDLE_IS_SIGNAL)) R.string.game_singnal_message else R.string.game_exit_message
         val diagnosis = extras.getString(BUNDLE_DIAGNOSIS)
 
@@ -318,10 +316,11 @@ class ErrorActivity : BaseActivity() {
             ctx: Context,
             code: Int,
             isSignal: Boolean,
-            diagnosis: String? = null
+            diagnosis: String? = null,
+            clearTask: Boolean = true
         ) {
             val intent = Intent(ctx, ErrorActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            if (clearTask) intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.putExtra(BUNDLE_CODE, code)
             intent.putExtra(BUNDLE_IS_LAUNCHER_CRASH, false)

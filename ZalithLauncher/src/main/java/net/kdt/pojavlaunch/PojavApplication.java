@@ -71,14 +71,22 @@ public class PojavApplication extends Application {
 				PrintStream crashStream = new PrintStream(crashFile);
 				crashStream.print(combined);
 				crashStream.close();
-			} catch (Throwable throwable) {
+		} catch (Throwable throwable) {
+			try {
 				Logging.e(CRASH_REPORT_TAG, " - Exception attempt saving crash stack trace:", throwable);
 				Logging.e(CRASH_REPORT_TAG, " - The crash stack trace was:", th);
+			} catch (Throwable ignored) {
+				Log.e(CRASH_REPORT_TAG, "Failed to log crash", th);
 			}
+		}
 
+		try {
 			ErrorActivity.showLauncherCrash(PojavApplication.this, crashFile.getAbsolutePath(), th);
-			ZHTools.killProcess();
-		});
+		} catch (Throwable ignored) {
+			Log.e(CRASH_REPORT_TAG, "Failed to start ErrorActivity", th);
+		}
+		ZHTools.killProcess();
+	});
 		
 		try {
 			super.onCreate();
@@ -103,8 +111,12 @@ public class PojavApplication extends Application {
 		// TurtleLauncher: AnrWatchdog, dark mode, and dynamic color theming - see
 		// TurtleStartupInitializer for why this is triggered on-demand here rather than
 		// via AndroidX Startup's automatic pre-onCreate discovery.
-		androidx.startup.AppInitializer.getInstance(this)
-			.initializeComponent(com.movtery.zalithlauncher.startup.TurtleStartupInitializer.class);
+		try {
+			androidx.startup.AppInitializer.getInstance(this)
+				.initializeComponent(com.movtery.zalithlauncher.startup.TurtleStartupInitializer.class);
+		} catch (Throwable t) {
+			Log.e(CRASH_REPORT_TAG, "TurtleStartupInitializer failed", t);
+		}
 	}
 
 	@Override

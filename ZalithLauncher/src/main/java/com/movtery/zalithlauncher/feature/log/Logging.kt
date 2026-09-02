@@ -32,15 +32,16 @@ object Logging {
     private var FILE_LAUNCHER_LOG: File? = null
 
     init {
-        FILE_LAUNCHER_LOG = getLogFile()
+        FILE_LAUNCHER_LOG = runCatching { getLogFile() }.getOrNull()
     }
 
-    private fun getLogFile(): File {
+    private fun getLogFile(): File? {
         val logPrefix = "log"
         val logSuffix = ".txt"
         val maxLogIndex = 10
 
-        val launcherLogDir = File(DIR_LAUNCHER_LOG).apply { if (!exists()) mkdirs() }
+        val logDirPath = runCatching { DIR_LAUNCHER_LOG }.getOrNull() ?: return null
+        val launcherLogDir = File(logDirPath).apply { if (!exists()) mkdirs() }
 
         val logFiles = launcherLogDir.listFiles { file ->
             file.isFile && file.name.startsWith(logPrefix) && file.name.endsWith(logSuffix)
@@ -73,6 +74,9 @@ object Logging {
     private suspend fun appendToFile(string: String) {
         loggerMutex.withLock {
             runCatching {
+                if (FILE_LAUNCHER_LOG == null) {
+                    FILE_LAUNCHER_LOG = getLogFile()
+                }
                 FILE_LAUNCHER_LOG?.let { file ->
                     if (file.exists() && file.length() >= 15 * 1024 * 1024) { // 15MB
                         FILE_LAUNCHER_LOG = getLogFile()
@@ -80,7 +84,8 @@ object Logging {
                     }
                 }
 
-                BufferedWriter(FileWriter(FILE_LAUNCHER_LOG, true)).use { writer ->
+                val target = FILE_LAUNCHER_LOG ?: return@runCatching
+                BufferedWriter(FileWriter(target, true)).use { writer ->
                     if (!isLauncherInfoWritten) {
                         isLauncherInfoWritten = true
                         writer.append(getLauncherInfo()).append("\r\n\r\n")

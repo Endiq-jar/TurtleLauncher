@@ -64,6 +64,10 @@ class SplashActivity : BaseActivity() {
             return
         }
 
+        // Present a previous-run native/ANR death after this window exists, so CLEAR_TASK
+        // cannot empty the task before the first frame (see NativeCrashCapture).
+        com.movtery.zalithlauncher.feature.log.NativeCrashCapture.consumePendingReport(this)
+
         //如果安卓版本小于等于9，则检查存储权限（不是管理所有文件权限），拥有存储权限会保证文件、文件夹正常创建
         //但是并不强制要求用户必须授予权限，如果用户拒绝，那么之后产生的问题将由用户承担
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P && !StoragePermissionsUtils.hasStoragePermissions(this)) {

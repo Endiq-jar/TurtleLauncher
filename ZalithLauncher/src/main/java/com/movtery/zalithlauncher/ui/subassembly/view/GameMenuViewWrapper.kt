@@ -43,10 +43,19 @@ class GameMenuViewWrapper(
     companion object {
         private const val TAG = "GameMenuViewWrapper"
         private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        // TurtleLauncher perf: how long a battery-percentage reading stays valid. Reading it means
+        // a synchronous Binder call (ACTION_BATTERY_CHANGED is a sticky broadcast), and the HUD
+        // used to do that on every tick - 4x/second at the default 250ms refresh.
+        private const val BATTERY_POLL_MS = 30_000L
     }
 
     private var timer: Timer? = null
     private val memoryText: String = AllSettings.gameMenuMemoryText.getValue()
+
+    // Cached battery reading + when it was taken; see BATTERY_POLL_MS.
+    private var cachedBatteryPercent: Int = -1
+    private var batteryPolledAt: Long = 0L
 
     private var showMemory: Boolean = false
     private var showNativeMemory: Boolean = false
@@ -224,85 +233,101 @@ class GameMenuViewWrapper(
         }
 
         fun updateInfoText() {
-            if (showMemory) {
+            // TurtleLauncher perf: each HUD module used to post its own Runnable to the UI thread -
+            // up to ~10 separate Handler messages per tick, 4 ticks/second at the default 250ms
+            // refresh. Each one woke the main thread and forced its own TextView layout pass while
+            // a game was running. Every value below is already computed here on the timer thread,
+            // so compute them all first, then apply every view change inside ONE post: one message,
+            // one traversal instead of up to ten.
+            val memoryString: String? = if (showMemory) {
                 val nativeSuffix = if (showNativeMemory) {
                     val nativeMb = MemoryUtils.getNativeHeapAllocated() / (1024 * 1024)
                     " (N: ${nativeMb}M)"
                 } else ""
-                val memoryString = "${this@GameMenuViewWrapper.memoryText} ${getUsedDeviceMemory()}/${getTotalDeviceMemory()}$nativeSuffix".let { string ->
-                    if (string.length > 40) return@let string.take(40)
-                    string
-                }
-                TaskExecutors.runInUIThread { memoryText.text = memoryString }
-            }
-            if (showFPS) {
-                val fpsString = "FPS: ${CallbackBridge.getCurrentFps()}"
-                TaskExecutors.runInUIThread { fpsText.text = fpsString }
-            }
-            if (showCps) {
-                val cpsString = "CPS: ${InputStatsTracker.getCps()}"
-                TaskExecutors.runInUIThread { cpsText.text = cpsString }
-            }
-            if (showSystemResources) {
+                val string = "${this@GameMenuViewWrapper.memoryText} ${getUsedDeviceMemory()}/${getTotalDeviceMemory()}$nativeSuffix"
+                if (string.length > 40) string.take(40) else string
+            } else null
+
+            val fpsString: String? = if (showFPS) "FPS: ${CallbackBridge.getCurrentFps()}" else null
+            val cpsString: String? = if (showCps) "CPS: ${InputStatsTracker.getCps()}" else null
+
+            val batteryString: String? = if (showSystemResources) {
                 val batteryPercent = getBatteryPercent()
-                val batteryString = if (batteryPercent >= 0) "Battery: $batteryPercent%" else "Battery: --"
-                TaskExecutors.runInUIThread { systemResourcesText.text = batteryString }
-            }
-            if (showTime) {
-                val timeString = timeFormat.format(Date())
-                TaskExecutors.runInUIThread { timeText.text = timeString }
-            }
-            if (showStopwatch) {
-                val stopwatchString = "Session: ${SessionStatsTracker.formatDuration(SessionStatsTracker.getSessionElapsedMs())}"
-                TaskExecutors.runInUIThread { stopwatchText.text = stopwatchString }
-            }
-            if (showPlaytime) {
-                val playtimeString = "Playtime: ${SessionStatsTracker.formatDuration(SessionStatsTracker.getTotalPlaytimeMs())}"
-                TaskExecutors.runInUIThread { playtimeText.text = playtimeString }
-            }
-            if (showKeystrokes) {
-                val wHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_W.toInt())
-                val aHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_A.toInt())
-                val sHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_S.toInt())
-                val dHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_D.toInt())
-                val spaceHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_SPACE.toInt())
-                TaskExecutors.runInUIThread {
+                if (batteryPercent >= 0) "Battery: $batteryPercent%" else "Battery: --"
+            } else null
+
+            val timeString: String? = if (showTime) timeFormat.format(Date()) else null
+
+            val stopwatchString: String? = if (showStopwatch) {
+                "Session: ${SessionStatsTracker.formatDuration(SessionStatsTracker.getSessionElapsedMs())}"
+            } else null
+
+            val playtimeString: String? = if (showPlaytime) {
+                "Playtime: ${SessionStatsTracker.formatDuration(SessionStatsTracker.getTotalPlaytimeMs())}"
+            } else null
+
+            val wHeld = showKeystrokes && InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_W.toInt())
+            val aHeld = showKeystrokes && InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_A.toInt())
+            val sHeld = showKeystrokes && InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_S.toInt())
+            val dHeld = showKeystrokes && InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_D.toInt())
+            val spaceHeld = showKeystrokes && InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_SPACE.toInt())
+
+            val leftHeld = showMousestrokes && InputStatsTracker.isLeftMouseHeld()
+            val rightHeld = showMousestrokes && InputStatsTracker.isRightMouseHeld()
+
+            val pingString: String? = if (showPing) {
+                val ms = com.movtery.zalithlauncher.feature.turtle.PingTracker.getPingMs()
+                if (ms >= 0) "Ping: $ms ms" else "Ping: -- ms"
+            } else null
+
+            val usedMb = if (showRamGraph) MemoryUtils.getUsedDeviceMemory(activity) / (1024 * 1024) else 0L
+            val totalMb = if (showRamGraph) MemoryUtils.getTotalDeviceMemory(activity) / (1024 * 1024) else 0L
+
+            // TurtleLauncher: screen recording - live elapsed-time readout + swap the record
+            // button's glyph to a stop icon while recording. Runs every info-tick rather than
+            // its own timer, same as everything else above.
+            val recording = showRecordButton &&
+                com.movtery.zalithlauncher.feature.turtle.ScreenRecorder.isRecording()
+            val showRecordTimer = recording && AllSettings.recordingShowTimer.getValue()
+            val recordElapsedSeconds = if (showRecordTimer) {
+                com.movtery.zalithlauncher.feature.turtle.ScreenRecorder.getElapsedSeconds()
+            } else 0L
+
+            // Nothing enabled -> don't even bother waking the UI thread.
+            if (memoryString == null && fpsString == null && cpsString == null && batteryString == null &&
+                timeString == null && stopwatchString == null && playtimeString == null && pingString == null &&
+                !showKeystrokes && !showMousestrokes && !showRamGraph && !showRecordButton
+            ) return
+
+            TaskExecutors.runInUIThread {
+                if (memoryString != null) memoryText.text = memoryString
+                if (fpsString != null) fpsText.text = fpsString
+                if (cpsString != null) cpsText.text = cpsString
+                if (batteryString != null) systemResourcesText.text = batteryString
+                if (timeString != null) timeText.text = timeString
+                if (stopwatchString != null) stopwatchText.text = stopwatchString
+                if (playtimeString != null) playtimeText.text = playtimeString
+                if (showKeystrokes) {
                     setKeyColor(keyW, wHeld)
                     setKeyColor(keyA, aHeld)
                     setKeyColor(keyS, sHeld)
                     setKeyColor(keyD, dHeld)
                     setKeyColor(keySpace, spaceHeld)
                 }
-            }
-            if (showMousestrokes) {
-                val leftHeld = InputStatsTracker.isLeftMouseHeld()
-                val rightHeld = InputStatsTracker.isRightMouseHeld()
-                TaskExecutors.runInUIThread {
+                if (showMousestrokes) {
                     setKeyColor(mouseLeft, leftHeld)
                     setKeyColor(mouseRight, rightHeld)
                 }
-            }
-            if (showPing) {
-                val ms = com.movtery.zalithlauncher.feature.turtle.PingTracker.getPingMs()
-                val pingString = if (ms >= 0) "Ping: $ms ms" else "Ping: -- ms"
-                TaskExecutors.runInUIThread { pingText.text = pingString }
-            }
-            if (showRamGraph) {
-                val usedMb = MemoryUtils.getUsedDeviceMemory(activity) / (1024 * 1024)
-                val totalMb = MemoryUtils.getTotalDeviceMemory(activity) / (1024 * 1024)
-                TaskExecutors.runInUIThread { ramGraphView.pushSample(usedMb, totalMb) }
-            }
-            // TurtleLauncher: screen recording - live elapsed-time readout + swap the record
-            // button's glyph to a stop icon while recording. Runs every info-tick rather than
-            // its own timer, same as everything else above.
-            if (showRecordButton) {
-                val recording = com.movtery.zalithlauncher.feature.turtle.ScreenRecorder.isRecording()
-                TaskExecutors.runInUIThread {
+                if (pingString != null) pingText.text = pingString
+                if (showRamGraph) ramGraphView.pushSample(usedMb, totalMb)
+                if (showRecordButton) {
                     recordButton.visibility = if (recording) View.VISIBLE else View.GONE
                     recordButton.text = if (recording) "⏹" else "⏺"
-                    if (recording && AllSettings.recordingShowTimer.getValue()) {
-                        val elapsed = com.movtery.zalithlauncher.feature.turtle.ScreenRecorder.getElapsedSeconds()
-                        recordTimerText.text = String.format(Locale.US, "%02d:%02d", elapsed / 60, elapsed % 60)
+                    if (showRecordTimer) {
+                        recordTimerText.text = String.format(
+                            Locale.US, "%02d:%02d",
+                            recordElapsedSeconds / 60, recordElapsedSeconds % 60
+                        )
                         recordTimerText.visibility = View.VISIBLE
                     } else {
                         recordTimerText.visibility = View.GONE
@@ -360,9 +385,14 @@ class GameMenuViewWrapper(
 
     private fun getTotalDeviceMemory(): String = formatFileSize(MemoryUtils.getTotalDeviceMemory(activity))
 
-    /** Reads the current battery intent synchronously (sticky intent, no receiver actually registered). */
+    /** Reads the current battery intent synchronously (sticky intent, no receiver actually
+     *  registered), but only at most once per [BATTERY_POLL_MS] - a percentage moves over
+     *  minutes, so polling it 4x/second alongside a running game was wasted IPC. */
     private fun getBatteryPercent(): Int {
-        return try {
+        val now = System.currentTimeMillis()
+        if (now - batteryPolledAt < BATTERY_POLL_MS) return cachedBatteryPercent
+        batteryPolledAt = now
+        cachedBatteryPercent = try {
             val intent = activity.applicationContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
             val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
@@ -370,6 +400,7 @@ class GameMenuViewWrapper(
         } catch (e: Exception) {
             -1
         }
+        return cachedBatteryPercent
     }
 
     private fun cancelInfoTimer() {

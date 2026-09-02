@@ -7,16 +7,28 @@ class MemoryUtils {
     companion object {
         private var activityManager: ActivityManager? = null
 
+        // TurtleLauncher perf: totalMem is a fixed property of the device - it never changes
+        // for the lifetime of the process - but this getter was doing a full getMemoryInfo()
+        // Binder call into system_server on every single invocation. The in-game HUD calls it
+        // 4x/second by default (gameMenuInfoRefreshRate = 250ms), and the RAM graph calls it
+        // again on top of the used-memory query, so it was ~8 pointless IPCs/second while a
+        // game is running. Read it once and cache; 0 means "not read successfully yet".
+        @Volatile
+        private var cachedTotalMem: Long = 0L
+
         private fun init(context: Context) {
             activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         }
 
         @JvmStatic
         fun getTotalDeviceMemory(context: Context): Long {
+            cachedTotalMem.let { if (it > 0L) return it }
+
             activityManager ?: run { init(context) }
 
             val memInfo = ActivityManager.MemoryInfo()
             activityManager?.getMemoryInfo(memInfo)
+            if (memInfo.totalMem > 0L) cachedTotalMem = memInfo.totalMem
             return memInfo.totalMem
         }
 

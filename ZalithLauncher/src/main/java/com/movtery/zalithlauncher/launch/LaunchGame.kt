@@ -135,21 +135,13 @@ class LaunchGame {
                 return
             }
 
-            val currentAccount = AccountsManager.currentAccount
-            if (currentAccount == null) {
-                Toast.makeText(context, context.getString(R.string.account_no_saved_accounts), Toast.LENGTH_SHORT).show()
-                EventBus.getDefault().post(com.movtery.zalithlauncher.event.single.SwapToLoginEvent())
-                setGameProgress(false)
-                return
-            }
-
-            if (AccountUtils.isNoLoginRequired(currentAccount)) {
+            if (AccountUtils.isNoLoginRequired(AccountsManager.currentAccount)) {
                 launch()
                 return
             }
 
             AccountsManager.performLogin(
-                context, currentAccount,
+                context, AccountsManager.currentAccount!!,
                 { _ ->
                     EventBus.getDefault().post(AccountUpdateEvent())
                     TaskExecutors.runInUIThread {
@@ -194,11 +186,7 @@ class LaunchGame {
                 Renderers.setCurrentRenderer(activity, AllSettings.renderer.getValue())
             }
 
-            var account = AccountsManager.currentAccount ?: run {
-                Toast.makeText(activity, R.string.account_no_saved_accounts, Toast.LENGTH_SHORT).show()
-                EventBus.getDefault().post(com.movtery.zalithlauncher.event.single.SwapToLoginEvent())
-                return
-            }
+            var account = AccountsManager.currentAccount!!
             if (minecraftVersion.offlineAccountLogin) {
                 // TurtleLauncher CRASH/BUG FIX: this throwaway offline account used to
                 // keep profileId at the all-zero default (same bug as LauncherActivity's

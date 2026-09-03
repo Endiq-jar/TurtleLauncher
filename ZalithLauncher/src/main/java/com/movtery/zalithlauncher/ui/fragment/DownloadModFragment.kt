@@ -89,11 +89,9 @@ class DownloadModFragment : ModListFragment() {
             loadScreenshots()
 
             iconUrl?.apply {
-                fragmentActivity?.let { activity ->
-                    Glide.with(activity).load(this).apply {
-                        if (!AllSettings.resourceImageCache.getValue()) diskCacheStrategy(DiskCacheStrategy.NONE)
-                    }.into(getIconView())
-                }
+                Glide.with(fragmentActivity!!).load(this).apply {
+                    if (!AllSettings.resourceImageCache.getValue()) diskCacheStrategy(DiskCacheStrategy.NONE)
+                }.into(getIconView())
             }
         }
     }
@@ -238,9 +236,8 @@ class DownloadModFragment : ModListFragment() {
             runCatching {
                 var modAdapter = recyclerView.adapter as ModListAdapter?
                 modAdapter ?: run {
-                    val activity = fragmentActivity ?: return@runCatching
                     modAdapter = ModListAdapter(this, mData)
-                    recyclerView.layoutManager = LinearLayoutManager(activity)
+                    recyclerView.layoutManager = LinearLayoutManager(fragmentActivity!!)
                     recyclerView.adapter = modAdapter
                     return@runCatching
                 }
@@ -265,21 +262,19 @@ class DownloadModFragment : ModListFragment() {
     }
 
     private fun parseViewModel() {
-        val activity = fragmentActivity ?: return
-        val viewModel = ViewModelProvider(activity)[InfoViewModel::class.java]
+        val viewModel = ViewModelProvider(fragmentActivity!!)[InfoViewModel::class.java]
         platformHelper = viewModel.platformHelper ?: run {
-            ZHTools.onBackPressed(activity)
+            ZHTools.onBackPressed(fragmentActivity!!)
             return
         }
         mInfoItem = viewModel.infoItem ?: run {
-            ZHTools.onBackPressed(activity)
+            ZHTools.onBackPressed(fragmentActivity!!)
             return
         }
     }
 
     private fun loadScreenshots() {
-        val activity = fragmentActivity ?: return
-        val progressBar = createProgressView(activity)
+        val progressBar = createProgressView(fragmentActivity!!)
         addMoreView(progressBar)
 
         Task.runTask {

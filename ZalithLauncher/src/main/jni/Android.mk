@@ -33,7 +33,8 @@ LOCAL_SRC_FILES := \
     utils.c \
     stdio_is.c \
     java_exec_hooks.c \
-    lwjgl_dlopen_hook.c
+    lwjgl_dlopen_hook.c \
+    logger/zl_log.c
 
 ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
 LOCAL_CFLAGS += -DADRENO_POSSIBLE
@@ -47,6 +48,19 @@ LOCAL_MODULE := exithook
 LOCAL_LDLIBS := -ldl -llog
 LOCAL_SHARED_LIBRARIES := bytehook pojavexec
 LOCAL_SRC_FILES := exit_hook.c
+include $(BUILD_SHARED_LIBRARY)
+
+
+# TurtleLauncher CRASH FIX (MC 26.3+ SDL3 SIGSEGV): process-wide native hook of
+# SDL_InitSubSystem - see sdl_hook.c's file doc for why this exists alongside
+# (not instead of) SdlAndroidJniPrep's Java-side token-Surface workaround.
+include $(CLEAR_VARS)
+LOCAL_MODULE := sdlhook
+LOCAL_LDLIBS := -ldl -llog -landroid
+LOCAL_SHARED_LIBRARIES := bytehook
+LOCAL_SRC_FILES := \
+    sdl_hook.c \
+    logger/zl_log.c
 include $(BUILD_SHARED_LIBRARY)
 
 

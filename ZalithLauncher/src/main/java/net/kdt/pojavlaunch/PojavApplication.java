@@ -81,11 +81,22 @@ public class PojavApplication extends Application {
 		}
 
 		try {
+			// Do not kill the process immediately after startActivity(). On some Android 13
+			// devices (notably ColorOS) the activity launch transaction is asynchronous; the
+			// old code killed :launcher before ErrorActivity could draw, making a launcher
+			// exception look like a silent instant close. Give the system a short window to
+			// attach and render the diagnostic screen. The delayed kill still prevents a
+			// broken launcher process from remaining alive if the screen cannot be shown.
 			ErrorActivity.showLauncherCrash(PojavApplication.this, crashFile.getAbsolutePath(), th);
-		} catch (Throwable ignored) {
-			Log.e(CRASH_REPORT_TAG, "Failed to start ErrorActivity", th);
+			new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
+					ZHTools::killProcess, 1200L);
+		} catch (Throwable errorActivityFailure) {
+			Log.e(CRASH_REPORT_TAG, "Failed to start ErrorActivity", errorActivityFailure);
+			// A crash during very early application startup may not have a usable main
+			// looper. Preserve the original behaviour in that rare case, but the report has
+			// already been written above and can be retrieved from launcher_log/latestcrash.txt.
+			ZHTools.killProcess();
 		}
-		ZHTools.killProcess();
 	});
 		
 		try {

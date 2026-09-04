@@ -197,6 +197,25 @@ public class CallbackBridge {
         }
     }
 
+    // Called from native side (input_bridge_v3.c JNI_OnLoad binds this eagerly via
+    // GetStaticMethodID on every native library load, regardless of whether
+    // nativeSetCursorShape() is ever actually invoked from Java). Must exist or the
+    // lookup throws NoSuchMethodError, which crashes the app via the very next
+    // GetStaticMethodID call running with that exception still pending.
+    @SuppressWarnings("unused")
+    private static void onCursorShapeChanged(final int shape) {
+        // No cursor-shape consumer wired up yet; kept as a no-op so the native
+        // JNI_OnLoad binding succeeds.
+    }
+
+    // Called from native side (egl_bridge.c) the first time a frame is rendered.
+    // Same eager-binding situation as onCursorShapeChanged above - must exist.
+    @SuppressWarnings("unused")
+    private static void onGraphicOutput() {
+        // No first-frame consumer wired up yet; kept as a no-op so the native
+        // JNI_OnLoad binding succeeds.
+    }
+
     @Keep @CriticalNative public static native void nativeSetUseInputStackQueue(boolean useInputStackQueue);
 
     @Keep @CriticalNative private static native boolean nativeSendChar(char codepoint);

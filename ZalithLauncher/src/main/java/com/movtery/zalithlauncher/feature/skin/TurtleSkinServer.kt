@@ -213,6 +213,20 @@ object TurtleSkinServer {
         val textures = JSONObject()
         if (skinFile.isFile) {
             val skin = JSONObject().put("url", "http://127.0.0.1:$port/textures/skin/$noDashUuid")
+            // TurtleLauncher CRASH/BUG FIX (slim-skin fix): this "metadata": {"model":
+            // "slim"} object was missing entirely, so every local skin - regardless of
+            // whether it was actually authored as a slim (Alex, 3px-wide) arm model -
+            // rendered with classic (Steve, 4px-wide) arms in-game. Mojang's real
+            // session server includes this object whenever the uploaded skin is slim;
+            // there's no per-skin flag saved anywhere in this launcher to read it back
+            // from, so it's detected the same way several other skin tools do it
+            // (Blessing Skin, NameMC, etc.): a 64x64 skin's second/overlay layer only
+            // has real pixel data in the outer arm columns for the classic 4px model,
+            // so a transparent pixel at (54, 20) - within that classic-only region - is
+            // a reliable signal that this skin was authored for the slim model instead.
+            if (detectSlimModel(skinFile)) {
+                skin.put("metadata", JSONObject().put("model", "slim"))
+            }
             textures.put("SKIN", skin)
         }
         if (capeFile.isFile) {
@@ -248,6 +262,20 @@ object TurtleSkinServer {
         Logging.e(TAG, "Failed to sign skin texture payload", e)
         ""
     }
+
+    /**
+     * Heuristic slim/classic model detection - see buildProfileResponse()'s doc comment
+     * for why this exists and why it isn't a stored flag instead. Only meaningful for
+     * the modern 64x64 skin format; legacy 64x32 skins predate the slim model entirely,
+     * so they're always treated as classic. Errors (corrupt/unreadable PNG) also fall
+     * back to classic - the pre-existing (if wrong for slim skins) behavior - rather
+     * than risk throwing out of a request-handling path.
+     */
+    private fun detectSlimModel(skinFile: File): Boolean = runCatching {
+        val bitmap = android.graphics.BitmapFactory.decodeFile(skinFile.absolutePath) ?: return false
+        if (bitmap.width != 64 || bitmap.height != 64) return false
+        android.graphics.Color.alpha(bitmap.getPixel(54, 20)) == 0
+    }.getOrDefault(false)
 
     private fun rootMetadata(): JSONObject {
         val meta = JSONObject()

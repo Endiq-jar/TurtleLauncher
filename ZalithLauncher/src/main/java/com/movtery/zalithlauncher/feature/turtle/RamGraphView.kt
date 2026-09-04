@@ -8,6 +8,7 @@ import android.graphics.Path
 import android.util.AttributeSet
 import androidx.core.content.ContextCompat
 import android.view.View
+import com.movtery.zalithlauncher.R
 import java.util.LinkedList
 
 /**

@@ -97,19 +97,33 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := awt_headless
-include $(BUILD_SHARED_LIBRARY)
+# STATIC, not SHARED: this module has zero real source and exists only to
+# satisfy awt_xawt's link-time dependency below. A SHARED build produces an
+# installable .so that AGP's mergeDebugNativeLibs can pick up in place of the
+# real bundled jniLibs/*/libawt_headless.so that JREUtils.java actually
+# dlopen()s at runtime - which is exactly the cause of the Font.initIDs
+# UnsatisfiedLinkError/SIGSEGV crash. STATIC never gets packaged, so the
+# real prebuilt always wins with no rm hack needed.
+include $(BUILD_STATIC_LIBRARY)
 
 
 LOCAL_PATH := $(HERE_PATH)/awt_xawt
 include $(CLEAR_VARS)
 LOCAL_MODULE := awt_xawt
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_SHARED_LIBRARIES := awt_headless
+LOCAL_STATIC_LIBRARIES := awt_headless
 LOCAL_SRC_FILES := xawt_fake.c
 include $(BUILD_SHARED_LIBRARY)
 
 
-# delete fake libs after linked
-$(info $(shell (rm $(HERE_PATH)/../jniLibs/*/libawt_headless.so)))
+# delete stale prebuilts so the freshly source-built versions replace them.
+# NOTE: this $(shell) runs at makefile PARSE time, before any module actually
+# compiles - fine here since libawt_xawt.so/libdriver_helper.so are both
+# genuinely meant to be replaced by their from-source build (xawt_fake.c is
+# an intentional dummy matching the runtime already installs via
+# MultiRTUtils.copyDummyNativeLib; driver_helper.c is the real, current
+# implementation). Do NOT add libawt_headless.so back here - see the static
+# library note above for why.
 $(info $(shell (rm $(HERE_PATH)/../jniLibs/*/libawt_xawt.so)))
+$(info $(shell (rm $(HERE_PATH)/../jniLibs/*/libdriver_helper.so)))
 

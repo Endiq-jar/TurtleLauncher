@@ -302,18 +302,45 @@ class LaunchArgs(
          */
         @JvmStatic
         fun resolveRequiredJava(mcVersionId: String, jsonMajorVersion: Int): Int {
-            // 26.x branch (new versioning scheme, no "1." prefix) — 26.1+ needs Java 25
-            if (isMinecraftVersionAtLeast(mcVersionId, 26, 1, 0)) return 25
+            // TurtleLauncher CRASH FIX: 26.x version ids aren't always a clean "26.2"
+            // string - snapshots are named like "26.3 Snapshot 4" (see
+            // VersionSeriesUtils' own doc comment for that exact format). The old
+            // isMinecraftVersionAtLeast(id, 26, 1, 0) check below split on "." and
+            // toIntOrNull()'d each part, silently defaulting an unparseable minor
+            // segment ("3 Snapshot 4") to 0 - which made that check return false for
+            // every 26.x snapshot. Worse, the *next* check,
+            // isMinecraftVersionAtLeast(id, 1, 20, 5), then returned true instead,
+            // because 26 > 1 is arithmetically true even though 26.x and 1.x are
+            // different, non-comparable version epochs - silently routing every 26.x
+            // snapshot to Java 21 instead of 25. Checking the leading major-version
+            // epoch on its own, before ever comparing minor/patch across epochs,
+            // fixes this for any 26.x/27.x/28.x id regardless of what trailing
+            // snapshot text follows it (mirrors Tools.java's own
+            // vName.startsWith("26.") fallback heuristic, just tolerant of a leading
+            // multi-digit major rather than only a literal "26." prefix).
+            parseLeadingMajorVersion(mcVersionId)?.let { major ->
+                if (major >= 26) return 25
+            }
 
             // 1.x branch
             if (isMinecraftVersionAtLeast(mcVersionId, 1, 20, 5)) return 21
             if (isMinecraftVersionAtLeast(mcVersionId, 1, 18, 0)) return 17
             if (isMinecraftVersionAtLeast(mcVersionId, 1, 0, 0)) return 8
 
-            // Unrecognised/non-numeric version id (e.g. custom modpack labels,
-            // very early 26.0.x betas) — fall back to whatever Mojang's JSON
-            // says rather than guessing.
+            // Unrecognised/non-numeric version id (e.g. custom modpack labels)
+            // — fall back to whatever Mojang's JSON says rather than guessing.
             return if (jsonMajorVersion > 0) jsonMajorVersion else 8
+        }
+
+        /**
+         * Extracts just the leading run-of-digits major version from an MC version
+         * id, tolerant of anything after it (a second ".", a space, snapshot text,
+         * etc.) - e.g. "26.3 Snapshot 4" -> 26, "1.20.5" -> 1, "26.2" -> 26. Returns
+         * null if the id doesn't even start with a digit.
+         */
+        private fun parseLeadingMajorVersion(mcVersionId: String): Int? {
+            val digits = mcVersionId.takeWhile { it.isDigit() }
+            return digits.toIntOrNull()
         }
 
         /**

@@ -80,6 +80,7 @@
             android:name="com.movtery.zalithlauncher.ui.activity.ErrorActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
             android:theme="@style/CustomDialogStyle"
+            android:process=":crash"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name="com.movtery.zalithlauncher.ui.activity.ConfigEditorActivity"

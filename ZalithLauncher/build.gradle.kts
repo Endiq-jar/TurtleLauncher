@@ -204,18 +204,13 @@ android {
         }
     }
 
-    ndkVersion = "25.2.9519653"
+    // ndkVersion = "25.2.9519653"
 
-    // Native build re-enabled (Sept 2026) to ship sdl_hook.c - see that file and
-    // SdlAndroidJniPrep.kt's doc comments for why a native (not just Java-side) fix
-    // for the MC 26.3+ SDL3 SIGSEGV is needed. Re-enabling this surfaced a batch of
-    // build errors that are now fixed alongside it - see the MMKV, libc++_shared.so
-    // pickFirsts, and extractNativeLibs notes elsewhere in this file for each.
-    externalNativeBuild {
-        ndkBuild {
-            path = file("src/main/jni/Android.mk")
-        }
-    }
+    // externalNativeBuild {
+    //     ndkBuild {
+    //         path = file("src/main/jni/Android.mk")
+    //     }
+    // }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -225,24 +220,8 @@ android {
 
     packaging {
         jniLibs {
-            // useLegacyPackaging = true is what actually controls native-lib
-            // extraction behavior at build time (equivalent to
-            // android:extractNativeLibs="true"). Deliberately not also declared as an
-            // explicit manifest attribute: some AAR on this project's dependency graph
-            // ships a manifest declaring extractNativeLibs="false", and an explicit
-            // attribute here would conflict with it during packageDebug's manifest
-            // merge ("Attribute application@extractNativeLibs value=(true) ... is
-            // also present at [...] value=(false)"). Letting this DSL setting be the
-            // single source of truth avoids that merge conflict entirely rather than
-            // fixing it after the fact with tools:replace.
             useLegacyPackaging = true
-            // Re-enabling the native build (see externalNativeBuild above) means this
-            // project's own ndk-build output AND at least one prebuilt dependency
-            // (bytehook, via the imported prefab module) both ship libc++_shared.so
-            // for the same ABIs - mergeDebugNativeLibs fails on the duplicate unless
-            // one is picked explicitly, same reasoning as the existing bytehook entry
-            // below for libbytehook.so itself.
-            pickFirsts += listOf("**/libbytehook.so", "**/libc++_shared.so")
+            pickFirsts += listOf("**/libbytehook.so")
         }
     }
 
@@ -402,16 +381,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
-    // MMKV was declared here (com.tencent:mmkv:2.4.1) but never actually called into
-    // anywhere in the codebase - see the removed comment's own note that AllSettings'
-    // SettingUnit classes never got migrated to it. Dropped now because re-enabling the
-    // native build (see externalNativeBuild above) makes AGP's native-build/prefab
-    // validation actually inspect this project's full native dependency graph, and
-    // MMKV's own bundled .so set (which, per its docs, dropped 32-bit/API<23 support as
-    // of v2.0.0, while this project still ships armeabi-v7a/x86 builds) failed that
-    // validation. An unused dependency isn't worth carrying that risk for - re-add it
-    // (ideally pinned to the 1.3.x LTS line for 32-bit support) if/when something
-    // actually starts using it.
+    // MMKV - fast mmap-backed key-value store from Tencent. Declared and ready; AllSettings'
+    // existing SettingUnit classes (BooleanSettingUnit/StringSettingUnit/etc.) are still on
+    // SharedPreferences underneath - migrating them to MMKV is a real, separate change (their
+    // read/write internals, not just the dependency) that hasn't been done this round.
+    // CAVEAT (real, unresolved): MMKV dropped 32-bit arch + API<23 support as of v2.0.0 per its
+    // own docs - this project still ships armeabi-v7a/x86 (32-bit) builds per the jniLibs ABI
+    // set. Using this version as-is on a 32-bit device would be a real crash risk once anything
+    // actually calls into it. The 1.3.x LTS line keeps 32-bit support if that matters more than
+    // being on latest - flagging rather than picking silently.
+    implementation("com.tencent:mmkv:2.4.1")
 
     // Okio - modern I/O library from Square. Already present transitively via OkHttp 4.12.0
     // (which depends on an older 3.x Okio internally), but relying on a transitive version

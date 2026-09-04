@@ -116,14 +116,14 @@ LOCAL_SRC_FILES := xawt_fake.c
 include $(BUILD_SHARED_LIBRARY)
 
 
-# delete stale prebuilts so the freshly source-built versions replace them.
-# NOTE: this $(shell) runs at makefile PARSE time, before any module actually
-# compiles - fine here since libawt_xawt.so/libdriver_helper.so are both
-# genuinely meant to be replaced by their from-source build (xawt_fake.c is
-# an intentional dummy matching the runtime already installs via
-# MultiRTUtils.copyDummyNativeLib; driver_helper.c is the real, current
-# implementation). Do NOT add libawt_headless.so back here - see the static
-# library note above for why.
-$(info $(shell (rm $(HERE_PATH)/../jniLibs/*/libawt_xawt.so)))
-$(info $(shell (rm $(HERE_PATH)/../jniLibs/*/libdriver_helper.so)))
+# The jniLibs/ prebuilt .so files for every module that is built from source
+# here (libpojavexec.so, libexithook.so, libdriver_helper.so, liblinkerhook.so,
+# libpojavexec_awt.so, libawt_xawt.so) were removed from the repo. Keeping both
+# the stale prebuilt and the from-source build in the tree at once is what made
+# mergeDebugNativeLibs fail with "2 files found with path 'lib/<abi>/<lib>.so'"
+# - the from-source build is now the single source of truth for those modules,
+# so no parse-time rm hack is needed anymore. Do NOT reintroduce a jniLibs/
+# prebuilt for a module that is also built below, and do NOT turn awt_headless
+# back into a SHARED library (it must stay STATIC so the real
+# jniLibs/*/libawt_headless.so wins - see the note above).
 

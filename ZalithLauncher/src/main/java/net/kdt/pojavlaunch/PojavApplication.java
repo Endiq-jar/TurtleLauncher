@@ -77,37 +77,9 @@ public class PojavApplication extends Application {
 			}
 
 			ErrorActivity.showLauncherCrash(PojavApplication.this, crashFile.getAbsolutePath(), th);
-
-			// TurtleLauncher CRASH FIX (launcher closing instantly on open with no
-			// logs): ErrorActivity used to run in this same process, so this
-			// Process.killProcess() call - fired right after the startActivity()
-			// above - was racing the system's own async activity-launch IPC and
-			// regularly won, killing this process (and ErrorActivity along with it,
-			// since it hadn't been declared with its own android:process yet)
-			// before the crash screen ever got a window. ErrorActivity now runs in
-			// its own ":crash" process (see AndroidManifest.xml), so it's no longer
-			// at risk from this process dying.
-			//
-			// TurtleLauncher CRASH FIX (kept startup crash diagnostics visible on
-			// Android 13 / ColorOS): ColorOS (OPPO/OnePlus/realme's Android skin) is
-			// documented, in multiple public crash-reporting-library issue trackers
-			// (ACRA, Bugsnag), to sometimes silently drop or badly delay a
-			// startActivity() call made from an uncaught-exception handler - its own
-			// background-activity-start throttling layers on top of stock Android's,
-			// and reports of it appear concentrated on Android 13 builds
-			// specifically. There's no supported API to detect or wait on that from
-			// here, so this is a best-effort mitigation (a longer delay for
-			// ColorOS/ColorOS-family devices, giving its async launch pipeline more
-			// real wall-clock time to act before this process disappears), not a
-			// confirmed fix - it hasn't been verified against a real affected
-			// device.
-			try {
-				Thread.sleep(isLikelyColorOS() ? 1500 : 750);
-			} catch (InterruptedException ignored) {
-			}
 			ZHTools.killProcess();
 		});
-
+		
 		try {
 			super.onCreate();
 			PathManager.DIR_DATA = getDir("files", MODE_PRIVATE).getParent();
@@ -133,19 +105,6 @@ public class PojavApplication extends Application {
 		// via AndroidX Startup's automatic pre-onCreate discovery.
 		androidx.startup.AppInitializer.getInstance(this)
 			.initializeComponent(com.movtery.zalithlauncher.startup.TurtleStartupInitializer.class);
-	}
-
-	/**
-	 * Best-effort ColorOS (OPPO/OnePlus/realme) detection for the crash-kill delay
-	 * in onCreate()'s uncaught-exception handler above - Build.MANUFACTURER/
-	 * Build.BRAND are the standard, widely-used way to spot this OEM family
-	 * (there's no public API that reports "is ColorOS" or its version directly).
-	 */
-	private static boolean isLikelyColorOS() {
-		String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase(java.util.Locale.ROOT) : "";
-		String brand = Build.BRAND != null ? Build.BRAND.toLowerCase(java.util.Locale.ROOT) : "";
-		return manufacturer.contains("oppo") || manufacturer.contains("oneplus") || manufacturer.contains("realme")
-				|| brand.contains("oppo") || brand.contains("oneplus") || brand.contains("realme");
 	}
 
 	@Override

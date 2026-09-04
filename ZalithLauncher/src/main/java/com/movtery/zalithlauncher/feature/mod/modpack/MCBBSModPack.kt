@@ -55,12 +55,7 @@ class MCBBSModPack(private val context: Context, private val zipFile: File?) {
                     val entry = modpackZipFile.getEntry(overridesDir + file.path)
                     if (entry != null) {
                         val entryName = entry.name
-                        // TurtleLauncher SECURITY FIX (zip-slip): was `File(versionFolder,
-                        // entryName.substring(dirNameLen))` with no check that the resolved
-                        // path actually stayed inside versionFolder - a crafted mcbbs.packmeta
-                        // "path" field could write anywhere the app has permissions. See
-                        // ZipUtils.resolveSafeEntryPath's doc.
-                        val zipDestination = ZipUtils.resolveSafeEntryPath(versionFolder, entryName.substring(dirNameLen))
+                        val zipDestination = File(versionFolder, entryName.substring(dirNameLen))
                         if (zipDestination.exists() && !file.force) continue
 
                         val fileHash = FileTools.calculateFileHash(modpackZipFile.getInputStream(entry), "SHA-1")
@@ -123,22 +118,16 @@ class MCBBSModPack(private val context: Context, private val zipFile: File?) {
         var version = ""
         var modLoader = ""
         var modLoaderVersion = ""
-        // TurtleLauncher CRASH FIX: was `for (i in 0..addons.size)`, an off-by-one -
-        // Kotlin's `..` range is inclusive, so this looped through addons.size+1
-        // indices and threw ArrayIndexOutOfBoundsException on the last iteration for
-        // every modpack that hit this code path. It also called `addons[i]!!.id`
-        // before checking for null on the "game" branch, so a null entry there would
-        // have thrown a NullPointerException first anyway. addons.indices plus an
-        // explicit null-check/continue fixes both at once.
-        for (i in addons.indices) {
-            val addon = addons[i] ?: continue
-            if (addon.id == "game") {
-                version = addon.version
+        for (i in 0..addons.size) {
+            if (addons[i]!!.id == "game") {
+                version = addons[i]!!.version
                 continue
             }
-            modLoader = addon.id
-            modLoaderVersion = addon.version
-            break
+            if (addons[i] != null) {
+                modLoader = addons[i]!!.id
+                modLoaderVersion = addons[i]!!.version
+                break
+            }
         }
         val modloader = when (modLoader) {
             "forge" -> ModLoader.FORGE

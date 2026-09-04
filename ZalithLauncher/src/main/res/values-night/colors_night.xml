@@ -1,115 +1,260 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Turtle Launcher Color System — Dark theme (default appearance)
+    ══════════════════════════════════════════════════════════════════
+    Mirrors the name set of values/colors.xml (light) with the dark design
+    tokens. Alpha is reserved for functional layers only: touch ripples, scrims
+    and shadows. All surfaces, top bars and panels are solid (no glassmorphism).
+
+      Backgrounds  #0F1112 main · #131617 secondary/nav · #191D1F cards/panels
+                   #202528 elevated · #272D30 hover/strong · #2C3336 highest
+      Primary      #55C26A (hover #68D77B · pressed #3FA653 · dark #2F8242 · soft #193B23)
+      Emerald      #36B56B · Diamond #56CFE1 · Gold #E4B84A
+      Semantic     success/emerald #36B56B · warning #E29A45 · error #E05252 · info #4D9FE6
+      Text         primary #F1F4F2 · secondary #B7BFBA · tertiary #858E89 · disabled #5D6561
+      Borders      #30373A · strong #3B4448 · focus #55C26A · error #E05252
+-->
 <resources>
 
-    <!-- Same "Slate Blue" palette as values/colors.xml — the app is dark-only,
-         so night mode intentionally matches day mode exactly instead of using
-         a second, different dark theme. Only names present in the base file
-         plus this file's own legacy extras are kept, all remapped onto the
-         given hex list. -->
+    <!-- ── Core ─────────────────────────────────────────────────────── -->
+    <color name="black_or_white">#F1F4F2</color>
+    <color name="palette_primary">#55C26A</color>
+    <color name="palette_secondary">#36B56B</color>
 
-    <!-- Core -->
-    <color name="black_or_white">#FFFFFF</color>
+    <!-- ── Spec ramp: primary green ─────────────────────────────────── -->
+    <color name="turtle_primary">#55C26A</color>
+    <color name="turtle_primary_hover">#68D77B</color>
+    <color name="turtle_primary_pressed">#3FA653</color>
+    <color name="turtle_primary_dark">#2F8242</color>
+    <color name="turtle_primary_soft">#193B23</color>
 
-    <!-- Main Background -->
-    <color name="background_app">#0D1117</color>
-    <color name="background_app_error">#0D1117</color>
-    <color name="background_overlay">#88000000</color>
-    <color name="background_status_bar">#0D1117</color>
+    <!-- ── Spec ramp: emerald ───────────────────────────────────────── -->
+    <color name="turtle_emerald">#36B56B</color>
+    <color name="turtle_emerald_hover">#48C77C</color>
+    <color name="turtle_emerald_dark">#267E4B</color>
+    <color name="turtle_emerald_soft">#183A29</color>
 
-    <!-- Top Bar -->
-    <color name="background_menu_top">#CC161B22</color>
-    <color name="background_menu_top_error">#99161B22</color>
-    <color name="background_menu_element">#1E2630</color>
-    <color name="background_ripple_effect">#333B82F6</color>
+    <!-- ── Spec ramp: diamond (technical info) ──────────────────────── -->
+    <color name="turtle_diamond">#56CFE1</color>
+    <color name="turtle_diamond_hover">#6DDAE8</color>
+    <color name="turtle_diamond_dark">#318D9C</color>
+    <color name="turtle_diamond_soft">#19363B</color>
 
-    <!-- Buttons -->
-    <color name="button_background">#3B82F6</color>
-    <color name="button_background_selected">#252F3D</color>
+    <!-- ── Spec ramp: gold (XP / achievements, used sparingly) ──────── -->
+    <color name="turtle_gold">#E4B84A</color>
+    <color name="turtle_gold_hover">#F0C85D</color>
+    <color name="turtle_gold_dark">#A9822F</color>
+    <color name="turtle_gold_soft">#3D3219</color>
 
-    <!-- Dialog -->
-    <color name="dialog_background">#EE1E2630</color>
+    <!-- ── Spec ramp: error / redstone ──────────────────────────────── -->
+    <color name="turtle_error">#E05252</color>
+    <color name="turtle_error_hover">#EE6666</color>
+    <color name="turtle_error_dark">#A93636</color>
+    <color name="turtle_error_soft">#3A1E1E</color>
 
-    <!-- Menu -->
-    <color name="menu_bar">#111827</color>
-    <color name="menu_bar_text">#FFFFFF</color>
-    <color name="menu_overlay">#88000000</color>
-    <color name="menu_progress">#3B82F6</color>
+    <!-- ── Spec ramp: warning ───────────────────────────────────────── -->
+    <color name="turtle_warning">#E29A45</color>
+    <color name="turtle_warning_hover">#F0AA55</color>
+    <color name="turtle_warning_dark">#A66B2E</color>
+    <color name="turtle_warning_soft">#3A291B</color>
 
-    <!-- Cards -->
-    <color name="background_item">#881E2630</color>
-    <color name="background_item_selected">#AA252F3D</color>
-    <color name="background_item_disabled">#552A3441</color>
+    <!-- ── Spec ramp: information ───────────────────────────────────── -->
+    <color name="turtle_info">#4D9FE6</color>
+    <color name="turtle_info_hover">#63ACEB</color>
+    <color name="turtle_info_dark">#3470A3</color>
+    <color name="turtle_info_soft">#1A2C3D</color>
 
-    <!-- Sponsor -->
-    <color name="background_sponsor_intermediate">#55FBBF24</color>
-    <color name="background_sponsor_advanced">#5538BDF8</color>
+    <!-- ── Main Background ─────────────────────────────────────────── -->
+    <color name="background_app">#0F1112</color>
+    <color name="background_app_error">#0F1112</color>
+    <color name="background_overlay">#66000000</color>
+    <color name="background_status_bar">#0F1112</color>
 
-    <!-- Inputs -->
-    <color name="edit_box_fill">#AA1E2630</color>
-    <color name="edit_box_fill_selected">#CC252F3D</color>
+    <!-- ── Background steps (spec) ──────────────────────────────────── -->
+    <color name="turtle_bg_main">#0F1112</color>
+    <color name="turtle_bg_secondary">#131617</color>
+    <color name="turtle_bg_strong">#272D30</color>
+    <color name="turtle_bg_highest">#2C3336</color>
 
-    <!-- Categories -->
-    <color name="mod_category_fill">#66252F3D</color>
-    <color name="text_background_fill">#66161B22</color>
+    <!-- ── Top Bar / Navigation ─────────────────────────────────────── -->
+    <color name="background_menu_top">#131617</color>
+    <color name="background_menu_top_error">#131617</color>
+    <color name="background_menu_element">#202528</color>
+    <color name="background_ripple_effect">#3355C26A</color>
 
-    <!-- Vibrant Accent Colors -->
-    <color name="settings_category">#3B82F6</color>
-    <color name="favorite_color">#EF4444</color>
-    <color name="turtle_icon_color">#FFFFFF</color>
-    <color name="turtle_primary_text">#FFFFFF</color>
-    <color name="turtle_text_primary">#FFFFFF</color>
+    <!-- ── Buttons ───────────────────────────────────────────────────── -->
+    <color name="button_background">#55C26A</color>
+    <color name="button_background_selected">#55C26A</color>
+    <color name="button_background_unselected">#191D1F</color>
 
-    <!-- Extra Vibrant Colors (no purple/pink/multi-hue set in the new spec,
-         so every accent name below collapses onto Primary Blue / Cyan Accent /
-         the status colors — whichever is the closest match) -->
-    <color name="accent_primary">#3B82F6</color>
-    <color name="accent_secondary">#38BDF8</color>
-    <color name="accent_purple">#3B82F6</color>
-    <color name="accent_blue">#3B82F6</color>
-    <color name="accent_cyan">#38BDF8</color>
-    <color name="accent_green">#22C55E</color>
-    <color name="accent_orange">#FBBF24</color>
-    <color name="accent_red">#EF4444</color>
-    <color name="accent_pink">#EF4444</color>
+    <!-- ── Dialog / Menu ─────────────────────────────────────────────── -->
+    <color name="dialog_background">#202528</color>
+    <color name="menu_bar">#131617</color>
+    <color name="menu_bar_text">#F1F4F2</color>
+    <color name="menu_overlay">#66000000</color>
+    <color name="menu_progress">#55C26A</color>
 
-    <!-- Glass / AMOLED -->
-    <color name="bg_deep">#0D1117</color>
-    <color name="bg_card">#AA1E2630</color>
+    <!-- ── Cards ────────────────────────────────────────────────────── -->
+    <color name="background_item">#191D1F</color>
+    <color name="background_item_selected">#193B23</color>
+    <color name="background_item_disabled">#171A1B</color>
+    <color name="edit_box_fill">#191D1F</color>
+    <color name="edit_box_fill_selected">#202528</color>
 
-    <!-- Surfaces (needed by existing code) -->
-    <color name="turtle_surface">#CC1E2630</color>
-    <color name="turtle_surface_variant">#88252F3D</color>
-    <color name="turtle_divider">#1A30363D</color>
-    <color name="turtle_stroke">#333B82F6</color>
+    <!-- ── Sponsor (About screen tiers) ─────────────────────────────── -->
+    <color name="background_sponsor_intermediate">#3D3219</color>
+    <color name="background_sponsor_advanced">#19363B</color>
 
-    <!-- Extended aliases used by layouts/code -->
-    <color name="turtle_accent_glow">#3B82F6</color>
-    <color name="turtle_accent_dim">#2563EB</color>
-    <color name="turtle_accent_ripple">#333B82F6</color>
-    <color name="turtle_bg_surface">#1E2630</color>
-    <color name="turtle_bg_elevated">#252F3D</color>
-    <color name="turtle_bg_navbar">#111827</color>
-    <color name="turtle_bg_sidebar">#111827</color>
-    <color name="turtle_bg_terminal">#0D1117</color>
-    <color name="turtle_text_secondary">#C9D1D9</color>
-    <color name="turtle_text_disabled">#6E7681</color>
-    <color name="turtle_text_on_accent">#FFFFFF</color>
-    <color name="turtle_text_terminal">#38BDF8</color>
-    <color name="turtle_border_subtle">#1A30363D</color>
-    <color name="turtle_border_default">#30363D</color>
-    <color name="turtle_error">#EF4444</color>
-    <color name="turtle_warning">#FBBF24</color>
-    <color name="turtle_success">#22C55E</color>
-    <color name="turtle_glass_overlay">#2238BDF8</color>
+    <!-- ── Inputs / categories ──────────────────────────────────────── -->
+    <color name="mod_category_fill">#202528</color>
+    <color name="text_background_fill">#202528</color>
+
+    <!-- ── Accent aliases ───────────────────────────────────────────── -->
+    <color name="settings_category">#55C26A</color>
+    <color name="accent_primary">#55C26A</color>
+    <color name="accent_secondary">#56CFE1</color>
+    <color name="accent_purple">#4D9FE6</color>
+    <color name="accent_blue">#55C26A</color>
+    <color name="accent_cyan">#56CFE1</color>
+    <color name="accent_green">#36B56B</color>
+    <color name="accent_orange">#E4B84A</color>
+    <color name="accent_red">#E05252</color>
+    <color name="accent_pink">#E05252</color>
+    <color name="favorite_color">#E4B84A</color>
+
+    <!-- ── Icon / Text defaults ─────────────────────────────────────── -->
+    <color name="turtle_icon_color">#B7BFBA</color>
+    <color name="turtle_primary_text">#F1F4F2</color>
+    <color name="turtle_text_primary">#F1F4F2</color>
+    <color name="turtle_text_secondary">#B7BFBA</color>
+    <color name="turtle_text_tertiary">#858E89</color>
+    <color name="turtle_text_disabled">#5D6561</color>
+    <color name="turtle_text_on_accent">#0F1112</color>
+    <color name="turtle_text_terminal">#56CFE1</color>
+
+    <!-- ── Surfaces ─────────────────────────────────────────────────── -->
+    <color name="bg_deep">#0F1112</color>
+    <color name="bg_card">#191D1F</color>
+    <color name="turtle_surface">#202528</color>
+    <color name="turtle_surface_variant">#272D30</color>
+    <color name="turtle_bg_surface">#191D1F</color>
+    <color name="turtle_bg_elevated">#202528</color>
+    <color name="turtle_bg_navbar">#131617</color>
+    <color name="turtle_bg_sidebar">#131617</color>
+    <color name="turtle_bg_terminal">#0F1112</color>
+
+    <!-- ── Borders ──────────────────────────────────────────────────── -->
+    <color name="turtle_divider">#30373A</color>
+    <color name="turtle_border_subtle">#30373A</color>
+    <color name="turtle_border_default">#30373A</color>
+    <color name="turtle_border_strong">#3B4448</color>
+    <color name="turtle_border_focus">#55C26A</color>
+    <color name="turtle_border_error">#E05252</color>
+    <color name="turtle_stroke">#3B4448</color>
+    <color name="turtle_glass_overlay">#1455C26A</color>
+    <color name="seekbar_track">#30373A</color>
+
+    <!-- ── Accent behaviors ─────────────────────────────────────────── -->
+    <color name="turtle_accent_glow">#55C26A</color>
+    <color name="turtle_accent_dim">#2F8242</color>
+    <color name="turtle_accent_ripple">#3355C26A</color>
+
+    <!-- ── Launch button ────────────────────────────────────────────── -->
+    <color name="launch_button_color">#55C26A</color>
+    <color name="launch_button_hover">#68D77B</color>
+    <color name="launch_button_pressed">#3FA653</color>
+    <color name="launch_button_ripple">#33FFFFFF</color>
+
+    <!-- ── Accessibility: High Contrast ─────────────────────────────── -->
+    <color name="turtle_hc_border">#9BA4AF</color>
+    <color name="turtle_hc_text_secondary">#F1F4F2</color>
+    <color name="turtle_hc_surface">#000000</color>
+
+    <!-- ── Semantic states ──────────────────────────────────────────── -->
+    <color name="turtle_success">#36B56B</color>
+
+    <!-- ── Overlays / effects (functional alpha only) ───────────────── -->
     <color name="turtle_shadow_color">#66000000</color>
     <color name="turtle_overlay_scrim">#88000000</color>
-    <color name="turtle_stat_fps">#38BDF8</color>
-    <color name="turtle_stat_ram">#22C55E</color>
-    <color name="turtle_stat_cpu">#FBBF24</color>
-    <color name="turtle_stat_ping">#EF4444</color>
+    <color name="turtle_highlight_subtle">#1AFFFFFF</color>
 
-    <color name="panel_translucent">#DD161B22</color>
-    <color name="game_panel_overlay">#80111827</color>
-    <color name="turtle_highlight_subtle">#22FFFFFF</color>
+    <!-- ── HUD stat colors (FPS/RAM/CPU/Ping) ───────────────────────── -->
+    <color name="turtle_stat_fps">#56CFE1</color>
+    <color name="turtle_stat_ram">#36B56B</color>
+    <color name="turtle_stat_cpu">#E4B84A</color>
+    <color name="turtle_stat_ping">#E05252</color>
+
+    <!-- ── Panel surfaces (solid; names kept for layout compat) ─────── -->
+    <color name="panel_translucent">#131617</color>
+    <color name="game_panel_overlay">#E60F1112</color>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         Legacy "new_*" spec tokens — collapsed onto the dark palette.
+         ══════════════════════════════════════════════════════════════ -->
+    <color name="new_background_main">#0F1112</color>
+    <color name="new_background_secondary">#131617</color>
+    <color name="new_background_cards_panels">#191D1F</color>
+    <color name="new_background_elevated_cards">#202528</color>
+    <color name="new_background_sidebar_topbar">#131617</color>
+
+    <color name="new_primary_blue">#55C26A</color>
+    <color name="new_primary_blue_hover">#68D77B</color>
+    <color name="new_primary_blue_pressed">#3FA653</color>
+    <color name="new_primary_blue_glow">#193B23</color>
+
+    <color name="new_cyan_accent">#56CFE1</color>
+    <color name="new_cyan_accent_hover">#6DDAE8</color>
+    <color name="new_cyan_accent_pressed">#318D9C</color>
+
+    <color name="new_button_primary_background">#55C26A</color>
+    <color name="new_button_primary_hover">#68D77B</color>
+    <color name="new_button_primary_pressed">#3FA653</color>
+    <color name="new_button_primary_text">#0F1112</color>
+
+    <color name="new_button_secondary_background">#272D30</color>
+    <color name="new_button_secondary_hover">#30383B</color>
+    <color name="new_button_secondary_pressed">#202528</color>
+    <color name="new_button_secondary_text">#F1F4F2</color>
+
+    <color name="new_button_destructive_background">#E05252</color>
+    <color name="new_button_destructive_hover">#EE6666</color>
+    <color name="new_button_destructive_text">#FFFFFF</color>
+
+    <color name="new_text_primary">#F1F4F2</color>
+    <color name="new_text_secondary">#B7BFBA</color>
+    <color name="new_text_muted">#858E89</color>
+    <color name="new_text_disabled">#5D6561</color>
+
+    <color name="new_input_background">#191D1F</color>
+    <color name="new_input_border">#30373A</color>
+    <color name="new_input_focus_border">#55C26A</color>
+    <color name="new_input_placeholder">#5D6561</color>
+    <color name="new_input_text">#F1F4F2</color>
+
+    <color name="new_version_card_background">#191D1F</color>
+    <color name="new_version_card_border">#30373A</color>
+    <color name="new_version_card_selected_border">#55C26A</color>
+    <color name="new_version_card_hover_glow">#193B23</color>
+
+    <color name="new_nav_active_icon">#55C26A</color>
+    <color name="new_nav_inactive_icon">#858E89</color>
+    <color name="new_nav_active_indicator">#55C26A</color>
+
+    <color name="new_status_success">#36B56B</color>
+    <color name="new_status_warning">#E29A45</color>
+    <color name="new_status_error">#E05252</color>
+    <color name="new_status_info">#4D9FE6</color>
+
+    <color name="new_border_default">#30373A</color>
+    <color name="new_border_hover">#3B4448</color>
+    <color name="new_border_selected">#55C26A</color>
+
+    <color name="new_shadow">#66000000</color>
+    <color name="new_overlay">#88000000</color>
+    <color name="new_blue_glow">#1455C26A</color>
+    <color name="new_cyan_glow">#1456CFE1</color>
+
+    <color name="new_progress_track">#272D30</color>
+    <color name="new_progress_fill">#55C26A</color>
 
 </resources>

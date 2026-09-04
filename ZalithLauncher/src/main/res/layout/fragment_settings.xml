@@ -19,6 +19,7 @@
         android:paddingVertical="@dimen/space_m"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:background="@color/background_menu_top"
         app:layout_constraintEnd_toEndOf="parent">
 
         <ImageButton
@@ -47,6 +48,14 @@
             android:textStyle="bold"
             android:textColor="@color/turtle_text_primary"/>
     </LinearLayout>
+    <View
+        android:id="@id/settings_header_divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/turtle_divider"
+        app:layout_constraintTop_toBottomOf="@id/settings_header"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    TurtleLauncher: launch button. Base #3B82F6, hovered #60A5FA (mouse/trackpad-capable
-    devices - Chromebooks, DeX, tablets with a mouse), pressed #2563EB, white text (see
-    play_button in fragment_launcher.xml). A plain <ripple> can only tint a press animation,
-    not hold a distinct idle-vs-hover color, so the state differentiation lives in the
-    <selector> and the <ripple> just adds the tactile press animation on top of it.
+    TurtleLauncher PLAY button. Base #55C26A, hovered #68D77B (mouse/trackpad-capable
+    devices - Chromebooks, DeX, tablets with a mouse), pressed #3FA653, dark text (see
+    play_button in fragment_launcher.xml, tinted turtle_text_on_accent). A plain <ripple>
+    can only tint a press animation, not hold a distinct idle-vs-hover color, so the state
+    differentiation lives in the <selector> and the <ripple> just adds the tactile press
+    animation on top of it.
 -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/launch_button_ripple">
@@ -13,19 +14,19 @@
             <item android:state_pressed="true">
                 <shape android:shape="rectangle">
                     <solid android:color="@color/launch_button_pressed"/>
-                    <corners android:radius="@dimen/radius_dialog"/>
+                    <corners android:radius="@dimen/radius_button"/>
                 </shape>
             </item>
             <item android:state_hovered="true">
                 <shape android:shape="rectangle">
                     <solid android:color="@color/launch_button_hover"/>
-                    <corners android:radius="@dimen/radius_dialog"/>
+                    <corners android:radius="@dimen/radius_button"/>
                 </shape>
             </item>
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/launch_button_color"/>
-                    <corners android:radius="@dimen/radius_dialog"/>
+                    <corners android:radius="@dimen/radius_button"/>
                 </shape>
             </item>
         </selector>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home "play" hero panel: solid elevated surface with a hairline border. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/turtle_bg_surface"/>
+    <corners android:radius="@dimen/radius_panel"/>
+    <stroke android:width="1dp" android:color="@color/turtle_border_default"/>
+</shape>

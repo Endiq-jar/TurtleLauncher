@@ -11,6 +11,7 @@ import android.view.View
 import android.view.Window
 import android.widget.TextView
 import androidx.annotation.CheckResult
+import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.DialogTipBinding
 import com.movtery.zalithlauncher.ui.dialog.DraggableDialog.DialogInitializationListener
 
@@ -80,7 +81,7 @@ class TipDialog private constructor(
             //如果开启了警告模式，那么就为标题添加一个红色的警告图标
             if (warning) {
                 warningIcon.visibility = View.VISIBLE
-                warningIcon.drawable.setTint(Color.RED)
+                warningIcon.drawable.setTint(androidx.core.content.ContextCompat.getColor(context, R.color.turtle_warning))
             }
         }
     }

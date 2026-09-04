@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selected-version tile inside the play panel: one elevation step above the panel surface,
+     with press feedback. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/turtle_accent_ripple">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/turtle_bg_elevated"/>
+            <corners android:radius="@dimen/radius_item"/>
+            <stroke android:width="1dp" android:color="@color/turtle_border_default"/>
+        </shape>
+    </item>
+</ripple>

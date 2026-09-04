@@ -45,11 +45,12 @@ object AccessibilityHelper {
     @JvmStatic
     fun applyFontFamilyOverride(context: Context) {
         val styleRes = when (AllSettings.fontFamily.getValue()) {
+            "turtle" -> R.style.ThemeOverlay_Turtle_Font_Turtle
             "sans-serif" -> R.style.ThemeOverlay_Turtle_Font_Sans
             "sans-serif-condensed" -> R.style.ThemeOverlay_Turtle_Font_Condensed
             "serif" -> R.style.ThemeOverlay_Turtle_Font_Serif
             "monospace" -> R.style.ThemeOverlay_Turtle_Font_Monospace
-            else -> null // "default" (or unset) - keep AppTheme's own branding font, nothing to do
+            else -> null // "default" (or unset) - keep AppTheme's professional system font, nothing to do
         }
         styleRes?.let { context.theme.applyStyle(it, true) }
     }

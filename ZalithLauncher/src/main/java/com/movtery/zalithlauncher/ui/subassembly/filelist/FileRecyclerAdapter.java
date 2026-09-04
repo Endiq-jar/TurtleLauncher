@@ -212,7 +212,7 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
             binding.infoLayout.setVisibility(infoLayoutVisible);
 
             if (fileItemBean.isHighlighted) {
-                binding.name.setTextColor(Color.rgb(69, 179, 162)); //设置高亮
+                binding.name.setTextColor(binding.name.getResources().getColor(R.color.accent_primary, binding.name.getContext().getTheme())); //设置高亮
             } else {
                 binding.name.setTextColor(binding.name.getResources().getColor(R.color.black_or_white, binding.name.getContext().getTheme()));
             }
@@ -228,11 +228,11 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
             if (perfEstimate != null) {
                 int tintColor;
                 if (perfEstimate.getTier() == PerfTier.HEAVY) {
-                    tintColor = Color.rgb(224, 67, 60);
+                    tintColor = context.getColor(R.color.turtle_error);
                 } else if (perfEstimate.getTier() == PerfTier.MODERATE) {
-                    tintColor = Color.rgb(230, 184, 0);
+                    tintColor = context.getColor(R.color.turtle_gold);
                 } else {
-                    tintColor = Color.rgb(76, 175, 80);
+                    tintColor = context.getColor(R.color.turtle_success);
                 }
                 binding.perfBadge.setBackgroundTintList(ColorStateList.valueOf(tintColor));
                 binding.perfBadge.setVisibility(View.VISIBLE);

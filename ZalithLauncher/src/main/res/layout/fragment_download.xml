@@ -27,7 +27,7 @@
             android:id="@+id/classify_shadowView"
             android:layout_width="@dimen/_4sdp"
             android:layout_height="0dp"
-            android:background="@drawable/shadow_gradient_left"
+            android:background="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

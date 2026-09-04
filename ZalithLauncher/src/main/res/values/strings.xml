@@ -484,6 +484,7 @@
     <string name="main_nav_files">Files</string>
     <string name="main_nav_download">Download</string>
     <string name="main_nav_cursor">Cursor</string>
+    <string name="main_nav_manage">Manage</string>
     <string name="main_nav_settings">Settings</string>
     <string name="main_section_quick_actions">Quick Actions</string>
     <string name="terracotta_title">Friends / LAN</string>
@@ -620,7 +621,8 @@
     <string name="setting_font_scale_title">UI Text Size</string>
     <string name="setting_font_scale_desc">Scales the launcher\'s own text (not Minecraft\'s in-game text)</string>
     <string name="setting_font_family_title">Font Style</string>
-    <string name="setting_font_family_default">Default (Turtle)</string>
+    <string name="setting_font_family_default">Default</string>
+    <string name="setting_font_family_turtle">Turtle</string>
     <string name="setting_font_family_sans">Sans-serif</string>
     <string name="setting_font_family_condensed">Sans-serif Condensed</string>
     <string name="setting_font_family_serif">Serif</string>

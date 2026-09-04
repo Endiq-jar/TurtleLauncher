@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/slider_thumb_raw"
-    android:filter="false"
-    android:gravity="center"/>
+<!-- Turtle Launcher slider thumb: solid disc with an accent ring (theme-aware colors). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="20"
+    android:viewportHeight="20">
+    <path
+        android:pathData="M10,1.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17z"
+        android:fillColor="@color/turtle_bg_surface"/>
+    <path
+        android:pathData="M10,3.2a6.8,6.8 0 1,0 0,13.6a6.8,6.8 0 1,0 0,-13.6z"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/accent_primary"
+        android:strokeWidth="2.2"/>
+</vector>

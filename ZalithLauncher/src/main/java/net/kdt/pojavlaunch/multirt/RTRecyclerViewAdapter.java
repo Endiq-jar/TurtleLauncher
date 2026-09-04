@@ -142,7 +142,7 @@ public class RTRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                     mFullJavaVersionTextView.setText(mContext.getString(R.string.multirt_runtime_incompatiblearch, runtime.arch));
                 }
                 mJavaVersionTextView.setText(runtime.name);
-                mFullJavaVersionTextView.setTextColor(Color.RED);
+                mFullJavaVersionTextView.setTextColor(mContext.getColor(R.color.turtle_error));
             } else {
                 //自动选择
                 mJavaVersionTextView.setText(R.string.install_auto_select);

@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import androidx.core.content.ContextCompat
 import android.view.View
 import java.util.LinkedList
 
@@ -24,12 +25,12 @@ class RamGraphView @JvmOverloads constructor(
     private val samples = LinkedList<Float>() // 0f..1f, used/max ratio
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#22C55E") // Status: Success
+        color = ContextCompat.getColor(context, R.color.turtle_stat_ram) // Status: RAM
         style = Paint.Style.STROKE
         strokeWidth = 3f
     }
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#3322C55E") // Status: Success @ 20% alpha
+        color = (ContextCompat.getColor(context, R.color.turtle_stat_ram) and 0x00FFFFFF) or (0x33 shl 24) // Status: RAM @ 20% alpha
         style = Paint.Style.FILL
     }
 

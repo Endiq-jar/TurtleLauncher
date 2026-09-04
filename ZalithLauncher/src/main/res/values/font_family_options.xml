@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- TurtleLauncher: Accessibility font family picker (roadmap item 22). Deliberately uses
-         Android's built-in system font families rather than bundling new font files - "default"
-         keeps the app's existing proxima_nova_extrabold branding font, the other three swap to
-         well-supported system families for people who find the branding font harder to read. -->
+    <!-- TurtleLauncher: Accessibility font family picker (roadmap item 22). "Default" uses the
+         app's standard professional system font; "Turtle" restores the bundled
+         proxima_nova_extrabold branding display font; the rest are Android's built-in system
+         families. -->
     <string-array name="all_font_family">
         <item>@string/setting_font_family_default</item>
+        <item>@string/setting_font_family_turtle</item>
         <item>@string/setting_font_family_sans</item>
         <item>@string/setting_font_family_condensed</item>
         <item>@string/setting_font_family_serif</item>
@@ -13,6 +14,7 @@
     </string-array>
     <string-array name="all_font_family_value">
         <item>default</item>
+        <item>turtle</item>
         <item>sans-serif</item>
         <item>sans-serif-condensed</item>
         <item>serif</item>

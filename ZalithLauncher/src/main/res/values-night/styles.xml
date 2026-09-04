@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Turtle Launcher global theme. One style set for both appearances: every color that
+         needs to differ between light/dark resolves through @color tokens per resource
+         configuration, so these files stay identical (values-night/styles.xml mirrors this
+         file byte-for-byte). -->
     <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- TurtleLauncher: disable all activity-level transitions for instant navigation -->
         <item name="android:windowAnimationStyle">@style/NoAnimations</item>
@@ -10,10 +14,15 @@
         <item name="android:statusBarColor">@color/bg_deep</item>
         <item name="android:navigationBarColor">@color/bg_deep</item>
         <item name="android:windowBackground">@color/bg_deep</item>
+        <item name="android:windowLightStatusBar">@bool/light_status_bar</item>
         <item name="android:scrollbarThumbHorizontal">@color/accent_primary</item>
         <item name="android:scrollbarThumbVertical">@color/accent_primary</item>
         <item name="android:textSize">@dimen/_12ssp</item>
         <item name="android:textColor">@color/turtle_text_primary</item>
+        <!-- Professional system font by default; the bundled Turtle display font stays
+             available through Settings > Accessibility > Font Style. -->
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
         <item name="colorPrimary">@color/accent_primary</item>
         <item name="colorPrimaryDark">@color/bg_deep</item>
         <item name="colorAccent">@color/turtle_accent_glow</item>
@@ -22,23 +31,74 @@
         <item name="colorSurfaceVariant">@color/turtle_bg_elevated</item>
         <item name="colorOutline">@color/turtle_border_default</item>
         <item name="colorError">@color/turtle_error</item>
-        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <!-- MD3 shape system: rounder, smoother corners app-wide -->
+        <!-- MD3 shape tokens — moderate gaming corners: controls 8dp, items/buttons 12dp,
+             larger containers 16dp, dialogs 20dp. -->
         <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Turtle.Small</item>
         <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Turtle.Medium</item>
         <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Turtle.Large</item>
+        <!-- App-wide control styles: clean tinted switches + sliders (see color/ tokens for
+             the checked/unchecked colors; the old pixel-art switch/slider sprites were
+             replaced by these solid, scalable controls). -->
+        <item name="android:switchStyle">@style/Widget.Turtle.Switch</item>
+        <item name="android:seekBarStyle">@style/Widget.Turtle.SeekBar</item>
     </style>
 
-    <!-- MD3 shape tokens — smooth, generously rounded edges -->
+    <style name="Widget.Turtle.Switch" parent="android:Widget.Material.CompoundButton.Switch">
+        <item name="android:trackTint">@color/switch_track_tint</item>
+        <item name="android:thumbTint">@color/switch_thumb_tint</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <style name="Widget.Turtle.SeekBar" parent="android:Widget.Material.SeekBar">
+        <item name="android:thumb">@drawable/seekbar_thumb</item>
+        <item name="android:progressTint">@color/accent_primary</item>
+        <item name="android:progressBackgroundTint">@color/seekbar_track</item>
+        <item name="android:splitTrack">false</item>
+    </style>
+
+
+    <!-- TurtleLauncher: Accessibility - High Contrast Mode. Applied at runtime via
+         context.theme.applyStyle() in BaseActivity when AllSettings.highContrastMode is on
+         (see AccessibilityHelper.applyHighContrastOverlay()). -->
+    <style name="ThemeOverlay.Turtle.HighContrast" parent="">
+        <item name="colorOutline">@color/turtle_hc_border</item>
+        <item name="android:textColorSecondary">@color/turtle_hc_text_secondary</item>
+        <item name="colorSurfaceVariant">@color/turtle_hc_surface</item>
+    </style>
+
+    <!-- Accessibility - Font Style picker. AppTheme bakes in the system font, so each option
+         is a theme overlay style applied at runtime from AccessibilityHelper. -->
+    <style name="ThemeOverlay.Turtle.Font.Turtle" parent="">
+        <item name="android:fontFamily">@font/proxima_nova_extrabold</item>
+        <item name="fontFamily">@font/proxima_nova_extrabold</item>
+    </style>
+    <style name="ThemeOverlay.Turtle.Font.Sans" parent="">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+    </style>
+    <style name="ThemeOverlay.Turtle.Font.Condensed" parent="">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="fontFamily">sans-serif-condensed</item>
+    </style>
+    <style name="ThemeOverlay.Turtle.Font.Serif" parent="">
+        <item name="android:fontFamily">serif</item>
+        <item name="fontFamily">serif</item>
+    </style>
+    <style name="ThemeOverlay.Turtle.Font.Monospace" parent="">
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+    </style>
+
+    <!-- MD3 shape tokens — moderate, gaming-strong corners -->
     <style name="ShapeAppearance.Turtle.Small" parent="ShapeAppearance.Material3.Corner.Small">
-        <item name="cornerSize">12dp</item>
+        <item name="cornerSize">@dimen/radius_chip</item>
     </style>
     <style name="ShapeAppearance.Turtle.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
-        <item name="cornerSize">20dp</item>
+        <item name="cornerSize">@dimen/radius_item</item>
     </style>
     <style name="ShapeAppearance.Turtle.Large" parent="ShapeAppearance.Material3.Corner.Large">
-        <item name="cornerSize">28dp</item>
+        <item name="cornerSize">@dimen/radius_panel</item>
     </style>
 
     <style name="CustomDialogStyle" parent="Theme.Material3.DayNight.Dialog">
@@ -59,7 +119,7 @@
         <item name="android:textColor">@color/turtle_text_primary</item>
     </style>
 
-    <!-- Premium dialog/popup entrance & exit: soft scale + fade, MD3-style motion -->
+    <!-- Dialog/popup entrance & exit: soft scale + fade, quick and light -->
     <style name="DialogAnimation">
         <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
         <item name="android:windowExitAnimation">@anim/dialog_exit</item>
@@ -67,7 +127,7 @@
 
     <style name="RoundedCornersImageView">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">8dp</item>
+        <item name="cornerSize">@dimen/radius_chip</item>
     </style>
 
     <style name="RoundImageView">
@@ -80,16 +140,17 @@
         <item name="backgroundTint">@color/accent_primary</item>
         <item name="android:textColor">@color/turtle_text_on_accent</item>
         <item name="android:textAllCaps">false</item>
-        <item name="cornerRadius">@dimen/radius_item</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
         <item name="rippleColor">@color/turtle_accent_ripple</item>
     </style>
 
-    <!-- Outlined Button -->
-    <style name="TurtleButtonOutline" parent="Widget.MaterialComponents.Button.OutlinedButton">
+    <!-- Outlined Button (Material3-native parent; transparent fill + accent stroke) -->
+    <style name="TurtleButtonOutline" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="backgroundTint">@android:color/transparent</item>
         <item name="strokeColor">@color/accent_primary</item>
         <item name="android:textColor">@color/accent_primary</item>
         <item name="android:textAllCaps">false</item>
-        <item name="cornerRadius">@dimen/radius_item</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
         <item name="rippleColor">@color/turtle_accent_ripple</item>
     </style>
 
@@ -108,6 +169,7 @@
         <item name="android:taskToBackEnterAnimation">@null</item>
         <item name="android:taskToBackExitAnimation">@null</item>
     </style>
+
     <style name="SettingsSectionHeader">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

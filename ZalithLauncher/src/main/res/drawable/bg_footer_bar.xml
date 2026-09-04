@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home footer dock: solid navigation-colored bar, rounded top corners, flush with the
+     bottom of the screen (left panel's bottom edge). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/background_menu_top"/>
+    <corners
+        android:topLeftRadius="@dimen/radius_item"
+        android:topRightRadius="@dimen/radius_item"
+        android:bottomLeftRadius="0dp"
+        android:bottomRightRadius="0dp"/>
+</shape>

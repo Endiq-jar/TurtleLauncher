@@ -116,7 +116,7 @@ public class ControlListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             binding.name.setText(text);
 
             //设置文本字体
-            binding.name.setTextColor(Color.rgb(255, 60, 60));
+            binding.name.setTextColor(binding.name.getResources().getColor(R.color.turtle_error, binding.name.getContext().getTheme()));
             binding.name.setTypeface(null, Typeface.BOLD);
             binding.name.setTextSize(14);
         }
@@ -161,7 +161,7 @@ public class ControlListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             //设置高亮
             int color = controlItemBean.isHighlighted ?
-                    Color.rgb(69, 179, 162) :
+                    binding.title.getResources().getColor(R.color.accent_primary, binding.title.getContext().getTheme()) :
                     binding.title.getResources().getColor(R.color.turtle_primary_text, binding.title.getContext().getTheme());
             binding.title.setTextColor(color);
 

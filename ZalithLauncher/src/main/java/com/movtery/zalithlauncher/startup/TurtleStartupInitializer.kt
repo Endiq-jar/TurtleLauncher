@@ -4,10 +4,11 @@ import android.app.Application
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.startup.Initializer
-import com.google.android.material.color.DynamicColors
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.log.NativeCrashCapture
 import com.movtery.zalithlauncher.feature.turtle.AnrWatchdog
+import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.Settings
 
 /**
  * AndroidX Startup entry point for the parts of app startup that don't need to run before
@@ -34,16 +35,30 @@ class TurtleStartupInitializer : Initializer<Unit> {
     }
 
     override fun create(context: Context) {
-        // TurtleLauncher: always force AMOLED dark mode - no light theme override
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-
-        // Material You dynamic color: on supported devices (Android 12+), derives the theme
-        // from the system wallpaper; a no-op safe fallback to the static theme elsewhere.
-        try {
-            DynamicColors.applyToActivitiesIfAvailable(context.applicationContext as Application)
+        // Turtle Launcher theme engine: Settings > Launcher > Launcher Theme (System / Light /
+        // Dark, stored as AllSettings.launcherTheme). This initializer runs at the end of
+        // PojavApplication.onCreate(), after PathManager has located the settings file, so the
+        // persisted choice can be applied before any activity inflates its resources. The
+        // default is dark — the launcher's native appearance. Light/System only take effect
+        // after the launcher process restarts (the Settings row is marked "requires reboot"),
+        // so no activity recreation dance is needed here.
+        val launcherTheme = try {
+            Settings.refreshSettings()
+            AllSettings.launcherTheme.getValue()
         } catch (t: Throwable) {
-            Logging.e(TAG, "Failed to apply dynamic colors", t)
+            Logging.w("TurtleStartupInitializer", "Failed to read launcher theme, falling back to dark", t)
+            "dark"
         }
+        val nightMode = when (launcherTheme) {
+            "light" -> AppCompatDelegate.MODE_NIGHT_NO
+            "system" -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            else -> AppCompatDelegate.MODE_NIGHT_YES
+        }
+        AppCompatDelegate.setDefaultNightMode(nightMode)
+
+        // Note: no DynamicColors — the launcher ships one fixed brand palette (Turtle green on
+        // solid dark/light surfaces). Material You wallpaper-derived colors would silently
+        // replace it on Android 12+, which clashes with the launcher's visual identity.
 
         AnrWatchdog.start()
 

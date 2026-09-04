@@ -399,7 +399,7 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                                 val adjustedEndIndex = startIndex + styledText.length
 
                                 val spannableString = SpannableString(plainText)
-                                spannableString.spanText(startIndex, adjustedEndIndex, ForegroundColorSpan(Color.RED))
+                                spannableString.spanText(startIndex, adjustedEndIndex, ForegroundColorSpan(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.turtle_error)))
                                 spannableString.spanText(startIndex, adjustedEndIndex, StyleSpan(Typeface.BOLD))
 
                                 messageText.text = spannableString

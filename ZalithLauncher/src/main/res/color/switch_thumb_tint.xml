@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Switch thumb: light when active (sits on the green track), secondary text color when
+     idle so the control reads clearly on solid surfaces. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/turtle_text_disabled" android:state_enabled="false" />
+    <item android:color="@color/turtle_primary_text" android:state_checked="true" />
+    <item android:color="@color/turtle_text_secondary" />
+</selector>

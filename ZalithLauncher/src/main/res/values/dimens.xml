@@ -13,13 +13,15 @@
     <!--  Dialog min width  -->
     <dimen name="dialog_min_width">@dimen/_480sdp</dimen>
 
-    <!-- ── Unified corner-radius scale (clean, minimal, consistent) ─────
-         Use these instead of one-off literals so every card/button/chip
-         in the app shares the same rounding language.                  -->
+    <!-- ── Unified corner-radius scale ──────────────────────────────────
+         Controls 8dp · buttons 10-12dp · cards/panels 12-16dp · dialogs
+         16-20dp. Use these instead of one-off literals so every card,
+         button and chip shares the same rounding language.             -->
     <dimen name="radius_chip">8dp</dimen>
     <dimen name="radius_item">12dp</dimen>
-    <dimen name="radius_panel">20dp</dimen>
-    <dimen name="radius_dialog">24dp</dimen>
+    <dimen name="radius_button">12dp</dimen>
+    <dimen name="radius_panel">16dp</dimen>
+    <dimen name="radius_dialog">20dp</dimen>
 
     <!-- ── Spacing scale (minimal, 4dp baseline grid) ───────────────── -->
     <dimen name="space_xs">4dp</dimen>

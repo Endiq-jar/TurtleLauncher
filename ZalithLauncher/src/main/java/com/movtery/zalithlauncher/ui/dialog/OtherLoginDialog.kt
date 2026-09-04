@@ -40,13 +40,13 @@ class OtherLoginDialog(
             if (server.isNide8Auth) {
                 serverTypeBadge.visibility = View.VISIBLE
                 serverTypeBadge.text = context.getString(R.string.other_login_type_nide8)
-                serverTypeBadge.setTextColor(0xFFFFAB40.toInt())
+                serverTypeBadge.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.turtle_gold))
                 // nide8auth uses email/password the same as authlib-injector
                 emailText.setText(R.string.other_login_email)
             } else {
                 serverTypeBadge.visibility = View.VISIBLE
                 serverTypeBadge.text = context.getString(R.string.other_login_type_authlib)
-                serverTypeBadge.setTextColor(0xFF00E5FF.toInt())
+                serverTypeBadge.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.turtle_diamond))
             }
 
             // ── ely.by quick-fill hint ───────────────────────────────────────

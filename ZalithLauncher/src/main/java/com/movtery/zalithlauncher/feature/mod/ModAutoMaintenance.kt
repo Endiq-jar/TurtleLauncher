@@ -1,6 +1,7 @@
 package com.movtery.zalithlauncher.feature.mod
 
 import android.content.Context
+import androidx.core.content.ContextCompat
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.feature.download.utils.ModLoaderUtils
 import com.movtery.zalithlauncher.feature.log.Logging
@@ -173,7 +174,7 @@ object ModAutoMaintenance {
                 append(update.modName).append(": ")
                     .append(update.currentVersion).append(" → ").append(update.newVersionNumber)
                 setSpan(
-                    android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#22C55E")), // Status: Success
+                    android.text.style.ForegroundColorSpan(androidx.core.content.ContextCompat.getColor(context, R.color.turtle_success)), // Status: Success
                     entryStart, length,
                     android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
@@ -199,7 +200,7 @@ object ModAutoMaintenance {
                 val entryStart = length
                 append(conflict.targetClass)
                 setSpan(
-                    android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#EF4444")), // Status: Error
+                    android.text.style.ForegroundColorSpan(androidx.core.content.ContextCompat.getColor(context, R.color.turtle_error)), // Status: Error
                     entryStart, length,
                     android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )

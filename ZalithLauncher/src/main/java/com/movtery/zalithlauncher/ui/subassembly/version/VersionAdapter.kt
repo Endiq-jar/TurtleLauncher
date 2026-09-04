@@ -275,7 +275,7 @@ class VersionAdapter(
             )
             layoutParams.setMargins(0, 0, Tools.dpToPx(8f).toInt(), 0)
             textView.layoutParams = layoutParams
-            if (setRed) textView.setTextColor(Color.RED)
+            if (setRed) textView.setTextColor(androidx.core.content.ContextCompat.getColor(mContext, com.movtery.zalithlauncher.R.color.turtle_error))
             return textView
         }
 

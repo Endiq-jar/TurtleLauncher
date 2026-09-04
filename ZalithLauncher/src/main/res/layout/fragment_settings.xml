@@ -49,7 +49,7 @@
             android:textColor="@color/turtle_text_primary"/>
     </LinearLayout>
     <View
-        android:id="@id/settings_header_divider"
+        android:id="@+id/settings_header_divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:background="@color/turtle_divider"

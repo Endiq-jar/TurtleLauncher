@@ -132,6 +132,10 @@ public class MinecraftGLSurface extends View implements GrabListener {
         if (!SdlAndroidJniPrep.isActive()) return;
         try {
             SDLActivity.setDroidBridgeNativeSurface(surface);
+            // TurtleLauncher CRASH FIX: also update sdl_hook.c's process-wide native
+            // window global with the real Surface, upgrading it from the token Surface
+            // SdlAndroidJniPrep.setup() registered earlier - see that class's doc.
+            SdlAndroidJniPrep.nativeSetSurface(surface);
         } catch (Throwable t) {
             Logging.e("MGLSurface", "publishSurfaceToSdl() failed", t);
         }

@@ -88,6 +88,19 @@ public class KeyboardDialog extends FullScreenDialog implements View.OnClickList
             specialButtons.add(getKey(getString(R.string.keycode_special_scrollup)));
             specialButtons.add(getKey(getString(R.string.keycode_special_scrolldown)));
             specialButtons.add(getKey(getString(R.string.keycode_special_menu)));
+            // TurtleLauncher CRASH/BUG FIX (controls editor key mapping off by 2,
+            // "tapping K selected I"): ControlData.getSpecialButtons() (and therefore
+            // EditControlPopup's mSpecialArray, which every spinner position is offset
+            // by) has 11 entries - this list was missing the last two ("cancel" and
+            // "exit"), leaving it at 9. Every tag computed below the special-buttons
+            // loop is derived from specialButtons.size(), so that 2-entry undercount
+            // shifted every single keyboard-key tag by exactly 2 relative to what
+            // EditControlPopup's spinner positions actually expect - e.g. "K"'s
+            // (wrong) tag ended up equal to "I"'s correct one. Adding these two now
+            // makes this list match ControlData.getSpecialButtons() exactly, in the
+            // same order, so the tag math below lines up again.
+            specialButtons.add(getKey(getString(R.string.keycode_special_cancel)));
+            specialButtons.add(getKey(getString(R.string.keycode_special_exit)));
         }
 
         List<View> buttons = new ArrayList<>(List.of(

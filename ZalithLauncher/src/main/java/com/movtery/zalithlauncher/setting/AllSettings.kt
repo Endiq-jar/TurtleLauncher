@@ -151,12 +151,7 @@ class AllSettings {
         // too if the LAN toggle below is on and whoever runs the multiplayer server points
         // their own authlib-injector at this device's LAN address).
         @JvmStatic val localSkinServerEnabled   = BooleanSettingUnit("localSkinServerEnabled", true)
-        // TurtleLauncher: default changed to true - a loopback-only skin server is
-        // useless for the entire "server-side" LAN use case TurtleSkinServer's own
-        // class doc describes (a self-hosted server on the same LAN pointed at this
-        // device's real address); requiring a manual opt-in buried in SkinCapeDialog
-        // meant almost nobody discovered or used that feature at all.
-        @JvmStatic val localSkinServerLanVisible = BooleanSettingUnit("localSkinServerLanVisible", true)
+        @JvmStatic val localSkinServerLanVisible = BooleanSettingUnit("localSkinServerLanVisible", false)
         /** Epoch millis of the last automatic cleanup run - rate-limits AutoCleanup to once a
          *  day so it doesn't re-scan every version's crash-reports folder on every single launch. */
         @JvmStatic val lastAutoCleanupTime      = LongSettingUnit("lastAutoCleanupTime", 0L)

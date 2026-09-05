@@ -309,7 +309,7 @@
                         android:layout_marginBottom="@dimen/space_s"
                         android:paddingHorizontal="4dp"/>
 
-                    <!-- Row 1: weekly playtime chart -->
+                    <!-- Row 1: weekly playtime chart + changelog -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -319,8 +319,10 @@
                         <!-- Play Time (Last 7 Days) -->
                         <LinearLayout
                             android:id="@+id/stats_card"
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="@dimen/space_s"
                             android:orientation="vertical"
                             android:padding="@dimen/space_m"
                             android:background="@drawable/background_grid_card">
@@ -337,6 +339,57 @@
                                 android:text="@string/main_stats_weekly_label"
                                 android:textSize="12sp"
                                 android:textColor="@color/turtle_text_secondary"/>
+
+                        </LinearLayout>
+
+                        <!-- Changelog -->
+                        <LinearLayout
+                            android:id="@+id/changelog_card"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="@dimen/space_m"
+                            android:background="@drawable/background_grid_card">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/main_changelog_label"
+                                android:textSize="12sp"
+                                android:textColor="@color/turtle_text_secondary"/>
+
+                            <TextView
+                                android:id="@+id/changelog_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:maxLines="2"
+                                android:ellipsize="end"
+                                android:textColor="@color/accent_primary"
+                                tools:text="v1.0.0.0"/>
+
+                            <TextView
+                                android:id="@+id/changelog_summary"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="12sp"
+                                android:maxLines="2"
+                                android:ellipsize="end"
+                                android:textColor="@color/turtle_text_secondary"
+                                tools:text="Built-in screen recorder, new renderers and more."/>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_s"
+                                android:text="@string/main_click_for_more"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/accent_primary"/>
 
                         </LinearLayout>
 

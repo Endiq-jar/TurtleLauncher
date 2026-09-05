@@ -7,8 +7,7 @@ import org.libsdl.app.SDL
 import org.libsdl.app.SDLActivity
 
 /**
- * TurtleLauncher CRASH FIX (MC 26.3+ SDL native crash) - native hook added, native
- * build re-enabled, Sept 2026.
+ * TurtleLauncher CRASH FIX (MC 26.3+ SDL native crash) - RE-ENABLED Aug 2026, PARTIAL FIX ONLY.
  *
  * ── What was actually broken, and what's fixed now ──
  *
@@ -26,32 +25,31 @@ import org.libsdl.app.SDLActivity
  * source, to return `int` - matching what this launcher's bundled libSDL3.so expects.
  * That specific abort is fixed for real, not just hypothesized.
  *
- * ── The cross-JVM SIGSEGV, and the native hook added for it ──
+ * ── What is very likely still broken ──
  *
  * Fixing the abort does not mean the original SIGSEGV this class was written to prevent
  * is actually gone. Digging into DroidBridge Launcher's own production code (which does
  * successfully run MC 26.3+'s SDL backend) turned up something this class's previous
  * doc comment only guessed at: Minecraft's SDL calls run inside a *separate* embedded
- * JVM (see VMLauncher / JNI_CreateJavaVM), not the app's own real Activity/JVM - so the
- * plain Java static field `setDroidBridgeNativeSurface` below sets is not guaranteed to
- * be visible to whichever JVM instance actually calls libSDL3.so's SDL_Init().
+ * JVM (see VMLauncher / JNI_CreateJavaVM), not the app's own real Activity/JVM. DroidBridge's
+ * actual fix for that is a native (C-level) cross-VM bridge - their own
+ * `droidbridge_runtime.so` intercepts libSDL3.so's `ANativeWindow_fromSurface` at the
+ * binary level so it can hand over an Android Surface published from the *other* JVM,
+ * because plain Java static fields (like the ones `setDroidBridgeNativeSurface` below
+ * sets) are NOT visible across separate JVM instances - only same-process native globals
+ * can be, and only when both JVMs' copies of libSDL3.so land in the same linker
+ * namespace, which DroidBridge's own comments say isn't guaranteed either.
  *
- * `sdl_hook.c` (see its own file doc) now addresses that gap at the native level
- * instead: it installs a process-wide bytehook on `SDL_InitSubSystem` before
- * VMLauncher launches the guest JVM, and backs it with a plain C global (not a Java
- * static) for the native window pointer. Both JVMs run in the same OS process/address
- * space, so a hook installed this way sees the call regardless of which JVM's JNI glue
- * triggered it - which a Java-only fix structurally cannot. `nativeInstallSdlHook()`
- * and `nativeSetSurface()` below are that hook's Java-side call sites; the existing
- * `setDroidBridgeNativeSurface` calls are kept alongside them, not replaced, since
- * org.libsdl.app's own Java-side logic still reads that field independently.
- *
- * This is a substantially stronger fix than the previous Java-only workaround, but per
- * sdl_hook.c's own doc, it still isn't a *confirmed* one - a statically-inlined internal
- * call inside libSDL3.so, or the guest JVM's libSDL3.so copy living in a linker
- * namespace bytehook can't reach, would both defeat it, and neither has been ruled out
- * without a real device test. Describe this as "a real native-level fix has been added
- * and the native build re-enabled to ship it", not as "the SIGSEGV is confirmed gone".
+ * That native hook is NOT ported here - it needs an NDK toolchain and real-device
+ * verification this environment doesn't have, and DroidBridge's C source for it wasn't
+ * available to port from. What this class does now (real JNI registration, plus
+ * best-effort Activity/Surface bookkeeping via setDroidBridgeHostActivity/
+ * setDroidBridgeNativeSurface) is a genuine improvement over the old broken jar, but it
+ * may well not be sufficient to prevent the SIGSEGV on its own, since the Java-side
+ * state it sets may simply never be visible to whichever JVM instance actually runs
+ * Minecraft's SDL_Init(). Do not describe this as "the crash is fixed" without a real
+ * device test confirming it - describe it as "the confirmed abort is fixed; the
+ * original SIGSEGV this class exists to prevent may or may not still happen."
  *
  * Call setup(activity) once, on the real app UI thread, before VMLauncher.launchJVM()
  * runs - but only for SDL versions (see Tools.versionUsesLwjglSdl); calling it for GLFW
@@ -61,13 +59,6 @@ import org.libsdl.app.SDLActivity
  * existed.
  */
 object SdlAndroidJniPrep {
-    // Not private: nativeSetSurface is also called from MinecraftGLSurface (a
-    // different package) when the real render Surface becomes available.
-    @JvmStatic
-    external fun nativeInstallSdlHook()
-
-    @JvmStatic
-    external fun nativeSetSurface(surface: Surface?)
     /**
      * True once [setup] has run far enough that handing the render Surface to
      * [org.libsdl.app.SDLActivity.setDroidBridgeNativeSurface] is worthwhile - lets
@@ -84,18 +75,6 @@ object SdlAndroidJniPrep {
     @JvmStatic
     fun setup(activity: Activity) {
         try {
-            // TurtleLauncher CRASH FIX: install the native bytehook BEFORE libSDL3.so
-            // loads (BYTEHOOK_MODE_AUTOMATIC covers libraries loaded after install, not
-            // before) and before VMLauncher launches the guest JVM that will actually
-            // call into it - see this class's doc comment and sdl_hook.c.
-            try {
-                System.loadLibrary("sdlhook")
-                nativeInstallSdlHook()
-            } catch (ignored: Throwable) {
-                // Best-effort, same as the rest of this method - if the native hook
-                // can't load, fall through to exactly the pre-existing behavior.
-            }
-
             System.loadLibrary("SDL3")
             SDL.setContext(activity)
             SDL.setupJNI()
@@ -118,9 +97,6 @@ object SdlAndroidJniPrep {
                 val tokenTexture = SurfaceTexture(0)
                 val tokenSurface = Surface(tokenTexture)
                 SDLActivity.setDroidBridgeNativeSurface(tokenSurface)
-                // Also feed the native hook's plain-C-global copy (see this class's doc
-                // comment) - this is the one actually visible across JVM instances.
-                nativeSetSurface(tokenSurface)
             } catch (ignored: Throwable) {
                 // If token creation fails, fall through - the original crash may
                 // still occur, which is exactly the pre-existing behavior.

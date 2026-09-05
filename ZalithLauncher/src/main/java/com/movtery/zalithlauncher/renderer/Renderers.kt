@@ -32,10 +32,11 @@ import java.io.File
  * renderers plug in needed to change, only *which* renderers are registered.
  *
  * POJAV_RENDERER native-string mapping (see RendererInterface.getNativeRendererId's doc
- * comment for why this exists at all): pojavexec.so is built from source in this repo
- * (jni/Android.mk -> jni/egl_bridge.c) and its pojavInitOpenGL only recognizes six
- * legacy POJAV_RENDERER values (see egl_bridge.c's pojavInitOpenGL, not guessed):
- * "opengles" (prefix match), "custom_gallium",
+ * comment for why this exists at all): the per-ABI jniLibs libpojavexec.so is a prebuilt binary -
+ * there's no source for it in this repo (jni/Android.mk lists .c files that aren't
+ * present; externalNativeBuild is commented out in build.gradle.kts because of that) - and
+ * its pojavInitOpenGL only recognizes six legacy POJAV_RENDERER values (confirmed by
+ * disassembling it, not guessed): "opengles" (prefix match), "custom_gallium",
  * "vulkan_zink", "gallium_freedreno", "gallium_panfrost", "gallium_virgl". Anything else
  * falls through its whole strcmp chain into an unguarded call through an uninitialized
  * function pointer - guaranteed SIGSEGV at pc=0x0, every device, every time. None of the

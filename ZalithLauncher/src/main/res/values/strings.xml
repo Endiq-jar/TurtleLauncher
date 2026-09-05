@@ -533,8 +533,6 @@
     <string name="main_top_bar_subtitle">Smooth • Fast • Modern </string>
     <string name="main_section_statistics">Today\'s Statistics</string>
     <string name="main_stats_weekly_label">Play Time (Last 7 Days)</string>
-    <string name="main_changelog_label">Changelog</string>
-    <string name="main_click_for_more">Click for more</string>
     <string name="main_last_log_label">Last Game Log</string>
     <string name="main_last_log_none">No log available yet</string>
     <string name="setting_category_control">Control settings</string>

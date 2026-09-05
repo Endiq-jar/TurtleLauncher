@@ -26,7 +26,6 @@ import com.movtery.zalithlauncher.event.value.InstallLocalModpackEvent;
 import com.movtery.zalithlauncher.feature.mod.modpack.install.InstallExtra;
 import com.movtery.zalithlauncher.feature.log.CrashAnalyzer;
 import com.movtery.zalithlauncher.feature.turtle.DailyPlaytimeStats;
-import com.movtery.zalithlauncher.feature.turtle.HomeChangelog;
 import com.movtery.zalithlauncher.feature.version.Version;
 import com.movtery.zalithlauncher.feature.version.utils.VersionIconUtils;
 import com.movtery.zalithlauncher.feature.version.VersionInfo;
@@ -165,10 +164,6 @@ public class MainMenuFragment extends FragmentWithAnim {
             com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.TAG, null));
 
         // Today's Statistics dashboard
-        binding.changelogTitle.setText(HomeChangelog.getTitle());
-        binding.changelogSummary.setText(HomeChangelog.getSummary());
-        binding.changelogCard.setOnClickListener(v ->
-            ZHTools.openLink(requireActivity(), com.movtery.zalithlauncher.utils.path.UrlManager.URL_HOME));
         refreshStatistics();
         refreshLastGameLog();
 

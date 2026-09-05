@@ -309,7 +309,7 @@
                         android:layout_marginBottom="@dimen/space_s"
                         android:paddingHorizontal="4dp"/>
 
-                    <!-- Row 1: weekly playtime chart + changelog -->
+                    <!-- Row 1: weekly playtime chart + community links -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -322,6 +322,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:layout_marginEnd="@dimen/space_s"
                             android:orientation="vertical"
                             android:padding="@dimen/space_m"
                             android:background="@drawable/background_grid_card">
@@ -338,6 +339,70 @@
                                 android:text="@string/main_stats_weekly_label"
                                 android:textSize="12sp"
                                 android:textColor="@color/turtle_text_secondary"/>
+
+                        </LinearLayout>
+
+                        <!-- Community -->
+                        <LinearLayout
+                            android:id="@+id/community_card"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="@dimen/space_m"
+                            android:background="@drawable/background_grid_card">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/main_section_community"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.08"
+                                android:textColor="@color/turtle_text_secondary"/>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:layout_marginTop="@dimen/space_s"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageButton
+                                    android:id="@+id/link_discord_button"
+                                    android:layout_width="0dp"
+                                    android:layout_height="36dp"
+                                    android:layout_weight="1"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:src="@drawable/ic_git_branch"
+                                    android:padding="7dp"
+                                    android:tint="@color/accent_primary"
+                                    android:contentDescription="Discord"/>
+
+                                <ImageButton
+                                    android:id="@+id/link_website_button"
+                                    android:layout_width="0dp"
+                                    android:layout_height="36dp"
+                                    android:layout_weight="1"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:src="@drawable/ic_globe"
+                                    android:padding="7dp"
+                                    android:tint="@color/turtle_success"
+                                    android:contentDescription="Website"/>
+
+                                <ImageButton
+                                    android:id="@+id/link_youtube_button"
+                                    android:layout_width="0dp"
+                                    android:layout_height="36dp"
+                                    android:layout_weight="1"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:src="@drawable/ic_play_circle"
+                                    android:padding="7dp"
+                                    android:tint="@color/turtle_error"
+                                    android:contentDescription="YouTube"/>
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
@@ -391,111 +456,6 @@
                         android:orientation="vertical"
                         android:visibility="gone"
                         tools:ignore="UselessParent"/>
-
-                    <!-- COMMUNITY header -->
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/main_section_community"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/turtle_text_secondary"
-                        android:letterSpacing="0.08"
-                        android:layout_marginBottom="@dimen/space_s"
-                        android:paddingHorizontal="4dp"/>
-
-                    <!-- COMMUNITY LINKS row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="@dimen/space_l">
-
-                        <!-- Discord -->
-                        <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
-                            android:id="@+id/link_discord_button"
-                            android:layout_width="0dp"
-                            android:layout_height="46dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="@dimen/space_xs"
-                            android:background="@drawable/background_grid_card"
-                            android:gravity="center"
-                            app:ripple_for_relative="true">
-                            <ImageView
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
-                                android:layout_centerVertical="true"
-                                android:layout_alignParentStart="true"
-                                android:layout_marginStart="10dp"
-                                android:src="@drawable/ic_git_branch"
-                                android:tint="@color/accent_primary"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_centerInParent="true"
-                                android:text="DISCORD"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/turtle_primary_text"/>
-                        </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
-
-                        <!-- Website -->
-                        <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
-                            android:id="@+id/link_website_button"
-                            android:layout_width="0dp"
-                            android:layout_height="46dp"
-                            android:layout_weight="1"
-                            android:layout_marginHorizontal="@dimen/space_xs"
-                            android:background="@drawable/background_grid_card"
-                            android:gravity="center"
-                            app:ripple_for_relative="true">
-                            <ImageView
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
-                                android:layout_centerVertical="true"
-                                android:layout_alignParentStart="true"
-                                android:layout_marginStart="10dp"
-                                android:src="@drawable/ic_globe"
-                                android:tint="@color/turtle_success"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_centerInParent="true"
-                                android:text="WEBSITE"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/turtle_primary_text"/>
-                        </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
-
-                        <!-- YouTube -->
-                        <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
-                            android:id="@+id/link_youtube_button"
-                            android:layout_width="0dp"
-                            android:layout_height="46dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="@dimen/space_xs"
-                            android:background="@drawable/background_grid_card"
-                            android:gravity="center"
-                            app:ripple_for_relative="true">
-                            <ImageView
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
-                                android:layout_centerVertical="true"
-                                android:layout_alignParentStart="true"
-                                android:layout_marginStart="10dp"
-                                android:src="@drawable/ic_play_circle"
-                                android:tint="@color/turtle_error"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_centerInParent="true"
-                                android:text="YOUTUBE"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/turtle_primary_text"/>
-                        </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
-
-                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -707,7 +667,7 @@
                 android:textAllCaps="true"
                 android:textStyle="bold"
                 android:textSize="16sp"
-                android:textColor="@color/turtle_text_primary"
+                android:textColor="@color/turtle_text_on_accent"
                 android:letterSpacing="0.1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

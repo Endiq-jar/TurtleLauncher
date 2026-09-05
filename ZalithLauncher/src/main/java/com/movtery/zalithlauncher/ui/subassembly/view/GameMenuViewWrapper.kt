@@ -216,8 +216,8 @@ class GameMenuViewWrapper(
         val mouseLeft: TextView = view.findViewById(R.id.mouse_left)
         val mouseRight: TextView = view.findViewById(R.id.mouse_right)
 
-        val heldColor = android.graphics.Color.parseColor("#22C55E") // Status: Success, when held
-        val idleColor = android.graphics.Color.parseColor("#33FFFFFF") // faint white when idle
+        val heldColor = android.graphics.Color.parseColor("#9CCF93") // Status: Success, when held
+        val idleColor = android.graphics.Color.parseColor("#33F2F5F0") // faint white when idle
 
         fun setKeyColor(key: TextView, held: Boolean) {
             key.setBackgroundColor(if (held) heldColor else idleColor)

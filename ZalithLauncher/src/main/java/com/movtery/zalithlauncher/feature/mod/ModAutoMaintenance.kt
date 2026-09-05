@@ -173,7 +173,7 @@ object ModAutoMaintenance {
                 append(update.modName).append(": ")
                     .append(update.currentVersion).append(" → ").append(update.newVersionNumber)
                 setSpan(
-                    android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#22C55E")), // Status: Success
+                    android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#9CCF93")), // Status: Success
                     entryStart, length,
                     android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
@@ -199,7 +199,7 @@ object ModAutoMaintenance {
                 val entryStart = length
                 append(conflict.targetClass)
                 setSpan(
-                    android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#EF4444")), // Status: Error
+                    android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#FF8A8A")), // Status: Error
                     entryStart, length,
                     android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )

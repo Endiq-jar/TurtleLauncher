@@ -60,7 +60,7 @@
          is on - see AccessibilityHelper.applyHighContrastOverlay(). Only touches the specific
          attrs that were actually low-contrast (borders, secondary text, the "elevated surface"
          tone used for cards/dividers) rather than restyling the whole app, so the rest of the
-         Slate Blue theme (accent color, shapes, etc.) stays exactly as designed. -->
+         Sage theme (accent color, shapes, etc.) stays exactly as designed. -->
     <style name="ThemeOverlay.Turtle.HighContrast" parent="">
         <item name="colorOutline">@color/turtle_hc_border</item>
         <item name="android:textColorSecondary">@color/turtle_hc_text_secondary</item>

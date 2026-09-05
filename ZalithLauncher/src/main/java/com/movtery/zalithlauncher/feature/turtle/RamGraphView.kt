@@ -24,12 +24,12 @@ class RamGraphView @JvmOverloads constructor(
     private val samples = LinkedList<Float>() // 0f..1f, used/max ratio
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#22C55E") // Status: Success
+        color = Color.parseColor("#9CCF93") // Status: Success
         style = Paint.Style.STROKE
         strokeWidth = 3f
     }
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#3322C55E") // Status: Success @ 20% alpha
+        color = Color.parseColor("#339CCF93") // Status: Success @ 20% alpha
         style = Paint.Style.FILL
     }
 

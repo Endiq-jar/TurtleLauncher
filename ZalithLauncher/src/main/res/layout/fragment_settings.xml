@@ -168,6 +168,46 @@
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/turtle_divider"/>
 
                 <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/java_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/background_item"
+                    android:padding="@dimen/space_m">
+                    <ImageView android:id="@+id/java_icon" android:layout_width="24dp" android:layout_height="24dp"
+                        android:layout_centerVertical="true" android:src="@drawable/ic_setting_java" android:tint="@color/accent_primary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/java_icon" android:layout_marginStart="@dimen/space_m"
+                        android:text="@string/settings_row_java_title" android:textStyle="bold" android:textSize="14sp" android:textColor="@color/turtle_text_primary" android:id="@+id/java_title"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_below="@id/java_title" android:layout_toEndOf="@id/java_icon" android:layout_marginStart="@dimen/space_m"
+                        android:text="@string/settings_row_java_desc" android:textSize="12sp" android:textColor="@color/turtle_text_secondary"/>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_centerVertical="true" android:layout_alignParentEnd="true"
+                        android:src="@drawable/ic_chevron_down" android:rotation="-90" android:tint="@color/turtle_text_secondary"/>
+                </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/turtle_divider"/>
+
+                <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/hud_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/background_item"
+                    android:padding="@dimen/space_m">
+                    <ImageView android:id="@+id/hud_icon" android:layout_width="24dp" android:layout_height="24dp"
+                        android:layout_centerVertical="true" android:src="@drawable/ic_setting_hud" android:tint="@color/accent_primary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/hud_icon" android:layout_marginStart="@dimen/space_m"
+                        android:text="@string/settings_row_hud_title" android:textStyle="bold" android:textSize="14sp" android:textColor="@color/turtle_text_primary" android:id="@+id/hud_title"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_below="@id/hud_title" android:layout_toEndOf="@id/hud_icon" android:layout_marginStart="@dimen/space_m"
+                        android:text="@string/settings_row_hud_desc" android:textSize="12sp" android:textColor="@color/turtle_text_secondary"/>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_centerVertical="true" android:layout_alignParentEnd="true"
+                        android:src="@drawable/ic_chevron_down" android:rotation="-90" android:tint="@color/turtle_text_secondary"/>
+                </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/turtle_divider"/>
+
+                <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
                     android:id="@+id/controls_settings_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

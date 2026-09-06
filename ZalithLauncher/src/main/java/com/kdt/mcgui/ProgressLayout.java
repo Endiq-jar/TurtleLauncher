@@ -104,11 +104,15 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
     @Override
     public void onUpdateTaskCount(int tc) {
         post(()->{
-            if(tc > 0) {
-                mTaskNumberDisplayer.setText(getContext().getString(R.string.progresslayout_tasks_in_progress, tc));
-                setVisibility(VISIBLE);
-            }else
-                setVisibility(GONE);
+            // TurtleLauncher: the bottom task bar is intentionally never shown anymore -
+            // running tasks are now surfaced through the top bar's tasks button/panel
+            // instead (see MainMenuFragment). hasProcesses()/observe()/the task-count
+            // listener wiring below are all still real and used elsewhere (e.g. the
+            // "are you sure, a task is running" exit-confirmation checks in
+            // LauncherActivity), so none of that bookkeeping was touched - only the
+            // visual reveal at the bottom of the screen was removed.
+            mTaskNumberDisplayer.setText(getContext().getString(R.string.progresslayout_tasks_in_progress, tc));
+            setVisibility(GONE);
         });
     }
 

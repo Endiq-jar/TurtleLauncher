@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.movtery.anim.AnimPlayer;
 import com.movtery.anim.animations.Animations;
@@ -59,6 +60,11 @@ public class MainMenuFragment extends FragmentWithAnim {
     private FragmentLauncherBinding binding;
     private AccountViewWrapper accountViewWrapper;
     private ActivityResultLauncher<Object> modpackImportLauncher;
+    // TurtleLauncher: backs the top bar's tasks button/badge - separate listener object
+    // (not an onUpdateTaskCount() override) since BaseFragment's own TaskCountListener
+    // implementation is Kotlin-final and this fragment only needs the badge, not the
+    // isTaskRunning() gate BaseFragment already provides elsewhere.
+    private final net.kdt.pojavlaunch.progresskeeper.TaskCountListener tasksBadgeListener = this::updateTasksBadge;
 
     public MainMenuFragment() {
         super(R.layout.fragment_launcher);
@@ -162,6 +168,11 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.topBarSettingsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.class,
             com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.TAG, null));
+        // TurtleLauncher: replaces the old always-visible bottom ProgressLayout bar - tasks
+        // (downloads, login, mod checks, etc, anything routed through ProgressKeeper) are
+        // now checked on demand via this button instead of a permanent bar at the bottom.
+        binding.topBarTasksButton.setOnClickListener(v -> showRunningTasksDialog());
+        updateTasksBadge(ProgressKeeper.getTaskCount());
 
         // Today's Statistics dashboard
         refreshStatistics();
@@ -293,12 +304,76 @@ public class MainMenuFragment extends FragmentWithAnim {
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+        ProgressKeeper.addTaskCountListener(tasksBadgeListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+        ProgressKeeper.removeTaskCountListener(tasksBadgeListener);
+    }
+
+    /**
+     * Updates the small count badge on the top bar's tasks button. Purely visual -
+     * BaseFragment's own isTaskRunning() gate (used by e.g. runInstallerWithConfirmation
+     * below) is unaffected by this.
+     */
+    private void updateTasksBadge(int taskCount) {
+        if (binding == null) return;
+        android.widget.TextView badge = binding.topBarTasksBadge;
+        if (taskCount > 0) {
+            badge.setText(String.valueOf(taskCount));
+            badge.setVisibility(View.VISIBLE);
+        } else {
+            badge.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Shows every task ProgressKeeper currently knows about (downloads, login, mod
+     * checking, JRE/runtime unpacking, etc - anything routed through ProgressKeeper.submitProgress,
+     * regardless of which fixed key it uses) in a simple on-demand dialog, replacing the
+     * old always-visible bottom ProgressLayout bar.
+     */
+    private void showRunningTasksDialog() {
+        com.movtery.zalithlauncher.databinding.DialogRunningTasksBinding dialogBinding =
+                com.movtery.zalithlauncher.databinding.DialogRunningTasksBinding.inflate(getLayoutInflater());
+
+        java.util.List<ProgressKeeper.Snapshot> snapshots = ProgressKeeper.getSnapshots();
+        if (snapshots.isEmpty()) {
+            dialogBinding.tasksDialogEmpty.setVisibility(View.VISIBLE);
+        } else {
+            for (ProgressKeeper.Snapshot snapshot : snapshots) {
+                com.kdt.mcgui.TextProgressBar row = new com.kdt.mcgui.TextProgressBar(requireContext());
+                row.setTextPadding(getResources().getDimensionPixelOffset(R.dimen._6sdp));
+                row.setProgress(Math.max(snapshot.progress, 0));
+                row.setText(describeSnapshot(snapshot));
+                android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        getResources().getDimensionPixelOffset(R.dimen._24sdp));
+                params.bottomMargin = getResources().getDimensionPixelOffset(R.dimen._6sdp);
+                dialogBinding.tasksDialogList.addView(row, params);
+            }
+        }
+
+        new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+                .setView(dialogBinding.getRoot())
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    /**
+     * Same text-resolution logic as ProgressLayout.LayoutProgressListener.onProgressUpdated -
+     * kept in sync deliberately since both read the exact same ProgressState shape.
+     */
+    private String describeSnapshot(ProgressKeeper.Snapshot snapshot) {
+        try {
+            if (snapshot.resid != -1) return getString(snapshot.resid, snapshot.varArg);
+            if (snapshot.varArg.length > 0 && snapshot.varArg[0] != null) return (String) snapshot.varArg[0];
+        } catch (Throwable ignored) {
+        }
+        return "";
     }
 
     private void openUrl(String url) {

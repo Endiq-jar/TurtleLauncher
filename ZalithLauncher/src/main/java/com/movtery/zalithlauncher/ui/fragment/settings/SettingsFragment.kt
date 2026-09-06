@@ -51,6 +51,12 @@ class SettingsFragment : FragmentWithAnim(R.layout.fragment_settings) {
         binding.gameSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, GameSettingsFragment::class.java, GameSettingsFragment.TAG, null)
         }
+        binding.javaSettingsRow.setOnClickListener {
+            ZHTools.swapFragmentWithAnim(this, JavaSettingsFragment::class.java, JavaSettingsFragment.TAG, null)
+        }
+        binding.hudSettingsRow.setOnClickListener {
+            ZHTools.swapFragmentWithAnim(this, HudSettingsFragment::class.java, HudSettingsFragment.TAG, null)
+        }
         binding.controlsSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, ControlSettingsFragment::class.java, ControlSettingsFragment.TAG, null)
         }

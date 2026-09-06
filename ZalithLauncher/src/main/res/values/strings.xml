@@ -302,6 +302,8 @@
     <string name="version_install_type_version">Download and install as a version</string>
     <string name="version_install_type_mod">Download and install as a Mod</string>
     <string name="version_install_optifine_and_forge">Some versions of OptiFine may not work on Forge, and if you encounter crashes or compatibility issues, consider removing OptiFine first!</string>
+    <string name="version_install_modpack_title">Simply Optimized Reloaded</string>
+    <string name="version_install_modpack_subtitle">Featured modpack — view on Modrinth</string>
     <string name="version_install_log_flood_warning">If the logs flood the screen and cause the device to lag during installation, click here to close the logs!</string>
     <string name="version_manager_shortcuts">Shortcuts</string>
     <string name="version_manager_shortcuts_mods">Mod Management</string>
@@ -483,8 +485,11 @@
     <string name="main_nav_home">Home</string>
     <string name="main_nav_files">Files</string>
     <string name="main_nav_download">Download</string>
+    <string name="main_nav_tasks">Tasks</string>
     <string name="main_nav_cursor">Cursor</string>
     <string name="main_nav_settings">Settings</string>
+    <string name="main_tasks_dialog_title">Running tasks</string>
+    <string name="main_tasks_dialog_empty">No tasks running right now.</string>
     <string name="main_section_quick_actions">Quick Actions</string>
     <string name="terracotta_title">Friends / LAN</string>
     <string name="terracotta_waiting_subtitle">Play together over a direct P2P connection - no port forwarding needed.</string>
@@ -547,8 +552,12 @@
     <string name="settings_row_account_desc">Manage your account</string>
     <string name="settings_row_video_title">Video &amp; Renderer</string>
     <string name="settings_row_video_desc">FPS, renderer, and driver options</string>
-    <string name="settings_row_game_title">Game &amp; Java</string>
-    <string name="settings_row_game_desc">Java runtime, arguments, and language</string>
+    <string name="settings_row_game_title">Game</string>
+    <string name="settings_row_game_desc">Language, presets, HUD and menu display</string>
+    <string name="settings_row_java_title">Java</string>
+    <string name="settings_row_java_desc">Runtime, arguments, memory and sandbox</string>
+    <string name="settings_row_hud_title">HUD</string>
+    <string name="settings_row_hud_desc">In-game menu overlay and HUD modules</string>
     <string name="settings_row_controls_title">Controls</string>
     <string name="settings_row_controls_desc">Touch, gamepad, mouse, and gyro settings</string>
     <string name="settings_row_phone_title">Phone Settings</string>
@@ -605,6 +614,8 @@
     <string name="setting_category_personalization">Personalization</string>
     <string name="setting_category_download">Downloads</string>
     <string name="setting_category_game">Game Settings</string>
+    <string name="setting_category_hud">HUD Settings</string>
+    <string name="setting_category_java">Java Settings</string>
     <string name="setting_category_launcher">Launcher Settings</string>
     <string name="setting_category_game_menu">Game Menu</string>
     <string name="setting_category_experimental">Experimental Settings</string>

@@ -217,7 +217,7 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
                         putInt(com.movtery.zalithlauncher.ui.fragment.DownloadFragment.ARG_INITIAL_TAB, 1) // ModPack tab
                         putString(com.movtery.zalithlauncher.ui.fragment.DownloadFragment.ARG_INITIAL_QUERY, FEATURED_MODPACK_QUERY)
                     }
-                    ZHTools.swapFragmentWithAnim(this, com.movtery.zalithlauncher.ui.fragment.DownloadFragment::class.java,
+                    ZHTools.swapFragmentWithAnim(this@InstallGameFragment, com.movtery.zalithlauncher.ui.fragment.DownloadFragment::class.java,
                         com.movtery.zalithlauncher.ui.fragment.DownloadFragment.TAG, bundle)
                 }
 

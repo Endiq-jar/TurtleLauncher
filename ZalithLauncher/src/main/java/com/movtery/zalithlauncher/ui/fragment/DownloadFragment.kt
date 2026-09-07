@@ -96,7 +96,7 @@ class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
         override fun createFragment(position: Int): Fragment {
             return when(position) {
                 1 -> ModPackDownloadFragment(hostFragment).apply {
-                    val query = arguments?.getString(ARG_INITIAL_QUERY)
+                    val query = this@DownloadFragment.arguments?.getString(ARG_INITIAL_QUERY)
                     this.arguments = Bundle().apply {
                         query?.let { putString(ModPackDownloadFragment.ARG_INITIAL_QUERY, it) }
                     }

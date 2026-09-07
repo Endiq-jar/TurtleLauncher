@@ -25,6 +25,10 @@ import org.greenrobot.eventbus.EventBus
 class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
     companion object {
         const val TAG = "DownloadFragment"
+        /** Bundle key: which ViewPager tab to open on (defaults to 0/Mods if absent). */
+        const val ARG_INITIAL_TAB = "initial_tab"
+        /** Bundle key: forwarded to the target tab fragment's own initialSearchQuery(). */
+        const val ARG_INITIAL_QUERY = "initial_query"
     }
 
     private lateinit var binding: FragmentDownloadBinding
@@ -44,6 +48,12 @@ class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
         binding.classifyTab.observeIndexChange { _, toIndex, reselect, fromUser ->
             if (reselect) return@observeIndexChange
             if (fromUser) binding.downloadViewpager.setCurrentItem(toIndex, false)
+        }
+
+        val initialTab = arguments?.getInt(ARG_INITIAL_TAB, -1) ?: -1
+        if (initialTab >= 0) {
+            binding.downloadViewpager.setCurrentItem(initialTab, false)
+            binding.classifyTab.onPageSelected(initialTab)
         }
     }
 
@@ -81,15 +91,20 @@ class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
         super.onDestroyView()
     }
 
-    private class ViewPagerAdapter(private val fragment: Fragment): FragmentStateAdapter(fragment.requireActivity()) {
+    private inner class ViewPagerAdapter(private val hostFragment: Fragment): FragmentStateAdapter(hostFragment.requireActivity()) {
         override fun getItemCount(): Int = 5
         override fun createFragment(position: Int): Fragment {
             return when(position) {
-                1 -> ModPackDownloadFragment(fragment)
-                2 -> ResourcePackDownloadFragment(fragment)
-                3 -> WorldDownloadFragment(fragment)
-                4 -> ShaderPackDownloadFragment(fragment)
-                else -> ModDownloadFragment(fragment)
+                1 -> ModPackDownloadFragment(hostFragment).apply {
+                    val query = arguments?.getString(ARG_INITIAL_QUERY)
+                    this.arguments = Bundle().apply {
+                        query?.let { putString(ModPackDownloadFragment.ARG_INITIAL_QUERY, it) }
+                    }
+                }
+                2 -> ResourcePackDownloadFragment(hostFragment)
+                3 -> WorldDownloadFragment(hostFragment)
+                4 -> ShaderPackDownloadFragment(hostFragment)
+                else -> ModDownloadFragment(hostFragment)
             }
         }
     }

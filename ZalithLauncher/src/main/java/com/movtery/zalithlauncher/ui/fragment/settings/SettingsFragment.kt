@@ -60,6 +60,9 @@ class SettingsFragment : FragmentWithAnim(R.layout.fragment_settings) {
         binding.controlsSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, ControlSettingsFragment::class.java, ControlSettingsFragment.TAG, null)
         }
+        binding.optimizationSettingsRow.setOnClickListener {
+            ZHTools.swapFragmentWithAnim(this, OptimizationSettingsFragment::class.java, OptimizationSettingsFragment.TAG, null)
+        }
         binding.phoneSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, PhoneSettingsFragment::class.java, PhoneSettingsFragment.TAG, null)
         }

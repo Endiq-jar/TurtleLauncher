@@ -277,31 +277,7 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         SwitchSettingsWrapper(context, AllSettings.autoSettingsOptimizer,
             binding.autoSettingsOptimizerLayout, binding.autoSettingsOptimizer)
 
-        // ── FPS Boost Toggles ─────────────────────────────────────────────────
-        SwitchSettingsWrapper(context, AllSettings.unlimitedFps,
-            binding.unlimitedFpsLayout, binding.unlimitedFps)
-
-        SwitchSettingsWrapper(context, AllSettings.lowLatencyRendering,
-            binding.lowLatencyRenderingLayout, binding.lowLatencyRendering)
-
-        SwitchSettingsWrapper(context, AllSettings.framePacing,
-            binding.framePacingLayout, binding.framePacing)
-
-        SwitchSettingsWrapper(context, AllSettings.frameSkipping,
-            binding.frameSkippingLayout, binding.frameSkipping)
-
-        SwitchSettingsWrapper(context, AllSettings.adaptiveFrameTiming,
-            binding.adaptiveFrameTimingLayout, binding.adaptiveFrameTiming)
-
-        SwitchSettingsWrapper(context, AllSettings.autoMemoryCleanup,
-            binding.autoMemoryCleanupLayout, binding.autoMemoryCleanup)
-
-        // ── Advanced Renderer Settings ───────────────────────────────────────────
-        SwitchSettingsWrapper(context, AllSettings.rendererShaderCacheEnabled,
-            binding.rendererShaderCacheLayout, binding.rendererShaderCache)
-
-        SwitchSettingsWrapper(context, AllSettings.rendererDebugLogging,
-            binding.rendererDebugLoggingLayout, binding.rendererDebugLogging)
+        // FPS Boost / renderer performance toggles moved to OptimizationSettingsFragment.
         // gl4es LIBGL_* JNI tweaks moved to Phone Settings > JNI Optimization (now four
         // granular switches instead of this one combined toggle) - see PhoneSettingsFragment.
 

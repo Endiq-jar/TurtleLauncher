@@ -91,41 +91,8 @@ class ExperimentalSettingsFragment :
             "ms"
         )
 
-        // ── TurtleLauncher FPS Boost Settings ─────────────────────────────────
-        SwitchSettingsWrapper(
-            context,
-            AllSettings.unlimitedFps,
-            binding.unlimitedFpsLayout,
-            binding.unlimitedFps
-        )
-
-        SwitchSettingsWrapper(
-            context,
-            AllSettings.lowLatencyRendering,
-            binding.lowLatencyRenderingLayout,
-            binding.lowLatencyRendering
-        )
-
-        SwitchSettingsWrapper(
-            context,
-            AllSettings.framePacing,
-            binding.framePacingLayout,
-            binding.framePacing
-        )
-
-        SwitchSettingsWrapper(
-            context,
-            AllSettings.frameSkipping,
-            binding.frameSkippingLayout,
-            binding.frameSkipping
-        )
-
-        SwitchSettingsWrapper(
-            context,
-            AllSettings.adaptiveFrameTiming,
-            binding.adaptiveFrameTimingLayout,
-            binding.adaptiveFrameTiming
-        )
+        // FPS Boost settings moved to OptimizationSettingsFragment - was duplicated here
+        // wired to the exact same AllSettings keys as VideoSettingsFragment's copy.
 
         // TurtleLauncher In-Game HUD Modules (CPS/Keystrokes/FPS-adjacent overlays, PvP
         // preset, HUD scale/alpha) moved to Game Settings - see GameSettingsFragment.kt.

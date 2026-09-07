@@ -47,7 +47,10 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
     companion object {
         const val TAG = "InstallGameFragment"
         const val BUNDLE_MC_VERSION = "bundle_mc_version"
-        const val MODPACK_URL = "https://modrinth.com/modpack/simply-optimized-reloaded"
+        // TurtleLauncher: this is now a real download+create-instance flow (opens the
+        // Download screen's ModPack tab, pre-searched) instead of a browser link - see
+        // the modpackLayout click handler below.
+        const val FEATURED_MODPACK_QUERY = "Simply Optimized Reloaded"
     }
     private lateinit var binding: FragmentInstallGameBinding
     private lateinit var mcVersion: String
@@ -209,7 +212,14 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
                 quiltLayout -> swapFragment(DownloadQuiltFragment::class.java, DownloadQuiltFragment.TAG)
                 quiltApiLayout -> swapFragment(DownloadQuiltApiFragment::class.java, DownloadQuiltApiFragment.TAG)
                 cleanroomLayout -> swapFragment(DownloadCleanroomFragment::class.java, DownloadCleanroomFragment.TAG)
-                modpackLayout -> ZHTools.openLink(activity, MODPACK_URL)
+                modpackLayout -> {
+                    val bundle = android.os.Bundle().apply {
+                        putInt(com.movtery.zalithlauncher.ui.fragment.DownloadFragment.ARG_INITIAL_TAB, 1) // ModPack tab
+                        putString(com.movtery.zalithlauncher.ui.fragment.DownloadFragment.ARG_INITIAL_QUERY, FEATURED_MODPACK_QUERY)
+                    }
+                    ZHTools.swapFragmentWithAnim(this, com.movtery.zalithlauncher.ui.fragment.DownloadFragment::class.java,
+                        com.movtery.zalithlauncher.ui.fragment.DownloadFragment.TAG, bundle)
+                }
 
                 optifineDelete -> removeAddon(Addon.OPTIFINE)
                 forgeDelete -> removeAddon(Addon.FORGE)

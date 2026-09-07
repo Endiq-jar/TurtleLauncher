@@ -558,6 +558,9 @@
     <string name="settings_row_java_desc">Runtime, arguments, memory and sandbox</string>
     <string name="settings_row_hud_title">HUD</string>
     <string name="settings_row_hud_desc">In-game menu overlay and HUD modules</string>
+    <string name="settings_row_optimization_title">Optimization</string>
+    <string name="settings_row_optimization_desc">FPS boost, frame pacing and renderer performance</string>
+    <string name="setting_category_optimization">Optimization</string>
     <string name="settings_row_controls_title">Controls</string>
     <string name="settings_row_controls_desc">Touch, gamepad, mouse, and gyro settings</string>
     <string name="settings_row_phone_title">Phone Settings</string>

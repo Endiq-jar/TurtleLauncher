@@ -300,60 +300,6 @@
     
             </androidx.appcompat.widget.LinearLayoutCompat>
     
-            <!-- TurtleLauncher: Quick Presets -->
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginHorizontal="@dimen/_12sdp"
-                android:layout_marginTop="@dimen/_12sdp"
-                android:layout_marginBottom="@dimen/_8sdp"
-                android:background="@drawable/background_card"
-                android:padding="@dimen/_12sdp">
-    
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/setting_game_presets_title"
-                    android:textSize="@dimen/_14ssp"
-                    android:textStyle="bold"
-                    android:textColor="@color/accent_primary"
-                    android:layout_marginBottom="@dimen/_4sdp"/>
-    
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/setting_game_presets_desc"
-                    android:textSize="@dimen/_11ssp"
-                    android:textColor="@color/turtle_text_secondary"
-                    android:layout_marginBottom="@dimen/_10sdp"/>
-    
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-    
-                    <com.movtery.zalithlauncher.ui.view.AnimButton
-                        android:id="@+id/preset_pvp_button"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="@dimen/_6sdp"
-                        android:text="@string/preset_pvp_title"/>
-    
-                    <com.movtery.zalithlauncher.ui.view.AnimButton
-                        android:id="@+id/preset_survival_button"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="@dimen/_6sdp"
-                        android:text="@string/preset_survival_title"/>
-    
-                </LinearLayout>
-    
-            </androidx.appcompat.widget.LinearLayoutCompat>
-    
-    
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     

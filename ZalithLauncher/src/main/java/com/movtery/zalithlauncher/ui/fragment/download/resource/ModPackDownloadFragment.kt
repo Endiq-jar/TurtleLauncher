@@ -30,6 +30,14 @@ class ModPackDownloadFragment(parentFragment: Fragment? = null) : AbstractResour
 ) {
     private var openDocumentLauncher: ActivityResultLauncher<Any>? = null
 
+    companion object {
+        const val TAG: String = "ModPackDownloadFragment"
+        /** Bundle key: pre-fills the search box, e.g. from InstallGameFragment's featured modpack row. */
+        const val ARG_INITIAL_QUERY: String = "initial_query"
+    }
+
+    override fun initialSearchQuery(): String? = arguments?.getString(ARG_INITIAL_QUERY)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         openDocumentLauncher = registerForActivityResult(OpenDocumentWithExtension(null)) { uris: List<Uri>? ->

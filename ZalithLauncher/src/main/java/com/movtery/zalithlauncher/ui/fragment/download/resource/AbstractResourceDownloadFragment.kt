@@ -191,8 +191,22 @@ abstract class AbstractResourceDownloadFragment(
             returnButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
         }
 
+        // TurtleLauncher: lets a subclass (e.g. ModPackDownloadFragment, opened from a
+        // "featured modpack" shortcut) pre-fill the search box before the automatic
+        // first search fires, instead of always starting from an empty query.
+        initialSearchQuery()?.let { query ->
+            binding.nameEdit.setText(query)
+        }
+
         checkSearch()
     }
+
+    /**
+     * Override to pre-fill the search box when this fragment is opened with a specific
+     * target already known (e.g. a featured modpack). Returning null (the default)
+     * preserves the normal "start with an empty search" behaviour.
+     */
+    protected open fun initialSearchQuery(): String? = null
 
     private fun setSpinner(spinner: PowerSpinnerView, adapter: ObjectSpinnerAdapter<*>) {
         spinner.apply {

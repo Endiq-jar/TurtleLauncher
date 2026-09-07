@@ -228,6 +228,26 @@
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/turtle_divider"/>
 
                 <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/optimization_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/background_item"
+                    android:padding="@dimen/space_m">
+                    <ImageView android:id="@+id/optimization_icon" android:layout_width="24dp" android:layout_height="24dp"
+                        android:layout_centerVertical="true" android:src="@drawable/ic_setting_optimization" android:tint="@color/accent_primary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/optimization_icon" android:layout_marginStart="@dimen/space_m"
+                        android:text="@string/settings_row_optimization_title" android:textStyle="bold" android:textSize="14sp" android:textColor="@color/turtle_text_primary" android:id="@+id/optimization_title"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_below="@id/optimization_title" android:layout_toEndOf="@id/optimization_icon" android:layout_marginStart="@dimen/space_m"
+                        android:text="@string/settings_row_optimization_desc" android:textSize="12sp" android:textColor="@color/turtle_text_secondary"/>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_centerVertical="true" android:layout_alignParentEnd="true"
+                        android:src="@drawable/ic_chevron_down" android:rotation="-90" android:tint="@color/turtle_text_secondary"/>
+                </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/turtle_divider"/>
+
+                <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
                     android:id="@+id/phone_settings_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

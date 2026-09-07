@@ -6,10 +6,10 @@
     <string name="keycode_special_pri">Left Click</string>
     <string name="keycode_special_sec">Right Click</string>
     <string name="keycode_special_mouse">Mouse</string>
-    <string name="keycode_special_mid">Mouse Wheel - Middle Click</string>
-    <string name="keycode_special_scrollup">Mouse Wheel - Scroll Up</string>
-    <string name="keycode_special_scrolldown">Mouse Wheel - Scroll Down</string>
-    <string name="keycode_special_menu">Main Menu</string>
+    <string name="keycode_special_mid">Mouse-Middle Click</string>
+    <string name="keycode_special_scrollup">Mouse-Scroll Up</string>
+    <string name="keycode_special_scrolldown">Mouse-Scroll Down</string>
+    <string name="keycode_special_menu">Launcher Settings</string>
     <string name="keycode_special_cancel">Cancel</string>
     <string name="keycode_special_exit">Exit</string>
     <string name="keycode_mouse_right">Right Mouse</string>

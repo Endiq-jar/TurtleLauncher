@@ -111,9 +111,7 @@
     <color name="turtle_glass_overlay">#229CCF93</color>
     <color name="turtle_shadow_color">#66000000</color>
     <color name="turtle_overlay_scrim">#88000000</color>
-
-    <!-- ── HUD Stat Colors (FPS/RAM/CPU/Ping) ─────────────────────────
-         Now mapped onto the status palette instead of the old neon set. -->
+    
     <color name="turtle_stat_fps">#9CCF93</color>
     <color name="turtle_stat_ram">#9CCF93</color>
     <color name="turtle_stat_cpu">#FF8A8A</color>
@@ -123,16 +121,6 @@
     <color name="panel_translucent">#DD171717</color>
     <color name="game_panel_overlay">#80171717</color>
     <color name="turtle_highlight_subtle">#22F2F5F0</color>
-
-    <!--
-        ══════════════════════════════════════════════════════════════════
-        "new_*" palette — carried over name-for-name from the prior repaint
-        (kept as-is so nothing that references @color/new_* breaks). Group
-        labels below are updated to match what each group actually holds
-        now — e.g. "Primary Blue" is stale naming, the value is the Sage
-        palette's Primary Accent green.
-        ══════════════════════════════════════════════════════════════════
-    -->
 
     <!-- Backgrounds -->
     <color name="new_background_main">#0D0D0D</color>
@@ -215,6 +203,6 @@
 
     <!-- Progress Bar -->
     <color name="new_progress_track">#171717</color>
-    <color name="new_progress_fill">#C7E8B0</color>
+    <color name="new_progress_fill">#e3e8b0</color>
 
 </resources>

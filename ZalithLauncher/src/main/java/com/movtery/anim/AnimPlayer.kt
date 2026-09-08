@@ -6,6 +6,7 @@ import android.view.View
 import com.movtery.anim.animations.Animations
 import com.movtery.zalithlauncher.setting.AllSettings
 
+
 class AnimPlayer {
     private var mAnimatorSet: AnimatorSet = AnimatorSet()
     private var mAnimators: MutableList<Animator> = ArrayList()
@@ -20,6 +21,14 @@ class AnimPlayer {
 
     fun apply(entry: Entry): AnimPlayer {
         mAnimators.addAll(entry.animations.animator.getAnimators(entry.target))
+        return this
+    }
+
+    /** TurtleLauncher: adds already-built animators directly. Needed for staggered entries -
+     *  [apply] rebuilds animators from an [Animations] value, which leaves no way to offset
+     *  individual entries, and per-view start delays are the whole point of a stagger. */
+    fun addAll(animators: Array<Animator>): AnimPlayer {
+        mAnimators.addAll(animators)
         return this
     }
 

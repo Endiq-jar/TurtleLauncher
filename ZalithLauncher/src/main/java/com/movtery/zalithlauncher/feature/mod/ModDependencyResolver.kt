@@ -7,6 +7,7 @@ import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.mod.parser.ModInfo
 import java.io.File
 
+
 /**
  * Auto dependency installer.
  *

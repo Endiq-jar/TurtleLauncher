@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.feature.download.utils.VersionSeriesUtils
 
+
 /**
  * One card per Minecraft version series (e.g. "1.21", "26.2"), plus the two fixed
  * Beta/Alpha era cards. Tapping a card hands its full version list to

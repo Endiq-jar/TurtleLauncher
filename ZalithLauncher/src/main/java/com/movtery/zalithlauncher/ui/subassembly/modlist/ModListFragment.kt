@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.subassembly.modlist
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.content.Context
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
@@ -26,6 +26,7 @@ import com.movtery.zalithlauncher.utils.anim.AnimUtils
 import com.movtery.zalithlauncher.utils.anim.AnimUtils.Companion.playVisibilityAnim
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
 import java.util.concurrent.Future
+
 
 
 abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download) {
@@ -64,7 +65,7 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
                     }
                 }
             })
-            recyclerView.layoutAnimation = LayoutAnimationController(AnimationUtils.loadAnimation(requireContext(), R.anim.fade_downwards))
+            recyclerView.layoutAnimation = TurtleTransitions.listLayoutAnimationController(requireContext())
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
             refreshButton.setOnClickListener { refreshTask() }

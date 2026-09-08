@@ -8,10 +8,9 @@ import com.movtery.anim.animations.BaseAnimator
 class ZoomInRightAnimator : BaseAnimator() {
     override fun getAnimators(target: View): Array<Animator> {
         return arrayOf(
-            ObjectAnimator.ofFloat(target, "alpha", 0f, 1f),
-            ObjectAnimator.ofFloat(target, "scaleX", 0.6f, 1f),
-            ObjectAnimator.ofFloat(target, "scaleY", 0.6f, 1f),
-            ObjectAnimator.ofFloat(target, "translationX", 120f, 0f)
+            fadeIn(target),
+            *scale(target, 0.62f, 1f, overshoot(1.05f)),
+            translate(target, "translationX", travel(target, 0.5f), 0f)
         )
     }
 }

@@ -10,6 +10,7 @@ import com.movtery.zalithlauncher.utils.path.PathManager
 import org.apache.commons.io.FileUtils
 import java.io.File
 
+
 class CleanUpCache {
     companion object {
         private var isCleaning = false

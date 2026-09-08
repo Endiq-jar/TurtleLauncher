@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -43,6 +43,7 @@ import org.apache.commons.io.FileUtils
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.EnumMap
+
 
 class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), View.OnClickListener {
     companion object {

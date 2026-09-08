@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Typeface
@@ -67,6 +67,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.json.JSONObject
 import java.io.File
 import java.util.regex.Pattern
+
 
 
 class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClickListener {
@@ -182,12 +183,7 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
         binding.apply {
             accountsRecycler.layoutManager = LinearLayoutManager(context)
             accountsRecycler.setLayoutAnimation(
-                LayoutAnimationController(
-                    AnimationUtils.loadAnimation(
-                        context,
-                        R.anim.fade_downwards
-                    )
-                )
+                TurtleTransitions.listLayoutAnimationController(context)
             )
             accountsRecycler.adapter = mAccountAdapter
 

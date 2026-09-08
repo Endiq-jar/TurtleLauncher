@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +22,7 @@ import com.movtery.zalithlauncher.ui.fragment.download.resource.ResourcePackDown
 import com.movtery.zalithlauncher.ui.fragment.download.resource.ShaderPackDownloadFragment
 import com.movtery.zalithlauncher.ui.fragment.download.resource.WorldDownloadFragment
 import org.greenrobot.eventbus.EventBus
+
 
 class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
     companion object {

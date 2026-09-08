@@ -13,6 +13,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.util.Objects
 
+
 class CheckSponsor {
     companion object {
         private var sponsorMeta: SponsorMeta? = null

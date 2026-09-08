@@ -11,6 +11,7 @@ import com.movtery.zalithlauncher.databinding.DialogEditTextBinding
 import com.movtery.zalithlauncher.ui.dialog.DraggableDialog.DialogInitializationListener
 import com.movtery.zalithlauncher.utils.stringutils.StringUtilsKt.Companion.isEmptyOrBlank
 
+
 class EditTextDialog private constructor(
     private val context: Context,
     private val title: String?,

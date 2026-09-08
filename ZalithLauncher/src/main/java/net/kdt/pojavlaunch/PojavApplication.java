@@ -1,33 +1,34 @@
 package net.kdt.pojavlaunch;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.movtery.zalithlauncher.utils.ZHTools.getVersionCode;
-import static com.movtery.zalithlauncher.utils.ZHTools.getVersionName;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import static com.movtery.zalithlauncher.utils.ZHTools.getVersionCode
+import static com.movtery.zalithlauncher.utils.ZHTools.getVersionName
+import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
+import android.util.Log
+import androidx.annotation.NonNull
+import com.movtery.zalithlauncher.InfoDistributor
+import com.movtery.zalithlauncher.context.ContextExecutor
+import com.movtery.zalithlauncher.context.LocaleHelper
+import com.movtery.zalithlauncher.feature.log.Logging
+import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.ui.activity.ErrorActivity
+import com.movtery.zalithlauncher.utils.path.PathManager
+import com.movtery.zalithlauncher.utils.ZHTools
+import net.kdt.pojavlaunch.utils.FileUtils
+import java.io.File
+import java.io.PrintStream
+import java.text.DateFormat
+import java.util.Date
 
-import android.app.Application;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.os.Build;
-import android.util.Log;
 
-import androidx.annotation.NonNull;
 
-import com.movtery.zalithlauncher.InfoDistributor;
-import com.movtery.zalithlauncher.context.ContextExecutor;
-import com.movtery.zalithlauncher.context.LocaleHelper;
-import com.movtery.zalithlauncher.feature.log.Logging;
-import com.movtery.zalithlauncher.setting.AllSettings;
-import com.movtery.zalithlauncher.ui.activity.ErrorActivity;
-import com.movtery.zalithlauncher.utils.path.PathManager;
-import com.movtery.zalithlauncher.utils.ZHTools;
 
-import net.kdt.pojavlaunch.utils.FileUtils;
 
-import java.io.File;
-import java.io.PrintStream;
-import java.text.DateFormat;
-import java.util.Date;
+
 
 public class PojavApplication extends Application {
 	public static final String CRASH_REPORT_TAG = "ZalithCrashReport";

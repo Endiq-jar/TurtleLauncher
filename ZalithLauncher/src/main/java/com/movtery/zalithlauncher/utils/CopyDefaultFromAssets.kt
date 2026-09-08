@@ -6,6 +6,7 @@ import net.kdt.pojavlaunch.Tools
 import java.io.File
 import java.io.IOException
 
+
 class CopyDefaultFromAssets {
     companion object {
         @JvmStatic

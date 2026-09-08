@@ -16,6 +16,8 @@ import com.movtery.zalithlauncher.utils.stringutils.StringFilter.Companion.conta
 import java.io.File
 import java.util.Date
 import java.util.concurrent.atomic.AtomicInteger
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
+
 
 class FileRecyclerViewCreator(
     context: Context?,
@@ -37,12 +39,7 @@ class FileRecyclerViewCreator(
         this.mainRecyclerView = recyclerView
 
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(context)
-        mainRecyclerView.layoutAnimation = LayoutAnimationController(
-            AnimationUtils.loadAnimation(
-                context,
-                R.anim.fade_downwards
-            )
-        )
+        mainRecyclerView.layoutAnimation = TurtleTransitions.listLayoutAnimationController(context)
         mainRecyclerView.layoutManager = layoutManager
         mainRecyclerView.adapter = this.fileRecyclerAdapter
 

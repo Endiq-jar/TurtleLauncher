@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
+
 class FileCopyHandler @JvmOverloads constructor(
     mContext: Context,
     private val mPasteType: PasteFile.PasteType,

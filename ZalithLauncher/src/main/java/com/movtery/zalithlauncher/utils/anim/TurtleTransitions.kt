@@ -6,6 +6,12 @@ import com.movtery.anim.AnimPlayer
 import com.movtery.anim.animations.Animations
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.TaskExecutors
+import android.content.Context
+import android.view.animation.AnimationUtils
+import android.view.animation.LayoutAnimationController
+import androidx.recyclerview.widget.RecyclerView
+import com.movtery.zalithlauncher.R
+
 
 /**
  * The one place the launcher's screen transitions are defined.
@@ -30,6 +36,7 @@ enum class EnterTransition(val key: String, val animation: Animations) {
     FADE_IN("fade_in", Animations.FadeInUp),
     ZOOM_IN("zoom_in", Animations.ZoomInUp),
     ZOOM("zoom", Animations.ZoomIn),
+    SHEET("sheet", Animations.SheetIn),
     ;
 
     companion object {
@@ -48,6 +55,7 @@ enum class ExitTransition(val key: String, val animation: Animations) {
     FADE_OUT("fade_out", Animations.FadeOutUp),
     ZOOM_OUT("zoom_out", Animations.ZoomOutUp),
     ZOOM("zoom", Animations.ZoomOut),
+    SHEET("sheet", Animations.SheetOut),
     ;
 
     companion object {
@@ -116,6 +124,110 @@ object TurtleTransitions {
         if (onEnd != null) player.setOnEnd(onEnd)
         player.start()
         return true
+    }
+
+    /**
+     * The bottom-sheet entrance: rises from the bottom edge of the screen and settles with a
+     * bounce, instead of sliding a fixed distance from somewhere mid-screen.
+     *
+     * Used by the settings screen opened from the home page - a panel you reach *down* to
+     * should feel like it came up off the bottom of the display, not like it drifted in from
+     * the side. Also selectable globally via the "Sheet" entry in both pickers.
+     */
+    @JvmStatic
+    fun sheetEnter(): Animations = Animations.SheetIn
+
+    @JvmStatic
+    fun sheetExit(): Animations = Animations.SheetOut
+
+    /**
+     * Plays the enter animation across a group of views, each one a beat after the last.
+     *
+     * Animating a row of panels all at once reads as one flat block moving; staggering them
+     * by a few tens of milliseconds is what makes a screen feel like it assembled itself.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun stagger(animPlayer: AnimPlayer, views: List<View?>, stepMs: Long = 45L) {
+        if (!isEnabled()) return
+        var index = 0
+        for (view in views) {
+            if (view == null) continue
+            // Each entry gets its own startDelay inside the one AnimatorSet, so the panels
+            // arrive one after another instead of as a single flat block.
+            val animators = enter().animator.getAnimators(view)
+            animators.forEach { it.startDelay = index * stepMs }
+            animPlayer.addAll(animators)
+            index++
+        }
+    }
+
+    /** Convenience for callers that aren't inside a fragment's slideIn() and so don't have an
+     *  AnimPlayer handed to them. */
+    @JvmStatic
+    @JvmOverloads
+    fun stagger(views: List<View?>, stepMs: Long = 45L) {
+        if (!isEnabled()) return
+        val player = AnimPlayer.play()
+        stagger(player, views, stepMs)
+        player.start()
+    }
+
+    /**
+     * Staggered entry for every row currently on screen in a list. Call once after the
+     * adapter's first data set is in (`recyclerView.post { ... }` is usually needed so the
+     * children exist) - it animates what's visible and leaves scrolling alone.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun animateList(recyclerView: RecyclerView, stepMs: Long = 28L) {
+        if (!isEnabled()) return
+        val children = (0 until recyclerView.childCount).mapNotNull { recyclerView.getChildAt(it) }
+        stagger(children, stepMs)
+    }
+
+    /**
+     * The per-item entry animation for a list, built the same way everywhere.
+     *
+     * `LayoutAnimationController` spreads children by `delay * animationDuration`, and its
+     * default delay is 0.5 - so with the 210ms entry in `R.anim.fade_downwards` each row
+     * would start ~105ms after the one above it and a 20-row list would still be arriving
+     * two seconds later. Pinning the delay to a small fraction keeps the cascade snappy
+     * no matter how long the entry animation is.
+     */
+    @JvmStatic
+    fun listLayoutAnimationController(context: Context): LayoutAnimationController =
+        TurtleTransitions.listLayoutAnimationController(context).apply {
+            delay = 0.12f
+            order = LayoutAnimationController.ORDER_NORMAL
+        }
+
+    /**
+     * Press feedback for views that aren't an `AnimRelativeLayout` (which already carries a
+     * press-scale state list animator). Squashes to [scale] on touch and springs back on
+     * release, so tapping a plain button feels like tapping something.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun attachPressFeedback(view: View, scale: Float = 0.94f) {
+        if (!isEnabled()) return
+        view.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    v.animate().scaleX(scale).scaleY(scale)
+                        .setDuration(110).setInterpolator(android.view.animation.DecelerateInterpolator()).start()
+                }
+                android.view.MotionEvent.ACTION_UP,
+                android.view.MotionEvent.ACTION_CANCEL -> {
+                    v.animate().scaleX(1f).scaleY(1f)
+                        .setDuration(180)
+                        .setInterpolator(android.view.animation.OvershootInterpolator(2.0f)).start()
+                    // Let the click still happen.
+                    if (event.actionMasked == android.view.MotionEvent.ACTION_UP) v.performClick()
+                }
+            }
+            false
+        }
     }
 
     /** Show/hide a view with the configured transition, including the visibility flip.

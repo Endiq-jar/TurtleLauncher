@@ -69,6 +69,7 @@
         <item>@string/anim_fade_in</item>
         <item>@string/anim_zoom_in</item>
         <item>@string/anim_zoom</item>
+        <item>@string/anim_sheet</item>
     </string-array>
 
     <string-array name="animation_enter_values">
@@ -80,6 +81,7 @@
         <item>fade_in</item>
         <item>zoom_in</item>
         <item>zoom</item>
+        <item>sheet</item>
     </string-array>
 
     <string-array name="animation_exit_names">
@@ -91,6 +93,7 @@
         <item>@string/anim_fade_out</item>
         <item>@string/anim_zoom_out</item>
         <item>@string/anim_zoom</item>
+        <item>@string/anim_sheet</item>
     </string-array>
 
     <string-array name="animation_exit_values">
@@ -102,6 +105,7 @@
         <item>fade_out</item>
         <item>zoom_out</item>
         <item>zoom</item>
+        <item>sheet</item>
     </string-array>
 
     <string-array name="game_menu_location_names">

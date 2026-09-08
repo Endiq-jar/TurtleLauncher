@@ -10,6 +10,7 @@ import com.movtery.zalithlauncher.renderer.renderers.VGPURenderer
 import com.movtery.zalithlauncher.renderer.renderers.VirGLRenderer
 import com.movtery.zalithlauncher.renderer.renderers.ZinkRenderer
 
+
 /**
  * Cross-cutting renderer metadata that doesn't belong on [RendererInterface] itself -
  * compatibility plugins don't have it, and it's about how renderers relate to each other

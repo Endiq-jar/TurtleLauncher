@@ -99,6 +99,9 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
             bundle.putString(VersionSeriesDetailFragment.BUNDLE_SERIES_LABEL, card.label)
             ZHTools.swapFragmentWithAnim(this, VersionSeriesDetailFragment::class.java, VersionSeriesDetailFragment.TAG, bundle)
         }
+        // TurtleLauncher: this grid had no entry animation at all - the cards just appeared.
+        // post{} so the children exist before we animate them.
+        binding.seriesGrid.post { TurtleTransitions.animateList(binding.seriesGrid) }
     }
 
     private fun buildCards(): List<SeriesCardAdapter.CardEntry> {

@@ -5,6 +5,7 @@ import com.movtery.zalithlauncher.feature.download.item.ModLikeVersionItem
 import com.movtery.zalithlauncher.feature.download.item.ModVersionItem
 import com.movtery.zalithlauncher.feature.download.item.VersionItem
 
+
 /**
  * 将搜索得到的信息缓存在内存中，下次加载时可直接从内存中拿到上次的搜索结果
  */

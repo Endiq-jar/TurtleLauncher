@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- TurtleLauncher: quick, no-nonsense dismissal - it shrinks and fades without any bounce,
+     which is the right asymmetry: arriving can be playful, leaving shouldn't dawdle. -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:interpolator="@android:interpolator/fast_out_linear_in">
+
     <scale
         android:fromXScale="1.0"
         android:fromYScale="1.0"
@@ -8,9 +11,10 @@
         android:toYScale="0.92"
         android:pivotX="50%"
         android:pivotY="50%"
-        android:duration="160" />
+        android:duration="150" />
+
     <alpha
         android:fromAlpha="1.0"
         android:toAlpha="0.0"
-        android:duration="150" />
+        android:duration="130" />
 </set>

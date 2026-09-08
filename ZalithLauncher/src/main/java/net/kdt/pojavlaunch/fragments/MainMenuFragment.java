@@ -420,11 +420,17 @@ public class MainMenuFragment extends FragmentWithAnim {
         });
     }
 
+    // TurtleLauncher: the home page is built from distinct panels stacked down the screen, so
+    // they now arrive one after another instead of all at once - staggering them is what makes
+    // the screen feel assembled rather than just switched on. The play button still gets its
+    // pop, which is a scale effect rather than an entrance, so it runs alongside the stagger.
     @Override
     public void slideIn(AnimPlayer animPlayer) {
-        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, TurtleTransitions.enter()))
-                .apply(new AnimPlayer.Entry(binding.playLayout, TurtleTransitions.enter()))
-                .apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceEnlarge));
+        com.movtery.zalithlauncher.utils.anim.TurtleTransitions.stagger(
+                animPlayer,
+                java.util.Arrays.asList(binding.launcherMenu, binding.playLayout),
+                55L);
+        animPlayer.apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceEnlarge));
     }
 
     @Override

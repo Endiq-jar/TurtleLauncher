@@ -21,6 +21,7 @@ import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.ZipFile
 
+
 class MCBBSModPack(private val context: Context, private val zipFile: File?) {
     private var installDialog: ProgressDialog? = null
     private var isCanceled = false

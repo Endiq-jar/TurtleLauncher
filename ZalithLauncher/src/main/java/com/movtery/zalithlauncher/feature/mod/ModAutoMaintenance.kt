@@ -12,6 +12,7 @@ import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.dialog.TipDialog
 import java.io.File
 
+
 /**
  * Runs TurtleLauncher's automatic mod maintenance (dependency installer + update
  * checker) once per launch, right after mods have been parsed and before the

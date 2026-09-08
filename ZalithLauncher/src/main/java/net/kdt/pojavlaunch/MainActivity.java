@@ -1,102 +1,103 @@
 package net.kdt.pojavlaunch;
 
-import static net.kdt.pojavlaunch.Tools.currentDisplayMetrics;
-import static org.lwjgl.glfw.CallbackBridge.sendKeyPress;
-import static org.lwjgl.glfw.CallbackBridge.windowHeight;
-import static org.lwjgl.glfw.CallbackBridge.windowWidth;
+import static net.kdt.pojavlaunch.Tools.currentDisplayMetrics
+import static org.lwjgl.glfw.CallbackBridge.sendKeyPress
+import static org.lwjgl.glfw.CallbackBridge.windowHeight
+import static org.lwjgl.glfw.CallbackBridge.windowWidth
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
+import android.os.IBinder
+import android.view.InputDevice
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import android.view.Window
+import android.view.WindowManager
+import android.widget.CompoundButton
+import android.widget.SeekBar
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.NonNull
+import androidx.annotation.Nullable
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.movtery.anim.AnimPlayer
+import com.movtery.anim.animations.Animations
+import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.context.ContextExecutor
+import com.movtery.zalithlauncher.databinding.ActivityGameBinding
+import com.movtery.zalithlauncher.databinding.ViewControlMenuBinding
+import com.movtery.zalithlauncher.databinding.ViewGameMenuBinding
+import com.movtery.zalithlauncher.event.single.RefreshHotbarEvent
+import com.movtery.zalithlauncher.event.value.HotbarChangeEvent
+import com.movtery.zalithlauncher.feature.MCOptions
+import com.movtery.zalithlauncher.feature.ProfileLanguageSelector
+import com.movtery.zalithlauncher.feature.background.BackgroundManager
+import com.movtery.zalithlauncher.feature.background.BackgroundType
+import com.movtery.zalithlauncher.feature.log.Logging
+import com.movtery.zalithlauncher.feature.version.Version
+import com.movtery.zalithlauncher.feature.version.VersionInfo
+import com.movtery.zalithlauncher.launch.LaunchGame
+import com.movtery.zalithlauncher.listener.SimpleTextWatcher
+import com.movtery.zalithlauncher.plugins.driver.DriverPluginManager
+import com.movtery.zalithlauncher.renderer.Renderers
+import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.AllStaticSettings
+import com.movtery.zalithlauncher.task.Task
+import com.movtery.zalithlauncher.task.TaskExecutors
+import com.movtery.zalithlauncher.ui.activity.BaseActivity
+import com.movtery.zalithlauncher.ui.dialog.KeyboardDialog
+import com.movtery.zalithlauncher.ui.dialog.SelectControlsDialog
+import com.movtery.zalithlauncher.ui.dialog.SelectMouseDialog
+import com.movtery.zalithlauncher.ui.fragment.settings.VideoSettingsFragment
+import com.movtery.zalithlauncher.ui.subassembly.adapter.ObjectSpinnerAdapter
+import com.movtery.zalithlauncher.ui.subassembly.hotbar.HotbarType
+import com.movtery.zalithlauncher.ui.subassembly.hotbar.HotbarUtils
+import com.movtery.zalithlauncher.ui.subassembly.menu.ControlMenu
+import com.movtery.zalithlauncher.ui.subassembly.menu.MenuUtils
+import com.movtery.zalithlauncher.ui.subassembly.view.GameMenuViewWrapper
+import com.movtery.zalithlauncher.utils.path.PathManager
+import com.movtery.zalithlauncher.utils.ZHTools
+import com.movtery.zalithlauncher.utils.anim.AnimUtils
+import com.movtery.zalithlauncher.utils.file.FileTools
+import com.movtery.zalithlauncher.utils.stringutils.StringUtils
+import com.skydoves.powerspinner.OnSpinnerItemSelectedListener
+import net.kdt.pojavlaunch.customcontrols.ControlButtonMenuListener
+import net.kdt.pojavlaunch.customcontrols.ControlLayout
+import net.kdt.pojavlaunch.customcontrols.CustomControls
+import net.kdt.pojavlaunch.customcontrols.EditorExitable
+import net.kdt.pojavlaunch.customcontrols.keyboard.LwjglCharSender
+import net.kdt.pojavlaunch.customcontrols.keyboard.TouchCharInput
+import net.kdt.pojavlaunch.customcontrols.mouse.GyroControl
+import net.kdt.pojavlaunch.prefs.LauncherPreferences
+import net.kdt.pojavlaunch.services.GameService
+import org.greenrobot.eventbus.EventBus
+import org.lwjgl.glfw.CallbackBridge
+import java.io.File
+import java.io.IOException
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.view.InputDevice;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.CompoundButton;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.movtery.anim.AnimPlayer;
-import com.movtery.anim.animations.Animations;
-import com.movtery.zalithlauncher.R;
-import com.movtery.zalithlauncher.context.ContextExecutor;
-import com.movtery.zalithlauncher.databinding.ActivityGameBinding;
-import com.movtery.zalithlauncher.databinding.ViewControlMenuBinding;
-import com.movtery.zalithlauncher.databinding.ViewGameMenuBinding;
-import com.movtery.zalithlauncher.event.single.RefreshHotbarEvent;
-import com.movtery.zalithlauncher.event.value.HotbarChangeEvent;
-import com.movtery.zalithlauncher.feature.MCOptions;
-import com.movtery.zalithlauncher.feature.ProfileLanguageSelector;
-import com.movtery.zalithlauncher.feature.background.BackgroundManager;
-import com.movtery.zalithlauncher.feature.background.BackgroundType;
-import com.movtery.zalithlauncher.feature.log.Logging;
-import com.movtery.zalithlauncher.feature.version.Version;
-import com.movtery.zalithlauncher.feature.version.VersionInfo;
-import com.movtery.zalithlauncher.launch.LaunchGame;
-import com.movtery.zalithlauncher.listener.SimpleTextWatcher;
-import com.movtery.zalithlauncher.plugins.driver.DriverPluginManager;
-import com.movtery.zalithlauncher.renderer.Renderers;
-import com.movtery.zalithlauncher.setting.AllSettings;
-import com.movtery.zalithlauncher.setting.AllStaticSettings;
-import com.movtery.zalithlauncher.task.Task;
-import com.movtery.zalithlauncher.task.TaskExecutors;
-import com.movtery.zalithlauncher.ui.activity.BaseActivity;
-import com.movtery.zalithlauncher.ui.dialog.KeyboardDialog;
-import com.movtery.zalithlauncher.ui.dialog.SelectControlsDialog;
-import com.movtery.zalithlauncher.ui.dialog.SelectMouseDialog;
-import com.movtery.zalithlauncher.ui.fragment.settings.VideoSettingsFragment;
-import com.movtery.zalithlauncher.ui.subassembly.adapter.ObjectSpinnerAdapter;
-import com.movtery.zalithlauncher.ui.subassembly.hotbar.HotbarType;
-import com.movtery.zalithlauncher.ui.subassembly.hotbar.HotbarUtils;
-import com.movtery.zalithlauncher.ui.subassembly.menu.ControlMenu;
-import com.movtery.zalithlauncher.ui.subassembly.menu.MenuUtils;
-import com.movtery.zalithlauncher.ui.subassembly.view.GameMenuViewWrapper;
-import com.movtery.zalithlauncher.utils.path.PathManager;
-import com.movtery.zalithlauncher.utils.ZHTools;
-import com.movtery.zalithlauncher.utils.anim.AnimUtils;
-import com.movtery.zalithlauncher.utils.file.FileTools;
-import com.movtery.zalithlauncher.utils.stringutils.StringUtils;
-import com.skydoves.powerspinner.OnSpinnerItemSelectedListener;
 
-import net.kdt.pojavlaunch.customcontrols.ControlButtonMenuListener;
-import net.kdt.pojavlaunch.customcontrols.ControlLayout;
-import net.kdt.pojavlaunch.customcontrols.CustomControls;
-import net.kdt.pojavlaunch.customcontrols.EditorExitable;
-import net.kdt.pojavlaunch.customcontrols.keyboard.LwjglCharSender;
-import net.kdt.pojavlaunch.customcontrols.keyboard.TouchCharInput;
-import net.kdt.pojavlaunch.customcontrols.mouse.GyroControl;
-import net.kdt.pojavlaunch.prefs.LauncherPreferences;
-import net.kdt.pojavlaunch.services.GameService;
 
-import org.greenrobot.eventbus.EventBus;
-import org.lwjgl.glfw.CallbackBridge;
 
-import java.io.File;
-import java.io.IOException;
+
 
 public class MainActivity extends BaseActivity implements ControlButtonMenuListener, EditorExitable, ServiceConnection {
     public static volatile ClipboardManager GLOBAL_CLIPBOARD;

@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -23,6 +23,7 @@ import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.fragment.FragmentWithAnim
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
 import com.movtery.zalithlauncher.utils.ZHTools
+
 
 /**
  * TurtleLauncher: Shizuku/Sui status + privileged actions.

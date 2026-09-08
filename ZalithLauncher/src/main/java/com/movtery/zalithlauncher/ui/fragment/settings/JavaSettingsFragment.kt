@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -29,6 +29,7 @@ import net.kdt.pojavlaunch.Tools
 import net.kdt.pojavlaunch.contracts.OpenDocumentWithExtension
 import net.kdt.pojavlaunch.multirt.MultiRTConfigDialog
 import kotlin.math.min
+
 
 /**
  * TurtleLauncher: everything Java-runtime-related (install/select a JRE, JVM args, RAM

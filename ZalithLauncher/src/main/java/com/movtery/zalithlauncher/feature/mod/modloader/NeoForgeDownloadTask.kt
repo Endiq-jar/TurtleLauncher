@@ -15,6 +15,7 @@ import net.kdt.pojavlaunch.utils.DownloadUtils
 import java.io.File
 import java.io.IOException
 
+
 class NeoForgeDownloadTask(neoforgeVersion: String) : InstallTask, DownloaderFeedback {
     private var mDownloadUrl: String? = null
     private var mLoaderVersion: String? = neoforgeVersion

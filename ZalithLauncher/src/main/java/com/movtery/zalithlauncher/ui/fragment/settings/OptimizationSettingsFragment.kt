@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +12,7 @@ import com.movtery.zalithlauncher.databinding.SettingsFragmentOptimizationBindin
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
 import com.movtery.zalithlauncher.utils.ZHTools
+
 
 /**
  * TurtleLauncher: the "FPS Boost (Game Performance)" card was duplicated verbatim in both

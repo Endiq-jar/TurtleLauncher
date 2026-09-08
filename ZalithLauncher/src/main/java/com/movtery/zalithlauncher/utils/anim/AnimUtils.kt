@@ -6,6 +6,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.Task
 import com.movtery.zalithlauncher.utils.anim.ViewAnimUtils.Companion.setViewAnim
 
+
 class AnimUtils {
     companion object {
         @JvmStatic

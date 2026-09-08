@@ -19,6 +19,7 @@ import com.movtery.zalithlauncher.utils.ZHTools
 import com.movtery.zalithlauncher.utils.file.FileTools.Companion.formatFileSize
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
 
+
 class UpdateDialog(context: Context, private val launcherVersion: LauncherVersion) :
     FullScreenDialog(context), DialogInitializationListener {
     private val binding = DialogUpdateBinding.inflate(

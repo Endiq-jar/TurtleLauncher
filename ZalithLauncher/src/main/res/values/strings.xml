@@ -492,6 +492,7 @@
     <string name="anim_zoom_in">Zoom in</string>
     <string name="anim_zoom_out">Zoom out</string>
     <string name="anim_zoom">Zoom (centre)</string>
+    <string name="anim_sheet">Sheet (up from the bottom)</string>
     <string name="setting_animation_enter_title">Screen enter animation</string>
     <string name="setting_animation_enter_desc">How a screen or panel arrives</string>
     <string name="setting_animation_exit_title">Screen exit animation</string>

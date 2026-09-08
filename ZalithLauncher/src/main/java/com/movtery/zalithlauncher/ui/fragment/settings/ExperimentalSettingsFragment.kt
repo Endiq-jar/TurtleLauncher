@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +16,7 @@ import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.BaseSettingsWrapp
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.ListSettingsWrapper
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SeekBarSettingsWrapper
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
+
 
 class ExperimentalSettingsFragment :
     AbstractSettingsFragment(R.layout.settings_fragment_experimental, SettingCategory.EXPERIMENTAL) {

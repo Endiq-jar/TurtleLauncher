@@ -1,60 +1,61 @@
 package net.kdt.pojavlaunch;
 
-import android.annotation.SuppressLint;
-import android.content.ClipboardManager;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Bundle;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Toast;
+import android.annotation.SuppressLint
+import android.content.ClipboardManager
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Bundle
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
+import com.getkeepsafe.taptargetview.TapTargetView
+import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.databinding.ActivityJavaGuiLauncherBinding
+import com.movtery.zalithlauncher.event.value.JvmExitEvent
+import com.movtery.zalithlauncher.feature.log.GameWatchdog
+import com.movtery.zalithlauncher.feature.log.Logging
+import com.movtery.zalithlauncher.launch.LaunchArgs
+import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.task.Task
+import com.movtery.zalithlauncher.task.TaskExecutors
+import com.movtery.zalithlauncher.ui.activity.BaseActivity
+import com.movtery.zalithlauncher.ui.dialog.TipDialog
+import com.movtery.zalithlauncher.utils.NewbieGuideUtils
+import com.movtery.zalithlauncher.utils.ZHTools
+import com.movtery.zalithlauncher.utils.image.Dimension
+import com.movtery.zalithlauncher.utils.image.ImageUtils
+import com.movtery.zalithlauncher.utils.path.LibPath
+import com.movtery.zalithlauncher.utils.path.PathManager
+import net.kdt.pojavlaunch.customcontrols.keyboard.AwtCharSender
+import net.kdt.pojavlaunch.multirt.MultiRTUtils
+import net.kdt.pojavlaunch.multirt.Runtime
+import net.kdt.pojavlaunch.utils.JREUtils
+import net.kdt.pojavlaunch.utils.MathUtils
+import org.apache.commons.io.IOUtils
+import org.greenrobot.eventbus.Subscribe
+import org.lwjgl.glfw.CallbackBridge
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.nio.ByteBuffer
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.Collections
+import java.util.List
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AlertDialog;
 
-import com.getkeepsafe.taptargetview.TapTargetView;
-import com.movtery.zalithlauncher.R;
-import com.movtery.zalithlauncher.databinding.ActivityJavaGuiLauncherBinding;
-import com.movtery.zalithlauncher.event.value.JvmExitEvent;
-import com.movtery.zalithlauncher.feature.log.GameWatchdog;
-import com.movtery.zalithlauncher.feature.log.Logging;
-import com.movtery.zalithlauncher.launch.LaunchArgs;
-import com.movtery.zalithlauncher.setting.AllSettings;
-import com.movtery.zalithlauncher.task.Task;
-import com.movtery.zalithlauncher.task.TaskExecutors;
-import com.movtery.zalithlauncher.ui.activity.BaseActivity;
-import com.movtery.zalithlauncher.ui.dialog.TipDialog;
-import com.movtery.zalithlauncher.utils.NewbieGuideUtils;
-import com.movtery.zalithlauncher.utils.ZHTools;
-import com.movtery.zalithlauncher.utils.image.Dimension;
-import com.movtery.zalithlauncher.utils.image.ImageUtils;
-import com.movtery.zalithlauncher.utils.path.LibPath;
-import com.movtery.zalithlauncher.utils.path.PathManager;
 
-import net.kdt.pojavlaunch.customcontrols.keyboard.AwtCharSender;
-import net.kdt.pojavlaunch.multirt.MultiRTUtils;
-import net.kdt.pojavlaunch.multirt.Runtime;
-import net.kdt.pojavlaunch.utils.JREUtils;
-import net.kdt.pojavlaunch.utils.MathUtils;
 
-import org.apache.commons.io.IOUtils;
-import org.greenrobot.eventbus.Subscribe;
-import org.lwjgl.glfw.CallbackBridge;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+
 
 public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouchListener {
     public static final String EXTRAS_JRE_NAME = "jre_name";

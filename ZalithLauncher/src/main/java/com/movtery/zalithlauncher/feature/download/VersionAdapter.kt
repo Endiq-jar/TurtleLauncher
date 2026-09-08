@@ -28,6 +28,7 @@ import java.util.Locale
 import java.util.StringJoiner
 import java.util.TimeZone
 
+
 class VersionAdapter(
     private val infoItem: InfoItem,
     private val platformHelper: AbstractPlatformHelper,

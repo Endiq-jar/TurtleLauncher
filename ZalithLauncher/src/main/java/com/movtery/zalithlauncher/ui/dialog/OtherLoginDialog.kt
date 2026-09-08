@@ -12,6 +12,7 @@ import com.movtery.zalithlauncher.feature.login.Servers.Server
 import com.movtery.zalithlauncher.ui.dialog.DraggableDialog.DialogInitializationListener
 import com.movtery.zalithlauncher.utils.ZHTools
 
+
 /**
  * TurtleLauncher: Other Login Dialog
  *

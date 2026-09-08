@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +18,7 @@ import com.movtery.zalithlauncher.ui.fragment.about.AboutInfoPageFragment
 import com.movtery.zalithlauncher.utils.ZHTools
 import com.movtery.zalithlauncher.utils.path.UrlManager
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
+
 
 class AboutFragment : FragmentWithAnim(R.layout.fragment_about) {
     companion object {

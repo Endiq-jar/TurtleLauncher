@@ -4,6 +4,7 @@ import com.movtery.zalithlauncher.feature.download.enums.Category
 import com.movtery.zalithlauncher.feature.download.enums.ModLoader
 import com.movtery.zalithlauncher.feature.download.enums.Sort
 
+
 /**
  * 用于平台进行搜索时，提供筛选信息
  */

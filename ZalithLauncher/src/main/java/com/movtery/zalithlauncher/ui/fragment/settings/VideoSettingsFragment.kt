@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
@@ -41,6 +41,7 @@ import net.kdt.pojavlaunch.contracts.OpenDocumentWithExtension
 import org.apache.commons.io.FileUtils
 import org.greenrobot.eventbus.EventBus
 import java.io.File
+
 
 class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment_video, SettingCategory.VIDEO) {
     private lateinit var binding: SettingsFragmentVideoBinding

@@ -14,6 +14,7 @@ import org.greenrobot.eventbus.EventBus
 import java.lang.reflect.Type
 import java.util.concurrent.ConcurrentHashMap
 
+
 class Settings {
     companion object {
         private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()

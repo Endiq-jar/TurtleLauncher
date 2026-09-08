@@ -28,6 +28,7 @@ import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 
+
 /**
  * 所有版本管理者
  * @see Version

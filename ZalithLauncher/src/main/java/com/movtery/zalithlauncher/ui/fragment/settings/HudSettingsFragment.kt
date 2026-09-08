@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +15,7 @@ import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.ListSettingsWrapp
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SeekBarSettingsWrapper
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
 import com.movtery.zalithlauncher.utils.ZHTools
+
 
 /**
  * TurtleLauncher: the in-game menu overlay settings (previously "setting_category_game_menu")

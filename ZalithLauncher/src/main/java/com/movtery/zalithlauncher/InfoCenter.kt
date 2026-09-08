@@ -3,6 +3,7 @@ package com.movtery.zalithlauncher
 import android.content.Context
 import com.movtery.zalithlauncher.InfoDistributor.APP_NAME
 
+
 class InfoCenter {
     companion object {
         const val QQ_GROUP: String = "435667089"

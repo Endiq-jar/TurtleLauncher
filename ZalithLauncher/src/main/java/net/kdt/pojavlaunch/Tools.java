@@ -1,81 +1,82 @@
 package net.kdt.pojavlaunch;
 
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.P;
-import static com.movtery.zalithlauncher.setting.AllStaticSettings.notchSize;
+import static android.os.Build.VERSION.SDK_INT
+import static android.os.Build.VERSION_CODES.P
+import static com.movtery.zalithlauncher.setting.AllStaticSettings.notchSize
+import android.app.Activity
+import android.app.ActivityManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.database.Cursor
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.OpenableColumns
+import android.util.DisplayMetrics
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
+import android.widget.Toast
+import androidx.annotation.NonNull
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.fragment.app.FragmentActivity
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.movtery.zalithlauncher.InfoDistributor
+import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.context.ContextExecutor
+import com.movtery.zalithlauncher.utils.LauncherProfiles
+import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome
+import com.movtery.zalithlauncher.feature.log.Logging
+import com.movtery.zalithlauncher.feature.version.Version
+import com.movtery.zalithlauncher.task.Task
+import com.movtery.zalithlauncher.ui.activity.BaseActivity
+import com.movtery.zalithlauncher.ui.dialog.EditTextDialog
+import com.movtery.zalithlauncher.utils.path.PathManager
+import com.movtery.zalithlauncher.utils.ZHTools
+import com.movtery.zalithlauncher.utils.runtime.SelectRuntimeUtils
+import com.movtery.zalithlauncher.utils.stringutils.StringUtils
+import net.kdt.pojavlaunch.fragments.MainMenuFragment
+import net.kdt.pojavlaunch.lifecycle.ContextExecutorTask
+import net.kdt.pojavlaunch.memory.MemoryHoleFinder
+import net.kdt.pojavlaunch.memory.SelfMapsParser
+import net.kdt.pojavlaunch.multirt.MultiRTUtils
+import net.kdt.pojavlaunch.utils.FileUtils
+import net.kdt.pojavlaunch.value.DependentLibrary
+import net.kdt.pojavlaunch.value.MinecraftLibraryArtifact
+import org.apache.commons.codec.binary.Hex
+import org.apache.commons.io.IOUtils
+import org.lwjgl.glfw.CallbackBridge
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.lang.ref.WeakReference
+import java.lang.reflect.Field
+import java.nio.charset.StandardCharsets
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.List
 
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.OpenableColumns;
-import android.util.DisplayMetrics;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
-import androidx.fragment.app.FragmentActivity;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.movtery.zalithlauncher.InfoDistributor;
-import com.movtery.zalithlauncher.R;
-import com.movtery.zalithlauncher.context.ContextExecutor;
-import com.movtery.zalithlauncher.utils.LauncherProfiles;
-import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome;
-import com.movtery.zalithlauncher.feature.log.Logging;
-import com.movtery.zalithlauncher.feature.version.Version;
-import com.movtery.zalithlauncher.task.Task;
-import com.movtery.zalithlauncher.ui.activity.BaseActivity;
-import com.movtery.zalithlauncher.ui.dialog.EditTextDialog;
-import com.movtery.zalithlauncher.utils.path.PathManager;
-import com.movtery.zalithlauncher.utils.ZHTools;
-import com.movtery.zalithlauncher.utils.runtime.SelectRuntimeUtils;
-import com.movtery.zalithlauncher.utils.stringutils.StringUtils;
 
-import net.kdt.pojavlaunch.fragments.MainMenuFragment;
-import net.kdt.pojavlaunch.lifecycle.ContextExecutorTask;
-import net.kdt.pojavlaunch.memory.MemoryHoleFinder;
-import net.kdt.pojavlaunch.memory.SelfMapsParser;
-import net.kdt.pojavlaunch.multirt.MultiRTUtils;
-import net.kdt.pojavlaunch.utils.FileUtils;
-import net.kdt.pojavlaunch.value.DependentLibrary;
-import net.kdt.pojavlaunch.value.MinecraftLibraryArtifact;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
-import org.lwjgl.glfw.CallbackBridge;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
 
 @SuppressWarnings("IOStreamConstructor")
 public final class Tools {

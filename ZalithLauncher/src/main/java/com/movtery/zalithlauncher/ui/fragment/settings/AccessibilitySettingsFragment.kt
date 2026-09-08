@@ -1,6 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +14,7 @@ import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.ListSettingsWrapp
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SeekBarSettingsWrapper
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
 import com.movtery.zalithlauncher.utils.ZHTools
+
 
 /**
  * TurtleLauncher Accessibility Settings (roadmap item 22): larger UI scaling, high-contrast

@@ -35,6 +35,7 @@ import java.util.StringJoiner
 import java.util.TimeZone
 import java.util.WeakHashMap
 
+
 class InfoAdapter(
     private val parentFragment: Fragment?,
     private val listener: CallSearchListener

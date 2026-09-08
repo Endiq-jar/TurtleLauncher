@@ -23,6 +23,7 @@ import net.kdt.pojavlaunch.LauncherActivity
 import org.greenrobot.eventbus.EventBus
 import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
+
 class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fragment_launcher, SettingCategory.LAUNCHER) {
     companion object {
         const val TAG: String = "LauncherSettingsFragment"

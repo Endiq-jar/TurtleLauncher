@@ -15,6 +15,8 @@ import com.movtery.zalithlauncher.feature.download.item.DependenciesInfoItem
 import com.movtery.zalithlauncher.feature.download.item.InfoItem
 import com.movtery.zalithlauncher.feature.log.Logging
 import net.kdt.pojavlaunch.Tools
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
+
 
 class ModDependenciesDialog(
     context: Context,
@@ -61,7 +63,7 @@ class ModDependenciesDialog(
 
             recyclerView.apply {
                 layoutManager = LinearLayoutManager(context)
-                layoutAnimation = LayoutAnimationController(AnimationUtils.loadAnimation(context, R.anim.fade_downwards))
+                layoutAnimation = TurtleTransitions.listLayoutAnimationController(context)
                 adapter = ModDependenciesAdapter(infoItem, data).apply {
                     setOnItemCLickListener { dismiss() }
                 }

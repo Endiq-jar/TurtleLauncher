@@ -8,9 +8,8 @@ import com.movtery.anim.animations.BaseAnimator
 class ZoomInAnimator : BaseAnimator() {
     override fun getAnimators(target: View): Array<Animator> {
         return arrayOf(
-            ObjectAnimator.ofFloat(target, "alpha", 0f, 1f),
-            ObjectAnimator.ofFloat(target, "scaleX", 0.5f, 1f),
-            ObjectAnimator.ofFloat(target, "scaleY", 0.5f, 1f)
+            fadeIn(target),
+            *scale(target, 0.55f, 1f, overshoot(1.05f))
         )
     }
 }

@@ -9,6 +9,7 @@ import com.movtery.zalithlauncher.utils.path.PathManager
 import net.kdt.pojavlaunch.Tools
 import net.kdt.pojavlaunch.prefs.LauncherPreferences
 
+
 class AllSettings {
     companion object {
         // ── Video ──────────────────────────────────────────────────────────────

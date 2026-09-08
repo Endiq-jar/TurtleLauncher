@@ -8,10 +8,9 @@ import com.movtery.anim.animations.BaseAnimator
 class ZoomOutLeftAnimator : BaseAnimator() {
     override fun getAnimators(target: View): Array<Animator> {
         return arrayOf(
-            ObjectAnimator.ofFloat(target, "alpha", 1f, 0f),
-            ObjectAnimator.ofFloat(target, "scaleX", 1f, 0.6f),
-            ObjectAnimator.ofFloat(target, "scaleY", 1f, 0.6f),
-            ObjectAnimator.ofFloat(target, "translationX", 0f, -120f)
+            fadeOut(target),
+            *scale(target, 1f, 0.62f, easeIn),
+            translate(target, "translationX", 0f, -travel(target, 0.5f), easeIn)
         )
     }
 }

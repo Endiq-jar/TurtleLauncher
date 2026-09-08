@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.graphics.Color
 import android.os.Bundle
@@ -137,10 +138,10 @@ class LogViewerFragment : FragmentWithAnim(R.layout.fragment_log_viewer) {
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.FadeOutLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.exit()))
     }
 }

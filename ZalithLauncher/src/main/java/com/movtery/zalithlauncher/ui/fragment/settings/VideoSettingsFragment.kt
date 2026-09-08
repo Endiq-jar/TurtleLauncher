@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -300,7 +301,7 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     companion object {

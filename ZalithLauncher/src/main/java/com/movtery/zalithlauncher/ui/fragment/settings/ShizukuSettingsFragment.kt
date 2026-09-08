@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.content.Context
 import android.content.Intent
@@ -96,11 +97,11 @@ class ShizukuSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_shiz
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.FadeOutLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.exit()))
     }
 
     private fun onActionButtonClicked() {

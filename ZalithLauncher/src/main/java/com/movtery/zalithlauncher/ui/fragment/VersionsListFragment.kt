@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -345,17 +346,17 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, Animations.BounceInUp))
-                .apply(AnimPlayer.Entry(versionTopBar, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
+            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(versionTopBar, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, Animations.FadeOutDown))
-                .apply(AnimPlayer.Entry(versionTopBar, Animations.FadeOutUp))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.FadeOutRight))
+            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(versionTopBar, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.exit()))
         }
     }
 }

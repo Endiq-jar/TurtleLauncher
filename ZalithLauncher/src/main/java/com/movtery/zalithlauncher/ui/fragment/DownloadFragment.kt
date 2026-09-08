@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -78,11 +79,11 @@ class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.classifyLayout, Animations.BounceInRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.classifyLayout, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.classifyLayout, Animations.FadeOutLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.classifyLayout, TurtleTransitions.exit()))
         EventBus.getDefault().post(DownloadPageEvent.PageSwapEvent(binding.classifyTab.currentItemIndex, OUT))
     }
 

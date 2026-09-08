@@ -21,6 +21,7 @@ import com.movtery.zalithlauncher.utils.CleanUpCache.Companion.start
 import com.movtery.zalithlauncher.utils.ZHTools
 import net.kdt.pojavlaunch.LauncherActivity
 import org.greenrobot.eventbus.EventBus
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fragment_launcher, SettingCategory.LAUNCHER) {
     companion object {
@@ -132,6 +133,27 @@ class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fr
             binding.animation
         )
 
+        // TurtleLauncher: the transition pickers. These feed TurtleTransitions, which every
+        // screen transition and every show/hide asks for its animation - so these two lists
+        // are what actually make slide/bounce/fade/zoom reachable app-wide.
+        ListSettingsWrapper(
+            context,
+            AllSettings.animationEnter,
+            binding.animationEnterLayout,
+            binding.animationEnterTitle,
+            binding.animationEnterValue,
+            R.array.animation_enter_names, R.array.animation_enter_values
+        )
+
+        ListSettingsWrapper(
+            context,
+            AllSettings.animationExit,
+            binding.animationExitLayout,
+            binding.animationExitTitle,
+            binding.animationExitValue,
+            R.array.animation_exit_names, R.array.animation_exit_values
+        )
+
         SeekBarSettingsWrapper(
             context,
             AllSettings.animationSpeed,
@@ -201,7 +223,7 @@ class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fr
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     private fun setupNotificationRequestPreference(notificationPermissionRequest: SwitchSettingsWrapper) {

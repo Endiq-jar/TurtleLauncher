@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -132,7 +133,7 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     private fun updateDeviceRamInfo(context: android.content.Context) {

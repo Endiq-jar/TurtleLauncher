@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.content.Context
 import android.net.Uri
@@ -128,7 +129,7 @@ class JavaSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     private fun updateMemoryInfo(context: Context, seekValue: Long) {

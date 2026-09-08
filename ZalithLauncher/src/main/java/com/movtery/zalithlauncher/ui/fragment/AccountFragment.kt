@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.annotation.SuppressLint
 import android.graphics.Color
@@ -699,17 +700,17 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operationLayout, Animations.BounceInLeft))
-                .apply(AnimPlayer.Entry(accountTypeLayout, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(accountsRecycler, Animations.BounceInUp))
+            animPlayer.apply(AnimPlayer.Entry(operationLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(accountTypeLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(accountsRecycler, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operationLayout, Animations.FadeOutRight))
-                .apply(AnimPlayer.Entry(accountTypeLayout, Animations.FadeOutUp))
-                .apply(AnimPlayer.Entry(accountsRecycler, Animations.FadeOutDown))
+            animPlayer.apply(AnimPlayer.Entry(operationLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(accountTypeLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(accountsRecycler, TurtleTransitions.exit()))
         }
     }
 }

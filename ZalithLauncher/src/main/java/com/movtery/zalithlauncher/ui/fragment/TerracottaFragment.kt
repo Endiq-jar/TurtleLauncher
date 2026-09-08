@@ -33,6 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.burningtnt.terracotta.TerracottaAndroidAPI
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 /**
  * Friends/LAN screen: host-a-room / join-by-code UI on top of [Terracotta], plus the
@@ -266,11 +267,11 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
     // BounceInRight/FadeOutLeft pattern used by the other Quick-Actions screens
     // (ShareLogsFragment, LogViewerFragment) that are also full-root ConstraintLayout fragments.
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.FadeOutLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.exit()))
     }
 
     // ============================== State rendering ==============================
@@ -395,6 +396,17 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         binding.loadingGroup.visibility = if (group == Group.LOADING) View.VISIBLE else View.GONE
         binding.connectedGroup.visibility = if (group == Group.CONNECTED) View.VISIBLE else View.GONE
         binding.exceptionGroup.visibility = if (group == Group.EXCEPTION) View.VISIBLE else View.GONE
+
+        // Whatever just became visible arrives with the launcher's configured transition,
+        // same as a screen swap - so a group change feels like part of the app rather than
+        // an instant jump.
+        val incoming = when (group) {
+            Group.WAITING -> binding.waitingGroup
+            Group.LOADING -> binding.loadingGroup
+            Group.CONNECTED -> binding.connectedGroup
+            Group.EXCEPTION -> binding.exceptionGroup
+        }
+        TurtleTransitions.animateView(incoming, appearing = true)
 
         when (group) {
             Group.WAITING -> {

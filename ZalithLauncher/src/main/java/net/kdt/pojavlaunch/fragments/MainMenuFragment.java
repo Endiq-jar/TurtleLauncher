@@ -1,4 +1,5 @@
 package net.kdt.pojavlaunch.fragments;
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions;
 
 import static com.movtery.zalithlauncher.event.single.RefreshVersionsEvent.MODE.END;
 
@@ -421,15 +422,15 @@ public class MainMenuFragment extends FragmentWithAnim {
 
     @Override
     public void slideIn(AnimPlayer animPlayer) {
-        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, Animations.BounceInDown))
-                .apply(new AnimPlayer.Entry(binding.playLayout, Animations.BounceInLeft))
+        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, TurtleTransitions.enter()))
+                .apply(new AnimPlayer.Entry(binding.playLayout, TurtleTransitions.enter()))
                 .apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceEnlarge));
     }
 
     @Override
     public void slideOut(AnimPlayer animPlayer) {
-        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, Animations.FadeOutUp))
-                .apply(new AnimPlayer.Entry(binding.playLayout, Animations.FadeOutRight))
+        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, TurtleTransitions.exit()))
+                .apply(new AnimPlayer.Entry(binding.playLayout, TurtleTransitions.exit()))
                 .apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceShrink));
     }
 }

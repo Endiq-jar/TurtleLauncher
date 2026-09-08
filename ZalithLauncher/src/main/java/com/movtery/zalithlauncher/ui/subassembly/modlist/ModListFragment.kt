@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.subassembly.modlist
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.content.Context
 import android.graphics.Paint
@@ -251,8 +252,8 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(modsLayout, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
+            animPlayer.apply(AnimPlayer.Entry(modsLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
                 .apply(AnimPlayer.Entry(icon, Animations.Wobble))
                 .apply(AnimPlayer.Entry(title, Animations.FadeInLeft))
                 .apply(AnimPlayer.Entry(description, Animations.FadeInLeft))
@@ -260,7 +261,7 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.modsLayout, Animations.FadeOutUp))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.modsLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
     }
 }

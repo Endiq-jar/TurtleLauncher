@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment.download.resource
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -259,15 +260,15 @@ abstract class AbstractResourceDownloadFragment(
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
-                .apply(AnimPlayer.Entry(downloadLayout, Animations.BounceInDown))
+            animPlayer.apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(downloadLayout, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operateLayout, Animations.FadeOutRight))
-                .apply(AnimPlayer.Entry(downloadLayout, Animations.FadeOutUp))
+            animPlayer.apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(downloadLayout, TurtleTransitions.exit()))
         }
     }
 

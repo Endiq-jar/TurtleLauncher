@@ -61,6 +61,7 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 * Download Manager
 * Live launch & crash logs
 * Friends / LAN play (Terracotta over EasyTier) — host or join straight from the home screen
+* Chooseable screen transitions — slide, bounce, fade, or zoom, applied app-wide
 * Backup, import & export
 
 ### 🔓 Shizuku Support (optional)

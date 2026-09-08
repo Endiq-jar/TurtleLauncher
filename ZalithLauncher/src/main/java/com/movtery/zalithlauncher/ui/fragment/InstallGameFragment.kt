@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -374,12 +375,12 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.nameLayout, Animations.BounceInDown))
-            .apply(AnimPlayer.Entry(binding.addonsLayout, Animations.BounceInUp))
+        animPlayer.apply(AnimPlayer.Entry(binding.nameLayout, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(binding.addonsLayout, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.nameLayout, Animations.FadeOutUp))
-            .apply(AnimPlayer.Entry(binding.addonsLayout, Animations.FadeOutDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.nameLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.addonsLayout, TurtleTransitions.exit()))
     }
 }

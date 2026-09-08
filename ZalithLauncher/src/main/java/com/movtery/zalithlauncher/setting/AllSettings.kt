@@ -189,8 +189,22 @@ class AllSettings {
         @JvmStatic val downloadSource           = StringSettingUnit("downloadSource", "default")
         @JvmStatic val maxDownloadThreads       = IntSettingUnit("maxDownloadThreads", 128)
         @JvmStatic val launcherTheme            = StringSettingUnit("launcherTheme", "dark")
-        @JvmStatic val animation                = BooleanSettingUnit("animation", false)
+        /** Master switch for every screen/panel transition.
+         *
+         *  TurtleLauncher: was false. The launcher's whole point is the modern UI, and with
+         *  this off by default none of the transition work was ever visible - the pickers
+         *  below did nothing until you found and enabled this first. Now on; there is a
+         *  speed slider right under it and transitions are skipped entirely while a game
+         *  session is running (see TurtleTransitions.isEnabled), so low-end devices can
+         *  still turn it straight back off with one tap. */
+        @JvmStatic val animation                = BooleanSettingUnit("animation", true)
         @JvmStatic val animationSpeed           = IntSettingUnit("animationSpeed", 300)
+        /** Screen enter animation - see com.movtery.zalithlauncher.utils.anim.EnterTransition.
+         *  Applied to every screen transition and every show/hide that goes through
+         *  TurtleTransitions, so it's genuinely app-wide rather than per-fragment. */
+        @JvmStatic val animationEnter           = StringSettingUnit("animationEnter", "slide_up")
+        /** Screen exit animation - see com.movtery.zalithlauncher.utils.anim.ExitTransition. */
+        @JvmStatic val animationExit            = StringSettingUnit("animationExit", "slide_up")
         @JvmStatic val pageOpacity              = IntSettingUnit("pageOpacity", 100)
         @JvmStatic val enableLogOutput          = BooleanSettingUnit("enableLogOutput", false)
         @JvmStatic val quitLauncher             = BooleanSettingUnit("quitLauncher", true)

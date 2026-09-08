@@ -481,6 +481,21 @@
     <string name="main_install_jar_file">Execute .jar file</string>
     <string name="main_share_logs">Share log files</string>
     <string name="main_terracotta">Friends / LAN play</string>
+    <!-- Screen transition animation pickers -->
+    <string name="anim_slide_up">Slide up</string>
+    <string name="anim_slide_down">Slide down</string>
+    <string name="anim_slide_left">Slide left</string>
+    <string name="anim_slide_right">Slide right</string>
+    <string name="anim_bounce">Bounce</string>
+    <string name="anim_fade_in">Fade in</string>
+    <string name="anim_fade_out">Fade out</string>
+    <string name="anim_zoom_in">Zoom in</string>
+    <string name="anim_zoom_out">Zoom out</string>
+    <string name="anim_zoom">Zoom (centre)</string>
+    <string name="setting_animation_enter_title">Screen enter animation</string>
+    <string name="setting_animation_enter_desc">How a screen or panel arrives</string>
+    <string name="setting_animation_exit_title">Screen exit animation</string>
+    <string name="setting_animation_exit_desc">How a screen or panel leaves</string>
     <string name="main_modpack_import">Import Modpack</string>
     <string name="main_launch">Launch Game</string>
     <string name="main_nav_home">Home</string>

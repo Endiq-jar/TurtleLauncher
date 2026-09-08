@@ -58,6 +58,52 @@
         <item>dark</item>
     </string-array>
 
+    <!-- TurtleLauncher: screen transition pickers. Names must stay in the same order as
+         values; the values are the EnterTransition/ExitTransition keys. -->
+    <string-array name="animation_enter_names">
+        <item>@string/anim_slide_up</item>
+        <item>@string/anim_slide_down</item>
+        <item>@string/anim_slide_left</item>
+        <item>@string/anim_slide_right</item>
+        <item>@string/anim_bounce</item>
+        <item>@string/anim_fade_in</item>
+        <item>@string/anim_zoom_in</item>
+        <item>@string/anim_zoom</item>
+    </string-array>
+
+    <string-array name="animation_enter_values">
+        <item>slide_up</item>
+        <item>slide_down</item>
+        <item>slide_left</item>
+        <item>slide_right</item>
+        <item>bounce</item>
+        <item>fade_in</item>
+        <item>zoom_in</item>
+        <item>zoom</item>
+    </string-array>
+
+    <string-array name="animation_exit_names">
+        <item>@string/anim_slide_up</item>
+        <item>@string/anim_slide_down</item>
+        <item>@string/anim_slide_left</item>
+        <item>@string/anim_slide_right</item>
+        <item>@string/anim_bounce</item>
+        <item>@string/anim_fade_out</item>
+        <item>@string/anim_zoom_out</item>
+        <item>@string/anim_zoom</item>
+    </string-array>
+
+    <string-array name="animation_exit_values">
+        <item>slide_up</item>
+        <item>slide_down</item>
+        <item>slide_left</item>
+        <item>slide_right</item>
+        <item>bounce</item>
+        <item>fade_out</item>
+        <item>zoom_out</item>
+        <item>zoom</item>
+    </string-array>
+
     <string-array name="game_menu_location_names">
         <item>@string/setting_game_menu_location_center</item>
         <item>@string/setting_game_menu_location_left_or_top</item>

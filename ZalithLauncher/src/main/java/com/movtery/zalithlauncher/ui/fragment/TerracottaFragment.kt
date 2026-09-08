@@ -28,6 +28,8 @@ import com.movtery.zalithlauncher.ui.subassembly.aichat.ChatMessageAdapter
 import com.movtery.zalithlauncher.utils.ZHTools
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.burningtnt.terracotta.TerracottaAndroidAPI
@@ -41,8 +43,18 @@ import net.burningtnt.terracotta.TerracottaAndroidAPI
 class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
     companion object {
         const val TAG = "TerracottaFragment"
-        /** EasyTier's own official public shared node - see https://easytier.rs. */
-        private const val EASYTIER_PUBLIC_NODE = "tcp://public.easytier.top:11010"
+        /** EasyTier's own official public shared node - see https://easytier.rs.
+         *
+         *  TurtleLauncher: was tcp://public.easytier.top:11010, which is what Terracotta's
+         *  native library hardcodes. That hostname CNAMEs to public.easytier.cn, which
+         *  currently has no A record - so the built-in default simply doesn't resolve, and
+         *  "Use EasyTier public node" used to fill in an address that was guaranteed dead.
+         *  Switched to the .cn name EasyTier's own README documents. */
+        private const val EASYTIER_PUBLIC_NODE = "tcp://public.easytier.cn:11010"
+
+        /** How many times a join is attempted before we give up and show the error. See
+         *  handleException() for the (native, unmodifiable) reason retries are needed. */
+        private const val MAX_JOIN_ATTEMPTS = 3
     }
 
     private enum class Group { WAITING, LOADING, CONNECTED, EXCEPTION }
@@ -60,6 +72,16 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
      *  stays on its "starting" state: rendering before the backend exists would show WAITING
      *  (renderState(null)) and hand the user live Host/Join buttons that can only throw. */
     private var terracottaReady = false
+
+    // ── Join retry ──────────────────────────────────────────────────────────────────────
+    // See handleException() for why this exists: the native guest flow is on a hardcoded
+    // 15-second deadline that P2P setup regularly overruns.
+
+    /** Non-null only while a join attempt chain is live - cleared on success, on cancel, and
+     *  when the view goes away, so navigating off the screen never triggers a background retry. */
+    private var joiningCode: String? = null
+    private var joinAttempt = 0
+    private var joinJob: Job? = null
 
     private val terracottaStateListener = Terracotta.StateListener { state ->
         // Already invoked on the UI thread - see Terracotta.java's poll daemon.
@@ -157,7 +179,10 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
             if (actionId == EditorInfo.IME_ACTION_GO) { onJoinSubmit(); true } else false
         }
 
-        binding.loadingCancel.setOnClickListener { Terracotta.setWaiting(requireContext(), true) }
+        binding.loadingCancel.setOnClickListener {
+            cancelJoinRetry()
+            Terracotta.setWaiting(requireContext(), true)
+        }
         binding.connectedLeave.setOnClickListener { Terracotta.setWaiting(requireContext(), true) }
         binding.connectedInfoCopy.setOnClickListener { copyConnectedValue() }
         binding.exceptionBack.setOnClickListener { Terracotta.setWaiting(requireContext(), true) }
@@ -166,8 +191,23 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         binding.chatSendButton.setOnClickListener { sendChat() }
 
         setupCustomNodeControls()
+        refreshRelayStatus()
 
         renderState(Terracotta.getState())
+    }
+
+    /** Probes the current relay nodes and shows the result. Also warms TerracottaNodeList's
+     *  cache, so the first Host/Join tap doesn't eat the fetch + probe latency. */
+    private fun refreshRelayStatus() {
+        scope.launch {
+            val status = runCatching { TerracottaNodeList.status() }.getOrNull() ?: return@launch
+            if (!isAdded || view == null) return@launch
+            binding.relayNodeStatus.text = if (status.usingCustom) {
+                getString(R.string.terracotta_relay_status_custom, status.primary ?: "—")
+            } else {
+                getString(R.string.terracotta_relay_status, status.reachable, status.total, status.primary ?: "—")
+            }
+        }
     }
 
     /** Custom EasyTier server node override (ZalithLauncher2 PR #1496 port) - see
@@ -184,10 +224,12 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
             binding.customNodeInput.visibility = if (checked) View.VISIBLE else View.GONE
             binding.customNodeEasytierPreset.visibility = if (checked) View.VISIBLE else View.GONE
             TerracottaNodeList.invalidateCache()
+            refreshRelayStatus()
         }
         binding.customNodeInput.doAfterTextChanged { text ->
             com.movtery.zalithlauncher.setting.AllSettings.terracottaNodes.put(text?.toString().orEmpty()).save()
             TerracottaNodeList.invalidateCache()
+            refreshRelayStatus()
         }
         // One-tap fill for EasyTier's official public shared node - see the layout comment.
         binding.customNodeEasytierPreset.setOnClickListener {
@@ -206,6 +248,18 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         super.onStop()
         Terracotta.removeStateListener(terracottaStateListener)
         TerracottaChat.removeListener(chatListener)
+    }
+
+    private fun cancelJoinRetry() {
+        joinJob?.cancel()
+        joinJob = null
+        joiningCode = null
+    }
+
+    override fun onDestroyView() {
+        // Never leave a retry chain running against a view that's gone.
+        cancelJoinRetry()
+        super.onDestroyView()
     }
 
     // FragmentWithAnim (SlideAnimation) leaves these two to every subclass - matches the
@@ -240,9 +294,97 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
                 players = state.profiles,
                 isHost = false
             )
-            is TerracottaState.ExceptionState -> showException(state.type)
+            is TerracottaState.ExceptionState -> handleException(state.type)
             else -> showWaiting()
         }
+    }
+
+    /**
+     * Guest-side failures get retried automatically instead of going straight to the error
+     * screen.
+     *
+     * Why: Terracotta's native guest flow (`start_guest` in the upstream Rust) gives up on a
+     * fixed schedule - it polls the EasyTier peer list **5 times, 3 seconds apart**, and if it
+     * hasn't seen a peer whose hostname starts with `scaffolding-mc-server-` by then it logs
+     * "Cannot find scaffolding server" and raises PingHostFail. Fifteen seconds is plenty once
+     * the tunnel is up and nowhere near enough when EasyTier still has to bootstrap a relay,
+     * exchange routes and punch through NAT; the connection very often lands at 20-40 seconds.
+     *
+     * That deadline is inside a prebuilt .so we can't rebuild, so the only lever from Kotlin is
+     * to start the attempt over - and a second attempt usually succeeds, because EasyTier
+     * reuses the peer/route information it discovered the first time instead of starting cold.
+     */
+    private fun handleException(type: TerracottaState.ExceptionState.Type) {
+        val code = joiningCode
+        if (code == null || joinAttempt >= MAX_JOIN_ATTEMPTS || !type.isRetryable()) {
+            joiningCode = null
+            showException(type)
+            return
+        }
+
+        joinAttempt++
+        val attempt = joinAttempt
+        val context = context
+        if (context == null) {
+            joiningCode = null
+            showException(type)
+            return
+        }
+
+        joinJob?.cancel()
+        joinJob = scope.launch {
+            showLoading(getString(R.string.terracotta_join_retrying, attempt, MAX_JOIN_ATTEMPTS))
+
+            val started = withContext(Dispatchers.IO) {
+                runCatching {
+                    // setGuesting() throws unless the state is already Waiting, so the retry has
+                    // to unwind the failed attempt first - same thing the Leave/Back buttons do.
+                    Terracotta.setWaiting(context, true)
+                    // ...and the state only reaches Waiting once the poll daemon observes it
+                    // (500ms tick), so wait for it rather than racing it.
+                    waitForWaiting()
+
+                    // Lead with a different node each time - the list is otherwise identical on
+                    // both devices (it has to be, or they'd never find each other), so rotating
+                    // the head is the one thing we can vary between attempts.
+                    val nodes = TerracottaNodeList.fetch()
+                    Terracotta.setGuesting(code, AccountsManager.currentAccount?.username, rotate(nodes, attempt - 1))
+                }.onFailure { e ->
+                    Logging.w(TAG, "Join retry $attempt failed", e)
+                }.getOrDefault(false)
+            }
+
+            // From here the normal state listener drives the UI - including another
+            // handleException() call if this attempt also fails.
+            if (!started) {
+                joiningCode = null
+                showException(type)
+            }
+        }
+    }
+
+    private fun TerracottaState.ExceptionState.Type.isRetryable(): Boolean = when (this) {
+        // Guest-side and transient: worth another go.
+        TerracottaState.ExceptionState.Type.PING_HOST_FAIL,
+        TerracottaState.ExceptionState.Type.PING_HOST_RST,
+        TerracottaState.ExceptionState.Type.GUEST_ET_CRASH,
+        TerracottaState.ExceptionState.Type.SCAFFOLDING_INVALID_RESPONSE -> true
+        // Host-side: retrying a join can't fix the host's own connection.
+        TerracottaState.ExceptionState.Type.HOST_ET_CRASH,
+        TerracottaState.ExceptionState.Type.PING_SERVER_RST -> false
+    }
+
+    private suspend fun waitForWaiting() {
+        val deadline = System.currentTimeMillis() + 10_000
+        while (Terracotta.getState() !is TerracottaState.Waiting && System.currentTimeMillis() < deadline) {
+            delay(250)
+        }
+    }
+
+    private fun rotate(nodes: List<String>, by: Int): List<String> {
+        if (nodes.isEmpty()) return nodes
+        val shift = by % nodes.size
+        return if (shift == 0) nodes else nodes.drop(shift) + nodes.take(shift)
     }
 
     private fun switchGroup(group: Group) {
@@ -267,7 +409,13 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         }
     }
 
-    private fun showWaiting() = switchGroup(Group.WAITING)
+    private fun showWaiting() {
+        switchGroup(Group.WAITING)
+        // A join retry passes back through Waiting on its way to GuestConnecting - don't hand
+        // the controls back for that split second and let the user tap Join on top of a join
+        // that's already being restarted underneath them.
+        if (joiningCode != null) setButtonsEnabled(false)
+    }
 
     private fun showLoading(text: String) {
         switchGroup(Group.LOADING)
@@ -277,6 +425,7 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
     private fun showConnected(title: String, value: String, players: List<TerracottaState.TerracottaProfile>?, isHost: Boolean) {
         switchGroup(Group.CONNECTED)
         setButtonsEnabled(true)
+        joiningCode = null // joined (or hosted) - no retry chain is pending any more
         connectedValue = value
         connectedIsHost = isHost
 
@@ -375,25 +524,24 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
             return
         }
 
+        joiningCode = code
+        joinAttempt = 1
+
         setButtonsEnabled(false)
         showLoading(getString(R.string.terracotta_status_default))
         val player = AccountsManager.currentAccount?.username
 
-        scope.launch {
-            val result = withContext(Dispatchers.IO) {
+        joinJob?.cancel()
+        joinJob = scope.launch {
+            val accepted = withContext(Dispatchers.IO) {
                 runCatching {
                     val nodes = TerracottaNodeList.fetch()
                     Terracotta.setGuesting(code, player, nodes)
-                }
+                }.onFailure { e -> Logging.w(TAG, "Failed to join room", e) }.getOrDefault(false)
             }
-            result.onSuccess { accepted ->
-                if (!accepted) {
-                    Toast.makeText(requireContext(), R.string.terracotta_join_code_invalid, Toast.LENGTH_SHORT).show()
-                    setButtonsEnabled(true)
-                    renderState(Terracotta.getState())
-                }
-            }.onFailure { e ->
-                Logging.w(TAG, "Failed to join room", e)
+            if (!accepted) {
+                joiningCode = null
+                Toast.makeText(requireContext(), R.string.terracotta_join_code_invalid, Toast.LENGTH_SHORT).show()
                 setButtonsEnabled(true)
                 renderState(Terracotta.getState())
             }

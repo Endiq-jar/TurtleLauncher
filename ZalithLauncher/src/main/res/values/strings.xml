@@ -498,10 +498,14 @@
     <string name="terracotta_join_button">Join with Code</string>
     <string name="terracotta_join_code_hint">Paste invite code…</string>
     <string name="terracotta_join_code_invalid">Not a recognized invite code format.</string>
-    <string name="terracotta_join_known_issue">Joining a session can fail to connect on some networks (known upstream Terracotta/EasyTier issue) - hosting is unaffected. If joining keeps failing, try enabling a custom EasyTier server node below.</string>
+    <string name="terracotta_join_known_issue">Joining needs a working EasyTier relay node that both players can reach. TurtleLauncher now picks one automatically and retries a few times, but if joining still fails, check the relay status below or set your own node.</string>
     <string name="terracotta_custom_node_list">Custom EasyTier server node</string>
     <string name="terracotta_use_easytier_node">Use EasyTier public node</string>
     <string name="terracotta_custom_node_list_hint">Leave empty to keep using the default node</string>
+    <string name="terracotta_relay_status_checking">Checking relay nodes…</string>
+    <string name="terracotta_relay_status">Relay nodes: %1$d of %2$d reachable · using %3$s</string>
+    <string name="terracotta_relay_status_custom">Relay node: %1$s (custom)</string>
+    <string name="terracotta_join_retrying">Joining… (attempt %1$d of %2$d)</string>
     <string name="terracotta_join_code_legacy">Legacy Terracotta code - should still work.</string>
     <string name="terracotta_join_code_pcl2ce">PCL CE code - should still work.</string>
     <string name="terracotta_join_code_scaffolding">Valid invite code.</string>

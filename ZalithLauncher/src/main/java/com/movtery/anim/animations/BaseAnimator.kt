@@ -35,22 +35,34 @@ abstract class BaseAnimator {
 
     // ============================== Easing ==============================
 
+    // TurtleLauncher: these used to be instance `val`s, so every animator object built its own
+    // PathInterpolator set - and the Animations enum instantiates all 39 of them, meaning ~150
+    // PathInterpolator allocations before the first screen even transitioned. Interpolators are
+    // stateless, so they're shared here instead. Overshoot/anticipate are keyed by tension
+    // because subclasses ask for several different ones.
+    //
+    // They're still exposed as protected members rather than being referenced directly, so the
+    // 39 subclasses keep working unchanged - companion-object members aren't inherited, so
+    // moving these to a companion would have broken every one of them.
+
     /** Material "decelerate" - fast start, gentle landing. Right for anything arriving. */
-    protected val easeOut: TimeInterpolator = PathInterpolator(0.0f, 0.0f, 0.2f, 1.0f)
+    protected val easeOut: TimeInterpolator get() = AnimCurves.easeOut
 
     /** Material "accelerate" - slow start, leaves quickly. Right for anything departing. */
-    protected val easeIn: TimeInterpolator = PathInterpolator(0.4f, 0.0f, 1.0f, 1.0f)
+    protected val easeIn: TimeInterpolator get() = AnimCurves.easeIn
 
     /** Material "standard" - for moves that neither arrive nor leave (pulse, wobble). */
-    protected val easeStandard: TimeInterpolator = PathInterpolator(0.4f, 0.0f, 0.2f, 1.0f)
+    protected val easeStandard: TimeInterpolator get() = AnimCurves.easeStandard
 
-    protected val linear: TimeInterpolator = LinearInterpolator()
+    protected val linear: TimeInterpolator get() = AnimCurves.linear
 
     /** Overshoots the target and springs back - a real bounce, unlike the old keyframes. */
-    protected fun overshoot(tension: Float = 1.4f): TimeInterpolator = OvershootInterpolator(tension)
+    protected fun overshoot(tension: Float = 1.4f): TimeInterpolator =
+        AnimCurves.overshoot(tension)
 
     /** Pulls back briefly before moving - gives a shrink a little "puff" first. */
-    protected fun anticipate(tension: Float = 2.0f): TimeInterpolator = AnticipateInterpolator(tension)
+    protected fun anticipate(tension: Float = 2.0f): TimeInterpolator =
+        AnimCurves.anticipate(tension)
 
     // ============================= Distances =============================
 
@@ -140,5 +152,33 @@ abstract class BaseAnimator {
                 Keyframe.ofFloat(1.00f, 0f),
             )
         ).apply { interpolator = linear }
+    }
+}
+
+/**
+ * The interpolators shared by every animator.
+ *
+ * `PathInterpolator` isn't cheap to build - it rasterises a bezier into a lookup table - and it
+ * holds no per-animation state, so there's no reason for 39 animator classes to each own a copy.
+ * Tension-parameterised curves are built once per tension and handed back on later calls.
+ *
+ * Synchronised on write because getAnimators() can be called from any thread; the map is tiny
+ * and almost always a read after the first pass, so this is not a contention point.
+ */
+internal object AnimCurves {
+    val easeOut: TimeInterpolator = PathInterpolator(0.0f, 0.0f, 0.2f, 1.0f)
+    val easeIn: TimeInterpolator = PathInterpolator(0.4f, 0.0f, 1.0f, 1.0f)
+    val easeStandard: TimeInterpolator = PathInterpolator(0.4f, 0.0f, 0.2f, 1.0f)
+    val linear: TimeInterpolator = LinearInterpolator()
+
+    private val overshoots = HashMap<Float, TimeInterpolator>()
+    private val anticipates = HashMap<Float, TimeInterpolator>()
+
+    fun overshoot(tension: Float): TimeInterpolator = synchronized(overshoots) {
+        overshoots.getOrPut(tension) { OvershootInterpolator(tension) }
+    }
+
+    fun anticipate(tension: Float): TimeInterpolator = synchronized(anticipates) {
+        anticipates.getOrPut(tension) { AnticipateInterpolator(tension) }
     }
 }

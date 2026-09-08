@@ -7,10 +7,14 @@ import com.movtery.anim.animations.Animations
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.TaskExecutors
 import android.content.Context
+import android.view.accessibility.AccessibilityManager
+import android.provider.Settings
+import android.os.Build
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
 import androidx.recyclerview.widget.RecyclerView
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.context.ContextExecutor
 
 
 /**
@@ -75,8 +79,82 @@ object TurtleTransitions {
      * "disable animations" toggle.
      */
     @JvmStatic
+    /**
+     * Whether to animate at all.
+     *
+     * Three independent reasons to say no, and all three are checked centrally so no call site
+     * has to remember to:
+     *
+     * 1. The user turned animations off (or turned the speed down to 0) in Settings.
+     * 2. A game session is running - a transition ticking behind Minecraft is pure waste.
+     * 3. **The system says no.** If the device has animation duration scale set to 0 (a very
+     *    common thing to do on a low-end phone, and what "Remove animations" in developer
+     *    options does) then the platform has already told us not to animate, and honouring it
+     *    is the single cheapest optimisation available here. Reduced-motion, an accessibility
+     *    setting, is respected the same way - and that one is a correctness issue too, not
+     *    just performance: forcing motion on someone who asked for none is genuinely
+     *    unpleasant for them.
+     *
+     * The system checks are the expensive ones (a Settings.Global read and a binder-backed
+     * system service), so their results are cached - they don't change at runtime except by
+     * the user leaving for Settings and coming back, and [onResume] clears the cache for
+     * exactly that.
+     */
+    @JvmStatic
     fun isEnabled(): Boolean =
-        AllSettings.animation.getValue() && !TaskExecutors.isGameSessionActive
+        AllSettings.animation.getValue() &&
+        AllSettings.animationSpeed.getValue() > 0 &&
+        !TaskExecutors.isGameSessionActive &&
+        systemAllowsAnimations()
+
+    private const val ANIMATION_SCALE_OFF = 0f
+
+    /** Most rows animated in one pass - see [animateList]. */
+    private const val MAX_ANIMATED_ROWS = 8
+
+    @Volatile
+    private var systemAllowsAnimations: Boolean? = null
+
+    /** Cleared when the launcher resumes, so if the user has just been off changing the
+     *  system animation scale or reduced-motion setting, we pick it up. */
+    @JvmStatic
+    fun onResume() {
+        systemAllowsAnimations = null
+    }
+
+    private fun systemAllowsAnimations(): Boolean {
+        systemAllowsAnimations?.let { return it }
+        val allowed = querySystemAllowsAnimations()
+        systemAllowsAnimations = allowed
+        return allowed
+    }
+
+    private fun querySystemAllowsAnimations(): Boolean {
+        val context = try {
+            ContextExecutor.getApplication()
+        } catch (e: RuntimeException) {
+            // No Application yet (we're being called very early, or from a process that never
+            // sets one up). Assume animations are fine rather than disabling them outright -
+            // this path is a missing optimisation, not a correctness problem.
+            return true
+        }
+
+        // Developer options -> "Remove animations", or any OEM battery/performance mode that
+        // zeroes the scale. Available since API 16.
+        val scale = Settings.Global.getFloat(
+            context.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        )
+        if (scale == ANIMATION_SCALE_OFF) return false
+
+        // Accessibility -> "Remove animations". API 29+; below that there's nothing to ask.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+            if (am?.isReduceMotionEnabled == true) return false
+        }
+        return true
+    }
 
     // ============================== Screens ==============================
 
@@ -182,7 +260,23 @@ object TurtleTransitions {
     @JvmOverloads
     fun animateList(recyclerView: RecyclerView, stepMs: Long = 28L) {
         if (!isEnabled()) return
-        val children = (0 until recyclerView.childCount).mapNotNull { recyclerView.getChildAt(it) }
+
+        // Never animate during a scroll. Entry animations and a fling compete for the same
+        // main-thread frame budget, and the fling is what the user is actually watching - so
+        // during a fling the list gets dropped frames and the animation gets ignored anyway.
+        // Anything already on screen when the list settles is still animated on the next pass.
+        if (recyclerView.scrollState != RecyclerView.SCROLL_STATE_IDLE) return
+
+        // Cap how many rows animate at once. On a tablet a full-height list can hold 30+
+        // attached children; animating all of them means 30 concurrent AnimatorSets and 30
+        // hardware layers, which is a lot of GPU memory and a very visible hitch on exactly
+        // the big-screen devices that can least afford it. Rows past the cap simply appear -
+        // by that point down the screen the user isn't looking at them anyway.
+        val children = (0 until recyclerView.childCount)
+            .mapNotNull { recyclerView.getChildAt(it) }
+            .filter { it.isAttachedToWindow }
+            .take(MAX_ANIMATED_ROWS)
+
         stagger(children, stepMs)
     }
 

@@ -529,6 +529,11 @@ public class LauncherActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // TurtleLauncher: the system animation-scale / reduced-motion check is cached, so it
+        // has to be invalidated here - the user may have just come back from Settings where
+        // they changed it, and we'd otherwise keep using the stale answer for the whole
+        // process lifetime.
+        com.movtery.zalithlauncher.utils.anim.TurtleTransitions.onResume();
         com.movtery.zalithlauncher.task.TaskExecutors.setGameSessionActive(false);
         com.movtery.zalithlauncher.feature.turtle.BackgroundServiceManager.onGameSessionEnd();
         setPageOpacity(AllSettings.getPageOpacity().getValue());

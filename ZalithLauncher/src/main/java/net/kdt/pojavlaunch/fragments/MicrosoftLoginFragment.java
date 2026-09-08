@@ -42,6 +42,10 @@ public class MicrosoftLoginFragment extends BaseFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        // TurtleLauncher: this screen had no entry animation at all (it's a plain
+        // BaseFragment, not a FragmentWithAnim), so it appeared instantly while every
+        // other page in the launcher animated.
+        com.movtery.zalithlauncher.utils.anim.TurtleTransitions.animateView(view, true);
         binding.returnButton.setOnClickListener(v -> forceBack());
 
         setWebViewSettings();

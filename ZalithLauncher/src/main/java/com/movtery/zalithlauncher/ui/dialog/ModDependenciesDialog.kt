@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.AnimationUtils
-import android.view.animation.LayoutAnimationController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.DialogModDependenciesBinding

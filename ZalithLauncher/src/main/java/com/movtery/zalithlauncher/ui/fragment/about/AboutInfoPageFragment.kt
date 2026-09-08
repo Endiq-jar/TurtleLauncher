@@ -18,6 +18,7 @@ import com.movtery.zalithlauncher.ui.subassembly.about.AboutItemBean
 import com.movtery.zalithlauncher.ui.subassembly.about.AboutItemBean.AboutItemButtonBean
 import com.movtery.zalithlauncher.ui.subassembly.about.AboutRecyclerAdapter
 import com.movtery.zalithlauncher.utils.ZHTools
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import com.movtery.zalithlauncher.utils.path.UrlManager
 
 class AboutInfoPageFragment() : Fragment(R.layout.fragment_about_info_page) {
@@ -55,6 +56,9 @@ class AboutInfoPageFragment() : Fragment(R.layout.fragment_about_info_page) {
             aboutRecycler.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = aboutAdapter
+                // TurtleLauncher: this page is a plain Fragment with no entry animation at
+                // all, so its list appeared fully-formed. post{} so the children exist.
+                post { TurtleTransitions.animateList(this) }
             }
 
             if (ZHTools.isChinese(requireActivity())) {

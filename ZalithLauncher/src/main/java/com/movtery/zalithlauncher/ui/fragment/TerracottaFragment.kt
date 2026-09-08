@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.movtery.anim.AnimPlayer
 import com.movtery.anim.animations.Animations
@@ -55,6 +56,11 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
     private var connectedValue: String = ""
     private var connectedIsHost: Boolean = false
 
+    /** [Terracotta] finished starting (or definitively failed). Until this flips, the screen
+     *  stays on its "starting" state: rendering before the backend exists would show WAITING
+     *  (renderState(null)) and hand the user live Host/Join buttons that can only throw. */
+    private var terracottaReady = false
+
     private val terracottaStateListener = Terracotta.StateListener { state ->
         // Already invoked on the UI thread - see Terracotta.java's poll daemon.
         if (isAdded && view != null) renderState(state)
@@ -83,29 +89,66 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         // must always be able to get back out without the app appearing to hang or crash.
         binding.backButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
 
-        // Lazy init - only spin up Terracotta (and prompt for VPN permission) once someone
-        // actually opens this screen, not at app startup. Catches Throwable, not just
-        // Exception: a native-library load failure surfaces as UnsatisfiedLinkError/
-        // ExceptionInInitializerError, which are Errors, not Exceptions - letting either
-        // escape uncaught here previously took the whole app down instead of just this
-        // screen, since nothing after the throwing line (including every other click
-        // listener below) ever got the chance to run.
-        val terracottaAvailable = try {
-            Terracotta.initialize(requireActivity())
-            TerracottaChat.attach()
-            true
-        } catch (t: Throwable) {
-            Logging.e(TAG, "Terracotta failed to initialize - Friends/LAN unavailable on this device", t)
-            false
-        }
+        // TurtleLauncher HANG FIX: Terracotta.initialize() used to be called straight from
+        // onViewCreated, i.e. on the UI thread. It is not a cheap call - it does mkdirs,
+        // System.loadLibrary("terracotta"), opens a log RandomAccessFile and then runs the
+        // native start0() that boots the whole EasyTier backend. On a slow device that
+        // blocks long enough for the system to declare an ANR and kill the launcher, which
+        // is precisely the reported "I press the button, the launcher freezes, then it
+        // closes". It now runs on the background pool and the screen shows a loading state
+        // until it comes back; the rest of the screen is wired up in onTerracottaReady().
+        //
+        // Still catches Throwable, not just Exception: a native-library load failure
+        // surfaces as UnsatisfiedLinkError/ExceptionInInitializerError, which are Errors,
+        // not Exceptions - letting either escape uncaught took the whole app down instead of
+        // just this screen, since nothing after the throwing line (including every other
+        // click listener below) ever got the chance to run.
+        switchGroup(Group.LOADING)
+        binding.loadingText.setText(R.string.terracotta_status_starting)
+        setButtonsEnabled(false)
 
-        if (!terracottaAvailable) {
-            switchGroup(Group.EXCEPTION)
-            binding.exceptionText.setText(R.string.terracotta_unavailable)
-            binding.exceptionExportLogs.visibility = View.GONE
-            return
-        }
+        val activity = requireActivity()
+        TaskExecutors.getDefault().execute {
+            val failure = try {
+                Terracotta.initialize(activity)
+                null
+            } catch (t: Throwable) {
+                t
+            }
 
+            TaskExecutors.runInUIThread {
+                if (!isAdded || view == null) return@runInUIThread
+                if (failure != null) {
+                    Logging.e(TAG, "Terracotta failed to initialize - Friends/LAN unavailable on this device", failure)
+                    switchGroup(Group.EXCEPTION)
+                    binding.exceptionText.setText(R.string.terracotta_unavailable)
+                    binding.exceptionExportLogs.visibility = View.GONE
+                    return@runInUIThread
+                }
+                runCatching { TerracottaChat.attach() }
+                    .onFailure { t -> Logging.w(TAG, "Terracotta chat failed to attach", t) }
+                terracottaReady = true
+                onTerracottaReady()
+                // onStart() may already have run and skipped this while init was in flight.
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) attachListeners()
+            }
+        }
+    }
+
+    /** Idempotent - remove-then-add so it's safe to call from both onStart() and the async
+     *  init callback, whichever lands first. No-op until [terracottaReady]. */
+    private fun attachListeners() {
+        if (!terracottaReady) return
+        Terracotta.removeStateListener(terracottaStateListener)
+        Terracotta.addStateListener(terracottaStateListener)
+        TerracottaChat.removeListener(chatListener)
+        TerracottaChat.addListener(chatListener)
+        // Pick up anything that changed while this screen wasn't visible.
+        renderState(Terracotta.getState())
+    }
+
+    /** Wires up everything that can only run once the native backend is actually up. */
+    private fun onTerracottaReady() {
         binding.hostButton.setOnClickListener { onHostClicked() }
         binding.joinButton.setOnClickListener { toggleJoinCodeRow() }
         binding.joinCodeSubmit.setOnClickListener { onJoinSubmit() }
@@ -154,11 +197,9 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
 
     override fun onStart() {
         super.onStart()
-        if (!this::chatAdapter.isInitialized) return // onViewCreated bailed out early - see above
-        Terracotta.addStateListener(terracottaStateListener)
-        TerracottaChat.addListener(chatListener)
-        // Pick up anything that changed while this screen wasn't visible.
-        renderState(Terracotta.getState())
+        // Native backend still starting on the background thread - leave the "starting…"
+        // state alone; the async init callback wires the listeners up when it lands.
+        attachListeners()
     }
 
     override fun onStop() {

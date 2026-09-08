@@ -103,6 +103,12 @@ public class MainMenuFragment extends FragmentWithAnim {
             runInstallerWithConfirmation(true);
             return true;
         });
+        // TurtleLauncher: Friends/LAN (Terracotta, which tunnels over EasyTier) was fully
+        // implemented - native lib, VPN service, host/join UI - but had NO entry point
+        // anywhere in the UI, so it was unreachable. This is it.
+        binding.terracottaButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
+            com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.class,
+            com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.TAG, null));
         binding.shareLogsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this, com.movtery.zalithlauncher.ui.fragment.ShareLogsFragment.class, com.movtery.zalithlauncher.ui.fragment.ShareLogsFragment.TAG, null));
         binding.modpackImportButton.setOnClickListener(v -> {
             if (ProgressKeeper.getTaskCount() == 0) {

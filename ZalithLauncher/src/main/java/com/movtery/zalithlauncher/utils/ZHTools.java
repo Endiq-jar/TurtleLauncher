@@ -397,16 +397,21 @@ public final class ZHTools {
                     try (FileOutputStream fos = new FileOutputStream(zipFile);
                          ZipOutputStream zos = new ZipOutputStream(fos)) {
 
-                        // Launcher's own logs (this app's log*.txt + latestcrash.txt)
+                        // Launcher's own logs (rolling log*.txt, latestlog.txt, logcat capture)
                         File logsFolder = new File(PathManager.DIR_LAUNCHER_LOG);
                         if (logsFolder.exists() && logsFolder.isDirectory()) {
                             FileTools.zipDirectory(logsFolder, "launcher_logs/", file -> {
                                 String fileName = file.getName();
-                                // latestcrash.txt: shared by both PojavApplication's Java-crash
-                                // handler and NativeCrashCapture's native/ANR handler (unified
-                                // to one filename - see both classes' write logic for how they
-                                // avoid clobbering each other now that they share it).
-                                return fileName.equals("latestcrash.txt")
+                                // TurtleLauncher: launcher crash reports were renamed from
+                                // latestcrash.txt to latestlog.txt. Same file for both
+                                // PojavApplication's Java-crash handler and NativeCrashCapture's
+                                // native/ANR handler (unified to one filename - see both
+                                // classes' write logic for how they avoid clobbering each other
+                                // now that they share it). Note this is the LAUNCHER's
+                                // latestlog.txt, not the game's DIR_GAME_HOME/latestlog.txt,
+                                // which lives elsewhere and is zipped separately below.
+                                return fileName.equals("latestlog.txt")
+                                    || fileName.equals("session_logcat.txt")
                                     || (fileName.startsWith("log") && fileName.endsWith(".txt"));
                             }, zos);
                         } else Log.d("Zip Log", "The launcher log does not exist or is not available");

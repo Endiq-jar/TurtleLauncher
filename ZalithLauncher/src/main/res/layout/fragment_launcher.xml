@@ -261,6 +261,32 @@
                             android:textColor="@color/turtle_primary_text"/>
                     </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
 
+                    <!-- Friends / LAN (Terracotta over EasyTier) -->
+                    <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                        android:id="@+id/terracotta_button"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_marginBottom="@dimen/space_xs"
+                        android:background="@drawable/background_grid_card"
+                        app:ripple_for_relative="true">
+                        <ImageView
+                            android:id="@+id/terracotta_icon"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_centerInParent="true"
+                            android:src="@drawable/ic_globe"
+                            android:tint="@color/accent_primary"
+                            android:contentDescription="@string/main_terracotta"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone"
+                            android:text="@string/main_terracotta"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/turtle_primary_text"/>
+                    </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
                     <!-- Share Logs -->
                     <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
                         android:id="@+id/share_logs_button"

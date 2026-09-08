@@ -60,6 +60,7 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 * Microsoft, Offline, Battly & Ely.by accounts
 * Download Manager
 * Live launch & crash logs
+* Friends / LAN play (Terracotta over EasyTier) — host or join straight from the home screen
 * Backup, import & export
 
 ### 🔓 Shizuku Support (optional)

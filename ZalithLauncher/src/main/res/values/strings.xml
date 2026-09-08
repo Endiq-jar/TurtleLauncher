@@ -480,6 +480,7 @@
     <string name="main_open_main_dir">Open main directory</string>
     <string name="main_install_jar_file">Execute .jar file</string>
     <string name="main_share_logs">Share log files</string>
+    <string name="main_terracotta">Friends / LAN play</string>
     <string name="main_modpack_import">Import Modpack</string>
     <string name="main_launch">Launch Game</string>
     <string name="main_nav_home">Home</string>
@@ -516,6 +517,7 @@
     <string name="terracotta_status_guest_connecting">Connecting…</string>
     <string name="terracotta_status_guest_starting">Joining…</string>
     <string name="terracotta_status_default">Working…</string>
+    <string name="terracotta_status_starting">Starting Friends/LAN…</string>
     <string name="terracotta_host_ok_title">INVITE CODE - share with friends</string>
     <string name="terracotta_guest_ok_title">SERVER ADDRESS - use in Minecraft\'s multiplayer screen</string>
     <string name="terracotta_players_none">No one else has joined yet</string>

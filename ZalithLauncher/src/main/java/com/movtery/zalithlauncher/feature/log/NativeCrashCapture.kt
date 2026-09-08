@@ -68,7 +68,7 @@ object NativeCrashCapture {
      *  Endiq asked for every crash type to land under one name. To keep that safe, both
      *  writers now PREPEND their new report (newest report first, older ones kept below a
      *  separator) instead of truncating the file, capped at [MAX_CRASH_FILE_CHARS] total. */
-    private const val CRASH_FILE_NAME = "latestcrash.txt"
+    private const val CRASH_FILE_NAME = "latestlog.txt"
     private const val MAX_CRASH_FILE_CHARS = 256 * 1024
 
     @JvmStatic

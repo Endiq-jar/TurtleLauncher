@@ -7,13 +7,11 @@ import static com.movtery.zalithlauncher.utils.ZHTools.getVersionName;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 
 import com.movtery.zalithlauncher.InfoDistributor;
 import com.movtery.zalithlauncher.context.ContextExecutor;
@@ -39,8 +37,18 @@ public class PojavApplication extends Application {
 		ContextExecutor.setApplication(this);
 
 		Thread.setDefaultUncaughtExceptionHandler((thread, th) -> {
-			boolean storagePermAllowed = (Build.VERSION.SDK_INT >= 29 || ActivityCompat.checkSelfPermission(PojavApplication.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) && Tools.checkStorageRoot();
-			File crashFile = new File(storagePermAllowed ? PathManager.DIR_LAUNCHER_LOG : PathManager.DIR_DATA, "latestcrash.txt");
+			// TurtleLauncher: renamed from latestcrash.txt -> latestlog.txt, and unified into
+			// ONE folder (PathManager.DIR_LAUNCHER_LOG) instead of being split between
+			// DIR_LAUNCHER_LOG and DIR_DATA depending on storage permission. That split was a
+			// real bug: ZHTools.shareLogs() only zips DIR_LAUNCHER_LOG, so any report written
+			// to DIR_DATA was written somewhere the user could never actually share it from.
+			//
+			// Deliberately NOT pointed at the GAME log (DIR_GAME_HOME/latestlog.txt), which
+			// now shares this name: MainActivity/JavaGUILauncherActivity call Logger.begin()
+			// on that path at every game start, and Logger.begin() truncates the file. A crash
+			// report written there would be erased the next time the user launched Minecraft -
+			// losing exactly the report they were trying to keep.
+			File crashFile = new File(resolveCrashLogDir(), "latestlog.txt");
 			try {
 				// Same file NativeCrashCapture writes native/ANR deaths to - they used to have
 				// separate filenames specifically to avoid overwriting each other; now that
@@ -79,7 +87,7 @@ public class PojavApplication extends Application {
 			ErrorActivity.showLauncherCrash(PojavApplication.this, crashFile.getAbsolutePath(), th);
 			ZHTools.killProcess();
 		});
-		
+
 		try {
 			super.onCreate();
 			PathManager.DIR_DATA = getDir("files", MODE_PRIVATE).getParent();
@@ -155,4 +163,27 @@ public class PojavApplication extends Application {
 		ContextExecutor.setApplication(this);
 		LocaleHelper.Companion.setLocale(this);
     }
+
+	/**
+	 * Where every launcher crash report goes: PathManager.DIR_LAUNCHER_LOG, always - see the
+	 * comment at the uncaught-exception handler in onCreate() for why the old two-folder
+	 * split was wrong.
+	 *
+	 * The fallback matters and is not paranoia: DIR_LAUNCHER_LOG is a Kotlin `lateinit` that
+	 * is only assigned by PathManager.initContextConstants(), which runs from an Activity's
+	 * attachBaseContext(), not from Application.onCreate(). A crash before any Activity has
+	 * been created therefore sees it uninitialized and reading it throws - which would kill
+	 * the crash handler itself and lose the report. Falling back to DIR_DATA (assigned early
+	 * in onCreate above, so always present by this point) means the report is still written
+	 * somewhere rather than lost entirely.
+	 */
+	private static File resolveCrashLogDir() {
+		try {
+			File logDir = new File(PathManager.DIR_LAUNCHER_LOG);
+			if (logDir.isDirectory() || logDir.mkdirs()) return logDir;
+		} catch (Throwable ignored) {
+			// Uninitialized (crashed before the first Activity) or unusable - fall through.
+		}
+		return new File(PathManager.DIR_DATA);
+	}
 }

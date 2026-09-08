@@ -172,6 +172,15 @@ class AllSettings {
         /** TurtleLauncher: static pre-launch scan for mods whose Mixin configs both target the same class. */
         @JvmStatic val modConflictDetection     = BooleanSettingUnit("modConflictDetection", true)
 
+        // ── Shizuku (privileged ADB/root integration) ──────────────────────────
+        /** Master switch for the whole Shizuku/Sui integration (see feature/shizuku).
+         *  When off, every entry point falls back to the unprivileged path as if Shizuku
+         *  were not installed at all. Safe to leave on: nothing here needs Shizuku to work. */
+        @JvmStatic val shizukuEnabled = BooleanSettingUnit("shizukuEnabled", true)
+        /** Re-apply the privileged keep-alive tweaks (phantom-process limit, process
+         *  priority) automatically at each game launch, not just when the button is pressed. */
+        @JvmStatic val shizukuAutoPerformance = BooleanSettingUnit("shizukuAutoPerformance", true)
+
         // ── Launcher ──────────────────────────────────────────────────────────
         @JvmStatic val checkLibraries           = BooleanSettingUnit("checkLibraries", true)
         @JvmStatic val verifyManifest           = BooleanSettingUnit("verifyManifest", true)

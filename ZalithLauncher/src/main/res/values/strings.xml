@@ -1209,4 +1209,42 @@
     <string name="setting_plugin_update_check_now_desc">Manually checks upstream sources and installs anything newer.</string>
     <string name="setting_plugin_update_checking">Checking for renderer/driver updates…</string>
     <string name="setting_plugin_update_none">Everything is up to date.</string>
+
+    <!-- Shizuku / Sui (privileged ADB or root integration) -->
+    <string name="setting_category_shizuku">Shizuku</string>
+    <string name="settings_row_shizuku_title">Shizuku</string>
+    <string name="settings_row_shizuku_desc">Optional privileged access for permissions, keep-alive tweaks and full crash logs</string>
+    <string name="setting_category_shizuku_status">STATUS</string>
+    <string name="setting_category_shizuku_options">OPTIONS</string>
+    <string name="setting_category_shizuku_actions">PRIVILEGED ACTIONS</string>
+    <string name="setting_shizuku_enabled_title">Enable Shizuku</string>
+    <string name="setting_shizuku_enabled_desc">Use Shizuku/Sui when it is available. Everything keeps working without it.</string>
+    <string name="setting_shizuku_auto_perf_title">Apply tweaks automatically</string>
+    <string name="setting_shizuku_auto_perf_desc">Re-apply the keep-alive and priority tweaks before every game launch, not just when you press the button here.</string>
+    <string name="setting_shizuku_grant_title">Grant permissions</string>
+    <string name="setting_shizuku_grant_desc">All-files access, notifications and battery-optimization exemption, without a trip through the Settings app.</string>
+    <string name="setting_shizuku_perf_title">Apply keep-alive tweaks</string>
+    <string name="setting_shizuku_perf_desc">Raises Android 14\'s phantom-process limit, exempts the launcher from Doze and raises the game\'s CPU priority.</string>
+    <string name="setting_shizuku_logcat_title">Dump full system log</string>
+    <string name="setting_shizuku_logcat_desc">Reads logcat with shell privilege, so tombstones and system messages are included — not just this app\'s own lines.</string>
+    <string name="shizuku_status_unknown">Checking…</string>
+    <string name="shizuku_status_not_installed">Not installed</string>
+    <string name="shizuku_status_not_running">Not running</string>
+    <string name="shizuku_status_permission_denied">Permission required</string>
+    <string name="shizuku_status_ready_root">Ready (root)</string>
+    <string name="shizuku_status_ready_adb">Ready (ADB)</string>
+    <string name="shizuku_status_version">Shizuku API v%d</string>
+    <string name="shizuku_action_install">Get Shizuku</string>
+    <string name="shizuku_action_open_shizuku">Open Shizuku</string>
+    <string name="shizuku_action_grant">Grant access</string>
+    <string name="shizuku_action_apply_now">Apply tweaks</string>
+    <string name="shizuku_action_checking">Checking…</string>
+    <string name="shizuku_result_title">Result</string>
+    <string name="shizuku_result_permissions">Permissions</string>
+    <string name="shizuku_result_performance">Performance</string>
+    <string name="shizuku_result_logcat_title">System log</string>
+    <string name="shizuku_result_logcat_empty">Shizuku returned an empty log, or the command was refused.</string>
+    <string name="shizuku_result_characters">%d chars</string>
+    <string name="shizuku_result_count">%1$d/%2$d ok</string>
+    <string name="shizuku_result_working">…</string>
 </resources>

@@ -45,6 +45,9 @@ class SettingsFragment : FragmentWithAnim(R.layout.fragment_settings) {
         binding.accountSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, AccountFragment::class.java, AccountFragment.TAG, null)
         }
+        binding.shizukuSettingsRow.setOnClickListener {
+            ZHTools.swapFragmentWithAnim(this, ShizukuSettingsFragment::class.java, ShizukuSettingsFragment.TAG, null)
+        }
         binding.videoSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, VideoSettingsFragment::class.java, VideoSettingsFragment.TAG, null)
         }

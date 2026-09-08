@@ -30,7 +30,12 @@ public class ProgressKeeper {
 
         List<ProgressListener> progressListeners = sProgressListeners.get(progressRecord);
         if(progressListeners != null)
-            for(ProgressListener listener : progressListeners) {
+            // TurtleLauncher fix: iterate a snapshot. A listener's callback is allowed to
+            // register/unregister listeners (ProgressLayout.observe() does exactly that),
+            // and doing that to the live list mid-iteration is a
+            // ConcurrentModificationException - another way for a progress update to take
+            // the whole app down.
+            for(ProgressListener listener : new ArrayList<>(progressListeners)) {
                     if(shouldCallStarted) listener.onProgressStarted();
                     else if(shouldCallEnded) listener.onProgressEnded();
                     else listener.onProgressUpdated(progress, resid, va);
@@ -53,7 +58,11 @@ public class ProgressKeeper {
             listener.onProgressEnded();
         }
         List<ProgressListener> listenerWeakReferenceList = sProgressListeners.computeIfAbsent(progressRecord, k -> new ArrayList<>());
-        listenerWeakReferenceList.add(listener);
+        // TurtleLauncher fix: never register the same listener twice. A duplicated entry
+        // means submitProgress() calls onProgressStarted() on it twice for one task, which
+        // is one of the two ways ProgressLayout could end up adding the same TextView to its
+        // layout twice (the reported "specified child already has a parent" crash).
+        if(!listenerWeakReferenceList.contains(listener)) listenerWeakReferenceList.add(listener);
     }
 
     public static synchronized void removeListener(String progressRecord, ProgressListener listener) {

@@ -100,6 +100,14 @@ public class PojavApplication extends Application {
 			startActivity(ferrorIntent);
 		}
 
+		// TurtleLauncher: Shizuku/Sui binder tracking. Cheap and synchronous - it only
+		// registers listeners; the binder itself is delivered later by ShizukuProvider (see
+		// the manifest), and until then every caller sees "not available" and uses the
+		// normal unprivileged path. Runs in whichever process this Application instance
+		// belongs to, but only the `:launcher` process (where the UI lives, and which is
+		// also the process ShizukuProvider is instantiated in) ever queries it.
+		com.movtery.zalithlauncher.feature.shizuku.ShizukuManager.INSTANCE.init(this);
+
 		// TurtleLauncher: AnrWatchdog, dark mode, and dynamic color theming - see
 		// TurtleStartupInitializer for why this is triggered on-demand here rather than
 		// via AndroidX Startup's automatic pre-onCreate discovery.

@@ -114,7 +114,14 @@ object NativeCrashCapture {
             val logTail = runCatching {
                 File(PathManager.DIR_GAME_HOME, "latestlog.txt").takeIf { it.isFile }
                     ?.readText()?.takeLast(MAX_LOG_CHARS)
-            }.getOrNull().orEmpty()
+            }.getOrNull().orEmpty().let {
+                // TurtleLauncher: a signal-killed process takes the native logger's buffer
+                // with it, so this is empty in exactly the case this class exists for. Fall
+                // back to the logcat drain from that session (kept in logd, so it survives),
+                // then to a fresh one-shot dump, so the report is never blank.
+                if (it.isNotBlank()) it
+                else GameLogcat.readSessionTail(MAX_LOG_CHARS).ifBlank { GameLogcat.dumpNow() }
+            }
 
             val mcCrashFile = findRecentMinecraftCrashReport(newest.timestamp)
             val mcCrashText = mcCrashFile?.let {

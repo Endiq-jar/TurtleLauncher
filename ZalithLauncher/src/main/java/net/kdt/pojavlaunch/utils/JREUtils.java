@@ -567,7 +567,18 @@ public final class JREUtils {
             com.movtery.zalithlauncher.launch.SdlAndroidJniPrep.setup(activity);
         }
 
+        // TurtleLauncher: start draining system logcat into a rolling file for this session
+        // BEFORE the JVM starts. Everything below this point can be wiped out instantly by a
+        // signal (renderer SIGSEGV, OOM kill, ANR kill), and when that happens the native
+        // logger's buffered `latestlog.txt` dies with the process - leaving the crash screen
+        // with an empty log, which is the "logs didn't appear" half of the support reports.
+        // logcat lives in logd, not in this process, so it survives. See GameLogcat.
+        com.movtery.zalithlauncher.feature.log.GameLogcat.start();
+
         final int exitCode = VMLauncher.launchJVM(userArgs.toArray(new String[0]));
+        // Reached only on a graceful JVM exit - on a signal the process is already gone and
+        // the drain dies with it, which is exactly the case the captured file exists for.
+        com.movtery.zalithlauncher.feature.log.GameLogcat.stop();
         Logger.appendToLog("Java Exit code: " + exitCode);
         if (exitCode != 0) {
             // TurtleLauncher Fast Boot auto-recovery: if Fast Boot was on for this crashed

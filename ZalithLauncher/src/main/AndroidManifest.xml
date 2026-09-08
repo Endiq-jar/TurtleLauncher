@@ -141,6 +141,19 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
+        <!-- Shizuku/Sui: this is what acquires the privileged binder for us and hands it to
+             ShizukuManager (see feature/shizuku). It is the documented, required manifest
+             entry for the `provider` artifact - without it the binder is never delivered and
+             Shizuku silently stays unavailable. android:permission guards the provider so no
+             ordinary app can query it; only Shizuku (and the system) can. -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
         <service
             android:name="net.kdt.pojavlaunch.services.ProgressService"
             android:foregroundServiceType="specialUse">
@@ -177,6 +190,11 @@
         </service>
     </application>
     <queries>
+        <!-- Shizuku: needed to tell "Shizuku is not installed" apart from "Shizuku is
+             installed but its service has not been started", which are two different
+             instructions for the user. Package visibility is filtered by default from
+             Android 11 onwards, so without this the query always comes back empty. -->
+        <package android:name="moe.shizuku.privileged.api"/>
         <package android:name="net.kdt.pojavlaunch.ffmpeg"/>
         <intent>
             <action android:name="android.intent.action.MAIN" />

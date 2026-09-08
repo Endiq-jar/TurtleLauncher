@@ -62,6 +62,16 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 * Live launch & crash logs
 * Backup, import & export
 
+### 🔓 Shizuku Support (optional)
+
+* One-tap permission granting (all-files access, notifications, battery exemption)
+* Android 14+ phantom-process limit removed — fixes games being killed mid-session
+* Game process priority boost
+* Full system logcat for crash reports, not just the launcher's own lines
+* Works with both Shizuku (ADB or root) and Sui
+
+Shizuku is completely optional — Turtle Launcher works fine without it.
+
 ### ⚙ Customization
 
 * Custom backgrounds
@@ -121,6 +131,7 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 - [x] Skin & Cape Manager
 - [ ] Turtle Client integration
 - [x] Replace OSMesa with a real EGL implementation
+- [x] Shizuku Support
 
 ---
 

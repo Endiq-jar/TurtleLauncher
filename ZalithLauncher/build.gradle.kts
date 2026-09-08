@@ -348,6 +348,20 @@ dependencies {
 
     implementation("top.fifthlight.touchcontroller:proxy-client-android:0.0.2")
 
+    // Shizuku / Sui - lets the launcher do a small number of things that genuinely need
+    // ADB-shell or root privilege, without the launcher itself having to be rooted:
+    // granting all-files access + battery-optimization exemption, raising Android 14+'s
+    // phantom-process limit (a real cause of "the game just closes"), and reading the full
+    // system logcat for crash diagnosis instead of only this app's own lines.
+    // 13.1.5 is the current release (confirmed against Maven Central); both artifacts must
+    // move together. `provider` is what actually acquires the binder (ShizukuProvider,
+    // declared in the manifest) and is what makes Shizuku usable at all - `api` alone only
+    // gives you the classes. Entirely optional at runtime: the app works with neither
+    // installed, and ShizukuManager reports NOT_INSTALLED if that is the case.
+    val shizukuVersion = "13.1.5"
+    implementation("dev.rikka.shizuku:api:$shizukuVersion")
+    implementation("dev.rikka.shizuku:provider:$shizukuVersion")
+
     // implementation("com.intuit.sdp:sdp-android:1.0.5")
     // implementation("com.intuit.ssp:ssp-android:1.0.5")
 

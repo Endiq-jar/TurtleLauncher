@@ -64,43 +64,11 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 
-      # TEMPORARY (reverted before merge): the default failure output is only
-      # "Process completed with exit code 1", which says nothing about what broke.
-      # Capture the log and re-emit the real compiler errors as check-run annotations.
       - name: Build debug APK
-        id: build
-        continue-on-error: true
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: |
-          ./gradlew :ZalithLauncher:assembleDebug --no-daemon > "$GITHUB_WORKSPACE/build.log" 2>&1
-          echo "exit=$?" >> "$GITHUB_OUTPUT"
-
-      - name: Emit real errors as annotations
-        if: always()
-        run: |
-          LOG="$GITHUB_WORKSPACE/build.log"
-          if [ ! -f "$LOG" ]; then
-            echo "::error::build.log was never created"
-            exit 0
-          fi
-          {
-            echo "===== GRADLE EXIT: ${{ steps.build.outputs.exit }} ====="
-            echo "--- compiler errors ---"
-            grep -E "^e: |error:|Unresolved reference|Unresolved|not enough|Expecting|Caused by" "$LOG" | head -70
-            echo "--- failed tasks ---"
-            grep -E "^> Task .*FAILED|Execution failed for task" "$LOG" | head -20
-            echo "--- what went wrong ---"
-            awk '/\* What went wrong:/{f=1} f{print; n++} n>30{exit}' "$LOG"
-            echo "--- tail ---"
-            tail -20 "$LOG"
-          } > "$GITHUB_WORKSPACE/errors.txt"
-          echo "Extracted $(wc -l < "$GITHUB_WORKSPACE/errors.txt") lines"
-          while IFS= read -r line; do
-            [ -z "$line" ] && continue
-            printf '::error::%s\n' "$line"
-          done < "$GITHUB_WORKSPACE/errors.txt"
+        run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

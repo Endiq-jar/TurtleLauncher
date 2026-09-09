@@ -282,7 +282,9 @@ object TurtleTransitions {
      */
     @JvmStatic
     fun listLayoutAnimationController(context: Context): LayoutAnimationController =
-        TurtleTransitions.listLayoutAnimationController(context).apply {
+        LayoutAnimationController(
+            AnimationUtils.loadAnimation(context, R.anim.fade_downwards)
+        ).apply {
             delay = 0.12f
             order = LayoutAnimationController.ORDER_NORMAL
         }

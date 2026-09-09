@@ -1,18 +1,18 @@
 package net.kdt.pojavlaunch;
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.SurfaceTexture
-import android.text.TextPaint
-import android.util.AttributeSet
-import android.view.Surface
-import android.view.TextureView
-import android.view.ViewGroup
-import net.kdt.pojavlaunch.utils.JREUtils
-import java.util.LinkedList
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.SurfaceTexture;
+import android.text.TextPaint;
+import android.util.AttributeSet;
+import android.view.Surface;
+import android.view.TextureView;
+import android.view.ViewGroup;
+import net.kdt.pojavlaunch.utils.JREUtils;
+import java.util.LinkedList;
 
 
 

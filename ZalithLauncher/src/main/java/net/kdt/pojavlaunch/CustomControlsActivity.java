@@ -1,23 +1,23 @@
 package net.kdt.pojavlaunch;
 
-import android.graphics.Color
-import android.os.Bundle
-import android.widget.FrameLayout
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.drawerlayout.widget.DrawerLayout
-import com.movtery.zalithlauncher.databinding.ActivityCustomControlsBinding
-import com.movtery.zalithlauncher.databinding.ViewControlMenuBinding
-import com.movtery.zalithlauncher.feature.background.BackgroundManager
-import com.movtery.zalithlauncher.feature.background.BackgroundType
-import com.movtery.zalithlauncher.setting.AllSettings
-import com.movtery.zalithlauncher.ui.activity.BaseActivity
-import com.movtery.zalithlauncher.ui.subassembly.menu.ControlMenu
-import com.movtery.zalithlauncher.ui.subassembly.view.GameMenuViewWrapper
-import net.kdt.pojavlaunch.customcontrols.ControlLayout
-import net.kdt.pojavlaunch.customcontrols.EditorExitable
-import java.io.IOException
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.FrameLayout;
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.drawerlayout.widget.DrawerLayout;
+import com.movtery.zalithlauncher.databinding.ActivityCustomControlsBinding;
+import com.movtery.zalithlauncher.databinding.ViewControlMenuBinding;
+import com.movtery.zalithlauncher.feature.background.BackgroundManager;
+import com.movtery.zalithlauncher.feature.background.BackgroundType;
+import com.movtery.zalithlauncher.setting.AllSettings;
+import com.movtery.zalithlauncher.ui.activity.BaseActivity;
+import com.movtery.zalithlauncher.ui.subassembly.menu.ControlMenu;
+import com.movtery.zalithlauncher.ui.subassembly.view.GameMenuViewWrapper;
+import net.kdt.pojavlaunch.customcontrols.ControlLayout;
+import net.kdt.pojavlaunch.customcontrols.EditorExitable;
+import java.io.IOException;
 
 
 

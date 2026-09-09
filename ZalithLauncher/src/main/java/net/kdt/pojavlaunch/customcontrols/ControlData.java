@@ -1,24 +1,24 @@
 package net.kdt.pojavlaunch.customcontrols;
 
-import static com.movtery.zalithlauncher.context.ContextExecutor.getString
-import static net.kdt.pojavlaunch.LwjglGlfwKeycode.GLFW_KEY_UNKNOWN
-import android.content.Context
-import android.util.ArrayMap
-import androidx.annotation.Keep
-import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.setting.AllSettings
-import com.movtery.zalithlauncher.utils.stringutils.StringUtils
-import net.kdt.pojavlaunch.Tools
-import net.kdt.pojavlaunch.customcontrols.buttons.ControlInterface
-import net.kdt.pojavlaunch.utils.JSONUtils
-import net.objecthunter.exp4j.ExpressionBuilder
-import net.objecthunter.exp4j.function.Function
-import org.lwjgl.glfw.CallbackBridge
-import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.Collections
-import java.util.List
-import java.util.Map
+import static com.movtery.zalithlauncher.context.ContextExecutor.getString;
+import static net.kdt.pojavlaunch.LwjglGlfwKeycode.GLFW_KEY_UNKNOWN;
+import android.content.Context;
+import android.util.ArrayMap;
+import androidx.annotation.Keep;
+import com.movtery.zalithlauncher.R;
+import com.movtery.zalithlauncher.setting.AllSettings;
+import com.movtery.zalithlauncher.utils.stringutils.StringUtils;
+import net.kdt.pojavlaunch.Tools;
+import net.kdt.pojavlaunch.customcontrols.buttons.ControlInterface;
+import net.kdt.pojavlaunch.utils.JSONUtils;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.function.Function;
+import org.lwjgl.glfw.CallbackBridge;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 
 

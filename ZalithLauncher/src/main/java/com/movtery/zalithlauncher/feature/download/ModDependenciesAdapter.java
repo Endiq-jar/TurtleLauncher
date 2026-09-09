@@ -1,41 +1,41 @@
 package com.movtery.zalithlauncher.feature.download;
 
-import static com.movtery.zalithlauncher.feature.download.InfoAdapter.createCategoryView
-import static com.movtery.zalithlauncher.feature.download.InfoAdapter.getTagTextView
-import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.drawable.Drawable
-import android.util.TypedValue
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import android.widget.TextView
-import androidx.annotation.NonNull
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.RequestBuilder
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.flexbox.FlexboxLayout
-import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.databinding.ItemModDependenciesBinding
-import com.movtery.zalithlauncher.event.value.AddFragmentEvent
-import com.movtery.zalithlauncher.feature.download.enums.Category
-import com.movtery.zalithlauncher.feature.download.enums.ModLoader
-import com.movtery.zalithlauncher.feature.download.enums.Platform
-import com.movtery.zalithlauncher.feature.download.item.DependenciesInfoItem
-import com.movtery.zalithlauncher.feature.download.item.InfoItem
-import com.movtery.zalithlauncher.feature.download.utils.DependencyUtils
-import com.movtery.zalithlauncher.setting.AllSettings
-import com.movtery.zalithlauncher.ui.fragment.DownloadModFragment
-import com.movtery.zalithlauncher.utils.NumberWithUnits
-import com.movtery.zalithlauncher.utils.ZHTools
-import net.kdt.pojavlaunch.Tools
-import org.greenrobot.eventbus.EventBus
-import org.jackhuang.hmcl.ui.versions.ModTranslations
-import java.util.List
-import java.util.StringJoiner
-import java.util.concurrent.Future
+import static com.movtery.zalithlauncher.feature.download.InfoAdapter.createCategoryView;
+import static com.movtery.zalithlauncher.feature.download.InfoAdapter.getTagTextView;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.flexbox.FlexboxLayout;
+import com.movtery.zalithlauncher.R;
+import com.movtery.zalithlauncher.databinding.ItemModDependenciesBinding;
+import com.movtery.zalithlauncher.event.value.AddFragmentEvent;
+import com.movtery.zalithlauncher.feature.download.enums.Category;
+import com.movtery.zalithlauncher.feature.download.enums.ModLoader;
+import com.movtery.zalithlauncher.feature.download.enums.Platform;
+import com.movtery.zalithlauncher.feature.download.item.DependenciesInfoItem;
+import com.movtery.zalithlauncher.feature.download.item.InfoItem;
+import com.movtery.zalithlauncher.feature.download.utils.DependencyUtils;
+import com.movtery.zalithlauncher.setting.AllSettings;
+import com.movtery.zalithlauncher.ui.fragment.DownloadModFragment;
+import com.movtery.zalithlauncher.utils.NumberWithUnits;
+import com.movtery.zalithlauncher.utils.ZHTools;
+import net.kdt.pojavlaunch.Tools;
+import org.greenrobot.eventbus.EventBus;
+import org.jackhuang.hmcl.ui.versions.ModTranslations;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.concurrent.Future;
 
 
 

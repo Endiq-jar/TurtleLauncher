@@ -1,9 +1,9 @@
 package net.kdt.pojavlaunch;
 
-import androidx.annotation.Keep
-import net.kdt.pojavlaunch.value.DependentLibrary
-import net.kdt.pojavlaunch.value.MinecraftClientInfo
-import java.util.Map
+import androidx.annotation.Keep;
+import net.kdt.pojavlaunch.value.DependentLibrary;
+import net.kdt.pojavlaunch.value.MinecraftClientInfo;
+import java.util.Map;
 
 
 

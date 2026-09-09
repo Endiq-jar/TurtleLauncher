@@ -1,24 +1,24 @@
 package com.movtery.zalithlauncher.ui.subassembly.customcontrols;
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.view.View
-import android.widget.TextView
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.task.Task
-import com.movtery.zalithlauncher.task.TaskExecutors
-import com.movtery.zalithlauncher.ui.dialog.DeleteDialog
-import com.movtery.zalithlauncher.ui.subassembly.filelist.RefreshListener
-import com.movtery.zalithlauncher.utils.path.PathManager
-import com.movtery.zalithlauncher.utils.file.FileTools
-import com.movtery.zalithlauncher.utils.stringutils.StringFilter
-import java.io.File
-import java.util.ArrayList
-import java.util.List
-import java.util.concurrent.atomic.AtomicInteger
-import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.view.View;
+import android.widget.TextView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.movtery.zalithlauncher.R;
+import com.movtery.zalithlauncher.task.Task;
+import com.movtery.zalithlauncher.task.TaskExecutors;
+import com.movtery.zalithlauncher.ui.dialog.DeleteDialog;
+import com.movtery.zalithlauncher.ui.subassembly.filelist.RefreshListener;
+import com.movtery.zalithlauncher.utils.path.PathManager;
+import com.movtery.zalithlauncher.utils.file.FileTools;
+import com.movtery.zalithlauncher.utils.stringutils.StringFilter;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions;
 
 
 

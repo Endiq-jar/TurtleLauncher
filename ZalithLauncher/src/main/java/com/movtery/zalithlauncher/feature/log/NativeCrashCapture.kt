@@ -5,6 +5,7 @@ import android.app.ApplicationExitInfo
 import android.content.Context
 import android.os.Build
 import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome
+import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.activity.ErrorActivity
 import com.movtery.zalithlauncher.utils.path.PathManager
 import java.io.File
@@ -77,6 +78,21 @@ object NativeCrashCapture {
         // there is no equivalent facility on older Android to fall back to without root.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
 
+        // TurtleLauncher: everything below is disk I/O (multiple crash-reports folders, up to
+        // MAX_LOG_CHARS/MAX_CRASH_REPORT_CHARS of file reads, a native trace stream) plus
+        // CrashAnalyzer.analyze()'s ~31 rules run over that combined text - real work, not
+        // a quick check. This used to run inline on whatever thread called checkAndReport(),
+        // which is TurtleStartupInitializer.create() on the main thread during
+        // PojavApplication.onCreate() - confirmed via an AnrWatchdog "main thread unresponsive
+        // for 5003ms" report with this exact call chain in the stack. Every step here is
+        // read-only against on-disk state from the *previous* run and ErrorActivity.showExitMessage
+        // only calls startActivity (fine off the main thread), so there's nothing here that
+        // needs to happen before PojavApplication.onCreate() continues - moved onto the shared
+        // background pool instead of blocking startup.
+        TaskExecutors.getDefault().execute { checkAndReportBlocking(context) }
+    }
+
+    private fun checkAndReportBlocking(context: Context) {
         runCatching {
             val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager ?: return
             // null package = this app's own package; maxRecords 5 is plenty, we only ever

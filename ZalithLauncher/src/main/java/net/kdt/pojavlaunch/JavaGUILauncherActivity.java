@@ -11,10 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Toast;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
-
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.movtery.zalithlauncher.R;
 import com.movtery.zalithlauncher.databinding.ActivityJavaGuiLauncherBinding;
@@ -33,17 +31,14 @@ import com.movtery.zalithlauncher.utils.image.Dimension;
 import com.movtery.zalithlauncher.utils.image.ImageUtils;
 import com.movtery.zalithlauncher.utils.path.LibPath;
 import com.movtery.zalithlauncher.utils.path.PathManager;
-
 import net.kdt.pojavlaunch.customcontrols.keyboard.AwtCharSender;
 import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.utils.JREUtils;
 import net.kdt.pojavlaunch.utils.MathUtils;
-
 import org.apache.commons.io.IOUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.lwjgl.glfw.CallbackBridge;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -55,6 +50,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+
+
+
+
+
 
 public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouchListener {
     public static final String EXTRAS_JRE_NAME = "jre_name";

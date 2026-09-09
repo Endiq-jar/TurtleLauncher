@@ -2,7 +2,6 @@ package net.kdt.pojavlaunch;
 
 import static com.movtery.zalithlauncher.launch.LaunchGame.preLaunch;
 import static net.kdt.pojavlaunch.Tools.currentDisplayMetrics;
-
 import android.Manifest;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -15,7 +14,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.view.View;
 import android.widget.Toast;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -25,7 +23,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.palette.graphics.Palette;
-
 import com.kdt.mcgui.ProgressLayout;
 import com.movtery.anim.AnimPlayer;
 import com.movtery.anim.animations.Animations;
@@ -87,7 +84,6 @@ import com.movtery.zalithlauncher.utils.file.FileTools;
 import com.movtery.zalithlauncher.utils.image.ImageUtils;
 import com.movtery.zalithlauncher.utils.stringutils.ShiftDirection;
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils;
-
 import net.kdt.pojavlaunch.authenticator.microsoft.MicrosoftBackgroundLogin;
 import net.kdt.pojavlaunch.contracts.OpenDocumentWithExtension;
 import net.kdt.pojavlaunch.fragments.MainMenuFragment;
@@ -98,11 +94,9 @@ import net.kdt.pojavlaunch.services.ProgressServiceKeeper;
 import net.kdt.pojavlaunch.tasks.AsyncVersionList;
 import net.kdt.pojavlaunch.utils.NotificationUtils;
 import net.kdt.pojavlaunch.value.MinecraftAccount;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -110,6 +104,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Random;
 import java.util.concurrent.Future;
+
+
+
+
+
+
+
 
 public class LauncherActivity extends BaseActivity {
     private final AnimPlayer noticeAnimPlayer = new AnimPlayer();
@@ -528,6 +529,11 @@ public class LauncherActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // TurtleLauncher: the system animation-scale / reduced-motion check is cached, so it
+        // has to be invalidated here - the user may have just come back from Settings where
+        // they changed it, and we'd otherwise keep using the stale answer for the whole
+        // process lifetime.
+        com.movtery.zalithlauncher.utils.anim.TurtleTransitions.onResume();
         com.movtery.zalithlauncher.task.TaskExecutors.setGameSessionActive(false);
         com.movtery.zalithlauncher.feature.turtle.BackgroundServiceManager.onGameSessionEnd();
         setPageOpacity(AllSettings.getPageOpacity().getValue());

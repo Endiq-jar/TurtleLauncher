@@ -1,11 +1,10 @@
 package com.movtery.zalithlauncher.ui.fragment.download.resource
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
-import android.view.animation.LayoutAnimationController
 import android.widget.Button
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -43,6 +42,7 @@ import net.kdt.pojavlaunch.Tools
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.util.concurrent.Future
+
 
 abstract class AbstractResourceDownloadFragment(
     parentFragment: Fragment?,
@@ -99,9 +99,7 @@ abstract class AbstractResourceDownloadFragment(
         binding.apply {
             recyclerView.apply {
                 layoutManager = LinearLayoutManager(requireContext())
-                layoutAnimation = LayoutAnimationController(
-                    AnimationUtils.loadAnimation(requireContext(), R.anim.fade_downwards)
-                )
+                layoutAnimation = TurtleTransitions.listLayoutAnimationController(requireContext())
                 //列表容器尺寸固定不随内容变化，可以安全跳过多余的重新测量
                 setHasFixedSize(true)
                 //搜索结果列表条目较多且滑动频繁，适当增大缓存可以减少快速滑动时的卡顿
@@ -259,15 +257,15 @@ abstract class AbstractResourceDownloadFragment(
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
-                .apply(AnimPlayer.Entry(downloadLayout, Animations.BounceInDown))
+            animPlayer.apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(downloadLayout, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operateLayout, Animations.FadeOutRight))
-                .apply(AnimPlayer.Entry(downloadLayout, Animations.FadeOutUp))
+            animPlayer.apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(downloadLayout, TurtleTransitions.exit()))
         }
     }
 

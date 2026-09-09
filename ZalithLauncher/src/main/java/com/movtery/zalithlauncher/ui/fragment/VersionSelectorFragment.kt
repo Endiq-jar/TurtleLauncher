@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -98,6 +99,9 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
             bundle.putString(VersionSeriesDetailFragment.BUNDLE_SERIES_LABEL, card.label)
             ZHTools.swapFragmentWithAnim(this, VersionSeriesDetailFragment::class.java, VersionSeriesDetailFragment.TAG, bundle)
         }
+        // TurtleLauncher: this grid had no entry animation at all - the cards just appeared.
+        // post{} so the children exist before we animate them.
+        binding.seriesGrid.post { TurtleTransitions.animateList(binding.seriesGrid) }
     }
 
     private fun buildCards(): List<SeriesCardAdapter.CardEntry> {
@@ -142,12 +146,12 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, Animations.BounceInDown))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.BounceInLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, Animations.FadeOutUp))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
     }
 }

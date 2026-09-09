@@ -7,6 +7,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
+
 class NumberWithUnits {
     companion object {
         private val UNITS_EN = arrayOf("", "K", "M") //英文单位：千、百万

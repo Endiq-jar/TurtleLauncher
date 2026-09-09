@@ -95,6 +95,12 @@ public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneLi
             // everything setGameSessionActive(true) above doesn't (animation pausing,
             // update-checker pausing, indexing pausing, RAM trim). See its class doc.
             com.movtery.zalithlauncher.feature.turtle.BackgroundServiceManager.onGameSessionStart(activity);
+            // TurtleLauncher: Shizuku - apply the privileged keep-alive tweaks (Android 14's
+            // phantom-process limit above all) BEFORE the game process is forked, since the
+            // limit applies to processes forked by this app and killing the game mid-session
+            // is exactly what it does. Fire-and-forget on its own thread: Shizuku is
+            // optional, so this must never delay or block the launch. See ShizukuActions.
+            com.movtery.zalithlauncher.feature.shizuku.ShizukuActions.applyBeforeLaunchIfEnabled();
             activity.startActivity(gameStartIntent);
             if (AllSettings.getQuitLauncher().getValue()) {
                 activity.finish();

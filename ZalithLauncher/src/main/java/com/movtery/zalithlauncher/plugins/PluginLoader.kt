@@ -13,6 +13,7 @@ import com.movtery.zalithlauncher.renderer.Renderers
 import com.movtery.zalithlauncher.utils.path.PathManager
 import org.apache.commons.io.FileUtils
 
+
 /**
  * 统一插件的加载，保证仅获取一次应用列表
  */

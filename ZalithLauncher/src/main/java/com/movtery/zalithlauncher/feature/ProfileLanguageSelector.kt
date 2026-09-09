@@ -8,6 +8,7 @@ import com.movtery.zalithlauncher.utils.ZHTools
 import org.jackhuang.hmcl.util.versioning.VersionNumber
 import org.jackhuang.hmcl.util.versioning.VersionRange
 
+
 class ProfileLanguageSelector {
     companion object {
         private fun getOlderLanguage(lang: String): String {

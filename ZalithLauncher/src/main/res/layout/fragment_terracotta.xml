@@ -223,6 +223,20 @@
             android:textColor="@color/accent_primary"
             android:visibility="gone"/>
 
+        <!-- TurtleLauncher: live relay-node readout. Joining fails with "Cannot find
+             scaffolding server" when host and guest never land in a common EasyTier network,
+             which almost always means every shared/relay node was dead. Showing the count and
+             the node actually being used turns a mystery failure into something the user can
+             see and work around. -->
+        <TextView
+            android:id="@+id/relay_node_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/turtle_text_secondary"
+            android:layout_marginTop="@dimen/space_m"
+            android:text="@string/terracotta_relay_status_checking"/>
+
     </LinearLayout>
 
     <!-- ===================== Loading: any in-between state ===================== -->

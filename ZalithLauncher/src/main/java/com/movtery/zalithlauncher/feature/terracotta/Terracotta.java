@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
@@ -45,6 +46,35 @@ public class Terracotta {
     private static final AtomicReference<TerracottaState.Ready> STATE = new AtomicReference<>(null);
     private static final List<StateListener> LISTENERS = new CopyOnWriteArrayList<>();
 
+    /**
+     * TurtleLauncher CRASH/HANG FIX - this used to be `LockSupport.parkNanos(500_000)`,
+     * which is 500,000 NANOseconds = 0.5 milliseconds, i.e. ~2000 native getState() calls
+     * per second, each allocating a JSON string and parsing it, on a thread that never
+     * stopped for the entire lifetime of the process.
+     *
+     * That is a unit mistake, not a tuning choice: the FCL original this was adapted from
+     * sleeps 500 MILLIseconds (Thread.sleep(500)), and 500_000 nanoseconds is 1000x faster
+     * than that. Terracotta's own API doc says getState() "may block for ~1 seconds" during
+     * EasyTier startup, so at 0.5ms the daemon was effectively sitting inside a blocking
+     * JNI call permanently while still scheduling the next one.
+     *
+     * On a phone that pegs a core at 100% and allocates continuously - the UI thread gets
+     * starved, GC thrashes, and the launcher freezes and then gets killed. That is exactly
+     * the reported symptom: open Friends/LAN, launcher freezes, then closes.
+     *
+     * 500ms is responsive enough for a connection-status screen (nothing here changes
+     * faster than that) and costs ~0.1% of the CPU the old value did.
+     */
+    private static final long POLL_INTERVAL_NANOS = TimeUnit.MILLISECONDS.toNanos(500);
+
+    /** Give up rather than spin forever if the native backend is clearly dead: the poll
+     *  loop's whole job is to notice state changes, and a backend that has thrown this many
+     *  times in a row is not going to start answering. */
+    private static final int MAX_CONSECUTIVE_FAILURES = 40;
+
+    private static volatile boolean polling = false;
+    private static volatile Thread daemon = null;
+
     @Nullable
     public static TerracottaMode getMode() {
         return mode;
@@ -57,6 +87,9 @@ public class Terracotta {
 
     public static void addStateListener(StateListener listener) {
         LISTENERS.add(listener);
+        // TurtleLauncher: the daemon stops itself once the last listener goes away (and
+        // after a dead native backend), so coming back to the screen has to restart it.
+        if (initialized) startPolling();
     }
 
     public static void removeStateListener(StateListener listener) {
@@ -67,10 +100,15 @@ public class Terracotta {
         return metadata == null ? new TerracottaAndroidAPI.Metadata("unknown", 0, "unknown") : metadata;
     }
 
-    /** Call once, from a real Activity, before host/join is used. Starts the VPN
-     *  permission flow (if needed) and a background poll loop watching for state
-     *  changes - mirrors FCL's exact polling interval (0.5ms) since that's a
-     *  proven-working value from a real integration, not a guess. */
+    /**
+     * Starts the native backend. Call once, before host/join is used.
+     *
+     * BLOCKING - this does file I/O, System.loadLibrary() and a native start0() call, all
+     * of which can take a noticeable amount of time on a slow device. Call it from a
+     * background thread (TerracottaFragment does); do not call it from the UI thread, or
+     * opening the Friends/LAN screen will hang the UI long enough to be killed as an ANR.
+     * The VPN-permission callback it installs already marshals itself back to the UI thread.
+     */
     public static synchronized void initialize(Activity activity) {
         if (initialized) return;
 
@@ -78,42 +116,80 @@ public class Terracotta {
             TaskExecutors.runInUIThread(() -> startTerracottaVpn(activity))
         );
 
-        Thread daemon = new Thread(() -> {
-            while (true) {
-                TerracottaState.Ready current = STATE.get();
-                int index = current == null ? -1 : current.getIndex();
+        initialized = true;
+        startPolling();
+    }
+
+    /**
+     * Starts the state-poll daemon if it is not already running.
+     *
+     * TurtleLauncher: previously this thread was started once from initialize() and ran
+     * `while(true)` forever with no way to stop it, so it kept polling (at the buggy 0.5ms
+     * interval) for the entire life of the process, including long after the Friends/LAN
+     * screen was closed. It is now restartable and stoppable, and idles without touching the
+     * native layer at all while nobody is listening.
+     */
+    private static synchronized void startPolling() {
+        if (daemon != null && daemon.isAlive()) return;
+        polling = true;
+        Thread thread = new Thread(Terracotta::pollLoop, "Terracotta Background Daemon");
+        thread.setDaemon(true);
+        daemon = thread;
+        thread.start();
+    }
+
+    private static void pollLoop() {
+        int consecutiveFailures = 0;
+        while (polling) {
+            // TurtleLauncher: skip the JNI call entirely when there is no reason to make it -
+            // no screen registered to publish to, and no room hosted/joined whose state
+            // anyone could act on. The P2P connection itself lives in the VPN service/native
+            // backend and keeps running regardless; this loop only ever *observes* it.
+            // (At 500ms the cost of polling is negligible either way - this is about not
+            // waking up at all when Terracotta is idle, not about shaving CPU off the poll.)
+            if (initialized && (!LISTENERS.isEmpty() || mode != null)) {
                 try {
+                    TerracottaState.Ready current = STATE.get();
+                    int index = current == null ? -1 : current.getIndex();
                     String stateJson = TerracottaAndroidAPI.getState();
                     TerracottaState.Ready next = TerracottaState.parse(stateJson);
+                    consecutiveFailures = 0;
                     if (next.getIndex() > index && STATE.compareAndSet(current, next)) {
                         TaskExecutors.runInUIThread(() -> {
                             for (StateListener listener : LISTENERS) listener.onStateChanged(next);
                         });
                     }
                 } catch (Throwable t) {
-                    // TurtleLauncher: was `catch (Exception e)` - too narrow. This loop starts
-                    // the instant the Friends/LAN screen opens (initialize() is called from
-                    // TerracottaFragment.onViewCreated) and polls every 0.5ms, so it's the
-                    // first thing running against the native library before the user has even
-                    // tapped Host/Join. An uncaught exception on ANY thread - not just main -
-                    // takes the whole app process down on Android, and a JNI-layer failure
-                    // (TerracottaAndroidAPI.getState()'s native getState0()) surfaces as an
-                    // Error (UnsatisfiedLinkError etc.), not an Exception - exactly the same
-                    // class of gap TerracottaFragment.onViewCreated's own comment already
-                    // documents for Terracotta.initialize() itself, just left unpatched here.
-                    // Matches the reported symptom (tap Friends/LAN, screen opens, then the
-                    // whole app closes a moment later) better than anywhere else in this
-                    // subsystem since every other Terracotta thread only starts after the user
-                    // actively hosts/joins, not the instant the screen opens.
-                    Logging.e("Terracotta", "State poll failed: " + t);
+                    // TurtleLauncher: was `catch (Exception e)` - too narrow. A JNI-layer
+                    // failure (TerracottaAndroidAPI.getState()'s native getState0()) surfaces
+                    // as an Error (UnsatisfiedLinkError etc.), not an Exception, and an
+                    // uncaught throwable on ANY thread takes the whole app process down on
+                    // Android.
+                    consecutiveFailures++;
+                    Logging.e("Terracotta", "State poll failed (" + consecutiveFailures + " in a row): " + t);
+                    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+                        Logging.e("Terracotta", "Native backend appears dead - stopping the state poll loop");
+                        polling = false;
+                        return;
+                    }
                 }
-                LockSupport.parkNanos(500_000);
             }
-        }, "Terracotta Background Daemon");
-        daemon.setDaemon(true);
-        daemon.start();
 
-        initialized = true;
+            // Back off while the backend is failing instead of hammering it, capped at 8s.
+            long backoff = consecutiveFailures == 0
+                ? POLL_INTERVAL_NANOS
+                : Math.min(POLL_INTERVAL_NANOS << Math.min(consecutiveFailures, 4),
+                           TimeUnit.SECONDS.toNanos(8));
+            LockSupport.parkNanos(backoff);
+        }
+    }
+
+    /** Stops the poll daemon. Restarted automatically by [addStateListener]. */
+    public static synchronized void stopPolling() {
+        polling = false;
+        Thread thread = daemon;
+        daemon = null;
+        if (thread != null) thread.interrupt();
     }
 
     public static void setWaiting(Context context, boolean manual) {

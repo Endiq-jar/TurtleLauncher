@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils
 import java.io.File
 import java.util.zip.ZipFile
 
+
 class InstallLocalModPack {
     companion object {
         @JvmStatic

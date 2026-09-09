@@ -3,7 +3,6 @@ package net.kdt.pojavlaunch.customcontrols;
 import static android.content.Context.INPUT_METHOD_SERVICE;
 import static net.kdt.pojavlaunch.Tools.currentDisplayMetrics;
 import static org.lwjgl.glfw.CallbackBridge.isGrabbing;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
@@ -13,9 +12,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
-
 import com.google.gson.JsonSyntaxException;
 import com.movtery.zalithlauncher.R;
 import com.movtery.zalithlauncher.feature.log.Logging;
@@ -28,7 +25,6 @@ import com.movtery.zalithlauncher.ui.dialog.TipDialog;
 import com.movtery.zalithlauncher.ui.subassembly.customcontrols.ControlInfoData;
 import com.movtery.zalithlauncher.utils.path.PathManager;
 import com.movtery.zalithlauncher.utils.stringutils.StringUtilsKt;
-
 import net.kdt.pojavlaunch.MinecraftGLSurface;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.customcontrols.buttons.ControlButton;
@@ -39,12 +35,17 @@ import net.kdt.pojavlaunch.customcontrols.buttons.ControlSubButton;
 import net.kdt.pojavlaunch.customcontrols.handleview.ActionRow;
 import net.kdt.pojavlaunch.customcontrols.handleview.ControlHandleView;
 import net.kdt.pojavlaunch.customcontrols.handleview.EditControlPopup;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+
+
+
+
+
 
 public class ControlLayout extends FrameLayout {
 	protected CustomControls mLayout;

@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
@@ -239,12 +240,12 @@ class CustomMouseFragment : FragmentWithAnim(R.layout.fragment_custom_mouse) {
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.mouseLayout, Animations.BounceInDown))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.BounceInLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.mouseLayout, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.mouseLayout, Animations.FadeOutUp))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.mouseLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
     }
 }

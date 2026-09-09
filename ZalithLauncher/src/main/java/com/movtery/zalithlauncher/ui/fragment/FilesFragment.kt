@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -593,15 +594,15 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(filesLayout, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
+            animPlayer.apply(AnimPlayer.Entry(filesLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(filesLayout, Animations.FadeOutUp))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.FadeOutRight))
+            animPlayer.apply(AnimPlayer.Entry(filesLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.exit()))
         }
     }
 }

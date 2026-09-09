@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment.about
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -49,6 +50,9 @@ class AboutSponsorPageFragment : Fragment(R.layout.fragment_about_sponsor_page) 
                         adapter = SponsorRecyclerAdapter(getSponsorData())
                     }
                     binding.loadingProgress.visibility = View.GONE
+                    // TurtleLauncher: the sponsor panel replaces a spinner, so it used to
+                    // just snap into place. It now arrives instead.
+                    TurtleTransitions.setVisibilityAnimated(binding.sponsorLayout, true)
                     View.VISIBLE
                 } else View.GONE
             } catch (e: Exception) {

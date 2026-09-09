@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -45,6 +46,9 @@ class SettingsFragment : FragmentWithAnim(R.layout.fragment_settings) {
         binding.accountSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, AccountFragment::class.java, AccountFragment.TAG, null)
         }
+        binding.shizukuSettingsRow.setOnClickListener {
+            ZHTools.swapFragmentWithAnim(this, ShizukuSettingsFragment::class.java, ShizukuSettingsFragment.TAG, null)
+        }
         binding.videoSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, VideoSettingsFragment::class.java, VideoSettingsFragment.TAG, null)
         }
@@ -85,11 +89,17 @@ class SettingsFragment : FragmentWithAnim(R.layout.fragment_settings) {
         Settings.refreshSettings()
     }
 
+    /** TurtleLauncher: settings is the panel you reach *down* to from the home screen, so it
+     *  deliberately rises off the bottom edge of the display and settles with a bounce rather
+     *  than drifting in from wherever the global transition would put it. Same reasoning as
+     *  the mods screen keeping its Wobble: a per-screen design choice, not an oversight.
+     *  "Sheet" is also selectable globally in the two transition pickers if you want this
+     *  entrance everywhere instead. */
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.settingsLayout, Animations.BounceInRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.settingsLayout, TurtleTransitions.sheetEnter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.settingsLayout, Animations.FadeOutLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.settingsLayout, TurtleTransitions.sheetExit()))
     }
 }

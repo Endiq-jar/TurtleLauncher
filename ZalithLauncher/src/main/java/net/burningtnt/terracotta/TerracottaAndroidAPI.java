@@ -20,8 +20,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * <p>An API to handle Terracotta Android.</p>
@@ -437,7 +439,13 @@ public final class TerracottaAndroidAPI {
                     Log.wtf("TerracottaAndroidAPI", "VpnService Request hasn't been fulfilled in 30s.");
                     throw new IllegalStateException();
                 }
-                Thread.yield();
+                // TurtleLauncher: was Thread.yield() - a yield in a tight loop is still a
+                // 100%-CPU spin, and this loop runs on the native callback thread for as long
+                // as the VPN permission prompt is on screen (up to 30s). On a phone that is a
+                // full core burnt for the whole prompt, competing with the very UI thread that
+                // has to render it. Parking for 20ms keeps the wait latency imperceptible
+                // while dropping the cost to nothing; the 30s timeout above is unchanged.
+                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(20));
             } else if (value == FD_REJECT) {
                 pendingRequest = null;
                 throw new IllegalStateException();

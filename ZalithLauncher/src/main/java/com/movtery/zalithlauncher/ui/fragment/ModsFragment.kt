@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.net.Uri
 import android.os.Bundle
@@ -438,15 +439,15 @@ class ModsFragment : FragmentWithAnim(R.layout.fragment_mods) {
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(modsLayout, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
+            animPlayer.apply(AnimPlayer.Entry(modsLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(modsLayout, Animations.FadeOutUp))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.FadeOutRight))
+            animPlayer.apply(AnimPlayer.Entry(modsLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.exit()))
         }
     }
 }

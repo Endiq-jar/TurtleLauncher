@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
-import android.view.animation.AnimationUtils
-import android.view.animation.LayoutAnimationController
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +14,8 @@ import com.movtery.zalithlauncher.utils.stringutils.StringFilter.Companion.conta
 import java.io.File
 import java.util.Date
 import java.util.concurrent.atomic.AtomicInteger
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
+
 
 class FileRecyclerViewCreator(
     context: Context?,
@@ -37,12 +37,7 @@ class FileRecyclerViewCreator(
         this.mainRecyclerView = recyclerView
 
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(context)
-        mainRecyclerView.layoutAnimation = LayoutAnimationController(
-            AnimationUtils.loadAnimation(
-                context,
-                R.anim.fade_downwards
-            )
-        )
+        context?.let { mainRecyclerView.layoutAnimation = TurtleTransitions.listLayoutAnimationController(it) }
         mainRecyclerView.layoutManager = layoutManager
         mainRecyclerView.adapter = this.fileRecyclerAdapter
 

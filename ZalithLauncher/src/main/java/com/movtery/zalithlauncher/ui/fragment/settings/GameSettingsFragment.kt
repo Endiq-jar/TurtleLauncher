@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.EditTextSettingsW
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.ListSettingsWrapper
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SeekBarSettingsWrapper
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
+
 
 class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment_game, SettingCategory.GAME) {
     companion object {
@@ -81,6 +83,6 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 }

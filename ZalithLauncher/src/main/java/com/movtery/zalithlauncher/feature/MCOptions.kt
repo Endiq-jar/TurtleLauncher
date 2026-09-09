@@ -13,6 +13,7 @@ import org.lwjgl.glfw.CallbackBridge.windowWidth
 import java.io.File
 import java.io.IOException
 
+
 object MCOptions {
     private val parameterMap = mutableMapOf<String, String>()
     private var fileObserver: FileObserver? = null

@@ -14,6 +14,7 @@ import com.movtery.zalithlauncher.utils.path.PathManager
 import net.kdt.pojavlaunch.Tools
 import java.io.FileWriter
 
+
 class NewbieGuideUtils {
     @SuppressLint("NonConstantResourceId")
     companion object {

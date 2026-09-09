@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SeekBarSettingsWrapper
 import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
 import com.movtery.zalithlauncher.utils.ZHTools
+
 
 /**
  * TurtleLauncher Settings -> Recording (roadmap item 22): the customization screen for
@@ -71,6 +73,6 @@ class RecordingSettingsFragment : AbstractSettingsFragment(R.layout.settings_fra
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 }

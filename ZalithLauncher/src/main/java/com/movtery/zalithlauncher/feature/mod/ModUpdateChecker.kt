@@ -6,6 +6,7 @@ import com.movtery.zalithlauncher.feature.mod.parser.ModInfo
 import com.movtery.zalithlauncher.utils.file.FileTools
 import java.io.File
 
+
 /**
  * Auto update checker — mods, resource packs, and shader packs.
  *

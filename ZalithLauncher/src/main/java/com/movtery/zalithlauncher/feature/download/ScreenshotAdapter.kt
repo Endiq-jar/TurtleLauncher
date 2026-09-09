@@ -17,6 +17,7 @@ import com.movtery.zalithlauncher.databinding.ViewInfoScreenshotBinding
 import com.movtery.zalithlauncher.feature.download.item.ScreenshotItem
 import com.movtery.zalithlauncher.setting.AllSettings
 
+
 class ScreenshotAdapter(private val screenshotItems: List<ScreenshotItem>) : RecyclerView.Adapter<ScreenshotAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

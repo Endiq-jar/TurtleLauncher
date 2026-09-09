@@ -37,6 +37,7 @@ import net.kdt.pojavlaunch.value.MinecraftAccount
 import java.io.File
 import java.io.FileOutputStream
 
+
 /**
  * Dialog for changing skin or cape from URL or gallery pick.
  * @param mode "skin" or "cape"

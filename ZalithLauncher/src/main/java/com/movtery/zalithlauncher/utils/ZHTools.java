@@ -23,7 +23,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.TooltipCompat;
@@ -32,7 +31,6 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
-
 import com.movtery.zalithlauncher.BuildConfig;
 import com.movtery.zalithlauncher.InfoDistributor;
 import com.movtery.zalithlauncher.R;
@@ -47,9 +45,7 @@ import com.movtery.zalithlauncher.ui.dialog.TipDialog;
 import com.movtery.zalithlauncher.ui.fragment.FragmentWithAnim;
 import com.movtery.zalithlauncher.utils.file.FileTools;
 import com.movtery.zalithlauncher.utils.path.PathManager;
-
 import net.kdt.pojavlaunch.Tools;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
@@ -64,6 +60,11 @@ import java.time.temporal.ChronoField;
 import java.util.Date;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
+
+
+
+
+
 
 public final class ZHTools {
     private ZHTools() {
@@ -397,16 +398,21 @@ public final class ZHTools {
                     try (FileOutputStream fos = new FileOutputStream(zipFile);
                          ZipOutputStream zos = new ZipOutputStream(fos)) {
 
-                        // Launcher's own logs (this app's log*.txt + latestcrash.txt)
+                        // Launcher's own logs (rolling log*.txt, latestlog.txt, logcat capture)
                         File logsFolder = new File(PathManager.DIR_LAUNCHER_LOG);
                         if (logsFolder.exists() && logsFolder.isDirectory()) {
                             FileTools.zipDirectory(logsFolder, "launcher_logs/", file -> {
                                 String fileName = file.getName();
-                                // latestcrash.txt: shared by both PojavApplication's Java-crash
-                                // handler and NativeCrashCapture's native/ANR handler (unified
-                                // to one filename - see both classes' write logic for how they
-                                // avoid clobbering each other now that they share it).
-                                return fileName.equals("latestcrash.txt")
+                                // TurtleLauncher: launcher crash reports were renamed from
+                                // latestcrash.txt to latestlog.txt. Same file for both
+                                // PojavApplication's Java-crash handler and NativeCrashCapture's
+                                // native/ANR handler (unified to one filename - see both
+                                // classes' write logic for how they avoid clobbering each other
+                                // now that they share it). Note this is the LAUNCHER's
+                                // latestlog.txt, not the game's DIR_GAME_HOME/latestlog.txt,
+                                // which lives elsewhere and is zipped separately below.
+                                return fileName.equals("latestlog.txt")
+                                    || fileName.equals("session_logcat.txt")
                                     || (fileName.startsWith("log") && fileName.endsWith(".txt"));
                             }, zos);
                         } else Log.d("Zip Log", "The launcher log does not exist or is not available");

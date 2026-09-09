@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.content.Context
 import android.net.Uri
@@ -380,14 +381,14 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.editorLayout, Animations.BounceInDown))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.BounceInLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.editorLayout, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()))
             .apply(AnimPlayer.Entry(binding.iconLayout, Animations.Wobble))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.editorLayout, Animations.FadeOutUp))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.editorLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
     }
 
     companion object {

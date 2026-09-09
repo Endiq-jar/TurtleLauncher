@@ -6,6 +6,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.Task
 import com.movtery.zalithlauncher.utils.anim.ViewAnimUtils.Companion.setViewAnim
 
+
 class AnimUtils {
     companion object {
         @JvmStatic
@@ -38,7 +39,11 @@ class AnimUtils {
             val targetVisibility = if (visible) View.VISIBLE else View.GONE
             if (view.visibility == targetVisibility) return
 
-            setViewAnim(view, if (visible) Animations.FadeIn else Animations.FadeOut,
+            // TurtleLauncher: was a hardcoded FadeIn/FadeOut pair. playVisibilityAnim() is the
+            // app's generic "show/hide this view" helper, so routing it through
+            // TurtleTransitions means the Settings transition pickers reach every in-place
+            // show/hide too, not just fragment swaps - which is what makes them app-wide.
+            setViewAnim(view, if (visible) TurtleTransitions.enter() else TurtleTransitions.exit(),
                 (AllSettings.animationSpeed.getValue() * 0.7).toLong(),
                 { view.visibility = View.VISIBLE },
                 { view.visibility = if (visible) View.VISIBLE else View.GONE })

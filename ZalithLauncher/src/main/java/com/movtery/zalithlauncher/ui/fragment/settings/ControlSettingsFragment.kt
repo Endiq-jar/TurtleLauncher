@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment.settings
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -21,6 +22,7 @@ import com.movtery.zalithlauncher.ui.fragment.settings.wrapper.SwitchSettingsWra
 import com.movtery.zalithlauncher.utils.ZHTools
 import fr.spse.gamepad_remapper.Remapper
 import net.kdt.pojavlaunch.fragments.GamepadMapperFragment
+
 
 class ControlSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fragment_control, SettingCategory.CONTROL) {
     companion object {
@@ -227,7 +229,7 @@ class ControlSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fra
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
+        animPlayer.apply(AnimPlayer.Entry(binding.root, TurtleTransitions.enter()))
     }
 
     private fun computeVisibility() {

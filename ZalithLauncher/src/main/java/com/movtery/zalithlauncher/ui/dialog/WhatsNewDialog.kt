@@ -7,6 +7,7 @@ import android.view.Window
 import com.movtery.zalithlauncher.databinding.DialogWhatsNewBinding
 import com.movtery.zalithlauncher.ui.dialog.DraggableDialog.DialogInitializationListener
 
+
 class WhatsNewDialog(context: Context) :
     FullScreenDialog(context), DialogInitializationListener {
 

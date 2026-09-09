@@ -1,4 +1,5 @@
 package net.kdt.pojavlaunch.fragments;
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -138,13 +139,13 @@ public class GamepadMapperFragment extends FragmentWithAnim implements
 
     @Override
     public void slideIn(AnimPlayer animPlayer) {
-        animPlayer.apply(new AnimPlayer.Entry(binding.controllerLayout, Animations.BounceInDown))
-                .apply(new AnimPlayer.Entry(binding.operateLayout, Animations.BounceInLeft));
+        animPlayer.apply(new AnimPlayer.Entry(binding.controllerLayout, TurtleTransitions.enter()))
+                .apply(new AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()));
     }
 
     @Override
     public void slideOut(AnimPlayer animPlayer) {
-        animPlayer.apply(new AnimPlayer.Entry(binding.controllerLayout, Animations.FadeOutUp))
-                .apply(new AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight));
+        animPlayer.apply(new AnimPlayer.Entry(binding.controllerLayout, TurtleTransitions.exit()))
+                .apply(new AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()));
     }
 }

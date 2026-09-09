@@ -1,4 +1,5 @@
 package net.kdt.pojavlaunch.fragments;
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions;
 
 import static com.movtery.zalithlauncher.event.single.RefreshVersionsEvent.MODE.END;
 
@@ -103,6 +104,12 @@ public class MainMenuFragment extends FragmentWithAnim {
             runInstallerWithConfirmation(true);
             return true;
         });
+        // TurtleLauncher: Friends/LAN (Terracotta, which tunnels over EasyTier) was fully
+        // implemented - native lib, VPN service, host/join UI - but had NO entry point
+        // anywhere in the UI, so it was unreachable. This is it.
+        binding.terracottaButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
+            com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.class,
+            com.movtery.zalithlauncher.ui.fragment.TerracottaFragment.TAG, null));
         binding.shareLogsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this, com.movtery.zalithlauncher.ui.fragment.ShareLogsFragment.class, com.movtery.zalithlauncher.ui.fragment.ShareLogsFragment.TAG, null));
         binding.modpackImportButton.setOnClickListener(v -> {
             if (ProgressKeeper.getTaskCount() == 0) {
@@ -413,17 +420,23 @@ public class MainMenuFragment extends FragmentWithAnim {
         });
     }
 
+    // TurtleLauncher: the home page is built from distinct panels stacked down the screen, so
+    // they now arrive one after another instead of all at once - staggering them is what makes
+    // the screen feel assembled rather than just switched on. The play button still gets its
+    // pop, which is a scale effect rather than an entrance, so it runs alongside the stagger.
     @Override
     public void slideIn(AnimPlayer animPlayer) {
-        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, Animations.BounceInDown))
-                .apply(new AnimPlayer.Entry(binding.playLayout, Animations.BounceInLeft))
-                .apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceEnlarge));
+        com.movtery.zalithlauncher.utils.anim.TurtleTransitions.stagger(
+                animPlayer,
+                java.util.Arrays.asList(binding.launcherMenu, binding.playLayout),
+                55L);
+        animPlayer.apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceEnlarge));
     }
 
     @Override
     public void slideOut(AnimPlayer animPlayer) {
-        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, Animations.FadeOutUp))
-                .apply(new AnimPlayer.Entry(binding.playLayout, Animations.FadeOutRight))
+        animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, TurtleTransitions.exit()))
+                .apply(new AnimPlayer.Entry(binding.playLayout, TurtleTransitions.exit()))
                 .apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceShrink));
     }
 }

@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import com.movtery.zalithlauncher.ui.fragment.about.AboutInfoPageFragment
 import com.movtery.zalithlauncher.utils.ZHTools
 import com.movtery.zalithlauncher.utils.path.UrlManager
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
+
 
 class AboutFragment : FragmentWithAnim(R.layout.fragment_about) {
     companion object {
@@ -65,13 +67,13 @@ class AboutFragment : FragmentWithAnim(R.layout.fragment_about) {
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.infoViewPager, Animations.BounceInDown))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.BounceInLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.infoViewPager, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.infoViewPager, Animations.FadeOutUp))
-        animPlayer.apply(AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.infoViewPager, TurtleTransitions.exit()))
+        animPlayer.apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
     }
 
     private class ViewPagerAdapter(

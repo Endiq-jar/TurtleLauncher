@@ -1,0 +1,28 @@
+{
+  "$comment": [
+    "Remote rendezvous/relay node list for TurtleLauncher's Friends/LAN play (Terracotta",
+    "over EasyTier). Fetched at runtime by TerracottaNodeList so a dead relay node can be",
+    "replaced WITHOUT shipping a new APK - edit this file, merge to main, and every client",
+    "picks it up on its next host/join. Entries are tried in order; the app additionally",
+    "TCP/HTTP-probes each one and reorders live-first before handing at most 6 to EasyTier.",
+    "",
+    "IMPORTANT: a shared node is just an EasyTier network. Two peers only discover each",
+    "other if they have a node in common, so keep the top entries stable - changing them",
+    "breaks sessions between clients that cached an older copy.",
+    "",
+    "URIs: tcp:// udp:// ws:// wss:// quic:// wg:// faketcp:// http:// https://"
+  ],
+  "version": 1,
+  "nodes": [
+    { "url": "tcp://public.easytier.cn:11010", "note": "EasyTier's own documented shared node (EasyTier README)." },
+    { "url": "tcp://161.33.207.13:51010", "note": "Community public relay, EasyTier discussion #2429 (2026-08)." },
+    { "url": "udp://161.33.207.13:51010", "note": "Same relay over UDP - better latency when UDP isn't blocked." },
+    { "url": "udp://public.easytier.cn:11010", "note": "EasyTier official shared node, UDP transport." },
+    { "url": "ws://161.33.207.13:51011", "note": "Same relay over WebSocket - gets through restrictive proxies." },
+    { "url": "quic://161.33.207.13:51012", "note": "Same relay over QUIC." },
+    { "url": "tcp://public.easytier.top:11010", "note": "Terracotta's built-in default." },
+    { "url": "tcp://public2.easytier.cn:54321", "note": "Terracotta's built-in default." },
+    { "url": "https://etnode.zkitefly.eu.org/node1", "note": "Terracotta's built-in default (HTTP node-list form)." },
+    { "url": "https://etnode.zkitefly.eu.org/node2", "note": "Terracotta's built-in default (HTTP node-list form)." }
+  ]
+}

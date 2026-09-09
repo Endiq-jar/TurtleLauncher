@@ -2,7 +2,6 @@ package com.movtery.zalithlauncher.feature.download;
 
 import static com.movtery.zalithlauncher.feature.download.InfoAdapter.createCategoryView;
 import static com.movtery.zalithlauncher.feature.download.InfoAdapter.getTagTextView;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -10,12 +9,10 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -33,15 +30,19 @@ import com.movtery.zalithlauncher.setting.AllSettings;
 import com.movtery.zalithlauncher.ui.fragment.DownloadModFragment;
 import com.movtery.zalithlauncher.utils.NumberWithUnits;
 import com.movtery.zalithlauncher.utils.ZHTools;
-
 import net.kdt.pojavlaunch.Tools;
-
 import org.greenrobot.eventbus.EventBus;
 import org.jackhuang.hmcl.ui.versions.ModTranslations;
-
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.concurrent.Future;
+
+
+
+
+
+
+
 
 public class ModDependenciesAdapter extends RecyclerView.Adapter<ModDependenciesAdapter.InnerHolder> {
     private final InfoItem mInfoItem;

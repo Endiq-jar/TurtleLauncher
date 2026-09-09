@@ -13,6 +13,7 @@ import net.kdt.pojavlaunch.Tools
 import java.io.File
 import java.io.FileWriter
 
+
 class VersionConfig(private var versionPath: File) : Parcelable {
     private var isolationType: IsolationType = IsolationType.FOLLOW_GLOBAL
     private var javaDir: String = ""

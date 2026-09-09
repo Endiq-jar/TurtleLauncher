@@ -9,6 +9,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.dialog.DraggableDialog.DialogInitializationListener
 import com.movtery.zalithlauncher.utils.file.FileTools.Companion.formatFileSize
 
+
 class ProgressDialog(
     context: Context,
     private val listener: OnCancelListener

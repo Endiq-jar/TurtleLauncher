@@ -15,6 +15,7 @@ import com.movtery.zalithlauncher.databinding.DialogTipBinding
 import com.movtery.zalithlauncher.ui.dialog.DraggableDialog.DialogInitializationListener
 
 
+
 class TipDialog private constructor(
     context: Context,
     private val title: String?,

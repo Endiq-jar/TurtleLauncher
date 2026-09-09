@@ -1,4 +1,5 @@
 package com.movtery.zalithlauncher.ui.fragment
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -73,6 +74,9 @@ class VersionSeriesDetailFragment : FragmentWithAnim(R.layout.fragment_version_s
             bundle.putString(InstallGameFragment.BUNDLE_MC_VERSION, versionId)
             ZHTools.swapFragmentWithAnim(this, InstallGameFragment::class.java, InstallGameFragment.TAG, bundle)
         }
+        // TurtleLauncher: this list had no entry animation at all. post{} so the children
+        // exist before we animate them.
+        binding.versionDetailList.post { TurtleTransitions.animateList(binding.versionDetailList) }
     }
 
     /**
@@ -116,12 +120,12 @@ class VersionSeriesDetailFragment : FragmentWithAnim(R.layout.fragment_version_s
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, Animations.BounceInDown))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.BounceInLeft))
+        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, Animations.FadeOutUp))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
     }
 }

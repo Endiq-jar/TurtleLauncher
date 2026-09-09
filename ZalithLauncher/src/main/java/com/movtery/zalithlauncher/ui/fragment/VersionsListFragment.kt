@@ -1,11 +1,10 @@
 package com.movtery.zalithlauncher.ui.fragment
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
-import android.view.animation.LayoutAnimationController
 import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -40,6 +39,7 @@ import com.movtery.zalithlauncher.utils.ZHTools
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.util.UUID
+
 
 class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
     companion object {
@@ -125,9 +125,7 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
             })
 
             versions.apply {
-                layoutAnimation = LayoutAnimationController(
-                    AnimationUtils.loadAnimation(view.context, R.anim.fade_downwards)
-                )
+                layoutAnimation = TurtleTransitions.listLayoutAnimationController(view.context)
                 layoutManager = LinearLayoutManager(requireContext())
                 this.adapter = versionsAdapter
                 //版本列表项尺寸固定，开启setHasFixedSize可以跳过不必要的重新测量布局，滚动更顺滑
@@ -138,9 +136,7 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
 
             profilePathAdapter = ProfilePathAdapter(this@VersionsListFragment, profilesPath)
             profilesPath.apply {
-                layoutAnimation = LayoutAnimationController(
-                    AnimationUtils.loadAnimation(view.context, R.anim.fade_downwards)
-                )
+                layoutAnimation = TurtleTransitions.listLayoutAnimationController(view.context)
                 layoutManager = LinearLayoutManager(requireContext())
                 this.adapter = profilePathAdapter
                 setHasFixedSize(true)
@@ -345,17 +341,17 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, Animations.BounceInUp))
-                .apply(AnimPlayer.Entry(versionTopBar, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
+            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(versionTopBar, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, Animations.FadeOutDown))
-                .apply(AnimPlayer.Entry(versionTopBar, Animations.FadeOutUp))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.FadeOutRight))
+            animPlayer.apply(AnimPlayer.Entry(versionsListLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(versionTopBar, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.exit()))
         }
     }
 }

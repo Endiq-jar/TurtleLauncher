@@ -9,6 +9,7 @@ import com.movtery.zalithlauncher.databinding.DialogEditControlInfoBinding
 import com.movtery.zalithlauncher.ui.dialog.DraggableDialog.DialogInitializationListener
 import com.movtery.zalithlauncher.ui.subassembly.customcontrols.ControlInfoData
 
+
 class EditControlInfoDialog(
     context: Context,
     private val editFileName: Boolean,

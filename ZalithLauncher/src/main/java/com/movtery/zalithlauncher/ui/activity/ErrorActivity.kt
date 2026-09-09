@@ -14,7 +14,10 @@ import com.movtery.zalithlauncher.InfoCenter
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.ActivityErrorBinding
 import com.movtery.zalithlauncher.feature.log.CrashAnalyzer
+import com.movtery.zalithlauncher.feature.log.GameLogcat
+import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.feature.log.SelfHealingManager
+import com.movtery.zalithlauncher.feature.shizuku.ShizukuActions
 import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.utils.ZHTools
 import com.movtery.zalithlauncher.utils.file.FileTools
@@ -45,7 +48,7 @@ class ErrorActivity : BaseActivity() {
             return
         }
 
-        binding.errorConfirm.setOnClickListener { finish() }
+        binding.errorConfirm.setOnClickListener { dismissOrReturnToLauncher() }
         binding.errorRestart.setOnClickListener {
             startActivity(Intent(this@ErrorActivity, SplashActivity::class.java))
         }
@@ -79,6 +82,40 @@ class ErrorActivity : BaseActivity() {
             return
         }
 
+        finish()
+    }
+
+    /**
+     * TurtleLauncher: "black screen, then it just closes".
+     *
+     * Every crash screen here is launched from the `:game` process with
+     * FLAG_ACTIVITY_CLEAR_TASK | FLAG_ACTIVITY_NEW_TASK, and this Activity is
+     * dialog-themed (see CustomDialogStyle) - a 300sdp card floating over a dimmed
+     * background. When the launcher process is still alive that background is the launcher
+     * UI you came from, which is fine. But a long Minecraft session is exactly when Android
+     * kills background processes for memory, so very often `:launcher` is already dead: the
+     * Intent then cold-starts the app straight into this dialog, with NOTHING behind it.
+     * Result: a dialog over a black screen. And then tapping Confirm called finish() on the
+     * only Activity in the task, so the app vanished entirely - "just closes".
+     *
+     * Fix: when this Activity is the root of its task (nothing to go back to), Confirm
+     * returns the user to the launcher instead of finishing into the void. When there IS
+     * something behind us, behaviour is unchanged.
+     */
+    private fun dismissOrReturnToLauncher() {
+        if (!isTaskRoot) {
+            finish()
+            return
+        }
+        runCatching {
+            startActivity(
+                Intent(this, SplashActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            )
+        }.onFailure {
+            Logging.e("ErrorActivity", "Could not return to the launcher from the crash screen", it)
+        }
         finish()
     }
 
@@ -260,13 +297,54 @@ class ErrorActivity : BaseActivity() {
         showFixTips(diagnosis)
         // The diagnosis already summarises the log; Advanced Log still gives access to the raw tail
         // for anyone (or anyone helping them) who needs the unfiltered details.
-        val logTail = runCatching {
-            CrashAnalyzer.tailOf(File(PathManager.DIR_GAME_HOME, "latestlog.txt"), 64 * 1024)
-        }.getOrDefault("")
-        setAdvancedLog(logTail.ifBlank { diagnosis ?: "" })
+        applyGameCrashAdvancedLog(diagnosis)
         // Structured diagnoses for this exact crash were already stashed by CrashAnalyzer.analyzeGameExit()
         // (called from JREUtils right before this activity was launched) — see getLastDiagnoses().
         showDiagnosisActions()
+    }
+
+    /**
+     * TurtleLauncher: "the logs didn't appear".
+     *
+     * `latestlog.txt` is written by the NATIVE logger from inside the JVM that runs
+     * Minecraft. A renderer SIGSEGV / OOM kill / ANR kill takes that process out instantly
+     * and takes the logger's buffered output with it, so the file is routinely EMPTY at
+     * exactly the moment it is needed - the crash screen then showed "<no log available>"
+     * and looked broken. Rather than accept that, fall through a chain of log sources:
+     *
+     *   1. latestlog.txt (best case - the game's own output)
+     *   2. the live logcat drain from this session (GameLogcat) - lives in logd, so it
+     *      survives the process dying
+     *   3. a fresh one-shot `logcat -d`, taken off the UI thread
+     *   4. Shizuku (see ShizukuActions.dumpLogcat) - the same dump, but run with shell
+     *      privilege so it includes system/tombstone lines an app can't normally read
+     *
+     * Only the first two are synchronous; everything else fills the log in once it arrives.
+     */
+    private fun applyGameCrashAdvancedLog(diagnosis: String?) {
+        val nativeLog = runCatching {
+            CrashAnalyzer.tailOf(File(PathManager.DIR_GAME_HOME, "latestlog.txt"), 64 * 1024)
+        }.getOrDefault("")
+        if (nativeLog.isNotBlank()) {
+            setAdvancedLog(nativeLog)
+            return
+        }
+
+        val sessionLogcat = GameLogcat.readSessionTail()
+        if (sessionLogcat.isNotBlank()) {
+            setAdvancedLog(GameLogcat.formatForReport(sessionLogcat))
+            return
+        }
+
+        setAdvancedLog("")
+        TaskExecutors.getDefault().execute {
+            val fallback = ShizukuActions.dumpLogcat(4000)
+                .takeIf { it.isNotBlank() }
+                ?: GameLogcat.dumpNow()
+            val text = if (fallback.isNotBlank()) GameLogcat.formatForReport(fallback)
+            else diagnosis ?: ""
+            TaskExecutors.runInUIThread { setAdvancedLog(text) }
+        }
     }
 
     private fun showEasterEgg() {

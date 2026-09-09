@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.ui.fragment
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Typeface
@@ -11,8 +12,6 @@ import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
-import android.view.animation.LayoutAnimationController
 import android.widget.EditText
 import android.widget.PopupWindow
 import android.widget.Toast
@@ -66,6 +65,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.json.JSONObject
 import java.io.File
 import java.util.regex.Pattern
+
 
 
 class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClickListener {
@@ -181,12 +181,7 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
         binding.apply {
             accountsRecycler.layoutManager = LinearLayoutManager(context)
             accountsRecycler.setLayoutAnimation(
-                LayoutAnimationController(
-                    AnimationUtils.loadAnimation(
-                        context,
-                        R.anim.fade_downwards
-                    )
-                )
+                TurtleTransitions.listLayoutAnimationController(context)
             )
             accountsRecycler.adapter = mAccountAdapter
 
@@ -699,17 +694,17 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operationLayout, Animations.BounceInLeft))
-                .apply(AnimPlayer.Entry(accountTypeLayout, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(accountsRecycler, Animations.BounceInUp))
+            animPlayer.apply(AnimPlayer.Entry(operationLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(accountTypeLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(accountsRecycler, TurtleTransitions.enter()))
         }
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(operationLayout, Animations.FadeOutRight))
-                .apply(AnimPlayer.Entry(accountTypeLayout, Animations.FadeOutUp))
-                .apply(AnimPlayer.Entry(accountsRecycler, Animations.FadeOutDown))
+            animPlayer.apply(AnimPlayer.Entry(operationLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(accountTypeLayout, TurtleTransitions.exit()))
+                .apply(AnimPlayer.Entry(accountsRecycler, TurtleTransitions.exit()))
         }
     }
 }

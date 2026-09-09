@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.ui.subassembly.modlist
 
+import com.movtery.zalithlauncher.utils.anim.TurtleTransitions
 import android.content.Context
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
@@ -7,8 +8,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
-import android.view.animation.LayoutAnimationController
 import android.widget.CheckBox
 import androidx.annotation.CallSuper
 import androidx.fragment.app.FragmentActivity
@@ -25,6 +24,7 @@ import com.movtery.zalithlauncher.utils.anim.AnimUtils
 import com.movtery.zalithlauncher.utils.anim.AnimUtils.Companion.playVisibilityAnim
 import com.movtery.zalithlauncher.utils.stringutils.StringUtils
 import java.util.concurrent.Future
+
 
 
 abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download) {
@@ -63,7 +63,7 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
                     }
                 }
             })
-            recyclerView.layoutAnimation = LayoutAnimationController(AnimationUtils.loadAnimation(requireContext(), R.anim.fade_downwards))
+            recyclerView.layoutAnimation = TurtleTransitions.listLayoutAnimationController(requireContext())
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
             refreshButton.setOnClickListener { refreshTask() }
@@ -251,8 +251,8 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
 
     override fun slideIn(animPlayer: AnimPlayer) {
         binding.apply {
-            animPlayer.apply(AnimPlayer.Entry(modsLayout, Animations.BounceInDown))
-                .apply(AnimPlayer.Entry(operateLayout, Animations.BounceInLeft))
+            animPlayer.apply(AnimPlayer.Entry(modsLayout, TurtleTransitions.enter()))
+                .apply(AnimPlayer.Entry(operateLayout, TurtleTransitions.enter()))
                 .apply(AnimPlayer.Entry(icon, Animations.Wobble))
                 .apply(AnimPlayer.Entry(title, Animations.FadeInLeft))
                 .apply(AnimPlayer.Entry(description, Animations.FadeInLeft))
@@ -260,7 +260,7 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.modsLayout, Animations.FadeOutUp))
-            .apply(AnimPlayer.Entry(binding.operateLayout, Animations.FadeOutRight))
+        animPlayer.apply(AnimPlayer.Entry(binding.modsLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
     }
 }

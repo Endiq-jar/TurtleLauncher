@@ -4,6 +4,7 @@ import com.movtery.zalithlauncher.utils.path.PathManager.Companion.DIR_DATA
 import com.movtery.zalithlauncher.utils.path.PathManager.Companion.DIR_GAME_HOME
 import java.io.File
 
+
 class LibPath {
     companion object {
         private val COMPONENTS_DIR = File(DIR_DATA, "components")

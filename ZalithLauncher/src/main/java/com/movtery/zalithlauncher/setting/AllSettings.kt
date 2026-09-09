@@ -9,6 +9,7 @@ import com.movtery.zalithlauncher.utils.path.PathManager
 import net.kdt.pojavlaunch.Tools
 import net.kdt.pojavlaunch.prefs.LauncherPreferences
 
+
 class AllSettings {
     companion object {
         // ── Video ──────────────────────────────────────────────────────────────
@@ -172,6 +173,15 @@ class AllSettings {
         /** TurtleLauncher: static pre-launch scan for mods whose Mixin configs both target the same class. */
         @JvmStatic val modConflictDetection     = BooleanSettingUnit("modConflictDetection", true)
 
+        // ── Shizuku (privileged ADB/root integration) ──────────────────────────
+        /** Master switch for the whole Shizuku/Sui integration (see feature/shizuku).
+         *  When off, every entry point falls back to the unprivileged path as if Shizuku
+         *  were not installed at all. Safe to leave on: nothing here needs Shizuku to work. */
+        @JvmStatic val shizukuEnabled = BooleanSettingUnit("shizukuEnabled", true)
+        /** Re-apply the privileged keep-alive tweaks (phantom-process limit, process
+         *  priority) automatically at each game launch, not just when the button is pressed. */
+        @JvmStatic val shizukuAutoPerformance = BooleanSettingUnit("shizukuAutoPerformance", true)
+
         // ── Launcher ──────────────────────────────────────────────────────────
         @JvmStatic val checkLibraries           = BooleanSettingUnit("checkLibraries", true)
         @JvmStatic val verifyManifest           = BooleanSettingUnit("verifyManifest", true)
@@ -180,8 +190,22 @@ class AllSettings {
         @JvmStatic val downloadSource           = StringSettingUnit("downloadSource", "default")
         @JvmStatic val maxDownloadThreads       = IntSettingUnit("maxDownloadThreads", 128)
         @JvmStatic val launcherTheme            = StringSettingUnit("launcherTheme", "dark")
-        @JvmStatic val animation                = BooleanSettingUnit("animation", false)
+        /** Master switch for every screen/panel transition.
+         *
+         *  TurtleLauncher: was false. The launcher's whole point is the modern UI, and with
+         *  this off by default none of the transition work was ever visible - the pickers
+         *  below did nothing until you found and enabled this first. Now on; there is a
+         *  speed slider right under it and transitions are skipped entirely while a game
+         *  session is running (see TurtleTransitions.isEnabled), so low-end devices can
+         *  still turn it straight back off with one tap. */
+        @JvmStatic val animation                = BooleanSettingUnit("animation", true)
         @JvmStatic val animationSpeed           = IntSettingUnit("animationSpeed", 300)
+        /** Screen enter animation - see com.movtery.zalithlauncher.utils.anim.EnterTransition.
+         *  Applied to every screen transition and every show/hide that goes through
+         *  TurtleTransitions, so it's genuinely app-wide rather than per-fragment. */
+        @JvmStatic val animationEnter           = StringSettingUnit("animationEnter", "slide_up")
+        /** Screen exit animation - see com.movtery.zalithlauncher.utils.anim.ExitTransition. */
+        @JvmStatic val animationExit            = StringSettingUnit("animationExit", "slide_up")
         @JvmStatic val pageOpacity              = IntSettingUnit("pageOpacity", 100)
         @JvmStatic val enableLogOutput          = BooleanSettingUnit("enableLogOutput", false)
         @JvmStatic val quitLauncher             = BooleanSettingUnit("quitLauncher", true)

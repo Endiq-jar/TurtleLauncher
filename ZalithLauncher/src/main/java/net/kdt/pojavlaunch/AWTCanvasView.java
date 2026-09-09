@@ -11,10 +11,11 @@ import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.ViewGroup;
-
 import net.kdt.pojavlaunch.utils.JREUtils;
-
 import java.util.LinkedList;
+
+
+
 
 public class AWTCanvasView extends TextureView implements TextureView.SurfaceTextureListener, Runnable {
     // TurtleLauncher: capped near a typical installer window's own size (see AllSettings.

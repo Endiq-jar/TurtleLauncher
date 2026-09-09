@@ -37,7 +37,7 @@ class FileRecyclerViewCreator(
         this.mainRecyclerView = recyclerView
 
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(context)
-        mainRecyclerView.layoutAnimation = TurtleTransitions.listLayoutAnimationController(context)
+        context?.let { mainRecyclerView.layoutAnimation = TurtleTransitions.listLayoutAnimationController(it) }
         mainRecyclerView.layoutManager = layoutManager
         mainRecyclerView.adapter = this.fileRecyclerAdapter
 

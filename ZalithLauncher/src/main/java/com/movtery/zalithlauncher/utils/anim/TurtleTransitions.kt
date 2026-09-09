@@ -7,9 +7,7 @@ import com.movtery.anim.animations.Animations
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.task.TaskExecutors
 import android.content.Context
-import android.view.accessibility.AccessibilityManager
 import android.provider.Settings
-import android.os.Build
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
 import androidx.recyclerview.widget.RecyclerView
@@ -86,13 +84,12 @@ object TurtleTransitions {
      *
      * 1. The user turned animations off (or turned the speed down to 0) in Settings.
      * 2. A game session is running - a transition ticking behind Minecraft is pure waste.
-     * 3. **The system says no.** If the device has animation duration scale set to 0 (a very
-     *    common thing to do on a low-end phone, and what "Remove animations" in developer
-     *    options does) then the platform has already told us not to animate, and honouring it
-     *    is the single cheapest optimisation available here. Reduced-motion, an accessibility
-     *    setting, is respected the same way - and that one is a correctness issue too, not
-     *    just performance: forcing motion on someone who asked for none is genuinely
-     *    unpleasant for them.
+     * 3. **The system says no.** If ANIMATOR_DURATION_SCALE is 0 - which is exactly what
+     *    Settings -> Accessibility -> "Remove animations" sets, and a common thing to do
+     *    on a low-end phone - then the platform has already told us not to animate. It
+     *    governs every Animator on the device, so it is the authoritative answer.
+     *    Honouring it is both the cheapest optimisation available here and a correctness
+     *    matter: forcing motion on someone who asked for none is genuinely unpleasant.
      *
      * The system checks are the expensive ones (a Settings.Global read and a binder-backed
      * system service), so their results are cached - they don't change at runtime except by
@@ -147,11 +144,6 @@ object TurtleTransitions {
         )
         if (scale == ANIMATION_SCALE_OFF) return false
 
-        // Accessibility -> "Remove animations". API 29+; below that there's nothing to ask.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
-            if (am?.isReduceMotionEnabled == true) return false
-        }
         return true
     }
 

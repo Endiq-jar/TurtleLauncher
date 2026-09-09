@@ -325,16 +325,29 @@ public class MainMenuFragment extends FragmentWithAnim {
      * Updates the small count badge on the top bar's tasks button. Purely visual -
      * BaseFragment's own isTaskRunning() gate (used by e.g. runInstallerWithConfirmation
      * below) is unaffected by this.
+     *
+     * TurtleLauncher CRASH FIX - CalledFromWrongThreadException. This is registered as a
+     * TaskCountListener on ProgressKeeper, which calls it synchronously from whatever
+     * thread reported the progress change (see ProgressKeeper.waitUntilDone()'s own
+     * javadoc warning about this). ModParser's mod-scan finishing on its background
+     * executor and calling ProgressLayout.clearProgress() is one such caller. Every other
+     * TaskCountListener in the app already hops to the UI thread before touching anything
+     * (ProgressLayout.onUpdateTaskCount() posts, ProgressService.onUpdateTaskCount() uses
+     * this same TaskExecutors.runInUIThread()) - this one touched the TextView directly
+     * and was the odd one out. binding is re-checked inside the posted runnable since the
+     * fragment's view can be destroyed between the post and it actually running.
      */
     private void updateTasksBadge(int taskCount) {
-        if (binding == null) return;
-        android.widget.TextView badge = binding.topBarTasksBadge;
-        if (taskCount > 0) {
-            badge.setText(String.valueOf(taskCount));
-            badge.setVisibility(View.VISIBLE);
-        } else {
-            badge.setVisibility(View.GONE);
-        }
+        TaskExecutors.runInUIThread(() -> {
+            if (binding == null) return;
+            android.widget.TextView badge = binding.topBarTasksBadge;
+            if (taskCount > 0) {
+                badge.setText(String.valueOf(taskCount));
+                badge.setVisibility(View.VISIBLE);
+            } else {
+                badge.setVisibility(View.GONE);
+            }
+        });
     }
 
     /**

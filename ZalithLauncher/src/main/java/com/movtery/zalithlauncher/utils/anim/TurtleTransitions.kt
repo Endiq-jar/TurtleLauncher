@@ -78,7 +78,6 @@ object TurtleTransitions {
      * possible moment, so an active game session is treated exactly like the user's own
      * "disable animations" toggle.
      */
-    @JvmStatic
     /**
      * Whether to animate at all.
      *

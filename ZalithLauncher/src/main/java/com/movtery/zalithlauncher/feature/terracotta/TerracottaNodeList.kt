@@ -75,7 +75,10 @@ object TerracottaNodeList {
      *   tcp://public.easytier.top:11010  - CNAMEs to public.easytier.cn, which currently has
      *                                      no A record. Dead.
      *   tcp://public2.easytier.cn:54321  - no A record. Dead.
-     *   https://etnode.zkitefly.eu.org/* - unresolved, assumed dead.
+     *   https://etnode.zkitefly.eu.org/node1 and /node2 - unresolved, assumed dead.
+     *                                     (spelled out rather than globbed: Kotlin's block
+     *                                     comments nest, so writing the wildcard here opened
+     *                                     a comment that swallowed the rest of this file.)
      * i.e. most of the built-in bootstrap set is gone, which is the actual root cause: host
      * and guest never meet, the 15s window expires, PingHostFail.
      *

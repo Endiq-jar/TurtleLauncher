@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, arena/01a08085-turtlelauncher ]
   workflow_dispatch:
 
 jobs:

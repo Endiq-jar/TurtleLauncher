@@ -636,47 +636,48 @@ object CrashAnalyzer {
             ),
             // 22. MC 26.3+'s new SDL3-based LWJGL backend (org.lwjgl.sdl.SDLInit.SDL_Init)
             // SIGSEGV inside libSDL3.so's Android backend init path, confirmed via a real
-            // device hs_err_pid*.log (si_addr=0x0, SEGV_MAPERR - a straightforward null
-            // pointer dereference, not memory corruption) at the exact same offset across
-            // two separate crash logs on two separate launches, so this is consistently
-            // reproducible, not a flaky/rare fault. Call chain confirmed from the log itself:
-            // SDL_Init -> SDL_InitSubSystem -> three internal (unexported, stripped) helper
-            // functions -> crash, landing (per this project's own bundled libSDL3.so symbol
-            // table) in an unexported static function between JNI_OnLoad and
-            // SDL_SendAndroidMessage - i.e. inside SDL's Android JNI backend code. Root cause:
-            // SDL's Android backend expects a real Android JNIEnv/Activity pair (normally
-            // supplied by SDL's own SDLActivity Java glue layer during a real
-            // ANativeActivity-driven app), which never gets set up here since LWJGL calls
-            // SDL_Init as a plain downcall from a guest-JVM thread with no SDLActivity
-            // lifecycle behind it at all - the null pointer this dereferences is presumably
-            // exactly that missing Activity/JNIEnv reference. This is NOT the same bug as the
-            // now-disabled SdlAndroidJniPrep hack (that was a real, different, ALSO confirmed
-            // crash - a Java/native ABI mismatch causing a JNI-checked abort before this code
-            // ever ran); disabling that hack was necessary but not sufficient, since it just
-            // uncovered this pre-existing, deeper issue underneath. No confirmed fix exists
-            // yet - genuinely needs either a real (currently unbuilt) SDLActivity-equivalent
-            // JNI bridge, or an SDL-side Android backend hint/API this project hasn't found,
-            // to skip requiring that Activity. Diagnosis-only rule, not a fix.
+            // device hs_err_pid*.log (si_addr=0x0, SEGV_MAPERR - a null pointer dereference,
+            // not memory corruption) at the same offset across two separate crash logs, so
+            // consistently reproducible rather than flaky. Call chain from the log itself:
+            // SDL_Init -> SDL_InitSubSystem -> three internal (unexported, stripped) helpers
+            // -> crash, inside SDL's Android JNI backend code.
+            //
+            // Root cause, now established rather than guessed: SDL's Android backend reads
+            // statics its own SDLActivity Java glue normally fills in (Activity, SDLSurface,
+            // layout, clipboard handler). This launcher never starts SDLActivity as an
+            // Activity, so those were all null and SDL_Init dereferenced one.
+            //
+            // Fix status: the mechanism Amethyst-Android uses for this is now ported -
+            // SDLActivity.externalInitialize() / SDLSurface.setNativeSurface(), plus this
+            // launcher's own surface lifecycle being forwarded into SDL (see
+            // SdlAndroidJniPrep's class doc for which half of their fix is in, which isn't,
+            // and why the native half can't be). That code has NOT been verified on real
+            // hardware, so this rule stays: if the crash still happens the player sees the
+            // diagnosis below, and the "DroidBridgeSDL3: getNativeSurface" log line now says
+            // whether SDL was handed a real Surface - the piece that was invisible before.
             Rule(
                 title = "sdl3_android_init_sigsegv",
                 matches = { has(it, "libSDL3.so") && has(it, "SDL_InitSubSystem", "SDL_Init") && has(it, "SIGSEGV") },
                 diagnosis = { _ ->
                     Diagnosis(
-                        title = "MC 26.3+'s SDL3 backend crashes on Android during SDL_Init (libSDL3.so)",
+                        title = "MC 26.3+'s SDL3 backend crashed on Android during SDL_Init (libSDL3.so)",
                         cause = "A null-pointer SIGSEGV inside libSDL3.so's own Android backend init code, triggered " +
-                            "every time by LWJGL's org.lwjgl.sdl.SDLInit.SDL_Init(). SDL's Android backend expects a " +
-                            "real Android JNIEnv/Activity pair (normally supplied by SDL's own Java glue layer during " +
-                            "a real SDLActivity-driven app), which this launcher's guest-JVM SDL_Init call never " +
-                            "provides - there's no SDLActivity lifecycle behind it at all, only a plain native " +
-                            "downcall. Blocked: still needs a real Android JNI/Activity bridge this project doesn't " +
-                            "have built yet, not a quick env-var or setting fix.",
+                            "by LWJGL's org.lwjgl.sdl.SDL_Init(). SDL's Android backend expects an Activity/SDLSurface " +
+                            "pair from its own Java glue; this launcher now sets that up before the game JVM starts " +
+                            "(SdlAndroidJniPrep), but that path is new and not yet confirmed on a real device - so a " +
+                            "crash here means either it didn't take effect for this launch, or the renderer in use " +
+                            "can't create its EGL window under SDL at all.",
                         fixSteps = listOf(
-                            "This is a known, currently-unresolved limitation of running MC 26.3+ (SDL3/LWJGL 3.4.2) " +
-                                "on this launcher - there is no working fix yet, built-in or otherwise.",
-                            "Use an MC version at or below 26.2 (pre-SDL3/GLFW-based LWJGL) until this is resolved.",
-                            "If you can attach gdb/lldb to a launch and get a real native backtrace with symbols for " +
-                                "the three unexported frames below SDL_InitSubSystem, that would give far more to go " +
-                                "on than the stripped binary's own symbol table can."
+                            "Switch renderer for this version: Settings → Video → Renderer. Amethyst-Android's own " +
+                                "release notes list MobileGlues and Krypton Wrapper as crashing on MC 26.3-snapshot4+ " +
+                                "\"due to changes in how SDL creates EGL window\" - Zink or LTW are the safer picks there.",
+                            "Leave Settings → Experimental → \"LWJGL compatibility mode\" on Auto so the launcher picks " +
+                                "the LWJGL native matching this version's own manifest.",
+                            "If it still fails, play an MC version at or below 26.2 (pre-SDL3/GLFW-based LWJGL) and " +
+                                "report the log - the new SDL log lines say whether SDL got a real Surface, which is " +
+                                "what's needed to finish this fix.",
+                            "A native backtrace with symbols for the three unexported frames below SDL_InitSubSystem " +
+                                "(gdb/lldb attached to a launch) would give more than the stripped binary can."
                         ),
                         severity = Severity.CRITICAL
                     )

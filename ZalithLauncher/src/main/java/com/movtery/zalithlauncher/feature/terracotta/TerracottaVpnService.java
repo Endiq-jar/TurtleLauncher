@@ -112,7 +112,10 @@ public class TerracottaVpnService extends VpnService {
         String modeText = mode == Terracotta.TerracottaMode.HOST ? "Hosting" : "Connected to friend";
 
         Notification.Builder builder = new Notification.Builder(this, CHANNEL_ID);
-        builder.setSmallIcon(R.drawable.ic_chat) // TODO: swap for a dedicated Friends/network icon
+        // Dedicated Friends/LAN icon (was ic_chat, the in-game chat glyph, with a TODO to
+        // replace it). Solid-fill vector rather than a stroked one - see ic_friends_network.xml
+        // for why a stroked icon like ic_globe doesn't survive being a notification small icon.
+        builder.setSmallIcon(R.drawable.ic_friends_network)
             .setContentTitle("TurtleLauncher Friends")
             .setContentText(modeText)
             .setWhen(System.currentTimeMillis())

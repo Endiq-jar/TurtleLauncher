@@ -506,6 +506,7 @@
     <string name="main_nav_tasks">Tasks</string>
     <string name="main_nav_cursor">Cursor</string>
     <string name="main_nav_settings">Settings</string>
+    <string name="main_nav_assistant">Assistant</string>
     <string name="main_tasks_dialog_title">Running tasks</string>
     <string name="main_tasks_dialog_empty">No tasks running right now.</string>
     <string name="main_section_quick_actions">Quick Actions</string>
@@ -614,6 +615,21 @@
     <string name="share_logs_copied">Log content copied to clipboard</string>
     <string name="share_logs_cleared">Logs cleared</string>
     <string name="chat_send">Send</string>
+
+    <!-- TurtleLauncher: built-in AI Assistant (top bar -> Assistant). Runs fully on-device:
+         no API key, no account, no network - see feature/ai/TurtleAssistant.kt. English only
+         for now; other locales fall back to these strings. -->
+    <string name="ai_chat_title">Assistant</string>
+    <string name="ai_chat_subtitle">On-device • no account or API key needed</string>
+    <string name="ai_chat_input_hint">Ask about renderers, crashes, mods…</string>
+    <string name="ai_chat_thinking">Thinking…</string>
+    <string name="ai_chat_clear_title">Clear conversation?</string>
+    <string name="ai_chat_clear_message">This deletes the saved Assistant history on this device. It can't be undone.</string>
+    <string name="ai_chat_error_generic">Something went wrong while answering that. Try again.</string>
+    <string name="setting_ai_assistant_title">Show the Assistant button</string>
+    <string name="setting_ai_assistant_desc">Shows the Assistant in the launcher's top bar. It answers questions about this launcher entirely on-device - no API key, no account and no internet connection needed.</string>
+    <string name="setting_ai_assistant_history_title">Keep Assistant conversations</string>
+    <string name="setting_ai_assistant_history_desc">Saves the Assistant conversation on this device so it is still there next time. Turn off to start every session fresh.</string>
     <string name="share_logs_upload_mclogs">Upload to mclo.gs</string>
     <string name="share_logs_upload_mclogs_desc">Get a shareable link to this log</string>
 

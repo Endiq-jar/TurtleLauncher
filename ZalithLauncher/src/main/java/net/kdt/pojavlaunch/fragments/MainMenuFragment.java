@@ -38,9 +38,16 @@ import com.movtery.zalithlauncher.ui.fragment.ControlButtonFragment;
 import com.movtery.zalithlauncher.ui.fragment.FilesFragment;
 import com.movtery.zalithlauncher.ui.fragment.FragmentWithAnim;
 import com.movtery.zalithlauncher.ui.fragment.LogViewerFragment;
-import com.movtery.zalithlauncher.ui.fragment.VersionManagerFragment;
+import com.movtery.zalithlauncher.ui.fragment.AccountFragment;
 import com.movtery.zalithlauncher.ui.fragment.VersionsListFragment;
-import com.movtery.zalithlauncher.ui.subassembly.account.AccountViewWrapper;
+import com.movtery.zalithlauncher.ui.subassembly.version.VersionManagerDropdown;
+import com.movtery.zalithlauncher.feature.accounts.AccountsManager;
+import com.movtery.zalithlauncher.feature.log.Logging;
+import com.movtery.zalithlauncher.utils.skin.SkinLoader;
+
+import androidx.core.content.ContextCompat;
+
+import net.kdt.pojavlaunch.value.MinecraftAccount;
 import com.movtery.zalithlauncher.utils.file.FileTools;
 import com.movtery.zalithlauncher.utils.path.PathManager;
 import com.movtery.zalithlauncher.utils.ZHTools;
@@ -59,7 +66,6 @@ import java.io.File;
 public class MainMenuFragment extends FragmentWithAnim {
     public static final String TAG = "MainMenuFragment";
     private FragmentLauncherBinding binding;
-    private AccountViewWrapper accountViewWrapper;
     private ActivityResultLauncher<Object> modpackImportLauncher;
     // TurtleLauncher: backs the top bar's tasks button/badge - separate listener object
     // (not an onUpdateTaskCount() override) since BaseFragment's own TaskCountListener
@@ -89,8 +95,6 @@ public class MainMenuFragment extends FragmentWithAnim {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentLauncherBinding.inflate(getLayoutInflater());
-        accountViewWrapper = new AccountViewWrapper(this, binding.viewAccount);
-        accountViewWrapper.refreshAccountInfo();
         return binding.getRoot();
     }
 
@@ -135,7 +139,7 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.managerProfileButton.setOnClickListener(v -> {
             if (!isTaskRunning()) {
                 ViewAnimUtils.setViewAnim(binding.managerProfileButton, Animations.Pulse);
-                ZHTools.swapFragmentWithAnim(this, VersionManagerFragment.class, VersionManagerFragment.TAG, null);
+                new VersionManagerDropdown(this).show(binding.managerProfileButton);
             } else {
                 ViewAnimUtils.setViewAnim(binding.managerProfileButton, Animations.Shake);
                 TaskExecutors.runInUIThread(() -> Toast.makeText(requireContext(), R.string.version_manager_task_in_progress, Toast.LENGTH_SHORT).show());
@@ -159,6 +163,13 @@ public class MainMenuFragment extends FragmentWithAnim {
 
         // Top app bar: title/subtitle + quick-action icon row
         binding.homeTopBarTitle.setText(com.movtery.zalithlauncher.InfoDistributor.LAUNCHER_NAME);
+        // TurtleLauncher: account manager moved here from the view_account card that used to
+        // sit above the play panel - same destination (AccountFragment), just reachable from
+        // the top bar now like the other quick actions. refreshAccountButton() keeps the icon
+        // in sync with whichever account is currently selected.
+        binding.topBarAccountButton.setOnClickListener(v ->
+            ZHTools.swapFragmentWithAnim(this, AccountFragment.class, AccountFragment.TAG, null));
+        refreshAccountButton();
         binding.topBarStorageButton.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             bundle.putString(FilesFragment.BUNDLE_LIST_PATH, PathManager.DIR_GAME_HOME);
@@ -304,7 +315,29 @@ public class MainMenuFragment extends FragmentWithAnim {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void event(AccountUpdateEvent event) {
-        if (accountViewWrapper != null) accountViewWrapper.refreshAccountInfo();
+        refreshAccountButton();
+    }
+
+    /**
+     * Loads the current account's avatar into the top bar's account button, same source
+     * (SkinLoader) and fallback (ic_add when no account is set yet) as the old view_account
+     * card's AccountViewWrapper used, just without the name/type text an icon-only top-bar
+     * button has no room for.
+     */
+    private void refreshAccountButton() {
+        if (binding == null) return;
+        MinecraftAccount account = AccountsManager.INSTANCE.getCurrentAccount();
+        if (account == null) {
+            binding.topBarAccountButton.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_add));
+            return;
+        }
+        try {
+            binding.topBarAccountButton.setImageDrawable(
+                SkinLoader.getAvatarDrawable(requireContext(), account, (int) Tools.dpToPx(22f))
+            );
+        } catch (Exception e) {
+            Logging.e("MainMenuFragment", "Failed to load avatar.", e);
+        }
     }
 
     @Override
@@ -360,26 +393,58 @@ public class MainMenuFragment extends FragmentWithAnim {
         com.movtery.zalithlauncher.databinding.DialogRunningTasksBinding dialogBinding =
                 com.movtery.zalithlauncher.databinding.DialogRunningTasksBinding.inflate(getLayoutInflater());
 
-        java.util.List<ProgressKeeper.Snapshot> snapshots = ProgressKeeper.getSnapshots();
-        if (snapshots.isEmpty()) {
-            dialogBinding.tasksDialogEmpty.setVisibility(View.VISIBLE);
-        } else {
+        // TurtleLauncher fix: this used to render one point-in-time snapshot when the dialog
+        // opened and never touch it again, so a download that kept progressing while the
+        // dialog stayed open just sat frozen at whatever percentage it was at open time.
+        // Now it polls ProgressKeeper every 400ms for as long as the dialog is showing and
+        // patches progress/text on existing rows in place (keyed by progressKey), adds rows
+        // for tasks that start after the dialog opened, and removes rows for tasks that
+        // finish - so the list tracks reality instead of a snapshot.
+        java.util.Map<String, com.kdt.mcgui.TextProgressBar> rowsByKey = new java.util.HashMap<>();
+        android.os.Handler refreshHandler = TaskExecutors.getUIHandler();
+        Runnable[] refreshRunnableHolder = new Runnable[1];
+
+        refreshRunnableHolder[0] = () -> {
+            if (!isAdded()) return; // fragment detached - stop polling, dialog will be dismissed with it
+
+            java.util.List<ProgressKeeper.Snapshot> snapshots = ProgressKeeper.getSnapshots();
+            dialogBinding.tasksDialogEmpty.setVisibility(snapshots.isEmpty() ? View.VISIBLE : View.GONE);
+
+            java.util.Set<String> stillRunning = new java.util.HashSet<>();
             for (ProgressKeeper.Snapshot snapshot : snapshots) {
-                com.kdt.mcgui.TextProgressBar row = new com.kdt.mcgui.TextProgressBar(requireContext());
-                row.setTextPadding(getResources().getDimensionPixelOffset(R.dimen._6sdp));
+                stillRunning.add(snapshot.progressKey);
+                com.kdt.mcgui.TextProgressBar row = rowsByKey.get(snapshot.progressKey);
+                if (row == null) {
+                    row = new com.kdt.mcgui.TextProgressBar(requireContext());
+                    row.setTextPadding(getResources().getDimensionPixelOffset(R.dimen._6sdp));
+                    android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                            getResources().getDimensionPixelOffset(R.dimen._24sdp));
+                    params.bottomMargin = getResources().getDimensionPixelOffset(R.dimen._6sdp);
+                    dialogBinding.tasksDialogList.addView(row, params);
+                    rowsByKey.put(snapshot.progressKey, row);
+                }
                 row.setProgress(Math.max(snapshot.progress, 0));
                 row.setText(describeSnapshot(snapshot));
-                android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                        getResources().getDimensionPixelOffset(R.dimen._24sdp));
-                params.bottomMargin = getResources().getDimensionPixelOffset(R.dimen._6sdp);
-                dialogBinding.tasksDialogList.addView(row, params);
             }
-        }
+
+            java.util.Iterator<java.util.Map.Entry<String, com.kdt.mcgui.TextProgressBar>> it = rowsByKey.entrySet().iterator();
+            while (it.hasNext()) {
+                java.util.Map.Entry<String, com.kdt.mcgui.TextProgressBar> entry = it.next();
+                if (!stillRunning.contains(entry.getKey())) {
+                    dialogBinding.tasksDialogList.removeView(entry.getValue());
+                    it.remove();
+                }
+            }
+
+            refreshHandler.postDelayed(refreshRunnableHolder[0], 400);
+        };
+        refreshRunnableHolder[0].run();
 
         new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
                 .setView(dialogBinding.getRoot())
                 .setPositiveButton(android.R.string.ok, null)
+                .setOnDismissListener(d -> refreshHandler.removeCallbacks(refreshRunnableHolder[0]))
                 .show();
     }
 

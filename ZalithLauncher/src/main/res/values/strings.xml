@@ -500,6 +500,7 @@
     <string name="main_modpack_import">Import Modpack</string>
     <string name="main_launch">Launch Game</string>
     <string name="main_nav_home">Home</string>
+    <string name="main_nav_account">Account</string>
     <string name="main_nav_files">Files</string>
     <string name="main_nav_download">Download</string>
     <string name="main_nav_tasks">Tasks</string>

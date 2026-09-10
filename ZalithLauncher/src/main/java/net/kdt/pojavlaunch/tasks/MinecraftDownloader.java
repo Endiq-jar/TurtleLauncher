@@ -368,7 +368,17 @@ public class MinecraftDownloader {
 
             String sha1 = null, url = null;
             long size = 0;
-            boolean skipIfFailed = false;
+            // TurtleLauncher fix: this used to default to false here, so a single stale/
+            // moved libraries.minecraft.net URL (common for the dozens of dependencies an
+            // *old* version pulls in - the further back a version is, the more years its
+            // library URLs have had to rot or move) aborted the entire install via
+            // mDownloaderThreadException, even though every other library and the actual
+            // game jar downloaded fine. Recently-played versions like 1.21 don't hit this
+            // because their handful of current libraries are all still live. Same reasoning
+            // already applied to assets below (scheduleAssetDownloads) - a missing optional
+            // dependency shouldn't block an otherwise-successful install; skip it and let
+            // the game start, same as a missing sound/lang asset.
+            boolean skipIfFailed = true;
             if(dependentLibrary.downloads != null) {
                 if(dependentLibrary.downloads.artifact != null) {
                     MinecraftLibraryArtifact artifact = dependentLibrary.downloads.artifact;
@@ -386,7 +396,6 @@ public class MinecraftDownloader {
                 url = (dependentLibrary.url == null
                         ? "https://libraries.minecraft.net/"
                         : dependentLibrary.url.replace("http://","https://")) + libArtifactPath;
-                skipIfFailed = true;
             }
             if(!AllSettings.getCheckLibraries().getValue() || AllSettings.getFastBoot().getValue()) sha1 = null;
             scheduleDownload(new File(ProfilePathHome.getLibrariesHome(), libArtifactPath),

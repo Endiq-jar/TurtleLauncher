@@ -186,6 +186,17 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.topBarSettingsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.class,
             com.movtery.zalithlauncher.ui.fragment.settings.SettingsFragment.TAG, null));
+        // TurtleLauncher: built-in AI Assistant. Runs entirely on-device - no API key, no
+        // account, no network (see feature/ai/TurtleAssistant.kt) - so unlike the optional
+        // AI crash help / skin filter in Settings -> Experimental there's nothing for the
+        // player to configure before it works. The button is only hidden when the player
+        // turns AllSettings.aiAssistantEnabled off.
+        binding.topBarAiButton.setVisibility(
+            com.movtery.zalithlauncher.setting.AllSettings.getAiAssistantEnabled().getValue()
+                ? View.VISIBLE : View.GONE);
+        binding.topBarAiButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
+            com.movtery.zalithlauncher.ui.fragment.AiChatFragment.class,
+            com.movtery.zalithlauncher.ui.fragment.AiChatFragment.TAG, null));
         // TurtleLauncher: replaces the old always-visible bottom ProgressLayout bar - tasks
         // (downloads, login, mod checks, etc, anything routed through ProgressKeeper) are
         // now checked on demand via this button instead of a permanent bar at the bottom.

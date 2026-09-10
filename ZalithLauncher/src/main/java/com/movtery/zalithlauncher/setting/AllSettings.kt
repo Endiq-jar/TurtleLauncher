@@ -13,7 +13,22 @@ import net.kdt.pojavlaunch.prefs.LauncherPreferences
 class AllSettings {
     companion object {
         // ── Video ──────────────────────────────────────────────────────────────
-        @JvmStatic val renderer = StringSettingUnit("renderer", "f7e985d8-6d4c-f63c-d9f1-06074dab823a")
+        /** Which renderer a launch uses, stored as the renderer's getUniqueIdentifier() UUID
+         *  (Renderers.setCurrentRenderer looks it up by that, never by name/id).
+         *
+         *  TurtleLauncher: the default was Holy GL4ES ("f7e985d8-6d4c-f63c-d9f1-06074dab823a"),
+         *  now MobileGlues ("4b4b8e4b-083d-429c-97e1-5e8239b6dc17" - both UUIDs verified
+         *  against renderer/renderers/HolyGL4ESRenderer.kt and MobileGluesRenderer.kt).
+         *  MobileGlues is the better out-of-the-box pick here: it's a full GL implementation
+         *  on top of the device's own GLES 3.x rather than a GL->GLES translator, its bundled
+         *  libmobileglues.so is self-contained (see MobileGluesRenderer's doc comment), and
+         *  it's the one GL-family renderer RendererCatalog marks as shader-pack capable.
+         *  It only ever applies to a fresh install / a player who never touched the setting -
+         *  an existing value is always kept, and Renderers.setCurrentRenderer() still falls
+         *  back to the first *compatible* renderer when this one isn't available on the
+         *  device (e.g. a missing libmobileglues.so for that ABI), so nothing can end up
+         *  pointing at a renderer that can't load. */
+        @JvmStatic val renderer = StringSettingUnit("renderer", "4b4b8e4b-083d-429c-97e1-5e8239b6dc17")
         @JvmStatic val driver   = StringSettingUnit("driver", "Turnip")
         /** TurtleLauncher: backs the single Video-settings Graphics Backend switch (replaces
          *  the old two-button OpenGL/Vulkan quick-select). ON = OpenGL (HolyGL4ES), OFF =
@@ -93,6 +108,13 @@ class AllSettings {
         // ── Control ───────────────────────────────────────────────────────────
         @JvmStatic val disableGestures          = BooleanSettingUnit("disableGestures", true)
         @JvmStatic val disableDoubleTap         = BooleanSettingUnit("disableDoubleTap", false)
+        /** TurtleLauncher: shows a small on-screen button while playing (icon = the keyboard's
+         *  Tab key, ic_keyboard_tab) that swaps to the next control layout on tap - same effect
+         *  as in-game menu -> Control -> "Replace controls", but without opening the drawer.
+         *  Toggled from the in-game launcher menu (Control tab) as "Control Switcher"; when off
+         *  the button is hidden. Cycling order is the alphabetical order of the .json files in
+         *  PathManager.DIR_CTRLMAP_PATH, wrapping back to the first after the last. */
+        @JvmStatic val controlSwitcherEnabled   = BooleanSettingUnit("controlSwitcherEnabled", true)
         @JvmStatic val timeLongPressTrigger     = IntSettingUnit("timeLongPressTrigger", 300)
         @JvmStatic val buttonScale              = IntSettingUnit("buttonscale", 100)
         @JvmStatic val buttonAllCaps            = BooleanSettingUnit("buttonAllCaps", false)
@@ -437,6 +459,18 @@ class AllSettings {
         // Reuses the same aiApiKey/aiModel as crash help, since both assume an OpenAI-compatible
         // Chat Completions endpoint. See AiContentModerator for what "appropriate" means here.
         @JvmStatic val aiSkinFilterEnabled       = BooleanSettingUnit("aiSkinFilterEnabled", false)
+
+        // ── TurtleLauncher built-in AI Assistant (top bar → Assistant) ────────
+        /** The Assistant screen itself runs entirely on-device - it's a local
+         *  knowledge base + live-launcher-state reader (see feature/ai/TurtleAssistant.kt),
+         *  so unlike aiCrashHelpEnabled/aiSkinFilterEnabled above it needs no API key,
+         *  no account and no network at all. This toggle only hides/shows the top-bar
+         *  entry point, for players who don't want the button there. */
+        @JvmStatic val aiAssistantEnabled        = BooleanSettingUnit("aiAssistantEnabled", true)
+        /** Keep the Assistant's conversation across launcher restarts (JSON file under
+         *  the app's private files dir - see feature/ai/AssistantHistory.kt). Off = every
+         *  session starts from a clean transcript. */
+        @JvmStatic val aiAssistantHistoryEnabled = BooleanSettingUnit("aiAssistantHistoryEnabled", true)
 
         // Custom DNS resolver for the launcher's own network requests (downloads/API
         // calls), independent of the download-source (BMCLAPI) mirror above.

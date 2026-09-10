@@ -132,6 +132,20 @@
                 android:tint="@color/turtle_text_secondary"
                 android:contentDescription="@string/main_nav_cursor"/>
 
+            <!-- TurtleLauncher: built-in AI Assistant (on-device, no API key - see
+                 feature/ai/TurtleAssistant.kt). Placed left of Settings since it's a
+                 help-style entry point rather than a configuration one. Visible by default;
+                 MainMenuFragment hides it only when AllSettings.aiAssistantEnabled is off. -->
+            <ImageButton
+                android:id="@+id/top_bar_ai_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_ai_assistant"
+                android:padding="9dp"
+                android:tint="@color/turtle_text_secondary"
+                android:contentDescription="@string/main_nav_assistant"/>
+
             <ImageButton
                 android:id="@+id/top_bar_settings_button"
                 android:layout_width="40dp"

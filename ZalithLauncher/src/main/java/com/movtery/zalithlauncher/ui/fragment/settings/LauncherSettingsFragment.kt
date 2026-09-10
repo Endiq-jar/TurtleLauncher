@@ -77,6 +77,24 @@ class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fr
             binding.addFullResourceName
         )
 
+        // TurtleLauncher: built-in AI Assistant (top bar -> Assistant). Runs fully on-device -
+        // no API key, no account, no network (see feature/ai/TurtleAssistant.kt) - so these
+        // two switches are about visibility and local storage only. The optional AI crash
+        // help / skin filter live in Experimental and are the ones that need a key.
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.aiAssistantEnabled,
+            binding.aiAssistantEnabledLayout,
+            binding.aiAssistantEnabled
+        )
+
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.aiAssistantHistoryEnabled,
+            binding.aiAssistantHistoryEnabledLayout,
+            binding.aiAssistantHistoryEnabled
+        )
+
         ListSettingsWrapper(
             context,
             AllSettings.downloadSource,

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TurtleLauncher: icon for the built-in AI Assistant (top-bar entry point + the Assistant
+     screen's own header). A "sparkle" glyph rather than a robot head - it still reads as
+     "assistant" at the 22dp size the top bar uses, where detail would disappear.
+     Drawn solid white and tinted at the use site (android:tint), same convention as every
+     other ic_*.xml vector in this folder. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M10,2.5l1.6,4.6 4.6,1.6 -4.6,1.6L10,14.9l-1.6,-4.6L3.8,8.7l4.6,-1.6z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M17,12.5l1,2.9 2.9,1 -2.9,1 -1,2.9 -1,-2.9 -2.9,-1 2.9,-1z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M5,14.5l0.8,2.2 2.2,0.8 -2.2,0.8L5,20.5l-0.8,-2.2L2,17.5l2.2,-0.8z" />
+</vector>

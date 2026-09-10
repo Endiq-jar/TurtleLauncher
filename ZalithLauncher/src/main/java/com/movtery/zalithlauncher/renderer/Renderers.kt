@@ -2,6 +2,7 @@ package com.movtery.zalithlauncher.renderer
 
 import android.content.Context
 import com.movtery.zalithlauncher.feature.log.Logging
+import com.movtery.zalithlauncher.renderer.renderers.AngleRenderer
 import com.movtery.zalithlauncher.renderer.renderers.FreedrenoRenderer
 import com.movtery.zalithlauncher.renderer.renderers.HolyGL4ESRenderer
 import com.movtery.zalithlauncher.renderer.renderers.LTWRenderer
@@ -79,15 +80,25 @@ object Renderers {
             currentRenderer = null
         }
 
-        // Order here is display order in the picker, not priority - HolyGL4ES first since
-        // it's the RECOMMENDED-badged default (see RendererCatalog), matching FCL's own
-        // convention of putting GL4ES first. LTW/MobileGlues placed right after it, in
-        // Krypton Wrapper's old slot.
+        // Order here is display order in the picker, not priority - MobileGlues first since
+        // it's now both the RECOMMENDED-badged renderer (see RendererCatalog) and the default
+        // AllSettings.renderer value, so the picker opens on the renderer a fresh install
+        // actually uses. It also matters for setCurrentRenderer(retryToFirstOnFailure = true):
+        // the first *compatible* renderer is what an unknown/unavailable UUID falls back to,
+        // and that fallback should agree with the default setting rather than silently
+        // landing on a different renderer. LTW/Holy GL4ES follow, in the old slots.
         addRenderers(
-            HolyGL4ESRenderer(),
-            LTWRenderer(),
             MobileGluesRenderer(),
+            LTWRenderer(),
+            HolyGL4ESRenderer(),
             NWRenderer(),
+            // ANGLE: the renderer class and its two .so files (libGLESv2_angle.so /
+            // libEGL_angle.so, present for all four ABIs in jniLibs) were already in the
+            // tree, and RendererCatalog already had its Badge.EXPERIMENTAL entry - but it
+            // was never passed to addRenderers(), so it could never appear in the picker or
+            // be selected. Registered here to close that gap; hasRequiredLibrary() still
+            // filters it out on any ABI where those two files aren't bundled.
+            AngleRenderer(),
             VirGLRenderer(),
             ZinkRenderer(),
             FreedrenoRenderer(),

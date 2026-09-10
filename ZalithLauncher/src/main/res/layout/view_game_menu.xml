@@ -730,6 +730,36 @@
                     android:layout_centerVertical="true" />
             </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
 
+            <!-- TurtleLauncher Control Switcher: turns the in-game layout-swap button
+                 (activity_game.xml -> control_switcher_button) on and off. -->
+            <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                android:id="@+id/controlSwitcher_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_8sdp"
+                android:background="@drawable/background_item"
+                android:padding="@dimen/_8sdp"
+                app:ripple_for_relative="true">
+
+                <TextView
+                    android:id="@+id/controlSwitcher_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="@dimen/_8sdp"
+                    android:layout_toStartOf="@+id/controlSwitcher"
+                    android:text="@string/setting_control_switcher_title"
+                    android:textColor="@color/turtle_primary_text" />
+
+                <Switch
+                    android:id="@+id/controlSwitcher"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
             <LinearLayout
                 android:id="@+id/timeLongPressTrigger_layout"
                 android:layout_width="match_parent"

@@ -797,6 +797,13 @@
     <string name="setting_disable_gestures_desc">Disable gestures such as long press to break blocks, tap to place blocks</string>
     <string name="setting_disable_swap_hand_title">Disable Double Tap to Swap Items</string>
     <string name="setting_disable_swap_hand_desc">Disable double tapping an item in the hotbar to swap it with the off-hand item</string>
+    <!-- TurtleLauncher Control Switcher: the row lives in the in-game launcher menu
+         (Game Menu -> Control tab), the button itself is drawn in activity_game.xml -->
+    <string name="setting_control_switcher_title">Control Switcher</string>
+    <string name="setting_control_switcher_desc">Show a button while playing that switches to the next control layout when tapped</string>
+    <string name="control_switcher_switched">Controls: %1$s</string>
+    <string name="control_switcher_no_other_layouts">No other control layouts to switch to</string>
+    <string name="control_switcher_failed">Could not load that control layout</string>
     <string name="setting_button_allcaps_title">Use All Caps in Button Labels</string>
     <string name="setting_button_allcaps_desc">Disable this if you want to use lowercase letters in the control layout</string>
     <string name="setting_gyro_invert_x_axis">Invert X Axis</string>

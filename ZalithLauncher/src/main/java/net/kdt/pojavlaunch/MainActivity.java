@@ -193,6 +193,21 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
         binding.mainControlLayout.setModifiable(false);
 
+        // TurtleLauncher Control Switcher: tap to jump to the next control layout without
+        // opening the game menu. Visibility follows AllSettings.controlSwitcherEnabled, which
+        // the in-game menu's "Control Switcher" row (Control tab) toggles - see
+        // MenuSettingsInitListener below. Icon is the keyboard's Tab key.
+        refreshControlSwitcherButton();
+        binding.controlSwitcherButton.setOnClickListener(v -> {
+            String switchedTo = com.movtery.zalithlauncher.feature.turtle.ControlSwitcher
+                    .cycleToNext(MainActivity.this, binding.mainControlLayout);
+            // Only re-evaluate the menu button when the layout actually changed: a layout can
+            // bring its own menu button, which is what hides the launcher's own.
+            if (switchedTo != null) {
+                mGameMenuWrapper.setVisibility(!binding.mainControlLayout.hasMenuButton());
+            }
+        });
+
         //Now, attach to the service. The game will only start when this happens, to make sure that we know the right state.
         bindService(gameServiceIntent, this, 0);
 
@@ -446,6 +461,16 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
                     return false;
             }
         });
+    }
+
+    /**
+     * TurtleLauncher Control Switcher: shows/hides the in-game layout-swap button.
+     * Called once from onCreate and again whenever the in-game menu's "Control Switcher"
+     * switch changes, so the button follows the setting without restarting the game.
+     */
+    private void refreshControlSwitcherButton() {
+        binding.controlSwitcherButton.setVisibility(
+                AllSettings.getControlSwitcherEnabled().getValue() ? View.VISIBLE : View.GONE);
     }
 
     private void loadControls() {
@@ -762,6 +787,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             this.binding.showScreenshotButtonHud.setChecked(AllSettings.getShowScreenshotButtonHud().getValue());
             this.binding.disableGestures.setChecked(AllSettings.getDisableGestures().getValue());
             this.binding.disableDoubleTap.setChecked(AllSettings.getDisableDoubleTap().getValue());
+            this.binding.controlSwitcher.setChecked(AllSettings.getControlSwitcherEnabled().getValue());
             this.binding.enableGyro.setChecked(AllSettings.getEnableGyro().getValue());
             this.binding.gyroInvertX.setChecked(AllSettings.getGyroInvertX().getValue());
             this.binding.gyroInvertY.setChecked(AllSettings.getGyroInvertY().getValue());
@@ -820,6 +846,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
             this.binding.disableDoubleTap.setOnCheckedChangeListener(this);
             this.binding.disableDoubleTapLayout.setOnClickListener(this);
+            this.binding.controlSwitcher.setOnCheckedChangeListener(this);
+            this.binding.controlSwitcherLayout.setOnClickListener(this);
 
             this.binding.timeLongPressTrigger.setOnSeekBarChangeListener(this);
             this.binding.timeLongPressTriggerRemove.setOnClickListener(this);
@@ -939,6 +967,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             else if (v == binding.resolutionScalerAdd) MenuUtils.adjustSeekbar(binding.resolutionScaler, 1);
             else if (v == binding.disableGesturesLayout) MenuUtils.toggleSwitchState(binding.disableGestures);
             else if (v == binding.disableDoubleTapLayout) MenuUtils.toggleSwitchState(binding.disableDoubleTap);
+            else if (v == binding.controlSwitcherLayout) MenuUtils.toggleSwitchState(binding.controlSwitcher);
             else if (v == binding.timeLongPressTriggerRemove) MenuUtils.adjustSeekbar(binding.timeLongPressTrigger, -1);
             else if (v == binding.timeLongPressTriggerAdd) MenuUtils.adjustSeekbar(binding.timeLongPressTrigger, 1);
             else if (v == binding.mouseSpeedRemove) MenuUtils.adjustSeekbar(binding.mouseSpeed, -1);
@@ -1048,6 +1077,10 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             } else if (v == binding.disableDoubleTap) {
                 AllSettings.getDisableDoubleTap().put(isChecked).save();
                 AllStaticSettings.disableDoubleTap = isChecked;
+            } else if (v == binding.controlSwitcher) {
+                AllSettings.getControlSwitcherEnabled().put(isChecked).save();
+                // Apply immediately - the in-game button appears/disappears without a restart.
+                refreshControlSwitcherButton();
             } else if (v == binding.enableGyro) {
                 refreshLayoutVisible(binding.gyroLayout, isChecked);
                 AllSettings.getEnableGyro().put(isChecked).save();

@@ -108,6 +108,13 @@ class AllSettings {
         // ── Control ───────────────────────────────────────────────────────────
         @JvmStatic val disableGestures          = BooleanSettingUnit("disableGestures", true)
         @JvmStatic val disableDoubleTap         = BooleanSettingUnit("disableDoubleTap", false)
+        /** TurtleLauncher: shows a small on-screen button while playing (icon = the keyboard's
+         *  Tab key, ic_keyboard_tab) that swaps to the next control layout on tap - same effect
+         *  as in-game menu -> Control -> "Replace controls", but without opening the drawer.
+         *  Toggled from the in-game launcher menu (Control tab) as "Control Switcher"; when off
+         *  the button is hidden. Cycling order is the alphabetical order of the .json files in
+         *  PathManager.DIR_CTRLMAP_PATH, wrapping back to the first after the last. */
+        @JvmStatic val controlSwitcherEnabled   = BooleanSettingUnit("controlSwitcherEnabled", true)
         @JvmStatic val timeLongPressTrigger     = IntSettingUnit("timeLongPressTrigger", 300)
         @JvmStatic val buttonScale              = IntSettingUnit("buttonscale", 100)
         @JvmStatic val buttonAllCaps            = BooleanSettingUnit("buttonAllCaps", false)

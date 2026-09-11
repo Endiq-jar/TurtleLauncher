@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
-# TEMPORARY diagnostic helper: GitHub Actions' log-archive endpoint is unreachable from the
-# driving sandbox and the session token can't trigger workflow_dispatch, so the interesting
-# part of the Gradle output is surfaced as check annotations (readable via the Checks REST
-# API) instead of requiring the log download. Delete along with zz-debug-build.yml.
+# TEMPORARY diagnostic helper: GitHub Actions' log-archive endpoint and the artifact-download
+# redirect are both unreachable from the driving sandbox, and the session token can't trigger
+# workflow_dispatch, so the interesting part of the Gradle output is surfaced as check
+# annotations (readable via the Checks REST API). Delete along with zz-debug-build.yml.
 set -uo pipefail
 
 LOG="${1:-/tmp/build.log}"
-MAX=14
-CHUNK=1150
+MAX=16
+CHUNK=1400
 count=0
 
-emit() {
+emit() { # emit <level> <text> ; newlines preserved as %0A so one annotation can carry many log lines
   local level="$1" text="$2" enc
   [ "$count" -ge "$MAX" ] && return 0
   count=$((count+1))
-  enc=$(printf '%s' "$text" | sed -e 's/%/%25/g' -e 's/:/%3A/g' | awk 'BEGIN{ORS=""} {if(NR>1) printf "%0A"; print}' | cut -c1-$CHUNK)
+  enc=$(printf '%s' "$text" \
+    | sed -e 's/%/%25/g' -e 's/:/%3A/g' \
+    | awk 'BEGIN{ORS=""} {if(NR>1) printf "%%0A"; print}' \
+    | cut -c1-$CHUNK)
+  [ -z "${enc// }" ] && return 0
   echo "::${level}::${enc}"
 }
 
@@ -23,42 +27,41 @@ if [ ! -f "$LOG" ]; then
   exit 0
 fi
 
-# One-line status so a glance at the annotations says pass/fail without reading the rest.
 if grep -q "^BUILD SUCCESSFUL" "$LOG"; then
   emit warning "RESULT=BUILD SUCCESSFUL ($(grep -m1 -oE 'BUILD SUCCESSFUL in .*' "$LOG"))"
 else
-  emit error "RESULT=BUILD FAILED ($(grep -m1 -oE 'BUILD FAILED in .*' "$LOG" || echo 'no summary line'))"
+  emit error "RESULT=BUILD FAILED ($(grep -m1 -oE 'BUILD FAILED in .*' "$LOG" || echo 'no summary'))"
 fi
-
-# The task that actually failed.
 emit error "failed-task: $(grep -E '^> Task .* FAILED' "$LOG" | head -3 | tr '\n' ' ' || echo none)"
 
-# Curated, high-signal failure lines. These are the ones with a file/line in them, which the
-# generic "What went wrong" block tends to paraphrase away.
-PATTERNS='Duplicate class|Can not extract resource|^e: |error: |FAILURE: Build failed|Execution failed for task|What went wrong|Apostrophe not preceded|invalid resource directory name|failed to compile'
-HITS=$(grep -nE "$PATTERNS" "$LOG" | head -9)
-if [ -n "$HITS" ]; then
-  i=0
-  while IFS= read -r line; do
-    [ -z "${line// }" ] && continue
-    i=$((i+1)); [ "$i" -gt 8 ] && break
-    emit error "hit[$i] $line"
-  done < <(printf '%s\n' "$HITS")
-fi
+# Everything that names a concrete problem, with a line number so it can be located.
+PATTERNS='Manifest merger failed|Duplicate class|Can not extract resource|Apostrophe not preceded|^e: |^Error: |error: |failed to compile|^> *Manifest|merger:'
+HITS=$(grep -nE "$PATTERNS" "$LOG" | head -6)
+[ -n "$HITS" ] && emit error "hits:
+$HITS"
 
-# Full "FAILURE:" ... "* Try:" block for whatever the greps above can't contextualize.
+# The authoritative message: from a few lines before the first concrete error through the
+# end of the "* What went wrong" block. Joined into one blob then wrapped, so AGP's
+# multi-line merger/aapt messages survive intact (per-line emission truncated them).
+FIRST_ERR=$(grep -nE "$PATTERNS" "$LOG" | head -n1 | cut -d: -f1)
 START=$(grep -n '^FAILURE: ' "$LOG" | head -n1 | cut -d: -f1 || true)
-if [ -n "$START" ]; then
-  BLOCK=$(sed -n "${START},$((START+22))p" "$LOG" | grep -vE '^\s*$' | head -c 6000)
-  j=0
-  while IFS= read -r c; do
-    [ -z "${c// }" ] && continue
-    j=$((j+1)); [ "$j" -gt 3 ] && break
-    emit error "block[$j] $c"
-  done < <(printf '%s\n' "$BLOCK" | fold -w 1100 -s)
+ANCHOR=${FIRST_ERR:-$START}
+if [ -n "$ANCHOR" ]; then
+  FROM=$(( ANCHOR > 8 ? ANCHOR - 8 : 1 ))
+  TO=$(( ANCHOR + 42 ))
 else
-  emit warning "no FAILURE block (build likely succeeded)"
+  FROM=$(( $(wc -l < "$LOG") - 50 )); [ "$FROM" -lt 1 ] && FROM=1
+  TO=$(( $(wc -l < "$LOG") ))
+  emit warning "no error anchor; showing tail"
+fi
+BODY=$(sed -n "${FROM},${TO}p" "$LOG" | grep -vE '^\s*$' | head -60)
+if [ -n "$BODY" ]; then
+  k=0
+  while IFS= read -r c; do
+    k=$((k+1)); [ "$k" -gt 8 ] && { emit warning "context truncated at 8 chunks"; break; }
+    emit error "ctx[$k] $c"
+  done < <(printf '%s\n' "$BODY" | awk '{printf "%s%s", (NR>1?"\036":""), $0}' | sed 's/\036/ | /g' | fold -w 1300 -s)
 fi
 
-emit warning "log: $(wc -l < "$LOG") lines / $(wc -c < "$LOG") bytes"
+emit warning "log: $(wc -l < "$LOG") lines / $(wc -c < "$LOG") bytes (showing $FROM-$TO)"
 exit 0

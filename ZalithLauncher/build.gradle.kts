@@ -482,6 +482,12 @@ dependencies {
 
     // implementation("net.sourceforge.streamsupport:streamsupport-cfuture:1.7.0")
 
+    // libs/gson-2.8.6.jar used to sit in this fileTree too. It was a hand-vendored copy of
+    // Gson (180 classes, all under com/google/gson/**) that duplicated the real
+    // com.google.code.gson:gson dependency declared below, which fails
+    // :ZalithLauncher:checkDebugDuplicateClasses with "Duplicate class com.google.gson.Gson
+    // found in modules gson-2.8.6 ... and gson-2.14.0". Deleted rather than excluded: nothing
+    // here needs the older 2.8.6 API, and all 48 Gson call sites compile against the Maven one.
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"), "exclude" to listOf("ExagearApacheCommons.jar"))))
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

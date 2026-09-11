@@ -35,6 +35,7 @@ import net.kdt.pojavlaunch.customcontrols.mouse.TouchEventProcessor;
 import net.kdt.pojavlaunch.utils.JREUtils;
 import com.movtery.zalithlauncher.launch.SdlAndroidJniPrep;
 import org.libsdl.app.SDLActivity;
+import org.libsdl.app.SDLSurface;
 import org.greenrobot.eventbus.EventBus;
 import org.lwjgl.glfw.CallbackBridge;
 import java.util.Locale;
@@ -122,17 +123,41 @@ public class MinecraftGLSurface extends View implements GrabListener {
     }
 
     /**
-     * TurtleLauncher CRASH FIX (MC 26.3+ SDL): best-effort hand-off of this view's
-     * real Android Surface to SDLActivity.setDroidBridgeNativeSurface(), so it's
-     * available to whatever calls org.libsdl.app.SDLActivity.getNativeSurface() -
-     * see SdlAndroidJniPrep's class doc for how much this does and doesn't actually
-     * fix. No-op (SdlAndroidJniPrep.isActive stays false) for GLFW versions, so this
-     * never runs for anything except the SDL launch path it exists for.
+     * TurtleLauncher CRASH FIX (MC 26.3+ SDL): hand this view's real Android Surface to
+     * SDL's Java glue, and tell SDL about surface lifecycle changes - the launcher-side half
+     * of Amethyst-Android's SDL integration (their MinecraftGLSurface.setupSDL()/
+     * surfaceChanged()/surfaceDestroyed() forwarding, see SdlAndroidJniPrep's class doc for
+     * what is and isn't ported).
+     *
+     * Two things happen, and both are needed:
+     *  - SDLSurface.setNativeSurface(): this is what SDLActivity.getNativeSurface() reports
+     *    when SDL asks for a window, so it must be the Surface that is actually presented.
+     *  - surfaceChanged()/surfaceDestroyed(): without these, SDL's idea of the window size
+     *    and validity never updates after init.
+     *
+     * Size note, straight from Amethyst's own comment on the same call: forward the real
+     * display metrics, NOT the resolution-scaled size this launcher renders at - "SDL doesn't
+     * work like that, it'll render offscreen instead".
+     *
+     * No-op (SdlAndroidJniPrep.isActive stays false) for GLFW versions, so this never runs
+     * for anything except the SDL launch path it exists for.
      */
     private void publishSurfaceToSdl(Surface surface) {
         if (!SdlAndroidJniPrep.isActive()) return;
         try {
             SDLActivity.setDroidBridgeNativeSurface(surface);
+            SDLSurface.setNativeSurface(surface);
+
+            SDLSurface sdlSurface = SDLActivity.getSDLSurface();
+            if (sdlSurface == null) return;
+
+            if (surface != null) {
+                int width = Tools.currentDisplayMetrics.widthPixels;
+                int height = Tools.currentDisplayMetrics.heightPixels;
+                sdlSurface.surfaceChanged(null, 0, width, height);
+            } else {
+                sdlSurface.surfaceDestroyed(null);
+            }
         } catch (Throwable t) {
             Logging.e("MGLSurface", "publishSurfaceToSdl() failed", t);
         }
@@ -456,7 +481,34 @@ public class MinecraftGLSurface extends View implements GrabListener {
         }
 
         CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight);
+        notifySdlOfSurfaceSize();
         EventBus.getDefault().post(new RefreshHotbarEvent());
+    }
+
+    /**
+     * TurtleLauncher CRASH FIX (MC 26.3+ SDL): keep SDL's own idea of the window size in step
+     * with a resize (multi-window, split screen, rotation). This launcher's SDL integration
+     * has no nativeResize() to call - the bundled libSDL3.so doesn't export one (checked: no
+     * "nativeResize" string in the binary, unlike Amethyst's own SDL build) - so the size is
+     * pushed through SDLSurface.surfaceChanged(), which is plain Java and ends up in
+     * SDLActivity.nativeSetScreenResolution()/onNativeResize().
+     *
+     * Unscaled metrics on purpose, per Amethyst's comment on the same call: the resolution
+     * scale this launcher renders at would make SDL "render offscreen instead".
+     */
+    private void notifySdlOfSurfaceSize() {
+        // isActive is false for every non-SDL (GLFW) launch, so this is a no-op there.
+        if (!SdlAndroidJniPrep.isActive()) return;
+        try {
+            SDLSurface sdlSurface = SDLActivity.getSDLSurface();
+            if (sdlSurface != null) {
+                sdlSurface.surfaceChanged(null, 0,
+                        Tools.currentDisplayMetrics.widthPixels,
+                        Tools.currentDisplayMetrics.heightPixels);
+            }
+        } catch (Throwable t) {
+            Logging.e("MGLSurface", "notifySdlOfSurfaceSize() failed", t);
+        }
     }
 
     private void realStart(Surface surface){

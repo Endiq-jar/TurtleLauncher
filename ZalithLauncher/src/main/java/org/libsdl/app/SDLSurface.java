@@ -84,7 +84,32 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         enableSensor(Sensor.TYPE_ACCELEROMETER, true);
     }
 
+    /**
+     * TurtleLauncher CRASH FIX (MC 26.3+ SDL), ported from Amethyst-Android's SDLSurface:
+     * the Surface SDL should report when it asks for a window.
+     *
+     * This launcher never attaches an SDLSurface to a window - Minecraft renders through
+     * MinecraftGLSurface's own SurfaceView/TextureView - so getHolder().getSurface() below
+     * would hand SDL a Surface that is never going to be presented. Amethyst solves the same
+     * problem with exactly this: a static slot the launcher fills with its real render
+     * Surface (SDLActivity.externalInitialize() -> setNativeSurface()), and every later
+     * update from MinecraftGLSurface's surface callbacks.
+     */
+    static Surface mNativeSurface;
+
+    public static Surface getExternalNativeSurface() {
+        return mNativeSurface;
+    }
+
+    public static void setNativeSurface(Surface nativeSurface) {
+        mNativeSurface = nativeSurface;
+    }
+
     public Surface getNativeSurface() {
+        // Prefer the Surface the launcher published; fall back to this view's own holder for
+        // the (upstream) case where an SDLSurface really is the view being drawn to.
+        Surface external = mNativeSurface;
+        if (external != null && external.isValid()) return external;
         return getHolder().getSurface();
     }
 
@@ -114,7 +139,13 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                                int format, int width, int height) {
         Log.v("SDL", "surfaceChanged()");
 
-        if (SDLActivity.mSingleton == null) {
+        // TurtleLauncher: was `if (SDLActivity.mSingleton == null) return;`. mSingleton is
+        // only ever set when SDLActivity runs as a real Activity, which never happens in
+        // this launcher - so every forwarded surfaceChanged() silently did nothing. Go
+        // through getHostActivity(), which also covers the embedded case set up by
+        // SDLActivity.externalInitialize().
+        android.app.Activity hostActivity = SDLActivity.getHostActivity();
+        if (hostActivity == null) {
             return;
         }
 
@@ -149,7 +180,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Prevent a screen distortion glitch,
         // for instance when the device is in Landscape and a Portrait App is resumed.
         boolean skip = false;
-        int requestedOrientation = SDLActivity.mSingleton.getRequestedOrientation();
+        int requestedOrientation = hostActivity.getRequestedOrientation();
 
         if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT) {
             if (mWidth > mHeight) {

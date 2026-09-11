@@ -827,7 +827,82 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true" />
                 </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
-    
+
+                <!-- TurtleLauncher: built-in AI Assistant. Both switches only control the
+                     on-device assistant (top bar -> Assistant); the optional AI crash help /
+                     skin filter in Experimental are separate and need the user's own API key. -->
+                <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiAssistantEnabled_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/aiAssistantEnabled_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiAssistantEnabled"
+                        android:text="@string/setting_ai_assistant_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/aiAssistantEnabled_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/aiAssistantEnabled_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiAssistantEnabled"
+                        android:text="@string/setting_ai_assistant_desc" />
+
+                    <Switch
+                        android:id="@+id/aiAssistantEnabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:checked="true" />
+                </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
+                <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiAssistantHistoryEnabled_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/aiAssistantHistoryEnabled_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiAssistantHistoryEnabled"
+                        android:text="@string/setting_ai_assistant_history_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/aiAssistantHistoryEnabled_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/aiAssistantHistoryEnabled_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiAssistantHistoryEnabled"
+                        android:text="@string/setting_ai_assistant_history_desc" />
+
+                    <Switch
+                        android:id="@+id/aiAssistantHistoryEnabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:checked="true" />
+                </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
             </androidx.appcompat.widget.LinearLayoutCompat>
     
         </androidx.appcompat.widget.LinearLayoutCompat>

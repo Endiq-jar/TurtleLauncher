@@ -1,112 +1,126 @@
 package com.movtery.zalithlauncher.launch
 
 import android.app.Activity
-import android.graphics.SurfaceTexture
-import android.view.Surface
+import android.util.Log
 import org.libsdl.app.SDL
 import org.libsdl.app.SDLActivity
+import org.libsdl.app.SDLSurface
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
- * TurtleLauncher CRASH FIX (MC 26.3+ SDL native crash) - RE-ENABLED Aug 2026, PARTIAL FIX ONLY.
+ * SDL initialization when it needs to be done from JNI.
  *
- * ── What was actually broken, and what's fixed now ──
+ * WHY THIS EXISTS: starting with Minecraft 26.3 (SDL 3), SDL creates its EGL window surface
+ * from the game thread on its own, without an Android Surface being passed in first. SDL
+ * therefore needs the host Activity, the SDLSurface instance and the native surface handle to
+ * already be set up on the ART side when the JNI calls start. Amethyst solves this with a native
+ * `sdl_hook.c` that patches `SDL_InitSubSystem()` and calls `CallbackBridge.notifyLauncher()`,
+ * which then runs SDLActivity's setup on demand.
  *
- * This was disabled after a real device crash log showed it hard-aborting the process
- * with a JNI-checked SIGABRT: "no static or non-static method
- * Lorg/libsdl/app/SDLActivity;.nativeSetupJNI()I". Root cause, confirmed by parsing the
- * actual bundled files: the old `libs/sdl3-android-classes.jar`'s `SDLActivity.class`
- * declared `nativeSetupJNI` as `()V` (void), but the bundled `libSDL3.so` (all ABIs)
- * looks up an `()I` (int-returning) overload during its own JNI_OnLoad - the jar and the
- * .so were never a matched pair.
+ * WHAT IS AND ISN'T PORTED: TurtleLauncher ships `libpojavexec.so` prebuilt with no native
+ * sources and no NDK toolchain here, so the `sdl_hook.c` half cannot be ported. What this class
+ * does instead is mirror Amethyst's ART-side setup sequence, executed ahead of time on the host
+ * side just before the JVM starts (from JREUtils.launchJavaVM). `setupJNI()`'s `()I` signature
+ * is kept - Amethyst's `nativeSetupJNI()` returns void, but this build's libSDL3.so registers
+ * the `()I` variant and a mismatched signature aborts on the first call. Amethyst also calls
+ * `SDLActivity.getSDLSurface().nativeResize(...)` on size changes; this launcher's libSDL3.so
+ * exports no `nativeResize` (checked in the binary), so resizes go through
+ * SDLSurface.surfaceChanged() instead - see MinecraftGLSurface.notifySdlOfSurfaceSize().
  *
- * That jar has been replaced with real source (org.libsdl.app.SDL/SDLActivity/etc.,
- * adapted from DroidBridge Launcher's public source - see that package's file headers
- * for attribution) whose `nativeSetupJNI()` is confirmed, by direct inspection of the
- * source, to return `int` - matching what this launcher's bundled libSDL3.so expects.
- * That specific abort is fixed for real, not just hypothesized.
- *
- * ── What is very likely still broken ──
- *
- * Fixing the abort does not mean the original SIGSEGV this class was written to prevent
- * is actually gone. Digging into DroidBridge Launcher's own production code (which does
- * successfully run MC 26.3+'s SDL backend) turned up something this class's previous
- * doc comment only guessed at: Minecraft's SDL calls run inside a *separate* embedded
- * JVM (see VMLauncher / JNI_CreateJavaVM), not the app's own real Activity/JVM. DroidBridge's
- * actual fix for that is a native (C-level) cross-VM bridge - their own
- * `droidbridge_runtime.so` intercepts libSDL3.so's `ANativeWindow_fromSurface` at the
- * binary level so it can hand over an Android Surface published from the *other* JVM,
- * because plain Java static fields (like the ones `setDroidBridgeNativeSurface` below
- * sets) are NOT visible across separate JVM instances - only same-process native globals
- * can be, and only when both JVMs' copies of libSDL3.so land in the same linker
- * namespace, which DroidBridge's own comments say isn't guaranteed either.
- *
- * That native hook is NOT ported here - it needs an NDK toolchain and real-device
- * verification this environment doesn't have, and DroidBridge's C source for it wasn't
- * available to port from. What this class does now (real JNI registration, plus
- * best-effort Activity/Surface bookkeeping via setDroidBridgeHostActivity/
- * setDroidBridgeNativeSurface) is a genuine improvement over the old broken jar, but it
- * may well not be sufficient to prevent the SIGSEGV on its own, since the Java-side
- * state it sets may simply never be visible to whichever JVM instance actually runs
- * Minecraft's SDL_Init(). Do not describe this as "the crash is fixed" without a real
- * device test confirming it - describe it as "the confirmed abort is fixed; the
- * original SIGSEGV this class exists to prevent may or may not still happen."
- *
- * Call setup(activity) once, on the real app UI thread, before VMLauncher.launchJVM()
- * runs - but only for SDL versions (see Tools.versionUsesLwjglSdl); calling it for GLFW
- * versions would be a no-op at best. Best-effort throughout: any failure here is
- * swallowed so a problem with this priming step can't block the game from launching at
- * all - worst case, the original SIGSEGV still happens, exactly as before this fix
- * existed.
+ * STATUS: the previously *confirmed* abort (jar/.so `nativeSetupJNI` signature mismatch) stays
+ * fixed. The original SIGSEGV this class exists to prevent is NOT confirmed fixed - this
+ * environment has no device or emulator to test on, and the native half of Amethyst's fix is
+ * the part that could not be ported. Treat "26.3 launches" as unverified until it runs on a
+ * real device; CrashAnalyzer's rule 22 says the same thing to the user when this path crashes.
  */
 object SdlAndroidJniPrep {
+    private const val TAG = "SdlAndroidJniPrep"
+
+    /** How long to wait for the UI thread to build the SDLSurface (see createSurfaceOnUiThread). */
+    private const val SURFACE_WAIT_MS = 3000L
+
     /**
-     * True once [setup] has run far enough that handing the render Surface to
-     * [org.libsdl.app.SDLActivity.setDroidBridgeNativeSurface] is worthwhile - lets
-     * MinecraftGLSurface's surfaceCreated/onSurfaceTextureAvailable callbacks know
-     * whether to bother, without needing their own copy of the NEW_SDL version check.
-     * Deliberately not reset to false anywhere - once true for a given process, stays
-     * true (matches setup() itself only ever being called once per launch).
+     * True once [setup] has completed, i.e. SDL's Java glue is registered for this process.
+     *
+     * MinecraftGLSurface checks this from Java (`SdlAndroidJniPrep.isActive()`) before touching
+     * anything SDL-related, so a plain GLFW launch never enters the SDL surface path. Deliberately
+     * never reset: setup() runs once per launch, and SDL's static state persists for the process.
      */
     @JvmStatic
     @Volatile
     var isActive: Boolean = false
         private set
 
+    /**
+     * @param activity the Activity used as the SDL host. Must not be null.
+     */
     @JvmStatic
-    fun setup(activity: Activity) {
-        try {
-            System.loadLibrary("SDL3")
-            SDL.setContext(activity)
-            SDL.setupJNI()
-            SDL.initialize()
-            SDLActivity.setDroidBridgeHostActivity(activity)
-            // This launcher renders through its own MinecraftGLSurface/EGL bridge
-            // (see the POJAVEXEC_EGL fix in JREUtils), not SDL's own SDLSurface, so
-            // the Surface itself is handed over from MinecraftGLSurface's existing
-            // surfaceCreated/onSurfaceTextureAvailable callbacks - see those call
-            // sites for setDroidBridgeNativeSurface(), not here (the real render
-            // Surface doesn't exist yet at this point in the launch sequence).
-            SDLActivity.setDroidBridgeExternalSurfaceMode(true)
-
-            // TurtleLauncher CRASH FIX (MC 26.3+ SDL native crash): provide SDL_Init
-            // with a non-null token native Surface so its Android JNI backend
-            // doesn't dereference a null pointer during init (see SDLActivity's
-            // getNativeSurface() and CrashAnalyzer rule 22). Best-effort only,
-            // since the real Surface comes from MinecraftGLSurface later.
-            try {
-                val tokenTexture = SurfaceTexture(0)
-                val tokenSurface = Surface(tokenTexture)
-                SDLActivity.setDroidBridgeNativeSurface(tokenSurface)
-            } catch (ignored: Throwable) {
-                // If token creation fails, fall through - the original crash may
-                // still occur, which is exactly the pre-existing behavior.
-            }
-
-            isActive = true
-        } catch (t: Throwable) {
-            // Best effort - see class doc. Deliberately not logged as an error: a
-            // failure here should look like "the original crash still happens", not
-            // like a new problem.
+    fun setup(activity: Activity?) {
+        if (activity == null) {
+            Log.e(TAG, "Cannot prepare SDL host state without an Activity")
+            return
         }
+        try {
+            // Must be loaded before the SDL Java methods below are called - SDL3 isn't in the
+            // default library set (libpojavexec's dependency on it isn't always resolved by the
+            // time this runs).
+            System.loadLibrary("SDL3")
+            // Must run first: SDL.initialize() nulls SDLActivity's static state (context,
+            // clipboard handler, input managers, surface), so anything assigned before it would
+            // be wiped out.
+            SDL.initialize()
+            SDL.setContext(activity)
+
+            // SDLSurface is a View; build it on the UI thread rather than on whatever thread the
+            // launch pipeline happens to be running on.
+            val sdlSurface = createSurfaceOnUiThread(activity)
+
+            // externalInitialize assigns the Activity, the SDLSurface and the layout, installs
+            // the clipboard handler and cursor list, and registers the (still null) native
+            // surface so SDL can find everything when it starts.
+            SDLActivity.externalInitialize(sdlSurface, null, null)
+            SDL.setupJNI()
+
+            // From here on MinecraftGLSurface forwards its own Surface callbacks to SDL's
+            // SDLSurface, which is the only way SDL learns the real window size (see
+            // notifySdlOfSurfaceSize()). isActive is the flag that switches that path on -
+            // MinecraftGLSurface reads it from Java as SdlAndroidJniPrep.isActive().
+            isActive = true
+            Log.i(TAG, "SDL host state prepared")
+        } catch (e: Throwable) {
+            // Best effort. Failing here must not take down the launch - without SDL set up some
+            // 26.3+ features will be degraded, but the game can still start.
+            Log.e(TAG, "SDL prepare failed", e)
+        }
+    }
+
+    /**
+     * Creates the [SDLSurface] on the UI thread and waits for it.
+     *
+     * Returns null if the UI thread does not respond in time (a wedged main thread would
+     * otherwise hang the launch pipeline here forever).
+     */
+    private fun createSurfaceOnUiThread(activity: Activity): SDLSurface? {
+        if (activity.isFinishing || activity.isDestroyed) return null
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            return SDLSurface(activity)
+        }
+        var result: SDLSurface? = null
+        val latch = CountDownLatch(1)
+        activity.runOnUiThread {
+            try {
+                result = SDLSurface(activity)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Could not create SDLSurface", e)
+            } finally {
+                latch.countDown()
+            }
+        }
+        if (!latch.await(SURFACE_WAIT_MS, TimeUnit.MILLISECONDS)) {
+            Log.e(TAG, "UI thread did not build the SDLSurface in ${SURFACE_WAIT_MS}ms")
+            return null
+        }
+        return result
     }
 }

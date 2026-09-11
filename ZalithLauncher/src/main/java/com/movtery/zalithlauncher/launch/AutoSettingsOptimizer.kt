@@ -5,8 +5,7 @@ import android.opengl.EGL14
 import android.os.Build
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.renderer.renderers.FreedrenoRenderer
-import com.movtery.zalithlauncher.renderer.renderers.HolyGL4ESRenderer
-import com.movtery.zalithlauncher.renderer.renderers.LTWRenderer
+import com.movtery.zalithlauncher.renderer.renderers.MobileGluesRenderer
 import com.movtery.zalithlauncher.renderer.renderers.ZinkRenderer
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.utils.platform.BatterySaverManager
@@ -23,13 +22,20 @@ import net.kdt.pojavlaunch.prefs.LauncherPreferences
  * it sets can still be overridden by hand in Video/Experimental settings
  * (it just re-applies its own picks on the next launch unless turned off).
  *
- * Renderer/driver selection maps detected GPU vendor to one of the six FCL-sourced
- * renderers (see renderer/renderers/ and RendererCatalog):
+ * Renderer/driver selection maps detected GPU vendor to one of the built-in renderers
+ * (see renderer/renderers/ and RendererCatalog):
  *   Adreno GPU     → Freedreno, driver = Turnip (if Vulkan available)
- *   Mali/ARM GPU   → Zink if Vulkan available, else LTW (Krypton Wrapper's old slot -
- *                    Krypton was removed as a built-in, see LTWRenderer's doc comment)
- *   PowerVR/other  → Holy GL4ES, driver = default
- *   Unknown        → renderer left as-is
+ *   Mali/ARM GPU   → Zink if Vulkan available, else MobileGlues
+ *   PowerVR/other  → MobileGlues, driver = default
+ *   Unknown        → renderer left as-is (i.e. the AllSettings.renderer default, which is
+ *                    also MobileGlues - see that setting's doc comment)
+ *
+ * TurtleLauncher: the two GL-family picks above used to be LTW (Mali) and Holy GL4ES
+ * (PowerVR/other). Both are now MobileGlues so this optimizer agrees with the launcher's
+ * own default renderer instead of quietly overriding it with a different one on the first
+ * launch - a player who never opens Video settings would otherwise see "MobileGlues" as the
+ * documented default and "Holy GL4ES" as what's actually running. The Adreno→Freedreno and
+ * Vulkan→Zink picks are unchanged: those are device-specific wins, not defaults.
  *
  * Special case (MC 26.1+): MC 26.x's CubeMapTexture panorama background
  * calls glTexImage2D with GL_TEXTURE_CUBE_MAP + GL_RGB8, which OpenGL ES
@@ -123,7 +129,8 @@ object AutoSettingsOptimizer {
                 if (hasVulkan) {
                     Pair(ZinkRenderer().getUniqueIdentifier(), "default")
                 } else {
-                    Pair(LTWRenderer().getUniqueIdentifier(), "default")
+                    // MobileGlues, not LTW: matches the launcher default (see class doc).
+                    Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
                 }
             }
             gpu.contains("powervr", ignoreCase = true) ||
@@ -133,7 +140,10 @@ object AutoSettingsOptimizer {
                     Logging.i(TAG, "MC 26.1+ on PowerVR/Apple GPU: switching to Zink to avoid CubeMap GL_INVALID_ENUM crash")
                     Pair(ZinkRenderer().getUniqueIdentifier(), "default")
                 } else {
-                    Pair(HolyGL4ESRenderer().getUniqueIdentifier(), "default")
+                    // MobileGlues, not Holy GL4ES: matches the launcher default (see class
+                    // doc). Holy GL4ES also has a documented 1.21.4 ceiling in
+                    // RendererCatalog, so it was the wrong standing pick for new versions.
+                    Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
                 }
             }
             else -> {

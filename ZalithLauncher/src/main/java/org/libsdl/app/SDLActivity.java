@@ -22,7 +22,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.net.Uri;
@@ -248,11 +247,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // Minecraft versions that actually use the SDL3 backend.
     private static volatile Activity mDroidBridgeHostActivity;
     private static volatile Surface mDroidBridgeNativeSurface;
-    // The embedded OpenJDK VM cannot receive ART's Surface jobject. Once the
-    // process-wide ANativeWindow hook is active, SDL only needs a non-null token
-    // Surface; ANativeWindow_fromSurface is replaced before it can inspect it.
-    private static volatile SurfaceTexture mDroidBridgeTokenSurfaceTexture;
-    private static volatile Surface mDroidBridgeTokenSurface;
+    // TurtleLauncher: the token-Surface fields DroidBridge needed here
+    // (mDroidBridgeTokenSurfaceTexture/mDroidBridgeTokenSurface) are gone - they only made
+    // sense behind DroidBridge's native ANativeWindow hook, which isn't ported, and the code
+    // that "returned" them was unreachable anyway. See getNativeSurface() below.
     private static volatile View mDroidBridgeInputView;
     private static volatile boolean mDroidBridgeExternalSurfaceMode;
 
@@ -441,6 +439,70 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mHasFocus = true;
         mNextNativeState = NativeState.INIT;
         mCurrentNativeState = NativeState.INIT;
+    }
+
+    /**
+     * TurtleLauncher CRASH FIX (MC 26.3+ SDL), ported from Amethyst-Android's own
+     * SDLActivity.externalInitialize() - the piece this launcher was missing.
+     *
+     * Why it's needed: SDLActivity is never started as a real Activity here (Minecraft runs
+     * in an embedded JVM and renders through MinecraftGLSurface), so onCreate() never runs
+     * and the statics SDL's native Android backend depends on - mSingleton, mSurface,
+     * mLayout, the clipboard handler - are all left null by initialize() above. SDL's Java
+     * glue then has nothing to hand back to libSDL3.so when it asks for the window, which
+     * is the shape of the SDL_Init null-pointer SIGSEGV CrashAnalyzer's
+     * sdl3_android_init_sigsegv rule describes.
+     *
+     * This fills those statics in from the launcher's real Activity instead, and installs
+     * [nativeSurface] (the launcher's own render Surface, or a placeholder until
+     * MinecraftGLSurface has a real one) as the surface SDL should report. Amethyst calls
+     * this from MinecraftGLSurface.setupSDL(); this launcher calls it from
+     * SdlAndroidJniPrep.setup() before the game JVM starts, since there is no native
+     * SDL_InitSubSystem hook here to be called back from (see SdlAndroidJniPrep's class doc).
+     */
+    public static void externalInitialize(SDLSurface surface, ViewGroup layout, Surface nativeSurface) {
+        Context context = SDL.getContext();
+        Activity activity = context instanceof Activity ? (Activity) context : null;
+        // Deliberately NOT mSingleton: that field is typed SDLActivity and the rest of this
+        // class calls SDLActivity-only methods on it (sendCommand, main(), getLibraries...).
+        // Amethyst retyped theirs to plain Activity; here the same need is met by the
+        // existing host-Activity field, and getHostActivity() below is the one accessor
+        // SDLSurface's lifecycle forwarding goes through.
+        mDroidBridgeHostActivity = activity;
+        // Must be set before SDLSurface.setNativeSurface: that records the Surface SDL will
+        // report, and SDLActivity.getNativeSurface() below reads it back through mSurface.
+        mSurface = surface;
+        SDLSurface.setNativeSurface(nativeSurface);
+        mTextEdit = null;
+        mLayout = layout;
+        if (activity != null) SDL.setContext(activity);
+        mClipboardHandler = new SDLClipboardHandler();
+        mCursors = new Hashtable<Integer, PointerIcon>();
+        mLastCursorID = 0;
+        // Unused here - there is no SDL main() loop, the embedded JVM owns the thread.
+        mSDLThread = null;
+        mIsResumedCalled = false;
+        mHasFocus = true;
+        mNextNativeState = NativeState.INIT;
+        mCurrentNativeState = NativeState.INIT;
+    }
+
+    /** The SDLSurface installed by [externalInitialize] (null if SDL isn't set up yet).
+     *  MinecraftGLSurface forwards its own surface lifecycle to this. */
+    public static SDLSurface getSDLSurface() {
+        return mSurface;
+    }
+
+    /**
+     * The Activity behind this SDL session, whether SDL is running inside a real
+     * SDLActivity (mSingleton) or embedded in another app's Activity via
+     * [externalInitialize]/[setDroidBridgeHostActivity]. SDLSurface's surface lifecycle
+     * forwarding needs an Activity for getRequestedOrientation() and previously bailed out
+     * whenever mSingleton was null - i.e. always, in the embedded case this launcher runs.
+     */
+    public static Activity getHostActivity() {
+        if (mSingleton != null) return mSingleton;
+        return mDroidBridgeHostActivity;
     }
 
     protected SDLSurface createSDLSurface(Context context) {
@@ -1694,46 +1756,23 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Surface surface = mDroidBridgeNativeSurface;
         boolean valid = surface != null && surface.isValid();
 
-        // In DroidBridge the real Surface is published by ART, while this method
-        // may execute in the embedded OpenJDK VM. Install/re-scan the SDL import
-        // hook now that libSDL3.so is loaded. When the jobject cannot cross VMs,
-        // return a harmless token; the patched ANativeWindow_fromSurface ignores
-        // that jobject and acquires the process-wide published ANativeWindow.
-        // TurtleLauncher: upstream asks its native DroidBridgeSDL3NativeWindowBridge
-        // whether the cross-VM ANativeWindow hook is active (see SDL.java's
-        // loadLibrary() and setDroidBridgeNativeSurface() above for why that hook
-        // isn't ported here). Without it, this can only report what was actually
-        // set via setDroidBridgeNativeSurface() from the app's own Activity, and
-        // cannot help if Minecraft's SDL calls are running in a separate JVM that
-        // can't see this class's static fields at all - see SdlAndroidJniPrep's
-        // class doc for the full picture of what this file does and doesn't fix.
-        boolean nativeWindowReady = false;
-        if (!valid && nativeWindowReady) {
-            try {
-                if (mDroidBridgeTokenSurface == null) {
-                    synchronized (SDLActivity.class) {
-                        if (mDroidBridgeTokenSurface == null) {
-                            // Surface has no public no-argument constructor. A tiny
-                            // SurfaceTexture-backed Surface is sufficient here because
-                            // the native SDL hook replaces ANativeWindow_fromSurface
-                            // before Android can inspect this token jobject.
-                            mDroidBridgeTokenSurfaceTexture = new SurfaceTexture(0);
-                            mDroidBridgeTokenSurface =
-                                    new Surface(mDroidBridgeTokenSurfaceTexture);
-                        }
-                    }
-                }
-                surface = mDroidBridgeTokenSurface;
-            } catch (Throwable throwable) {
-                System.out.println("DroidBridgeSDL3: token Surface creation failed: "
-                        + throwable);
-            }
-        }
-
-        System.out.println("DroidBridgeSDL3: getNativeSurface external="
-                + surface + " valid=" + valid
-                + " nativeWindowReady=" + nativeWindowReady);
-        return valid || nativeWindowReady ? surface : null;
+        // TurtleLauncher: this used to contain an unreachable branch - `boolean
+        // nativeWindowReady = false;` followed by `if (!valid && nativeWindowReady) { ... }`
+        // - which built a SurfaceTexture-backed token Surface that could never be returned,
+        // plus a return of `valid || nativeWindowReady ? surface : null` whose second
+        // operand was always false. The token only ever made sense behind DroidBridge's
+        // native ANativeWindow hook (see SDL.java's loadLibrary() and
+        // setDroidBridgeNativeSurface() for why that hook isn't ported here), so the dead
+        // code is gone rather than kept as decoration. What's left is honest: report the
+        // real Surface this launcher published, or null, and say which in the log.
+        //
+        // With externalInitialize()/SDLSurface.setNativeSurface() now in place, the normal
+        // path is the mSurface branch above - MinecraftGLSurface hands its live Surface over
+        // through SdlAndroidJniPrep/MinecraftGLSurface.publishSurfaceToSdl(). Returning null
+        // here is still possible (SDL asking before the launcher's Surface exists), which is
+        // why the log line stays: it's the difference between "no Surface yet" and "crashed".
+        System.out.println("DroidBridgeSDL3: getNativeSurface external=" + surface + " valid=" + valid);
+        return valid ? surface : null;
     }
 
     // Input

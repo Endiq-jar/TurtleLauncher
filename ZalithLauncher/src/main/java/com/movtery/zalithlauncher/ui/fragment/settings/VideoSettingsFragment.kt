@@ -21,6 +21,7 @@ import com.movtery.zalithlauncher.plugins.driver.DriverPluginManager
 import com.movtery.zalithlauncher.plugins.renderer.RendererPluginManager
 import com.movtery.zalithlauncher.renderer.Renderers
 import com.movtery.zalithlauncher.renderer.renderers.HolyGL4ESRenderer
+import com.movtery.zalithlauncher.renderer.renderers.MobileGluesRenderer
 import com.movtery.zalithlauncher.renderer.renderers.ZinkRenderer
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.AllStaticSettings
@@ -128,13 +129,21 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         }
 
         // ── Graphics Backend switch (Vulkan / OpenGL) ────────────────────────────
-        // Simple shortcut over the same AllSettings.renderer used above: OpenGL maps to
-        // HolyGL4ESRenderer's UUID, Vulkan maps to ZinkRenderer's UUID (Zink translates
-        // Minecraft's GL calls to Vulkan). Matched by renderer id, not display name, so
-        // this doesn't break if a renderer's display name ever changes. Falls back to
-        // whichever of the two is actually compatible/present in the device's renderer
+        // Simple shortcut over the same AllSettings.renderer used above: OpenGL maps to the
+        // launcher's default GL-family renderer, Vulkan maps to ZinkRenderer's UUID (Zink
+        // translates Minecraft's GL calls to Vulkan). Matched by renderer id, not display
+        // name, so this doesn't break if a renderer's display name ever changes. Falls back
+        // to whichever of the two is actually compatible/present in the device's renderer
         // list, in case one isn't available.
-        val openglRendererId = rendererInstances.find { it.getRendererId() == HolyGL4ESRenderer.ID }?.getUniqueIdentifier()
+        //
+        // TurtleLauncher: the OpenGL side used to hardcode Holy GL4ES. Now that MobileGlues
+        // is this launcher's default renderer (see AllSettings.renderer), flipping this
+        // switch back to "OpenGL" should land on the same renderer a fresh install gets, not
+        // on a different one - so it prefers MobileGlues and only falls back to Holy GL4ES
+        // on a device where MobileGlues isn't in the compatible list at all (Renderers
+        // already filters those out by bundled library, see Renderers.hasRequiredLibrary).
+        val openglRendererId = rendererInstances.find { it.getRendererId() == MobileGluesRenderer.ID }?.getUniqueIdentifier()
+            ?: rendererInstances.find { it.getRendererId() == HolyGL4ESRenderer.ID }?.getUniqueIdentifier()
         val vulkanRendererId = rendererInstances.find { it.getRendererId() == ZinkRenderer.ID }?.getUniqueIdentifier()
         fun applyBackend(rendererId: String?) {
             if (rendererId == null) return

@@ -104,6 +104,25 @@
 
         </LinearLayout>
 
+        <!-- TurtleLauncher Control Switcher: taps through the control layouts in
+             PathManager.DIR_CTRLMAP_PATH without opening the game menu. Shown only when
+             AllSettings.controlSwitcherEnabled is on (MainActivity applies that), and it sits
+             above the Touchpad (translationZ 2dp) but below the game-menu drawer (4dp) so
+             opening the menu still covers it. Icon is the keyboard's Tab key. -->
+        <ImageView
+            android:id="@+id/control_switcher_button"
+            android:layout_width="@dimen/_28sdp"
+            android:layout_height="@dimen/_28sdp"
+            android:layout_gravity="top|start"
+            android:layout_margin="@dimen/_8sdp"
+            android:background="@drawable/background_item"
+            android:contentDescription="@string/setting_control_switcher_title"
+            android:padding="@dimen/_5sdp"
+            android:src="@drawable/ic_keyboard_tab"
+            android:translationZ="3dp"
+            android:visibility="gone"
+            tools:ignore="ImageContrastCheck" />
+
     </FrameLayout>
 
     <FrameLayout

@@ -6,7 +6,7 @@
 set -uo pipefail
 
 LOG="${1:-/tmp/build.log}"
-MAX=16
+MAX=20
 CHUNK=1400
 count=0
 
@@ -40,27 +40,34 @@ HITS=$(grep -nE "$PATTERNS" "$LOG" | head -6)
 [ -n "$HITS" ] && emit error "hits:
 $HITS"
 
-# The authoritative message: from a few lines before the first concrete error through the
-# end of the "* What went wrong" block. Joined into one blob then wrapped, so AGP's
-# multi-line merger/aapt messages survive intact (per-line emission truncated them).
-FIRST_ERR=$(grep -nE "$PATTERNS" "$LOG" | head -n1 | cut -d: -f1)
+# The authoritative message. AGP prints a task's real diagnostics (merger errors, aapt
+# errors, per-file paths) in the lines *between* the "> Task ... FAILED" line and the
+# "FAILURE:" summary, and the summary itself only paraphrases - so that gap is the window.
+TFAIL=$(grep -nE '^> Task .* FAILED' "$LOG" | head -n1 | cut -d: -f1)
 START=$(grep -n '^FAILURE: ' "$LOG" | head -n1 | cut -d: -f1 || true)
-ANCHOR=${FIRST_ERR:-$START}
-if [ -n "$ANCHOR" ]; then
-  FROM=$(( ANCHOR > 8 ? ANCHOR - 8 : 1 ))
-  TO=$(( ANCHOR + 42 ))
+if [ -n "$TFAIL" ] && [ -n "$START" ] && [ "$START" -gt "$TFAIL" ]; then
+  FROM=$TFAIL
+  TO=$(( START - 1 ))
+elif [ -n "$TFAIL" ]; then
+  FROM=$TFAIL; TO=$(( TFAIL + 60 ))
+elif [ -n "$START" ]; then
+  FROM=$START; TO=$(( START + 40 ))
 else
   FROM=$(( $(wc -l < "$LOG") - 50 )); [ "$FROM" -lt 1 ] && FROM=1
   TO=$(( $(wc -l < "$LOG") ))
-  emit warning "no error anchor; showing tail"
+  emit warning "no failure anchor; showing tail"
 fi
-BODY=$(sed -n "${FROM},${TO}p" "$LOG" | grep -vE '^\s*$' | head -60)
+BODY=$(sed -n "${FROM},${TO}p" "$LOG" | grep -vE '^\s*$' | grep -vE '^\s+at ' | head -70)
 if [ -n "$BODY" ]; then
+  # mapfile, not `while read`: fold's output has no trailing newline, and `read` reports
+  # EOF (exit 1) in that case, silently dropping the last chunk.
+  mapfile -t CHUNKS < <(printf '%s\n' "$BODY" | tr '\t' ' ' | awk 'BEGIN{ORS=" | "} {print}' | sed 's/ | $//' | fold -w 1300 -s)
+  total=${#CHUNKS[@]}
   k=0
-  while IFS= read -r c; do
-    k=$((k+1)); [ "$k" -gt 8 ] && { emit warning "context truncated at 8 chunks"; break; }
-    emit error "ctx[$k] $c"
-  done < <(printf '%s\n' "$BODY" | awk '{printf "%s%s", (NR>1?"\036":""), $0}' | sed 's/\036/ | /g' | fold -w 1300 -s)
+  for c in "${CHUNKS[@]}"; do
+    k=$((k+1)); [ "$k" -gt 13 ] && { emit warning "context truncated after 13 of $total chunks"; break; }
+    emit error "ctx[$k/$total] $c"
+  done
 fi
 
 emit warning "log: $(wc -l < "$LOG") lines / $(wc -c < "$LOG") bytes (showing $FROM-$TO)"

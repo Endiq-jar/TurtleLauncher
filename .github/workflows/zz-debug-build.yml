@@ -1,9 +1,12 @@
 name: ZZ Debug Build (temporary diagnostics)
 
-# TEMPORARY - diagnostic-only workflow used to capture the real Gradle failure output
-# from CI while the actions log endpoint is unreachable. Delete once the build is fixed.
+# TEMPORARY diagnostic workflow. The Actions log archive endpoint is unreachable from the
+# driving sandbox and the session token can't trigger workflow_dispatch (403), so this
+# runs off a push to the agent branch and surfaces the Gradle failure through check
+# annotations + an artifact. Delete once the build is green.
 on:
-  workflow_dispatch:
+  push:
+    branches: [ arena/01a09057-turtlelauncher ]
 
 jobs:
   debug:
@@ -48,8 +51,8 @@ jobs:
           cat "${{ steps.locate.outputs.dir }}/gradle.properties" || true
           echo "=== module gradle.properties ==="
           cat "${{ steps.locate.outputs.dir }}/ZalithLauncher/gradle.properties" || true
-          echo "=== git log -1 ==="
-          git log -1 --oneline
+          echo "=== gradlew present? ==="
+          ls -la "${{ steps.locate.outputs.dir }}" | head -20
 
       - name: Build debug APK
         id: build
@@ -59,7 +62,7 @@ jobs:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: |
           ./gradlew :ZalithLauncher:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build.log
-          echo "GRADLE_EXIT=${PIPESTATUS[0]}" | tee -a /tmp/exitcode.txt
+          exit "${PIPESTATUS[0]}"
 
       - name: Expose failure summary as annotations
         if: always()

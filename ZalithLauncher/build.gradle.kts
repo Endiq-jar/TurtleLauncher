@@ -488,6 +488,22 @@ dependencies {
     // :ZalithLauncher:checkDebugDuplicateClasses with "Duplicate class com.google.gson.Gson
     // found in modules gson-2.8.6 ... and gson-2.14.0". Deleted rather than excluded: nothing
     // here needs the older 2.8.6 API, and all 48 Gson call sites compile against the Maven one.
+    //
+    // libs/shaderc.aar + libs/spvc.aar (both from git.artdeell.mesa_libs) were also vendored
+    // in, and also deleted. They broke :ZalithLauncher:processDebugMainManifest outright:
+    //
+    //   Error: Namespace 'git.artdeell.mesa_libs' is used in multiple modules and/or
+    //   libraries: shaderc.aar, spvc.aar. Please ensure that all modules and libraries have
+    //   a unique namespace.
+    //
+    // Two prebuilt AARs sharing one manifest namespace is a hard AGP failure, and neither of
+    // them has anything a name change would rescue - no classes.jar, no res/, no assets, just
+    // jni/<abi>/libshaderc.so and libspirv-cross-c-shared.so. Those exact libraries are
+    // already shipped by this module itself under src/main/jniLibs/<abi>/ (all four ABIs for
+    // libshaderc.so), and an app module's own jniLibs outrank a dependency's jni/ folder in
+    // mergeDebugNativeLibs, so the AAR copies were being shadowed anyway. Re-adding them as
+    // AARs would reintroduce the duplicate-namespace failure for zero payload difference; if
+    // these natives need refreshing, update the .so files in jniLibs directly.
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"), "exclude" to listOf("ExagearApacheCommons.jar"))))
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

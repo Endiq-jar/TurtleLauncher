@@ -20,11 +20,13 @@ import com.movtery.zalithlauncher.event.value.InstallGameEvent
 import com.movtery.zalithlauncher.utils.LauncherProfiles
 import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome
 import com.movtery.zalithlauncher.feature.version.install.Addon
+import com.movtery.zalithlauncher.feature.version.install.ExtraModInstall
 import com.movtery.zalithlauncher.feature.version.install.InstallArgsUtils
 import com.movtery.zalithlauncher.feature.version.install.InstallTask
 import com.movtery.zalithlauncher.feature.version.install.InstallTaskItem
 import com.movtery.zalithlauncher.feature.version.VersionsManager
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.ui.dialog.InstallExtrasDialog
 import com.movtery.zalithlauncher.ui.dialog.TipDialog
 import com.movtery.zalithlauncher.ui.fragment.download.addon.DownloadFabricApiFragment
 import com.movtery.zalithlauncher.ui.fragment.download.addon.DownloadFabricFragment
@@ -99,7 +101,7 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
             modpackLayout.setOnClickListener(clickListener)
 
             back.setOnClickListener(clickListener)
-            install.setOnClickListener(clickListener)
+            installFab.setOnClickListener(clickListener)
         }
     }
 
@@ -201,6 +203,46 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
         checkIncompatible()
     }
 
+    /**
+     * TurtleLauncher: the install action always opens this popup first, regardless of
+     * what's already selected above, so the user gets one last chance to add the
+     * Turtle Client / FPS Boost extras before anything is written to disk.
+     */
+    private fun showInstallExtrasDialog(activity: Activity, customVersionName: String) {
+        InstallExtrasDialog(activity) { includeTurtleClient, includeFpsBoost ->
+            proceedWithInstall(activity, customVersionName, includeTurtleClient, includeFpsBoost)
+        }.show()
+    }
+
+    private fun proceedWithInstall(
+        activity: Activity,
+        customVersionName: String,
+        includeTurtleClient: Boolean,
+        includeFpsBoost: Boolean
+    ) {
+        fun install() {
+            EventBus.getDefault().post(
+                InstallGameEvent(
+                    mcVersion,
+                    customVersionName,
+                    organizeInstallationTasks(customVersionName, includeTurtleClient, includeFpsBoost)
+                )
+            )
+            Tools.backToMainMenu(activity)
+        }
+
+        //检查OptiFine与Forge附加包是否同时存在
+        //最后告诉用户兼容性问题
+        if (addonMap.containsKey(Addon.OPTIFINE) && addonMap.containsKey(Addon.FORGE)) {
+            TipDialog.Builder(activity)
+                .setTitle(R.string.generic_warning)
+                .setMessage(R.string.version_install_optifine_and_forge)
+                .setWarning()
+                .setConfirmClickListener { install() }
+                .showDialog()
+        } else install()
+    }
+
     override fun onClick(v: View) {
         val activity = requireActivity()
 
@@ -232,7 +274,7 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
                 quiltApiDelete -> removeAddon(Addon.QSL)
                 cleanroomDelete -> removeAddon(Addon.CLEANROOM)
 
-                install -> {
+                installFab -> {
                     val string = nameEdit.text?.toString()
                     if (string.isNullOrBlank()) {
                         nameEdit.error = getString(R.string.generic_error_field_empty)
@@ -253,21 +295,7 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
                         return
                     }
 
-                    fun install() {
-                        EventBus.getDefault().post(InstallGameEvent(mcVersion, string, organizeInstallationTasks(string)))
-                        Tools.backToMainMenu(activity)
-                    }
-
-                    //检查OptiFine与Forge附加包是否同时存在
-                    //最后告诉用户兼容性问题
-                    if (addonMap.containsKey(Addon.OPTIFINE) && addonMap.containsKey(Addon.FORGE)) {
-                        TipDialog.Builder(activity)
-                            .setTitle(R.string.generic_warning)
-                            .setMessage(R.string.version_install_optifine_and_forge)
-                            .setWarning()
-                            .setConfirmClickListener { install() }
-                            .showDialog()
-                    } else install()
+                    showInstallExtrasDialog(activity, string)
                 }
                 back -> ZHTools.onBackPressed(activity)
                 else -> {}
@@ -275,7 +303,11 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
         }
     }
 
-    private fun organizeInstallationTasks(customVersionName: String): Map<Addon, InstallTaskItem> {
+    private fun organizeInstallationTasks(
+        customVersionName: String,
+        includeTurtleClient: Boolean = false,
+        includeFpsBoost: Boolean = false
+    ): Map<Addon, InstallTaskItem> {
         val mapSize = addonMap.size
         val taskMap: MutableMap<Addon, InstallTaskItem> = EnumMap(Addon::class.java)
 
@@ -348,6 +380,12 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
                 }
             }
         }
+        // TurtleLauncher: neither extra has a real mod resource wired up yet - see
+        // ExtraModInstall. Once one does, replace this with an actual InstallTaskItem
+        // (download + move into the mods folder) the same way FABRIC_API/QSL do above.
+        if (includeTurtleClient) ExtraModInstall.logPending(ExtraModInstall.TURTLE_CLIENT)
+        if (includeFpsBoost) ExtraModInstall.logPending(ExtraModInstall.FPS_BOOST)
+
         return taskMap
     }
 

@@ -292,6 +292,12 @@
     <string name="version_install_new">Install new version</string>
     <string name="version_install_new_modloader">Install %s for new version</string>
     <string name="version_install_not_install">Do not install</string>
+    <string name="install_extras_title">Install Options</string>
+    <string name="install_extras_subtitle">Add either of these to this install, then confirm below</string>
+    <string name="install_extras_turtle_client">Turtle Client</string>
+    <string name="install_extras_turtle_client_desc">TurtleLauncher\'s own client mod</string>
+    <string name="install_extras_fps_boost">FPS Boost</string>
+    <string name="install_extras_fps_boost_desc">Performance mod for smoother framerates</string>
     <string name="account_detail_uuid">UUID</string>
     <string name="account_detail_play">Play</string>
     <string name="version_install_incompatible">Incompatible with %s</string>

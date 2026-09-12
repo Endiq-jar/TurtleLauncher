@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingHorizontal="@dimen/_12sdp"
     tools:ignore="ContentDescription,HardcodedText">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/_12sdp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/name_layout"
@@ -52,19 +56,8 @@
             android:autofillHints="name"
             android:hint="@string/generic_required"
             android:inputType="text"
-            app:layout_constraintEnd_toStartOf="@id/install"
-            app:layout_constraintStart_toEndOf="@id/name_title"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/install"
-            android:layout_width="@dimen/_28sdp"
-            android:layout_height="@dimen/_28sdp"
-            android:layout_marginEnd="@dimen/_8sdp"
-            android:src="@drawable/ic_download"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/name_title"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -822,3 +815,16 @@
     </ScrollView>
 
 </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/install_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/_16sdp"
+        android:contentDescription="@string/version_install_new"
+        android:src="@drawable/ic_download"
+        app:backgroundTint="@color/accent_primary"
+        app:tint="@color/background_app" />
+
+</FrameLayout>

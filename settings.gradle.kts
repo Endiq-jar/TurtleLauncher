@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Turtle Launcher"
 include(":jre_lwjgl3glfw")
-include(":ZalithLauncher")
+include(":TurtleLauncher")

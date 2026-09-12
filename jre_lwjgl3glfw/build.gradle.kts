@@ -13,10 +13,10 @@ group = "org.lwjgl.glfw"
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveBaseName.set("lwjgl-glfw-classes")
-    destinationDirectory.set(file("../ZalithLauncher/src/main/assets/components/lwjgl3/"))
+    destinationDirectory.set(file("../TurtleLauncher/src/main/assets/components/lwjgl3/"))
     // Auto update the version with a timestamp so the project jar gets updated by Pojav
     doLast {
-        val versionFile = file("../ZalithLauncher/src/main/assets/components/lwjgl3/version")
+        val versionFile = file("../TurtleLauncher/src/main/assets/components/lwjgl3/version")
         versionFile.writeText(System.currentTimeMillis().toString())
     }
     from({

@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.movtery.anim.AnimPlayer
 import com.movtery.anim.animations.Animations
 import com.movtery.zalithlauncher.R
@@ -208,14 +209,18 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
      * what's already selected above, so the user gets one last chance to add the
      * Turtle Client / FPS Boost extras before anything is written to disk.
      */
-    private fun showInstallExtrasDialog(activity: Activity, customVersionName: String) {
+    private fun showInstallExtrasDialog(activity: FragmentActivity, customVersionName: String) {
         InstallExtrasDialog(activity) { includeTurtleClient, includeFpsBoost ->
             proceedWithInstall(activity, customVersionName, includeTurtleClient, includeFpsBoost)
         }.show()
     }
 
     private fun proceedWithInstall(
-        activity: Activity,
+        // FragmentActivity, not plain Activity: Tools.backToMainMenu(...) needs the
+        // support FragmentManager. Type the parameter rather than calling
+        // requireActivity() inside install(), which would run from the TipDialog
+        // confirm callback where the fragment may already be detached.
+        activity: FragmentActivity,
         customVersionName: String,
         includeTurtleClient: Boolean,
         includeFpsBoost: Boolean

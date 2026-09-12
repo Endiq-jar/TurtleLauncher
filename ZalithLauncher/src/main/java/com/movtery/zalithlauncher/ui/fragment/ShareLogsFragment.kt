@@ -15,6 +15,7 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.FragmentShareLogsBinding
 import com.movtery.zalithlauncher.feature.log.CrashAnalyzer
 import com.movtery.zalithlauncher.feature.log.MclogsUploader
+import com.movtery.zalithlauncher.feature.version.VersionsManager
 import com.movtery.zalithlauncher.task.Task
 import com.movtery.zalithlauncher.task.TaskExecutors
 import com.movtery.zalithlauncher.ui.dialog.TipDialog
@@ -61,12 +62,36 @@ class ShareLogsFragment : FragmentWithAnim(R.layout.fragment_share_logs) {
         binding.clearLogRow.setOnClickListener { confirmClearLogs() }
     }
 
-    /** The most recently modified launcher log file, or null if none exist yet. */
+    /**
+     * The most recently modified log file across ALL log sources:
+     *  1. Launcher log directory (DIR_LAUNCHER_LOG) — rolling log*.txt, latestlog.txt (crash reports), session_logcat.txt
+     *  2. Game log (DIR_GAME_HOME/latestlog.txt) — the actual Minecraft session output written by Logger.begin()
+     *  3. Minecraft's own internal log (current version's logs/latest.log)
+     *
+     * Returns whichever file was most recently modified, so the user always sees the
+     * freshest log — not just "working" (successful) sessions, but also crashed ones.
+     */
     private fun latestLogFile(): File? {
+        val candidates = mutableListOf<File>()
+
+        // Launcher's own rolling log directory
         val logDir = File(PathManager.DIR_LAUNCHER_LOG)
-        return logDir.takeIf { it.isDirectory }
-            ?.listFiles { f -> f.isFile }
-            ?.maxByOrNull { it.lastModified() }
+        if (logDir.isDirectory) {
+            logDir.listFiles { f -> f.isFile }?.let { candidates.addAll(it) }
+        }
+
+        // Game session log (written by Logger.begin() at game start)
+        val gameLog = File(PathManager.DIR_GAME_HOME, "latestlog.txt")
+        if (gameLog.isFile && gameLog.length() > 0) candidates.add(gameLog)
+
+        // Minecraft's own internal log (Log4j2's logs/latest.log)
+        val currentVersion = VersionsManager.getCurrentVersion()
+        if (currentVersion != null) {
+            val mcLatestLog = File(currentVersion.getGameDir(), "logs/latest.log")
+            if (mcLatestLog.isFile && mcLatestLog.length() > 0) candidates.add(mcLatestLog)
+        }
+
+        return candidates.maxByOrNull { it.lastModified() }
     }
 
     private fun refreshLatestLogInfo() {

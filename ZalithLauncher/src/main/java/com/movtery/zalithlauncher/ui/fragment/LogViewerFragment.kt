@@ -18,6 +18,7 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.FragmentLogViewerBinding
 import com.movtery.zalithlauncher.feature.log.CrashAnalyzer
 import com.movtery.zalithlauncher.utils.ZHTools
+import com.movtery.zalithlauncher.feature.version.VersionsManager
 import com.movtery.zalithlauncher.utils.path.PathManager
 import java.io.File
 
@@ -56,9 +57,19 @@ class LogViewerFragment : FragmentWithAnim(R.layout.fragment_log_viewer) {
 
         val path = arguments?.getString(ARG_FILE_PATH)
         val file = path?.let { File(it) }
-            ?: File(PathManager.DIR_LAUNCHER_LOG).takeIf { it.isDirectory }
-                ?.listFiles { f -> f.isFile }
-                ?.maxByOrNull { it.lastModified() }
+            // TurtleLauncher: check ALL log sources, not just the launcher log directory.
+            // This ensures the viewer shows the most recent log regardless of whether it
+            // came from the launcher's rolling logger, the game's stdout capture, or
+            // Minecraft's own Log4j2 output — including logs from crashed sessions.
+            ?: listOfNotNull(
+                File(PathManager.DIR_LAUNCHER_LOG).takeIf { it.isDirectory }
+                    ?.listFiles { f -> f.isFile }
+                    ?.maxByOrNull { it.lastModified() },
+                File(PathManager.DIR_GAME_HOME, "latestlog.txt").takeIf { it.isFile && it.length() > 0 },
+                VersionsManager.getCurrentVersion()?.let { v ->
+                    File(v.getGameDir(), "logs/latest.log").takeIf { it.isFile && it.length() > 0 }
+                }
+            ).maxByOrNull { it.lastModified() }
 
         if (file == null || !file.isFile) {
             binding.logViewerTitle.text = getString(R.string.log_viewer_title)

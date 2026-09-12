@@ -548,6 +548,32 @@ object CrashAnalyzer {
                     Severity.CRITICAL
                 )
             ),
+            // 18b. OpenAL sound library failed to load or initialize.
+            // On Android, OpenAL-Soft needs ALSOFT_DRIVERS=android to select the correct audio
+            // backend (AAudio/OpenSL ES). Without it, the library tries desktop backends (ALSA,
+            // PulseAudio) that don't exist on Android, resulting in complete silence — no crash,
+            // no error, just no sound at all. This rule catches the crash case (UnsatisfiedLinkError
+            // when the library can't be found) and the silent-failure case (OpenAL init warnings).
+            Rule(
+                title = "openal_sound_failure",
+                matches = {
+                    has(it, "Failed to pre-load libopenal.so", "Failed to load openal",
+                        "UnsatisfiedLinkError.*openal", "no openal in java.library.path") ||
+                        (has(it, "openal") && has(it, "UnsatisfiedLinkError"))
+                },
+                diagnosis = fixed(
+                    "OpenAL sound library failed to load (libopenal.so)",
+                    "Minecraft's sound system (OpenAL) couldn't load libopenal.so. This can happen if the " +
+                        "native library is missing from the APK, or if the library loaded but couldn't find " +
+                        "a usable audio backend on Android (needs ALSOFT_DRIVERS=android).",
+                    listOf(
+                        "Update to the latest TurtleLauncher build — the ALSOFT_DRIVERS=android fix is now applied automatically on every launch.",
+                        "If sound is still silent (no crash, just no audio): check that your device's media volume isn't at zero and that no other app is blocking audio output.",
+                        "If the launcher log shows 'Failed to pre-load libopenal.so': reinstall the APK to ensure native libraries are present."
+                    ),
+                    Severity.WARNING
+                )
+            ),
             // 19. Missing/corrupted asset objects (textures, sounds, lang files).
             Rule(
                 title = "missing_assets",

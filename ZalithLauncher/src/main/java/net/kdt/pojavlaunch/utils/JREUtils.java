@@ -216,6 +216,17 @@ public final class JREUtils {
         envMap.put("POJAV_NATIVEDIR", DIR_NATIVE_LIB);
         envMap.put("DRIVER_PATH", DriverPluginManager.getDriver().getPath());
         envMap.put("JAVA_HOME", jreHome);
+
+        // TurtleLauncher: OpenAL sound fix for Android.
+        // OpenAL-Soft's built-in backend auto-detection tries ALSA/PulseAudio/JACK first
+        // (desktop Linux backends that don't exist on Android), and only falls back to the
+        // Android AAudio/OpenSL ES backend if those fail. On many Android devices (especially
+        // 1.20.x vanilla, which uses LWJGL 3.3.1's OpenAL bindings for ALL sound), the
+        // detection either hangs or silently picks a non-functional backend, resulting in
+        // complete silence — no crash, no error, just no audio at all. Setting
+        // ALSOFT_DRIVERS=android skips the desktop backends entirely and forces the Android
+        // audio backend, which is the only one that can actually produce sound on this platform.
+        envMap.put("ALSOFT_DRIVERS", "android");
         envMap.put("HOME", PathManager.DIR_GAME_HOME);
         envMap.put("TMPDIR", PathManager.DIR_CACHE.getAbsolutePath());
         envMap.put("LD_LIBRARY_PATH", LD_LIBRARY_PATH);
@@ -452,7 +463,13 @@ public final class JREUtils {
     }
 
     private static void initGraphicAndSoundEngine(boolean renderer) {
-        dlopen(DIR_NATIVE_LIB + "/libopenal.so");
+        // TurtleLauncher: pre-load OpenAL with error reporting. If this fails, Minecraft's
+        // LWJGL OpenAL bindings will throw UnsatisfiedLinkError later when trying to play
+        // any sound — better to log it here where it's immediately visible.
+        if (!dlopen(DIR_NATIVE_LIB + "/libopenal.so")) {
+            Logging.e("SOUND_LIBRARY", "Failed to pre-load libopenal.so from " + DIR_NATIVE_LIB
+                + " — sound will not work in-game. Check that the APK includes the native library.");
+        }
 
         if (!renderer) return;
 

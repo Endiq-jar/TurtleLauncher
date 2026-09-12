@@ -100,8 +100,8 @@ android {
 
     signingConfigs {
         create("releaseBuild") {
-            val pwd = System.getenv("MOVTERY_KEYSTORE_PASSWORD") ?: ""
-            storeFile = file("movtery-key.jks")
+            val pwd = System.getenv("ENDIQ_KEYSTORE_PASSWORD") ?: ""
+            storeFile = file("endiq-key.jks")
             storePassword = pwd
             keyAlias = "mtp"
             keyPassword = pwd

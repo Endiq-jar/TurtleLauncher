@@ -367,13 +367,16 @@ public final class JREUtils {
     private static void setCustomEnv(Map<String, String> envMap) throws Throwable {
         File customEnvFile = new File(PathManager.DIR_GAME_HOME, "custom_env.txt");
         if (customEnvFile.exists() && customEnvFile.isFile()) {
-            BufferedReader reader = new BufferedReader(new FileReader(customEnvFile));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                int index = line.indexOf("=");
-                envMap.put(line.substring(0, index), line.substring(index + 1));
+            // This file is user-edited: blank lines and comments (no '=') used to
+            // crash game launch with StringIndexOutOfBounds - skip them instead.
+            try (BufferedReader reader = new BufferedReader(new FileReader(customEnvFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    int index = line.indexOf("=");
+                    if (index <= 0) continue;
+                    envMap.put(line.substring(0, index), line.substring(index + 1));
+                }
             }
-            reader.close();
         }
     }
 

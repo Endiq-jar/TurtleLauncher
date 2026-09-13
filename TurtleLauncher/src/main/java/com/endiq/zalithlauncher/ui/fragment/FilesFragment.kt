@@ -78,11 +78,17 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
         openDocumentLauncher = registerForActivityResult(OpenDocumentWithExtension(null, true)) { uris: List<Uri>? ->
             uris?.let { uriList ->
                 val dialog = ZHTools.showTaskRunningDialog((requireContext()))
+                // Snapshot everything the background copy needs up front: if the user
+                // navigates away mid-copy, requireContext()/binding access from either
+                // the worker thread or the ended callback would crash ("not attached").
+                val appContext = requireContext().applicationContext
+                val destPath = binding.fileRecyclerView.fullPath.absolutePath
                 Task.runTask {
                     uriList.forEach { uri ->
-                        FileTools.copyFileInBackground(requireContext(), uri, binding.fileRecyclerView.fullPath.absolutePath)
+                        FileTools.copyFileInBackground(appContext, uri, destPath)
                     }
                 }.ended(TaskExecutors.getAndroidUI()) {
+                    if (!isAdded) return@ended
                     Toast.makeText(requireContext(), getString(R.string.file_added), Toast.LENGTH_SHORT).show()
                     binding.fileRecyclerView.refreshPath()
                 }.onThrowable { e ->
@@ -115,7 +121,7 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
             fileRecyclerView.apply {
                 setShowFiles(mShowFiles)
                 setShowFolders(mShowFolders)
-                setTitleListener { title: String? -> currentPath.text = removeLockPath(title!!, mTitleRemoveLockPath) }
+                setTitleListener { title: String? -> currentPath.text = removeLockPath(title ?: "", mTitleRemoveLockPath) }
 
                 setFileSelectedListener(object : FileSelectedListener() {
                     override fun onFileSelected(file: File?, path: String?) {
@@ -137,6 +143,7 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
                             })
                             selectedFiles
                         }.ended(TaskExecutors.getAndroidUI()) { selectedFiles ->
+                            if (!isAdded) return@ended
                             val filesButton = FilesButton()
                             filesButton.setButtonVisibility(true, true, false, false, true, false)
                             filesButton.setDialogText(
@@ -152,7 +159,7 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
                                     refreshPath()
                                 },
                                 fullPath,
-                                selectedFiles!!
+                                selectedFiles ?: emptyList<File>()
                             )
                             filesDialog.setCopyButtonClick { operateView.pasteButton.visibility = View.VISIBLE }
                             // Zip for multi-select
@@ -187,7 +194,8 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
                     .setConfirmListener { editBox, _ ->
                         val path = editBox.text.toString()
                         val file = File(path)
-                        if (!path.contains(mLockPath!!) || !file.isDirectory || !file.exists()) {
+                        val lockPath = mLockPath
+                        if (lockPath == null || !path.contains(lockPath) || !file.isDirectory || !file.exists()) {
                             editBox.error = getString(R.string.file_does_not_exist)
                             return@setConfirmListener false
                         }
@@ -296,11 +304,15 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
             }
 
             fileRecyclerView.apply list@{
-                mListPath?.let {
-                    lockAndListAt(File(mLockPath!!), File(mListPath!!))
-                    return@list
+                // mLockPath is null when this fragment was created without arguments -
+                // bail out instead of NPEing on File(null).
+                val lockPath = mLockPath ?: return@list
+                val listPath = mListPath
+                if (listPath != null) {
+                    lockAndListAt(File(lockPath), File(listPath))
+                } else {
+                    lockAndListAt(File(lockPath), File(lockPath))
                 }
-                lockAndListAt(File(mLockPath!!), File(mLockPath!!))
             }
         }
 
@@ -413,14 +425,18 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
                 Task.runTask {
                     ZipExtractUtils.compress(files, destZip)
                 }.ended(TaskExecutors.getAndroidUI()) {
+                    // ctx is the captured Context (safe), but getString() would go
+                    // through requireContext() and crash if the user navigated away
+                    // mid-compression - resolve strings from ctx instead.
+                    if (!isAdded) return@ended
                     Toast.makeText(ctx,
-                        getString(R.string.file_zip_success, destZip.name),
+                        ctx.getString(R.string.file_zip_success, destZip.name),
                         Toast.LENGTH_SHORT).show()
                     binding.fileRecyclerView.refreshPath()
                 }.onThrowable { e ->
                     TaskExecutors.getAndroidUI().execute {
                         Toast.makeText(ctx,
-                            getString(R.string.file_zip_failed, e.message ?: "Unknown error"),
+                            ctx.getString(R.string.file_zip_failed, e.message ?: "Unknown error"),
                             Toast.LENGTH_LONG).show()
                     }
                 }.finallyTask(TaskExecutors.getAndroidUI()) {
@@ -448,14 +464,17 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
         Task.runTask {
             ZipExtractUtils.extract(zipFile, destDir)
         }.ended(TaskExecutors.getAndroidUI()) {
+            // Same detach hazard as handleZip above: resolve strings from the
+            // captured ctx, and skip the list refresh once detached.
+            if (!isAdded) return@ended
             Toast.makeText(ctx,
-                getString(R.string.file_extract_success, destDir.name),
+                ctx.getString(R.string.file_extract_success, destDir.name),
                 Toast.LENGTH_SHORT).show()
             binding.fileRecyclerView.refreshPath()
         }.onThrowable { e ->
             TaskExecutors.getAndroidUI().execute {
                 Toast.makeText(ctx,
-                    getString(R.string.file_extract_failed, e.message ?: "Unknown error"),
+                    ctx.getString(R.string.file_extract_failed, e.message ?: "Unknown error"),
                     Toast.LENGTH_LONG).show()
             }
         }.finallyTask(TaskExecutors.getAndroidUI()) {
@@ -529,7 +548,8 @@ class FilesFragment : FragmentWithAnim(R.layout.fragment_files) {
 
     private fun removeLockPath(path: String, remove: Boolean): String {
         var string = path
-        if (remove) string = path.replace(mLockPath!!, ".")
+        val lockPath = mLockPath
+        if (remove && lockPath != null) string = path.replace(lockPath, ".")
         return string
     }
 

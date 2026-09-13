@@ -26,7 +26,7 @@ class DownloadOptiFineFragment : ModListFragment() {
     }
 
     override fun refreshCreatedView() {
-        setIcon(ContextCompat.getDrawable(fragmentActivity!!, R.drawable.ic_optifine))
+        fragmentActivity?.let { setIcon(ContextCompat.getDrawable(it, R.drawable.ic_optifine)) }
         setTitleText("OptiFine")
         setLink("https://www.optifine.net/home")
         setMCMod("https://www.mcmod.cn/class/36.html")
@@ -85,7 +85,7 @@ class DownloadOptiFineFragment : ModListFragment() {
             })
         })
 
-        if (currentTask!!.isCancelled) return
+        if (currentTask?.isCancelled == true) return
 
         val mcOptiFineVersions = mOptiFineVersions[mcVersion] ?: mOptiFineVersions[mcVersion] ?: run {
             empty()
@@ -113,7 +113,7 @@ class DownloadOptiFineFragment : ModListFragment() {
         TaskExecutors.runInUIThread {
             val recyclerView = recyclerView
             runCatching {
-                recyclerView.layoutManager = LinearLayoutManager(fragmentActivity!!)
+                fragmentActivity?.let { recyclerView.layoutManager = LinearLayoutManager(it) }
                 recyclerView.adapter = adapter
             }.getOrElse { e ->
                 Logging.e("Set Adapter", Tools.printToString(e))

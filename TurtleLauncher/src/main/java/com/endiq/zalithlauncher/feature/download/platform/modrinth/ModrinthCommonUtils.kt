@@ -31,7 +31,7 @@ class ModrinthCommonUtils {
             val categories = mutableListOf<String>().apply {
                 filters.modloader?.let { add(it.modrinthName) }
                 if (filters.category != Category.ALL) {
-                    add(filters.category.modrinthName!!)
+                    filters.category.modrinthName?.let { add(it) }
                 }
             }
             return if (categories.isEmpty()) ""

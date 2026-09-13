@@ -304,8 +304,8 @@ abstract class AbstractResourceDownloadFragment(
         setLoadingLayout(true)
         binding.recyclerView.scrollToPosition(0)
 
-        if (mTaskInProgress != null) {
-            mTaskInProgress!!.cancel(true)
+        mTaskInProgress?.let {
+            it.cancel(true)
             mTaskInProgress = null
         }
         this.mLastPage = false

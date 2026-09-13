@@ -76,9 +76,10 @@ public class StringUtils {
             return input;
         }
 
-        //确保位移个数在字符串长度范围内
+        //确保位移个数在字符串长度范围内 (normalize negatives too: Java's %
+        // keeps the sign, and a negative shiftCount would crash substring() below)
         int length = input.length();
-        shiftCount = shiftCount % length;
+        shiftCount = ((shiftCount % length) + length) % length;
         if (shiftCount == 0) {
             return input;
         }
@@ -117,9 +118,10 @@ public class StringUtils {
     }
 
     public static String formattingTime(String time) {
+        if (time == null) return "";
         int T = time.indexOf('T');
         int Z = time.indexOf('Z');
-        if (T == -1 || Z == -1) return time;
+        if (T == -1 || Z == -1 || Z <= T) return time;
         return StringUtils.insertSpace(time.substring(0, T), time.substring(T + 1, Z));
     }
 

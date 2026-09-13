@@ -137,9 +137,12 @@ public class FilesDialog extends FullScreenDialog implements DraggableDialog.Dia
             });
             binding.renameView.setOnClickListener(v -> {
                 if (file.isFile()) {
+                    // Extensionless files have no '.' - lastIndexOf() returns -1 and
+                    // substring(-1) would crash. No suffix keeps the full name editable.
+                    int dotIndex = file.getName().lastIndexOf('.');
                     String suffix = mFileSuffix != null
                             ? mFileSuffix
-                            : file.getName().substring(file.getName().lastIndexOf('.'));
+                            : (dotIndex >= 0 ? file.getName().substring(dotIndex) : "");
                     FileTools.renameFileListener(getContext(), mEndTask, file, suffix);
                 } else {
                     FileTools.renameFileListener(getContext(), mEndTask, file);

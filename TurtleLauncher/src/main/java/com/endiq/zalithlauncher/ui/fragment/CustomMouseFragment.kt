@@ -59,9 +59,14 @@ class CustomMouseFragment : FragmentWithAnim(R.layout.fragment_custom_mouse) {
         openDocumentLauncher = registerForActivityResult<Array<String>, Uri>(ActivityResultContracts.OpenDocument()) { result: Uri? ->
             result?.let { uri ->
                 val dialog = ZHTools.showTaskRunningDialog(requireContext())
+                // Snapshot the context up front: requireActivity() from the worker
+                // thread would crash if the user navigates away mid-copy.
+                val appContext = requireContext().applicationContext
+                val destPath = mousePath().absolutePath
                 Task.runTask {
-                    FileTools.copyFileInBackground(requireActivity(), uri, mousePath().absolutePath)
+                    FileTools.copyFileInBackground(appContext, uri, destPath)
                 }.ended(TaskExecutors.getAndroidUI()) {
+                    if (!isAdded) return@ended
                     Toast.makeText(requireActivity(), getString(R.string.file_added), Toast.LENGTH_SHORT).show()
                     loadData()
                 }.onThrowable { e ->

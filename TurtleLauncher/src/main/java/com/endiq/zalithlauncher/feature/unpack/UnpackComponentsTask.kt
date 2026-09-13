@@ -53,15 +53,23 @@ class UnpackComponentsTask(val context: Context, val component: Components) : Ab
 
     override fun run() {
         listener?.onTaskStart()
+        // AssetManager.list() returns null when the path is not an asset directory -
+        // still signal onTaskEnd so callers waiting on it don't hang forever.
         val fileList = am.list("components/${component.component}")
-        for (fileName in fileList!!) {
+        if (fileList == null) {
+            i("Unpack Components", "${component.component}: asset directory missing, nothing to unpack")
+            listener?.onTaskEnd()
+            return
+        }
+        for (fileName in fileList) {
             Tools.copyAssetFile(context, "components/${component.component}/$fileName", "$rootDir/${component.component}", true)
         }
         listener?.onTaskEnd()
     }
 
     private fun requestEmptyParentDir(file: File) {
-        file.parentFile!!.apply {
+        val parent = file.parentFile ?: return
+        parent.apply {
             if (exists() and isDirectory) {
                 FileUtils.deleteDirectory(this)
             }

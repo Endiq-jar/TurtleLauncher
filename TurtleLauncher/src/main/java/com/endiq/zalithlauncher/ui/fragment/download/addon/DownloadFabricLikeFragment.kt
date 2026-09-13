@@ -19,7 +19,7 @@ import java.util.concurrent.Future
 abstract class DownloadFabricLikeFragment(val utils: FabricLikeUtils, val icon: Int) : ModListFragment() {
 
     override fun refreshCreatedView() {
-        setIcon(ContextCompat.getDrawable(fragmentActivity!!, icon))
+        fragmentActivity?.let { setIcon(ContextCompat.getDrawable(it, icon)) }
         setTitleText(utils.name)
         setLink(utils.webUrl)
         setMCMod(utils.mcModUrl)
@@ -73,7 +73,7 @@ abstract class DownloadFabricLikeFragment(val utils: FabricLikeUtils, val icon: 
         gameVersions.forEach {
             currentTask?.apply { if (isCancelled) return }
             if (it.version == mcVersion) {
-                mFabricVersions.addAll(loaderVersions!!.toList())
+                loaderVersions?.let { mFabricVersions.addAll(it.toList()) }
                 return@forEach
             }
         }
@@ -107,7 +107,7 @@ abstract class DownloadFabricLikeFragment(val utils: FabricLikeUtils, val icon: 
         TaskExecutors.runInUIThread {
             val recyclerView = recyclerView
             runCatching {
-                recyclerView.layoutManager = LinearLayoutManager(fragmentActivity!!)
+                fragmentActivity?.let { recyclerView.layoutManager = LinearLayoutManager(it) }
                 recyclerView.adapter = adapter
             }.getOrElse { e ->
                 e("Set Adapter", Tools.printToString(e))

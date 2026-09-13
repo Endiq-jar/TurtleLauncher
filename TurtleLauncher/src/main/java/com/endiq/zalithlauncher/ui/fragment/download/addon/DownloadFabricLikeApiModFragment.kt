@@ -30,7 +30,7 @@ abstract class DownloadFabricLikeApiModFragment(
 ) : ModListFragment() {
 
     override fun refreshCreatedView() {
-        setIcon(ContextCompat.getDrawable(fragmentActivity!!, icon))
+        fragmentActivity?.let { setIcon(ContextCompat.getDrawable(it, icon)) }
         setTitleText(addon.addonName)
         setLink(webUrl)
         setMCMod(mcModUrl)
@@ -121,7 +121,7 @@ abstract class DownloadFabricLikeApiModFragment(
         TaskExecutors.runInUIThread {
             val recyclerView = recyclerView
             runCatching {
-                recyclerView.layoutManager = LinearLayoutManager(fragmentActivity!!)
+                fragmentActivity?.let { recyclerView.layoutManager = LinearLayoutManager(it) }
                 recyclerView.adapter = adapter
             }.getOrElse { e ->
                 e("Set Adapter", Tools.printToString(e))

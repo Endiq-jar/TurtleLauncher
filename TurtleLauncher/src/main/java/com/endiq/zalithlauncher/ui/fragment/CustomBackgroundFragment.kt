@@ -57,9 +57,15 @@ class CustomBackgroundFragment : FragmentWithAnim(R.layout.fragment_custom_backg
         openDocumentLauncher = registerForActivityResult<Array<String>, Uri>(ActivityResultContracts.OpenDocument()) { result: Uri? ->
             result?.let { uri ->
                 val dialog = ZHTools.showTaskRunningDialog(requireContext())
+                // Snapshot everything the background copy needs up front: if the user
+                // navigates away mid-copy, requireActivity()/binding access from either
+                // the worker thread or the ended callback would crash ("not attached").
+                val appContext = requireContext().applicationContext
+                val destPath = binding.fileRecyclerView.fullPath.absolutePath
                 Task.runTask {
-                    FileTools.copyFileInBackground(requireActivity(), uri, binding.fileRecyclerView.fullPath.absolutePath)
+                    FileTools.copyFileInBackground(appContext, uri, destPath)
                 }.ended(TaskExecutors.getAndroidUI()) {
+                    if (!isAdded) return@ended
                     Toast.makeText(requireActivity(), getString(R.string.file_added), Toast.LENGTH_SHORT).show()
                     binding.fileRecyclerView.listFileAt(backgroundPath())
                 }.onThrowable { e ->
@@ -92,7 +98,7 @@ class CustomBackgroundFragment : FragmentWithAnim(R.layout.fragment_custom_backg
 
                 setFileSelectedListener(object : FileSelectedListener() {
                     override fun onFileSelected(file: File?, path: String?) {
-                        val fileName = file!!.name
+                        val fileName = file?.name ?: return
 
                         val image = isImage(file)
                         val filesButton = FilesButton()

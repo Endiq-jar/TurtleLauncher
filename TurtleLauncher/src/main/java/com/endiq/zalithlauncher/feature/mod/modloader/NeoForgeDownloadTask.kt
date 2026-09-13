@@ -33,7 +33,7 @@ class NeoForgeDownloadTask(neoforgeVersion: String) : InstallTask, DownloaderFee
     @Throws(Exception::class)
     override fun run(customName: String): File? {
         var outputFile: File? = null
-        if (if (mLoaderVersion!!.contains("1.20.1")) determineNeoForgedForgeDownloadUrl() else determineNeoForgeDownloadUrl()) {
+        if (if (mLoaderVersion?.contains("1.20.1") == true) determineNeoForgedForgeDownloadUrl() else determineNeoForgeDownloadUrl()) {
             outputFile = downloadNeoForge()
         }
         ProgressLayout.clearProgress(ProgressLayout.INSTALL_RESOURCE)

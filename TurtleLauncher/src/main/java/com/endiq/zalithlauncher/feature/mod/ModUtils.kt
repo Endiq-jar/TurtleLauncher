@@ -10,7 +10,8 @@ class ModUtils {
 
         @JvmStatic
         fun disableMod(file: File?) {
-            val fileName = file!!.name
+            file ?: return
+            val fileName = file.name
             val fileParent = file.parent
             val newFile = File(fileParent, "$fileName.disabled")
             renameFile(file, newFile)
@@ -18,9 +19,13 @@ class ModUtils {
 
         @JvmStatic
         fun enableMod(file: File?) {
-            val fileName = file!!.name
+            file ?: return
+            val fileName = file.name
             val fileParent = file.parent
-            var newFileName = fileName.substring(0, fileName.lastIndexOf(DISABLE_JAR_FILE_SUFFIX))
+            // lastIndexOf() returns -1 when the suffix is absent (e.g. enabling an
+            // already-enabled mod) - substring(0, -1) would throw StringIndexOutOfBounds.
+            val suffixIndex = fileName.lastIndexOf(DISABLE_JAR_FILE_SUFFIX)
+            var newFileName = if (suffixIndex == -1) fileName else fileName.substring(0, suffixIndex)
             if (!fileName.endsWith(JAR_FILE_SUFFIX)) newFileName += JAR_FILE_SUFFIX //如果没有.jar结尾，那么默认加上.jar后缀
 
             val newFile = File(fileParent, newFileName)

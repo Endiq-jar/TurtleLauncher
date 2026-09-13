@@ -87,12 +87,12 @@ class ModLoaderWrapper(
         val baseIntent = Intent(context, JavaGUILauncherActivity::class.java)
         when (modLoader) {
             ModLoader.FORGE -> {
-                InstallArgsUtils(minecraftVersion, versionId!!).setForge(baseIntent, modInstallerJar, customName)
+                InstallArgsUtils(minecraftVersion, versionId ?: return null).setForge(baseIntent, modInstallerJar, customName)
                 return baseIntent
             }
 
             ModLoader.NEOFORGE -> {
-                InstallArgsUtils(minecraftVersion, versionId!!).setNeoForge(baseIntent, modInstallerJar, customName)
+                InstallArgsUtils(minecraftVersion, versionId ?: return null).setNeoForge(baseIntent, modInstallerJar, customName)
                 return baseIntent
             }
 

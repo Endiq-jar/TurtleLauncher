@@ -61,10 +61,19 @@ public class SkinLoader {
     private static Drawable getDefaultAvatar(Context context, int size) throws Exception {
         InputStream is = context.getAssets().open("steve.png");
         Bitmap bitmap = BitmapFactory.decodeStream(is);
+        if (bitmap == null) throw new IOException("Failed to decode bundled steve.png");
         return new BitmapDrawable(context.getResources(), getAvatar(bitmap, size));
     }
 
     public static Bitmap getAvatar(@NotNull Bitmap skin, int size) {
+        // A corrupt skin file (e.g. a 1x1 png saved over the cache) used to die
+        // inside Bitmap.createBitmap with IllegalArgumentException, or divide by
+        // zero computing the face scale - reject it here with a clear message
+        // (every caller already catches and falls back to the default avatar).
+        if (skin.getWidth() < 8 || skin.getHeight() < 8 || size <= 0) {
+            throw new IllegalArgumentException("Skin bitmap too small to crop an avatar from: "
+                    + skin.getWidth() + "x" + skin.getHeight() + ", size=" + size);
+        }
         float faceOffset = Math.round(size / 18.0);
         float scaleFactor = skin.getWidth() / 64.0f;
         int faceSize = Math.round(8 * scaleFactor);

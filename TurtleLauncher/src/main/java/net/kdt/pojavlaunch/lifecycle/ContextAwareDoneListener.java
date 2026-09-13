@@ -54,7 +54,8 @@ public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneLi
             @Override
             public void onProgress(@NonNull ModInfo recentlyParsedModInfo, int totalFileCount) {
                 int i = progressCount.incrementAndGet();
-                ProgressLayout.setProgress(ProgressLayout.CHECKING_MODS, i * 100 / totalFileCount,
+                int percent = totalFileCount > 0 ? i * 100 / totalFileCount : 100;
+                ProgressLayout.setProgress(ProgressLayout.CHECKING_MODS, percent,
                         R.string.mod_check_progress_message, i, totalFileCount);
             }
 

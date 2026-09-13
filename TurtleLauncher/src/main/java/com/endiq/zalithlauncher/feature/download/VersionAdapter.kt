@@ -46,7 +46,7 @@ class VersionAdapter(
     }
 
     override fun onBindViewHolder(holder: InnerHolder, position: Int) {
-        holder.setData(mData!![position])
+        holder.setData(mData?.getOrNull(position) ?: return)
     }
 
     override fun getItemCount(): Int = mData?.size ?: 0

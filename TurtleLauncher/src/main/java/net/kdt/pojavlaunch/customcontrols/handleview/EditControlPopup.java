@@ -223,10 +223,35 @@ public class EditControlPopup {
                 .setOnSaveListener(this::onPixelImageDrawn);
         String existingPath = mCurrentlyEditedButton.getProperties().customImagePath;
         if (existingPath != null && !existingPath.isEmpty()) {
-            Bitmap existing = android.graphics.BitmapFactory.decodeFile(existingPath);
+            // The editor works on a 32x32 grid, but decodeFile() used to allocate
+            // the FULL bitmap first - a gallery photo (4000x3000+) as a control
+            // image meant a ~48MB transient allocation and an OOM crash on low-RAM
+            // devices. Sample down to 256px max dimension instead, which is still
+            // 8x the grid resolution.
+            Bitmap existing = decodeSampled(existingPath, 256);
             if (existing != null) dialog.withInitialBitmap(existing);
         }
         dialog.show();
+    }
+
+    private static Bitmap decodeSampled(String path, int maxDimension) {
+        try {
+            android.graphics.BitmapFactory.Options bounds = new android.graphics.BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            android.graphics.BitmapFactory.decodeFile(path, bounds);
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null;
+            int sampleSize = 1;
+            while ((bounds.outWidth / sampleSize) > maxDimension
+                    || (bounds.outHeight / sampleSize) > maxDimension) {
+                sampleSize *= 2;
+            }
+            android.graphics.BitmapFactory.Options opts = new android.graphics.BitmapFactory.Options();
+            opts.inSampleSize = sampleSize;
+            return android.graphics.BitmapFactory.decodeFile(path, opts);
+        } catch (Throwable t) {
+            android.util.Log.e("EditControlPopup", "Failed to decode sampled bitmap: " + path, t);
+            return null;
+        }
     }
 
     private File newCustomImageFile() {

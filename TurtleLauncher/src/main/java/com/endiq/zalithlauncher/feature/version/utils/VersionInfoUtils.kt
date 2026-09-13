@@ -87,7 +87,7 @@ class VersionInfoUtils {
             //从minecraft库中获取
             json.getAsJsonArray("libraries")?.forEach { lib ->
                 val (group, artifact, version) = lib.asJsonObject["name"].asString.split(":").let {
-                    Triple(it[0], it[1], it.getOrNull(2) ?: "")
+                    Triple(it.getOrElse(0) { "" }, it.getOrElse(1) { "" }, it.getOrNull(2) ?: "")
                 }
                 if (group == "net.minecraft" && (artifact == "client" || artifact == "server")) {
                     return version
@@ -108,7 +108,7 @@ class VersionInfoUtils {
             versionJson.getAsJsonArray("libraries")?.forEach { libElement ->
                 val lib = libElement.asJsonObject
                 val (group, artifact, version) = lib.get("name").asString.split(":").let {
-                    Triple(it[0], it[1], it.getOrNull(2) ?: "")
+                    Triple(it.getOrElse(0) { "" }, it.getOrElse(1) { "" }, it.getOrNull(2) ?: "")
                 }
 
                 when {

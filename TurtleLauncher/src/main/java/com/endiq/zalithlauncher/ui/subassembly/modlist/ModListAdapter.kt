@@ -27,7 +27,7 @@ class ModListAdapter(
     }
 
     override fun onBindViewHolder(holder: InnerHolder, position: Int) {
-        holder.setData(mData!![position])
+        holder.setData(mData?.getOrNull(position) ?: return)
     }
 
     override fun getItemCount(): Int {
@@ -37,7 +37,7 @@ class ModListAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun updateData(newData: List<ModListItemBean>?) {
         mData?.clear()
-        mData?.addAll(newData!!)
+        if (newData != null) mData?.addAll(newData)
         super.notifyDataSetChanged()
     }
 

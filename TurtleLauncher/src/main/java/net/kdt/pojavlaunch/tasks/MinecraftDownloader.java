@@ -413,6 +413,13 @@ public class MinecraftDownloader {
         for(String asset : assetNames) {
             JAssetInfo assetInfo = assetObjects.get(asset);
             if(assetInfo == null) continue;
+            // A corrupt asset index (missing/short hash) used to NPE or throw
+            // StringIndexOutOfBounds here and abort the whole install - skip the
+            // broken entry instead.
+            if(assetInfo.hash == null || assetInfo.hash.length() < 2) {
+                Logging.w("NewMCDownloader", "Skipping asset with invalid hash: " + asset);
+                continue;
+            }
             File targetFile;
             String hashedPath = assetInfo.hash.substring(0, 2) + File.separator + assetInfo.hash;
             String basePath = assets.mapToResources ? ProfilePathHome.getResourcesHome() : ProfilePathHome.getAssetsHome();

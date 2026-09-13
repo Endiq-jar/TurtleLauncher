@@ -12,7 +12,6 @@ import okhttp3.Call
 import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
-import java.util.Objects
 
 class CheckNewNotice {
     companion object {
@@ -50,12 +49,12 @@ class CheckNewNotice {
 
                 @Throws(IOException::class)
                 override fun onResponse(call: Call?, response: Response?) {
-                    if (!response!!.isSuccessful) {
-                        Logging.e("CheckNewNotice", "Unexpected code ${response.code}")
+                    if (response == null || !response.isSuccessful) {
+                        Logging.e("CheckNewNotice", "Unexpected code ${response?.code}")
                     } else {
                         runCatching {
-                            Objects.requireNonNull(response.body)
-                            val responseBody = response.body!!.string()
+                            val responseBody = response.body?.string()
+                                ?: throw IOException("Empty response body")
 
                             val originJson = JSONObject(responseBody)
                             val rawBase64 = originJson.getString("content")

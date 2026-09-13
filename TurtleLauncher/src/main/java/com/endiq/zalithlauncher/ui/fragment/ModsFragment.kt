@@ -58,9 +58,12 @@ class ModsFragment : FragmentWithAnim(R.layout.fragment_mods) {
         openDocumentLauncher = registerForActivityResult(OpenDocumentWithExtension("jar", true)) { uris: List<Uri>? ->
             uris?.let { uriList ->
                 val dialog = ZHTools.showTaskRunningDialog(requireContext())
+                // Snapshot the context up front: requireContext() from the worker
+                // thread would crash if the user navigates away mid-copy.
+                val appContext = requireContext().applicationContext
                 Task.runTask {
                     uriList.forEach { uri ->
-                        FileTools.copyFileInBackground(requireContext(), uri, mRootPath)
+                        FileTools.copyFileInBackground(appContext, uri, mRootPath)
                     }
                 }.ended(TaskExecutors.getAndroidUI()) {
                     // The copy can outlive this fragment (user navigated away while it was
@@ -156,6 +159,7 @@ class ModsFragment : FragmentWithAnim(R.layout.fragment_mods) {
                             selectedFiles
                         }.ended(TaskExecutors.getAndroidUI()) { selectedFiles ->
                             if (!isAdded) return@ended
+                            val files = selectedFiles ?: return@ended
                             val filesButton = FilesButton()
                             filesButton.setButtonVisibility(true, true, false, false, true, true)
                             filesButton.setDialogText(
@@ -168,10 +172,10 @@ class ModsFragment : FragmentWithAnim(R.layout.fragment_mods) {
                                 Task.runTask(TaskExecutors.getAndroidUI()) {
                                     closeMultiSelect()
                                     refreshPath()
-                                }, fullPath, selectedFiles!!)
+                                }, fullPath, files)
                             filesDialog.setCopyButtonClick { operateView.pasteButton.visibility = View.VISIBLE }
                             filesDialog.setMoreButtonClick {
-                                ModToggleHandler(requireContext(), selectedFiles,
+                                ModToggleHandler(requireContext(), files,
                                     Task.runTask(TaskExecutors.getAndroidUI()) {
                                         closeMultiSelect()
                                         refreshPath()

@@ -58,11 +58,16 @@ class ControlButtonFragment : FragmentWithAnim(R.layout.fragment_control_manager
         openDocumentLauncher = registerForActivityResult(OpenDocumentWithExtension("json", true)) { uris: List<Uri>? ->
             uris?.let { uriList ->
                 val dialog = ZHTools.showTaskRunningDialog(requireContext())
+                // Snapshot the context up front: if the user navigates away mid-copy,
+                // requireContext() from the worker thread or the ended callback would
+                // crash ("not attached to a context").
+                val appContext = requireContext().applicationContext
                 Task.runTask {
                     uriList.forEach { uri ->
-                        FileTools.copyFileInBackground(requireContext(), uri, File(PathManager.DIR_CTRLMAP_PATH).absolutePath)
+                        FileTools.copyFileInBackground(appContext, uri, File(PathManager.DIR_CTRLMAP_PATH).absolutePath)
                     }
                 }.ended(TaskExecutors.getAndroidUI()) {
+                    if (!isAdded) return@ended
                     Toast.makeText(requireContext(), getString(R.string.file_added), Toast.LENGTH_SHORT).show()
                     controlsListViewCreator.refresh()
                 }.onThrowable { e ->
@@ -169,7 +174,7 @@ class ControlButtonFragment : FragmentWithAnim(R.layout.fragment_control_manager
     }
 
     private fun removeLockPath(path: String?): String {
-        return path!!.replace(PathManager.DIR_CTRLMAP_PATH, ".")
+        return (path ?: "").replace(PathManager.DIR_CTRLMAP_PATH, ".")
     }
 
     private fun showDialog(file: File) {

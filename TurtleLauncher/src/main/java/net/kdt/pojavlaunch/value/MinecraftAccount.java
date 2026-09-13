@@ -27,7 +27,10 @@ public class MinecraftAccount {
     public String profileId = "00000000-0000-0000-0000-000000000000"; // profile UUID, for obtaining skin
     public String username = "Steve";
     public String msaRefreshToken = "0";
-    public String xuid;
+    // Local/offline and Other Login accounts never receive a real xuid - default
+    // it like every other token field so launch-time map puts (which require
+    // non-null values) can't NPE on it. Microsoft login overwrites it anyway.
+    public String xuid = "0";
     public String otherBaseUrl;
     public String otherAccount;
     public String otherPassword;
@@ -78,7 +81,20 @@ public class MinecraftAccount {
     }
     
     public static MinecraftAccount parse(String content) throws JsonSyntaxException {
-        return Tools.GLOBAL_GSON.fromJson(content, MinecraftAccount.class);
+        MinecraftAccount acc = Tools.GLOBAL_GSON.fromJson(content, MinecraftAccount.class);
+        // Explicit nulls in the JSON overwrite the field defaults above (Gson sets
+        // them literally), and reloadInternal() adds parsed accounts to the live
+        // list WITHOUT loadFromUniqueUUID()'s defaulting - so normalize here at
+        // the single choke point every load path goes through. Missing/null
+        // tokens used to NPE later at launch (auth_xuid map put, profileId.replace).
+        if (acc == null) return null;
+        if (acc.accessToken == null) acc.accessToken = "0";
+        if (acc.clientToken == null) acc.clientToken = "0";
+        if (acc.profileId == null) acc.profileId = "00000000-0000-0000-0000-000000000000";
+        if (acc.username == null) acc.username = "Steve";
+        if (acc.msaRefreshToken == null) acc.msaRefreshToken = "0";
+        if (acc.xuid == null) acc.xuid = "0";
+        return acc;
     }
 
     public static MinecraftAccount loadFromProfileID(String profileID) {
@@ -92,6 +108,9 @@ public class MinecraftAccount {
         if(!accountExists(uniqueUUID)) return null;
         try {
             MinecraftAccount acc = parse(Tools.read(PathManager.DIR_ACCOUNT_NEW + "/" + uniqueUUID));
+            // A file containing literal "null" parses to a null account - every
+            // field access below would NPE (and NPE isn't in the catch clause).
+            if (acc == null) return null;
             if (acc.accessToken == null) {
                 acc.accessToken = "0";
             }
@@ -115,7 +134,7 @@ public class MinecraftAccount {
     }
 
     private static boolean accountExists(String uniqueUUID) {
-        return !uniqueUUID.isEmpty() && new File(PathManager.DIR_ACCOUNT_NEW + "/" + uniqueUUID).exists();
+        return uniqueUUID != null && !uniqueUUID.isEmpty() && new File(PathManager.DIR_ACCOUNT_NEW + "/" + uniqueUUID).exists();
     }
 
     public String getUniqueUUID() {

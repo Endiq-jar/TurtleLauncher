@@ -39,18 +39,23 @@ class FileItemBean(
     }
 
     override fun compareTo(other: FileItemBean?): Int {
-        other ?: run { throw NullPointerException("Cannot compare to null.") }
+        // Sorting a list that contains null used to throw NPE out of the sort and
+        // crash the caller - treat null as greater instead so the sort survives.
+        other ?: return 1
 
         val thisName = file?.name ?: name
         val otherName = other.file?.name ?: other.name
 
-        //首先检查文件是否为目录
-        if (this.file != null && file!!.isDirectory) {
-            if (other.file != null && !other.file!!.isDirectory) {
+        //首先检查文件是否为目录 (locals: `file` is a mutable @JvmField var, so a
+        // re-read after the null check could still NPE - and smart-cast won't apply)
+        val thisFile = file
+        val otherFile = other.file
+        if (thisFile != null && thisFile.isDirectory) {
+            if (otherFile != null && !otherFile.isDirectory) {
                 //目录排在文件前面
                 return -1
             }
-        } else if (other.file != null && other.file!!.isDirectory) {
+        } else if (otherFile != null && otherFile.isDirectory) {
             //文件排在目录后面
             return 1
         }

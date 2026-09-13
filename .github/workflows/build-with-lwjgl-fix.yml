@@ -50,14 +50,14 @@ jobs:
       - name: Copy arm64 native libs into TurtleLauncher
         run: |
           set -e
-          mkdir -p turtle/ZalithLauncher/src/main/jniLibs/arm64-v8a
+          mkdir -p turtle/TurtleLauncher/src/main/jniLibs/arm64-v8a
           found=0
           # Filter to paths that mention arm64/aarch64, since the script builds
           # all 4 Android arches - only arm64 is used by this app.
           while IFS= read -r f; do
             if echo "$f" | grep -qiE "arm64|aarch64"; then
               echo "Copying $f"
-              cp "$f" turtle/ZalithLauncher/src/main/jniLibs/arm64-v8a/
+              cp "$f" turtle/TurtleLauncher/src/main/jniLibs/arm64-v8a/
               found=1
             fi
           done < <(find builder/lwjgl3/bin -type f \( -name "liblwjgl.so" -o -name "liblwjgl_sdl.so" \))
@@ -65,7 +65,7 @@ jobs:
             echo "::error::No arm64 liblwjgl.so/liblwjgl_sdl.so found - build output layout may differ from expected, check the 'Locate the new native libs' step above and adjust the path filter."
             exit 1
           fi
-          ls -la turtle/ZalithLauncher/src/main/jniLibs/arm64-v8a/
+          ls -la turtle/TurtleLauncher/src/main/jniLibs/arm64-v8a/
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -91,7 +91,7 @@ jobs:
       - name: Build debug APK with the fixed native lib
         working-directory: turtle
         run: |
-          ./gradlew :ZalithLauncher:assembleDebug \
+          ./gradlew :TurtleLauncher:assembleDebug \
             -Dkotlin.compiler.execution.strategy=in-process \
             -Dorg.gradle.jvmargs=-Xmx4g \
             --no-daemon
@@ -100,4 +100,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TurtleLauncher-debug-apk-lwjgl-fixed
-          path: turtle/ZalithLauncher/build/outputs/apk/debug/*.apk
+          path: turtle/TurtleLauncher/build/outputs/apk/debug/*.apk

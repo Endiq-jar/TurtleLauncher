@@ -626,7 +626,7 @@
          no API key, no account, no network - see feature/ai/TurtleAssistant.kt. English only
          for now; other locales fall back to these strings. -->
     <string name="ai_chat_title">Assistant</string>
-    <string name="ai_chat_subtitle">On-device • no account or API key needed</string>
+    <string name="ai_chat_subtitle">On-device</string>
     <string name="ai_chat_input_hint">Ask about renderers, crashes, mods…</string>
     <string name="ai_chat_thinking">Thinking…</string>
     <string name="ai_chat_clear_title">Clear conversation?</string>
@@ -700,7 +700,7 @@
     <string name="setting_recording_show_timer_title">Show Timer While Recording</string>
     <string name="setting_recording_show_timer_desc">Displays elapsed recording time next to the record button</string>
     <string name="setting_recording_capture_audio_title">Capture Audio</string>
-    <string name="setting_recording_capture_audio_desc">Records in-game sound. Shows a one-time system prompt each recording to allow it - your microphone is never used</string>
+    <string name="setting_recording_capture_audio_desc">Records in-game sound.Your microphone is never used</string>
 
     <!-- Phone Settings: CPU -->
     <string name="setting_category_phone_cpu">CPU</string>

@@ -359,6 +359,7 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
             // handleException() call if this attempt also fails.
             if (!started) {
                 joiningCode = null
+                if (!isAdded || view == null) return@launch
                 showException(type)
             }
         }
@@ -488,6 +489,7 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
             }
             result.onFailure { e ->
                 Logging.w(TAG, "Failed to start hosting", e)
+                if (!isAdded || view == null) return@launch
                 setButtonsEnabled(true)
                 renderState(Terracotta.getState())
             }
@@ -553,6 +555,7 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
             }
             if (!accepted) {
                 joiningCode = null
+                if (!isAdded || view == null) return@launch
                 Toast.makeText(requireContext(), R.string.terracotta_join_code_invalid, Toast.LENGTH_SHORT).show()
                 setButtonsEnabled(true)
                 renderState(Terracotta.getState())
@@ -571,6 +574,7 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         scope.launch {
             val logs = withContext(Dispatchers.IO) { Terracotta.collectLogs() }
             if (!logs.isNullOrBlank()) {
+                if (!isAdded || view == null) return@launch
                 val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboard.setPrimaryClip(ClipData.newPlainText("terracotta_logs", logs))
                 Toast.makeText(requireContext(), R.string.terracotta_export_logs, Toast.LENGTH_SHORT).show()

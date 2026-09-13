@@ -91,11 +91,13 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                 AccountsManager.currentAccount = account
             } else {
                 TaskExecutors.runInUIThread {
-                    Toast.makeText(
-                        requireActivity(),
-                        R.string.tasks_ongoing,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    activity?.let {
+                        Toast.makeText(
+                            it,
+                            R.string.tasks_ongoing,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
@@ -305,6 +307,9 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
         Task.runTask {
             AccountsManager.reload()
         }.ended(TaskExecutors.getAndroidUI()) {
+            // reloadAccounts() is called from async login callbacks - the user may
+            // have navigated away by now (updateAccountDetail uses requireContext).
+            if (!isAdded) return@ended
             reloadRecyclerView()
             updateAccountDetail()
         }.execute()
@@ -463,6 +468,10 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                 }
             }
         }.ended(TaskExecutors.getAndroidUI()) {
+            // The server scan runs in the background - bail out if the user
+            // navigated away while it was running (requireActivity()/binding
+            // access would crash with "not attached" otherwise).
+            if (!isAdded) return@ended
             //将外置服务器添加到账号类别选择栏上
             mOtherServerViewList.forEach { view ->
                 binding.accountTypeTab.removeView(view)
@@ -557,10 +566,12 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                 }
             }
         }.beforeStart(TaskExecutors.getAndroidUI()) {
-            mProgressDialog.show()
+            // Showing a dialog after detach throws BadTokenException - and if we
+            // are detached there is nothing to show progress to anyway.
+            if (isAdded) mProgressDialog.show()
         }.ended(TaskExecutors.getAndroidUI()) {
             refreshOtherServer()
-            mProgressDialog.dismiss()
+            runCatching { mProgressDialog.dismiss() }
         }.onThrowable { e ->
             Logging.e("Add Other Server (direct)", Tools.printToString(e))
         }.execute()
@@ -610,10 +621,12 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                 }
             }
         }.beforeStart(TaskExecutors.getAndroidUI()) {
-            mProgressDialog.show()
+            // Showing a dialog after detach throws BadTokenException - and if we
+            // are detached there is nothing to show progress to anyway.
+            if (isAdded) mProgressDialog.show()
         }.ended(TaskExecutors.getAndroidUI()) {
             refreshOtherServer()
-            mProgressDialog.dismiss()
+            runCatching { mProgressDialog.dismiss() }
         }.onThrowable { e ->
             Logging.e("Add Other Server", Tools.printToString(e))
         }.execute()

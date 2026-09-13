@@ -165,10 +165,10 @@ public final class ZHTools {
         if (fragment instanceof FragmentWithAnim) {
             ((FragmentWithAnim) fragment).slideOut();
         }
-        getFragmentTransaction(fragment)
+        FragmentActivity activity = fragment.requireActivity();
+        safeCommit(activity, getFragmentTransaction(activity)
                 .replace(R.id.container_fragment, fragmentClass, bundle, fragmentTag)
-                .addToBackStack(fragmentClass.getName())
-                .commit();
+                .addToBackStack(fragmentClass.getName()));
     }
 
     public static void addFragment(
@@ -177,19 +177,34 @@ public final class ZHTools {
             @Nullable String fragmentTag,
             @Nullable Bundle bundle
     ) {
-        getFragmentTransaction(fragment)
+        FragmentActivity activity = fragment.requireActivity();
+        safeCommit(activity, getFragmentTransaction(activity)
                 .addToBackStack(fragmentClass.getName())
                 .add(R.id.container_fragment, fragmentClass, bundle, fragmentTag)
-                .hide(fragment)
-                .commit();
+                .hide(fragment));
     }
 
-    private static FragmentTransaction getFragmentTransaction(Fragment fragment) {
-        FragmentTransaction transaction = fragment.requireActivity().getSupportFragmentManager().beginTransaction();
+    private static FragmentTransaction getFragmentTransaction(FragmentActivity activity) {
+        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
         if (AllSettings.getAnimation().getValue()) {
             transaction.setCustomAnimations(R.anim.cut_into, R.anim.cut_out, R.anim.cut_into, R.anim.cut_out);
         }
         return transaction.setReorderingAllowed(true);
+    }
+
+    /**
+     * Commits a FragmentTransaction without ever throwing IllegalStateException
+     * ("Can not perform this action after onSaveInstanceState") - a commit issued
+     * while the activity is stopped (e.g. a navigation event delivered late from a
+     * background task) falls back to commitAllowingStateLoss instead of crashing.
+     * Behavior is identical to commit() in the normal (resumed) case.
+     */
+    private static void safeCommit(FragmentActivity activity, FragmentTransaction transaction) {
+        if (activity.getSupportFragmentManager().isStateSaved()) {
+            transaction.commitAllowingStateLoss();
+        } else {
+            transaction.commit();
+        }
     }
 
     public static void killProcess() {

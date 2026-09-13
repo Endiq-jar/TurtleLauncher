@@ -117,12 +117,19 @@ class Version(
         override fun createFromParcel(parcel: Parcel): Version {
             val stringList = ArrayList<String>()
             parcel.readStringList(stringList)
-            val versionConfig = parcel.readParcelable<VersionConfig>(VersionConfig::class.java.classLoader)!!
+            // A corrupt/truncated Parcel used to crash here twice over: readParcelable()
+            // can return null (non-null assertion -> NPE) and stringList[] throws
+            // IndexOutOfBounds when short. Fall back to defaults so a bad Intent
+            // extra can't kill the app.
+            val versionsFolder = stringList.getOrElse(0) { "" }
+            val versionPath = stringList.getOrElse(1) { "" }
+            val versionConfig = parcel.readParcelable<VersionConfig>(VersionConfig::class.java.classLoader)
+                ?: VersionConfig(File(versionPath))
             val isValid = parcel.readInt().toBoolean()
             val offlineAccount = parcel.readInt().toBoolean()
             val modCheckResult = parcel.readParcelable<ModChecker.ModCheckResult>(ModChecker.ModCheckResult::class.java.classLoader)
 
-            return Version(stringList[0], stringList[1], versionConfig, isValid).apply {
+            return Version(versionsFolder, versionPath, versionConfig, isValid).apply {
                 offlineAccountLogin = offlineAccount
                 this.modCheckResult = modCheckResult
             }

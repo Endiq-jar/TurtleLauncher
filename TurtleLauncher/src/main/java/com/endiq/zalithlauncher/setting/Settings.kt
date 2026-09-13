@@ -51,7 +51,10 @@ class Settings {
              * 在启动器设置中获取键对应的值
              */
             fun <T> getValue(key: String, defaultValue: T, parser: (String) -> T?): T {
-                return settingsMap[key]?.value?.let { parser(it) } ?: defaultValue
+                // A corrupt settings file must never crash the app: an unparseable
+                // value falls back to the default instead of throwing out of every
+                // getValue() call site.
+                return settingsMap[key]?.value?.let { runCatching { parser(it) }.getOrNull() } ?: defaultValue
             }
 
             /**

@@ -19,13 +19,22 @@ public class SelfMapsParser {
         }
     }
 
-    private boolean forEachLine(String line) throws NumberFormatException {
+    private boolean forEachLine(String line) {
+        if (line == null) return true;
         int firstSpaceIndex = line.indexOf(' ');
+        // A blank/malformed line has no space: substring(0, -1) would throw
+        // StringIndexOutOfBounds and abort the whole scan - just skip the line.
+        if (firstSpaceIndex <= 0) return true;
         String addresses = line.substring(0, firstSpaceIndex);
         String[] addressArray = addresses.split("-");
         if(addressArray.length < 2) return true;
-        long begin = Long.parseLong(addressArray[0], 16);
-        long end = Long.parseLong(addressArray[1], 16);
+        long begin, end;
+        try {
+            begin = Long.parseLong(addressArray[0], 16);
+            end = Long.parseLong(addressArray[1], 16);
+        } catch (NumberFormatException e) {
+            return true;
+        }
         return mCallback.process(begin, end, line);
     }
 

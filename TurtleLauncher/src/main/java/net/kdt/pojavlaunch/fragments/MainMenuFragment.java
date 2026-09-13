@@ -133,7 +133,7 @@ public class MainMenuFragment extends FragmentWithAnim {
                 ZHTools.swapFragmentWithAnim(this, VersionsListFragment.class, VersionsListFragment.TAG, null);
             } else {
                 ViewAnimUtils.setViewAnim(binding.version, Animations.Shake);
-                TaskExecutors.runInUIThread(() -> Toast.makeText(requireContext(), R.string.version_manager_task_in_progress, Toast.LENGTH_SHORT).show());
+                { android.content.Context toastContext = getContext(); if (toastContext != null) TaskExecutors.runInUIThread(() -> Toast.makeText(toastContext, R.string.version_manager_task_in_progress, Toast.LENGTH_SHORT).show()); }
             }
         });
         binding.managerProfileButton.setOnClickListener(v -> {
@@ -142,7 +142,7 @@ public class MainMenuFragment extends FragmentWithAnim {
                 new VersionManagerDropdown(this).show(binding.managerProfileButton);
             } else {
                 ViewAnimUtils.setViewAnim(binding.managerProfileButton, Animations.Shake);
-                TaskExecutors.runInUIThread(() -> Toast.makeText(requireContext(), R.string.version_manager_task_in_progress, Toast.LENGTH_SHORT).show());
+                { android.content.Context toastContext = getContext(); if (toastContext != null) TaskExecutors.runInUIThread(() -> Toast.makeText(toastContext, R.string.version_manager_task_in_progress, Toast.LENGTH_SHORT).show()); }
             }
         });
 
@@ -498,13 +498,17 @@ public class MainMenuFragment extends FragmentWithAnim {
      * what extension (if any) the person's file manager shows it with.
      */
     private void importModpackFromUri(Uri uri) {
+        // Snapshot the context up front: requireContext() from the worker thread -
+        // or from the error toast posted after it - crashes if the user navigated
+        // away mid-copy ("not attached to a context").
+        android.content.Context appContext = requireContext().getApplicationContext();
         TaskExecutors.getDefault().execute(() -> {
             try {
-                java.io.File copiedFile = FileTools.copyFileInBackground(requireContext(), uri, PathManager.DIR_CACHE_STRING);
+                java.io.File copiedFile = FileTools.copyFileInBackground(appContext, uri, PathManager.DIR_CACHE_STRING);
                 EventBus.getDefault().post(new InstallLocalModpackEvent(new InstallExtra(true, copiedFile.getAbsolutePath())));
             } catch (Exception e) {
                 TaskExecutors.runInUIThread(() ->
-                    Toast.makeText(requireContext(), R.string.modpack_install_download_failed, Toast.LENGTH_LONG).show());
+                    Toast.makeText(appContext, R.string.modpack_install_download_failed, Toast.LENGTH_LONG).show());
             }
         });
     }

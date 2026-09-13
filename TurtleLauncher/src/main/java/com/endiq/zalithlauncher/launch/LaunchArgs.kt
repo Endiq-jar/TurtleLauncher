@@ -90,9 +90,16 @@ class LaunchArgs(
         }
 
         if (runtime.javaVersion > 8) {
-            argsList.add("--add-exports")
-            val pkg: String = versionInfo.mainClass.substring(0, versionInfo.mainClass.lastIndexOf("."))
-            argsList.add("$pkg/$pkg=ALL-UNNAMED")
+            // A hand-edited version json can leave mainClass null or dot-less, and
+            // substring(0, -1) would crash the launch - skip the export instead of
+            // passing a bogus package the JVM would reject at startup anyway.
+            val mainClass = versionInfo.mainClass ?: ""
+            val lastDot = mainClass.lastIndexOf(".")
+            if (lastDot > 0) {
+                argsList.add("--add-exports")
+                val pkg: String = mainClass.substring(0, lastDot)
+                argsList.add("$pkg/$pkg=ALL-UNNAMED")
+            }
         }
 
         // ── TurtleLauncher CRASH FIX (SDL_Init on Android) ───────────────────
@@ -227,13 +234,16 @@ class LaunchArgs(
 
     private fun getMinecraftClientArgs(): Array<String> {
         val verArgMap: MutableMap<String, String> = ArrayMap()
-        verArgMap["auth_session"] = account.accessToken
-        verArgMap["auth_access_token"] = account.accessToken
-        verArgMap["auth_player_name"] = account.username
-        verArgMap["auth_uuid"] = account.profileId.replace("-", "")
-        verArgMap["auth_xuid"] = account.xuid
+        // These Java fields are platform types: a null sneaking in (partial account
+        // JSON, legacy file, version inheriting from a parent) NPEs the non-null
+        // map put / replace call and kills the launch. Defaults keep it alive.
+        verArgMap["auth_session"] = account.accessToken ?: "0"
+        verArgMap["auth_access_token"] = account.accessToken ?: "0"
+        verArgMap["auth_player_name"] = account.username ?: "Steve"
+        verArgMap["auth_uuid"] = (account.profileId ?: "00000000-0000-0000-0000-000000000000").replace("-", "")
+        verArgMap["auth_xuid"] = account.xuid ?: "0"
         verArgMap["assets_root"] = ProfilePathHome.getAssetsHome()
-        verArgMap["assets_index_name"] = versionInfo.assets
+        verArgMap["assets_index_name"] = versionInfo.assets ?: "legacy"
         verArgMap["game_assets"] = ProfilePathHome.getAssetsHome()
         verArgMap["game_directory"] = gameDirPath.absolutePath
         verArgMap["user_properties"] = "{}"
@@ -247,7 +257,7 @@ class LaunchArgs(
         // has MICROSOFT/LOCAL (see AccountType.kt) - Other Login accounts are stored as LOCAL
         // with otherBaseUrl set, so this same branch correctly covers both as "legacy".
         verArgMap["user_type"] = if (account.accountType == AccountType.MICROSOFT.type) "msa" else "legacy"
-        verArgMap["version_name"] = versionInfo.inheritsFrom ?: versionInfo.id
+        verArgMap["version_name"] = versionInfo.inheritsFrom ?: versionInfo.id ?: "unknown"
 
         setLauncherInfo(verArgMap)
 

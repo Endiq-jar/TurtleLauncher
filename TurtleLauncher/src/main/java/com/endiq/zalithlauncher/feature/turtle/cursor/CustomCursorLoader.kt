@@ -2,6 +2,9 @@ package com.endiq.zalithlauncher.feature.turtle.cursor
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
 import com.endiq.zalithlauncher.R
@@ -33,7 +36,7 @@ object CustomCursorLoader {
                     val frame = CurIcoDecoder.decode(file.readBytes())
                     if (frame == null) fallback(context) else AnimatedCursorDrawable(listOf(frame))
                 }
-                else -> Drawable.createFromPath(file.absolutePath) ?: fallback(context)
+                else -> loadRasterCursor(context, file) ?: fallback(context)
             }
         }.getOrElse { e ->
             Logging.e("CustomCursorLoader", "Failed to decode custom cursor ${file.name}", e)
@@ -58,6 +61,29 @@ object CustomCursorLoader {
         }.getOrDefault(false)
     }
 
+    /**
+     * Raster cursor formats (png/jpg/webp/...). A user-picked photo can be tens of
+     * megapixels - decoding it at full size just to draw a tiny cursor wastes tens
+     * of MB and risks an OOM crash on low-RAM devices, so images larger than
+     * [MAX_CURSOR_DIMENSION] are downsampled first (256px is far beyond any cursor
+     * ever drawn on screen).
+     */
+    private const val MAX_CURSOR_DIMENSION = 256
+
+    private fun loadRasterCursor(context: Context, file: File): Drawable? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        var sampleSize = 1
+        while (bounds.outWidth / sampleSize > MAX_CURSOR_DIMENSION ||
+            bounds.outHeight / sampleSize > MAX_CURSOR_DIMENSION
+        ) sampleSize *= 2
+        if (sampleSize == 1) return Drawable.createFromPath(file.absolutePath)
+        val opts = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        return BitmapFactory.decodeFile(file.absolutePath, opts)?.let { BitmapDrawable(context.resources, it) }
+    }
+
     private fun fallback(context: Context): Drawable =
-        ResourcesCompat.getDrawable(context.resources, R.drawable.ic_mouse_pointer, context.theme)!!
+        ResourcesCompat.getDrawable(context.resources, R.drawable.ic_mouse_pointer, context.theme)
+            ?: ColorDrawable(Color.TRANSPARENT)
 }

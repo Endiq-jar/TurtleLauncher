@@ -40,7 +40,7 @@ class PathManager {
         fun initContextConstants(context: Context) {
             DIR_NATIVE_LIB = context.applicationInfo.nativeLibraryDir
             DIR_FILE = context.filesDir
-            DIR_DATA = DIR_FILE.getParent()!!
+            DIR_DATA = DIR_FILE.parent ?: DIR_FILE.absolutePath
             DIR_CACHE = context.cacheDir
             DIR_MULTIRT_HOME = "$DIR_DATA/runtimes"
             DIR_GAME_HOME = getExternalStorageRoot(context).absolutePath
@@ -51,7 +51,9 @@ class PathManager {
             DIR_ADDONS_INFO_CACHE = "$DIR_CACHE/addons_info_cache"
             DIR_CUSTOM_MOUSE = "$DIR_GAME_HOME/mouse"
             DIR_BACKGROUND = File("$DIR_GAME_HOME/background")
-            DIR_APP_CACHE = context.externalCacheDir!!
+            // externalCacheDir is null when external storage isn't mounted - fall back
+            // to the internal cache dir rather than crashing during startup init.
+            DIR_APP_CACHE = context.externalCacheDir ?: context.cacheDir
             DIR_USER_SKIN = File(DIR_FILE, "/user_skin")
             DIR_INSTALLED_RENDERER_PLUGIN = File(DIR_FILE, "/renderer_plugins")
             DIR_INSTALLED_DRIVER_PLUGIN = File(DIR_FILE, "/driver_plugins").also { it.mkdirs() }
@@ -75,7 +77,11 @@ class PathManager {
         @JvmStatic
         fun getExternalStorageRoot(ctx: Context): File {
             return if (VERSION.SDK_INT >= 29) {
-                ctx.getExternalFilesDir(null)!!
+                // getExternalFilesDir() returns null when external storage is missing
+                // or unmounted - fall back to an internal games dir instead of NPEing.
+                ctx.getExternalFilesDir(null)
+                    ?: File(ctx.filesDir, "games/${InfoDistributor.LAUNCHER_NAME}")
+                        .also { runCatching { it.mkdirs() } }
             } else {
                 File(Environment.getExternalStorageDirectory(), "games/${InfoDistributor.LAUNCHER_NAME}")
             }

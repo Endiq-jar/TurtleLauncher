@@ -446,12 +446,18 @@ public final class Tools {
     }
 
     public static void preProcessLibraries(DependentLibrary[] libraries) {
+        if (libraries == null) return;
         for (DependentLibrary libItem : libraries) {
-            String[] version = libItem.name.split(":")[2].split("\\.");
+            if (libItem == null || libItem.name == null) continue;
+            // A malformed library name (fewer than 3 colon segments, e.g. from a
+            // hand-edited version json) used to crash here with ArrayIndexOutOfBounds.
+            String[] nameParts = libItem.name.split(":");
+            if (nameParts.length < 3) continue;
+            String[] version = nameParts[2].split("\\.");
             if (libItem.name.startsWith("net.java.dev.jna:jna:")) {
                 // Special handling for LabyMod 1.8.9, Forge 1.12.2(?) and oshi
                 // we have libjnidispatch 5.13.0 in jniLibs directory
-                if (Integer.parseInt(version[0]) >= 5 && Integer.parseInt(version[1]) >= 13)
+                if (version.length >= 2 && parseVersionPart(version[0]) >= 5 && parseVersionPart(version[1]) >= 13)
                     continue;
                 Logging.d(InfoDistributor.LAUNCHER_NAME, "Library " + libItem.name + " has been changed to version 5.13.0");
                 createLibraryInfo(libItem);
@@ -460,10 +466,10 @@ public final class Tools {
                 libItem.downloads.artifact.sha1 = "1200e7ebeedbe0d10062093f32925a912020e747";
                 libItem.downloads.artifact.url = "https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar";
             } else if (libItem.name.startsWith("com.github.oshi:oshi-core:")) {
-                //if (Integer.parseInt(version[0]) >= 6 && Integer.parseInt(version[1]) >= 3) return;
+                //if (parseVersionPart(version[0]) >= 6 && parseVersionPart(version[1]) >= 3) return;
                 // FIXME: ensure compatibility
 
-                if (Integer.parseInt(version[0]) != 6 || Integer.parseInt(version[1]) != 2)
+                if (version.length < 2 || parseVersionPart(version[0]) != 6 || parseVersionPart(version[1]) != 2)
                     continue;
                 Logging.d(InfoDistributor.LAUNCHER_NAME, "Library " + libItem.name + " has been changed to version 6.3.0");
                 createLibraryInfo(libItem);
@@ -475,7 +481,7 @@ public final class Tools {
                 // Early versions of the ASM library get repalced with 5.0.4 because Pojav's LWJGL is compiled for
                 // Java 8, which is not supported by old ASM versions. Mod loaders like Forge, which depend on this
                 // library, often include lwjgl in their class transformations, which causes errors with old ASM versions.
-                if (Integer.parseInt(version[0]) >= 5) continue;
+                if (version.length < 1 || parseVersionPart(version[0]) < 0 || parseVersionPart(version[0]) >= 5) continue;
                 Logging.d(InfoDistributor.LAUNCHER_NAME, "Library " + libItem.name + " has been changed to version 5.0.4");
                 createLibraryInfo(libItem);
                 libItem.name = "org.ow2.asm:asm-all:5.0.4";
@@ -485,6 +491,35 @@ public final class Tools {
                 libItem.downloads.artifact.url = "https://repo1.maven.org/maven2/org/ow2/asm/asm-all/5.0.4/asm-all-5.0.4.jar";
             }
         }
+    }
+
+    /**
+     * Parses one numeric segment of a dotted version string, tolerating the
+     * non-numeric suffixes Maven versions routinely carry ("13-SNAPSHOT",
+     * "5_1", ...). Returns -1 when there is no leading number at all, so
+     * callers can skip the rewrite instead of crashing on NumberFormatException.
+     */
+    private static int parseVersionPart(String part) {
+        if (part == null) return -1;
+        int end = 0;
+        while (end < part.length() && Character.isDigit(part.charAt(end))) end++;
+        if (end == 0) return -1;
+        try {
+            return Integer.parseInt(part.substring(0, end));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * "group:artifact:version" -&gt; "group:artifact" for override comparison.
+     * Null/colon-less names (malformed version json) yield "" / the full name
+     * instead of crashing the caller.
+     */
+    private static String stripLibraryVersion(String name) {
+        if (name == null) return "";
+        int lastColon = name.lastIndexOf(':');
+        return lastColon >= 0 ? name.substring(0, lastColon) : name;
     }
 
     private static void createLibraryInfo(DependentLibrary library) {
@@ -637,6 +672,13 @@ public final class Tools {
     public static JMinecraftVersionList.Version getVersionInfo(Version version, boolean skipInheriting) {
         try {
             JMinecraftVersionList.Version customVer = Tools.GLOBAL_GSON.fromJson(read(new File(version.getVersionPath(), version.getVersionName() + ".json")), JMinecraftVersionList.Version.class);
+            // An empty/corrupt version json parses to null or an object with null
+            // libraries - every dereference below would NPE. Fail here with a message
+            // that names the actual problem instead.
+            if (customVer == null) {
+                throw new RuntimeException("Corrupt version json for " + version.getVersionName() + " (parsed to null)");
+            }
+            if (customVer.libraries == null) customVer.libraries = new DependentLibrary[0];
             if (skipInheriting || customVer.inheritsFrom == null || customVer.inheritsFrom.equals(customVer.id)) {
                 preProcessLibraries(customVer.libraries);
             } else {
@@ -647,6 +689,10 @@ public final class Tools {
                 } catch (IOException e) {
                     throw new RuntimeException("Can't find the source version for " + version.getVersionName() + " (req version=" + customVer.inheritsFrom + ")");
                 }
+                if (inheritsVer == null) {
+                    throw new RuntimeException("Corrupt version json for inherited version " + customVer.inheritsFrom + " (parsed to null)");
+                }
+                if (inheritsVer.libraries == null) inheritsVer.libraries = new DependentLibrary[0];
                 //inheritsVer.inheritsFrom = inheritsVer.id;
                 insertSafety(inheritsVer, customVer,
                         "assetIndex", "assets", "id",
@@ -658,11 +704,15 @@ public final class Tools {
                 List<DependentLibrary> inheritLibraryList = new ArrayList<>(Arrays.asList(inheritsVer.libraries));
                 outer_loop:
                 for(DependentLibrary library : customVer.libraries){
-                    // Clean libraries overridden by the custom version
-                    String libName = library.name.substring(0, library.name.lastIndexOf(":"));
+                    // A library entry with a null or colon-less name (malformed json)
+                    // used to NPE / throw StringIndexOutOfBounds here - compare on the
+                    // full name instead, which still dedups exact duplicates.
+                    if (library == null) continue;
+                    String libName = stripLibraryVersion(library.name);
 
                     for(DependentLibrary inheritLibrary : inheritLibraryList) {
-                        String inheritLibName = inheritLibrary.name.substring(0, inheritLibrary.name.lastIndexOf(":"));
+                        if (inheritLibrary == null) continue;
+                        String inheritLibName = stripLibraryVersion(inheritLibrary.name);
 
                         if(libName.equals(inheritLibName)){
                             Logging.d(InfoDistributor.LAUNCHER_NAME, "Library " + libName + ": Replaced version " +
@@ -683,7 +733,8 @@ public final class Tools {
 
 
                 // Inheriting Minecraft 1.13+ with append custom args
-                if (inheritsVer.arguments != null && customVer.arguments != null) {
+                if (inheritsVer.arguments != null && customVer.arguments != null
+                        && inheritsVer.arguments.game != null && customVer.arguments.game != null) {
                     List totalArgList = new ArrayList(Arrays.asList(inheritsVer.arguments.game));
 
                     int nskip = 0;
@@ -698,6 +749,9 @@ public final class Tools {
                             String perCustomArgStr = (String) perCustomArg;
                             // Check if there is a duplicate argument on combine
                             if (perCustomArgStr.startsWith("--") && totalArgList.contains(perCustomArgStr)) {
+                                // A duplicate flag as the LAST arg has no i+1 - guard the
+                                // read instead of throwing ArrayIndexOutOfBounds.
+                                if (i + 1 >= customVer.arguments.game.length) continue;
                                 perCustomArg = customVer.arguments.game[i + 1];
                                 if (perCustomArg instanceof String) {
                                     perCustomArgStr = (String) perCustomArg;

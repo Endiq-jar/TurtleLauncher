@@ -129,13 +129,14 @@ class LaunchGame {
                 return
             }
 
-            if (AccountUtils.isNoLoginRequired(AccountsManager.currentAccount)) {
+            val currentAccount = AccountsManager.currentAccount
+            if (currentAccount == null || AccountUtils.isNoLoginRequired(currentAccount)) {
                 launch()
                 return
             }
 
             AccountsManager.performLogin(
-                context, AccountsManager.currentAccount!!,
+                context, currentAccount,
                 { _ ->
                     EventBus.getDefault().post(AccountUpdateEvent())
                     TaskExecutors.runInUIThread {
@@ -176,8 +177,19 @@ class LaunchGame {
                 Renderers.setCurrentRenderer(activity, AllSettings.renderer.getValue())
             }
 
-            var account = AccountsManager.currentAccount!!
-            if (minecraftVersion.offlineAccountLogin) {
+            // currentAccount is null when the user never added any account - launching
+                // then used to NPE here. Fall back to a throwaway offline account so the
+                // game still starts instead of crashing the launcher.
+                var account = AccountsManager.currentAccount
+                if (account == null) {
+                    Logging.w("LaunchGame", "No account set, launching with a throwaway offline account")
+                    account = MinecraftAccount().apply {
+                        this.username = "Player"
+                        this.accountType = AccountType.LOCAL.type
+                        this.profileId = MinecraftAccount.generateOfflineUUID("Player").toString()
+                    }
+                }
+                if (minecraftVersion.offlineAccountLogin) {
                 // TurtleLauncher CRASH/BUG FIX: this throwaway offline account used to
                 // keep profileId at the all-zero default (same bug as LauncherActivity's
                 // LocalLoginEvent, see MinecraftAccount.generateOfflineUUID()) - fixed the

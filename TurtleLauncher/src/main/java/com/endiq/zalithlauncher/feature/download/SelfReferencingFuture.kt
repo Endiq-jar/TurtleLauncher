@@ -24,9 +24,11 @@ class SelfReferencingFuture(private val mFutureInterface: FutureInterface) {
     private fun run() {
         try {
             synchronized(mFutureLock) {
-                if (mMyFuture == null) (mFutureLock as java.lang.Object).wait()
+                // Loop: Object.wait() can return spuriously, and an interrupt that
+                // arrives (caught below) must also not let us proceed with a null Future.
+                while (mMyFuture == null) (mFutureLock as java.lang.Object).wait()
             }
-            mFutureInterface.run(mMyFuture!!)
+            mMyFuture?.let { mFutureInterface.run(it) }
         } catch (e: InterruptedException) {
             i("SelfReferencingFuture", "Interrupted while acquiring own Future")
         }

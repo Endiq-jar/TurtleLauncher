@@ -199,14 +199,18 @@ public class MultiRTUtils {
             String javaVersion = Tools.extractUntilCharacter(content, JAVA_VERSION_STR, '"');
             String osArch = Tools.extractUntilCharacter(content, OS_ARCH_STR, '"');
             if(javaVersion != null && osArch != null) {
-                String[] javaVersionSplit = javaVersion.split("\\.");
-                int javaVersionInt;
-                if (javaVersionSplit[0].equals("1")) {
-                    javaVersionInt = Integer.parseInt(javaVersionSplit[1]);
+                // JAVA_VERSION from a runtime's release file is free-form text: "1" alone
+                // crashed the old code with ArrayIndexOutOfBounds ([1] missing), and
+                // early-access builds ("21-ea", "25+36") crashed it with
+                // NumberFormatException. Fall back to an unknown-version Runtime so a
+                // weird release file can't kill the launcher.
+                int javaVersionInt = parseJavaMajorVersion(javaVersion);
+                if (javaVersionInt > 0) {
+                    returnRuntime = new Runtime(name, javaVersion, osArch, javaVersionInt);
                 } else {
-                    javaVersionInt = Integer.parseInt(javaVersionSplit[0]);
+                    Logging.w("ReadRuntimeVersion", "Unparseable JAVA_VERSION \"" + javaVersion + "\" in runtime \"" + name + "\"");
+                    returnRuntime = new Runtime(name);
                 }
-                returnRuntime = new Runtime(name, javaVersion, osArch, javaVersionInt);
             }else{
                 returnRuntime =  new Runtime(name);
             }
@@ -215,6 +219,34 @@ public class MultiRTUtils {
         }
         sCache.put(name, returnRuntime);
         return returnRuntime;
+    }
+
+    /**
+     * Extracts the major Java version from a free-form JAVA_VERSION string:
+     * "1.8.0_392" -&gt; 8, "17.0.1" -&gt; 17, "21-ea"/"25+36" -&gt; 21/25.
+     * Returns -1 when no leading number can be found.
+     */
+    private static int parseJavaMajorVersion(String javaVersion) {
+        if (javaVersion == null) return -1;
+        String[] javaVersionSplit = javaVersion.split("\\.");
+        String majorPart;
+        if (javaVersionSplit.length > 0 && javaVersionSplit[0].equals("1")) {
+            // Old 1.x scheme: the major version is the second segment ("1.8" -> 8).
+            if (javaVersionSplit.length < 2) return -1;
+            majorPart = javaVersionSplit[1];
+        } else if (javaVersionSplit.length > 0) {
+            majorPart = javaVersionSplit[0];
+        } else {
+            return -1;
+        }
+        int end = 0;
+        while (end < majorPart.length() && Character.isDigit(majorPart.charAt(end))) end++;
+        if (end == 0) return -1;
+        try {
+            return Integer.parseInt(majorPart.substring(0, end));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     /**

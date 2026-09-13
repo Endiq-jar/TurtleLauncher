@@ -29,7 +29,7 @@ class DownloadCleanroomFragment : ModListFragment() {
     }
 
     override fun refreshCreatedView() {
-        setIcon(ContextCompat.getDrawable(fragmentActivity!!, R.drawable.ic_anvil))
+        fragmentActivity?.let { setIcon(ContextCompat.getDrawable(it, R.drawable.ic_anvil)) }
         setTitleText("Cleanroom")
         setLink("https://cleanroommc.com/")
         setMCMod("https://github.com/CleanroomMC/Cleanroom")
@@ -103,7 +103,7 @@ class DownloadCleanroomFragment : ModListFragment() {
         TaskExecutors.runInUIThread {
             val recyclerView = recyclerView
             runCatching {
-                recyclerView.layoutManager = LinearLayoutManager(fragmentActivity!!)
+                fragmentActivity?.let { recyclerView.layoutManager = LinearLayoutManager(it) }
                 recyclerView.adapter = adapter
             }.getOrElse { e ->
                 Logging.e("Set Adapter", Tools.printToString(e))

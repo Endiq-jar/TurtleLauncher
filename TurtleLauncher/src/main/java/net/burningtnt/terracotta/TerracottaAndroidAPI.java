@@ -206,7 +206,17 @@ public final class TerracottaAndroidAPI {
         if (parts.length != 3) {
             throw new AssertionError("Should NOT be here.");
         }
-        return new Metadata(parts[0], Long.parseLong(parts[1]), parts[2]);
+        // The compile-time field comes from the native backend as text - a malformed
+        // value must not crash the app. 0 matches the established "unknown" fallback
+        // (see Terracotta.getMetadata()).
+        long compileTime;
+        try {
+            compileTime = Long.parseLong(parts[1]);
+        } catch (NumberFormatException e) {
+            Log.w("TerracottaAndroidAPI", "Malformed native compile-time metadata: " + parts[1], e);
+            compileTime = 0L;
+        }
+        return new Metadata(parts[0], compileTime, parts[2]);
     }
 
     /**
@@ -408,9 +418,17 @@ public final class TerracottaAndroidAPI {
                     for (String part : cidr.split("\0")) {
                         String[] parts = part.split("/", 3);
                         if (parts.length != 2) {
-                            throw new IllegalArgumentException("Illegal CIDR: " + Arrays.toString(parts));
+                            Log.w("TerracottaAndroidAPI", "Skipping illegal CIDR route: " + Arrays.toString(parts));
+                            continue;
                         }
-                        builder.addRoute(parts[0], Integer.parseInt(parts[1]));
+                        int prefixLength;
+                        try {
+                            prefixLength = Integer.parseInt(parts[1]);
+                        } catch (NumberFormatException e) {
+                            Log.w("TerracottaAndroidAPI", "Skipping CIDR route with bad prefix: " + part, e);
+                            continue;
+                        }
+                        builder.addRoute(parts[0], prefixLength);
                     }
                 }
 

@@ -45,18 +45,28 @@ class MCBBSModPack(private val context: Context, private val zipFile: File?) {
                 val dirNameLen = overridesDir.length
 
                 val fileCounters = AtomicInteger() //文件数量计数
-                val length = mcbbsPackMeta.files.size
+                // A manifest without a files list (or with null entries) used to NPE
+                // here - skip straight to loader detection instead.
+                val files = mcbbsPackMeta.files ?: return createInfo(mcbbsPackMeta.addons)
+                val length = files.size
 
-                for (file in mcbbsPackMeta.files) {
+                for (file in files) {
                     if (isCanceled) {
                         cancel(versionFolder)
                         return null
                     }
+                    if (file == null || file.path.isNullOrEmpty()) continue
 
                     val entry = modpackZipFile.getEntry(overridesDir + file.path)
                     if (entry != null) {
                         val entryName = entry.name
                         val zipDestination = File(versionFolder, entryName.substring(dirNameLen))
+                        // Zip-slip guard: a malicious manifest entry ("../../evil") must
+                        // not let the extraction escape versionFolder.
+                        if (!zipDestination.canonicalFile.path.startsWith(versionFolder.canonicalFile.path + File.separator)) {
+                            Logging.w("MCBBSModPack", "Skipping zip-slip entry: ${file.path}")
+                            continue
+                        }
                         if (zipDestination.exists() && !file.force) continue
 
                         val fileHash = FileTools.calculateFileHash(modpackZipFile.getInputStream(entry), "SHA-1")
@@ -119,16 +129,18 @@ class MCBBSModPack(private val context: Context, private val zipFile: File?) {
         var version = ""
         var modLoader = ""
         var modLoaderVersion = ""
-        for (i in 0..addons.size) {
-            if (addons[i]!!.id == "game") {
-                version = addons[i]!!.version
+        // Was `0..addons.size` (inclusive): the final iteration read one past the end
+        // of the array (ArrayIndexOutOfBounds), and a null element crashed on the
+        // non-null assertion before the null check below it was ever reached.
+        for (addon in addons) {
+            if (addon == null) continue
+            if (addon.id == "game") {
+                version = addon.version ?: ""
                 continue
             }
-            if (addons[i] != null) {
-                modLoader = addons[i]!!.id
-                modLoaderVersion = addons[i]!!.version
-                break
-            }
+            modLoader = addon.id ?: ""
+            modLoaderVersion = addon.version ?: ""
+            break
         }
         val modloader = when (modLoader) {
             "forge" -> ModLoader.FORGE

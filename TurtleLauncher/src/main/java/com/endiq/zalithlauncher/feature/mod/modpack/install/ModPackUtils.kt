@@ -21,7 +21,10 @@ class ModPackUtils {
         @JvmStatic
         fun determineModpack(modpack: File): ModPackInfo {
             val zipName = modpack.name
-            val suffix = zipName.substring(zipName.lastIndexOf('.'))
+            // lastIndexOf() is -1 for extensionless file names - substring(-1) would
+            // crash. Fall back to the whole name, which matches no known suffix and
+            // correctly yields UNKNOWN below.
+            val suffix = zipName.substring(zipName.lastIndexOf('.').takeIf { it >= 0 } ?: 0)
             runCatching {
                 ZipFile(modpack).use { modpackZipFile ->
                     if (suffix == ".zip") {
@@ -84,16 +87,18 @@ class ModPackUtils {
         }
 
         @JvmStatic
-        fun verifyModrinthIndex(modrinthIndex: ModrinthIndex): Boolean { //检测是否为modrinth整合包(通过modrinth.index.json内的数据进行判断)
+        fun verifyModrinthIndex(modrinthIndex: ModrinthIndex?): Boolean { //检测是否为modrinth整合包(通过modrinth.index.json内的数据进行判断)
+            if (modrinthIndex == null) return false
             if ("minecraft" != modrinthIndex.game) return false
             if (modrinthIndex.formatVersion != 1) return false
             return modrinthIndex.dependencies != null
         }
 
-        fun verifyMCBBSPackMeta(mcbbsPackMeta: MCBBSPackMeta): Boolean { //检测是否为MCBBS整合包(通过mcbbs.packmeta内的数据进行判断)
+        fun verifyMCBBSPackMeta(mcbbsPackMeta: MCBBSPackMeta?): Boolean { //检测是否为MCBBS整合包(通过mcbbs.packmeta内的数据进行判断)
+            if (mcbbsPackMeta == null) return false
             if ("minecraftModpack" != mcbbsPackMeta.manifestType) return false
             if (mcbbsPackMeta.manifestVersion != 2) return false
-            if (mcbbsPackMeta.addons == null) return false
+            if (mcbbsPackMeta.addons == null || mcbbsPackMeta.addons.isEmpty()) return false
             if (mcbbsPackMeta.addons[0].id == null) return false
             return (mcbbsPackMeta.addons[0].version != null)
         }
@@ -102,7 +107,8 @@ class ModPackUtils {
          *  mcbbs.packmeta, since both formats use plain .zip - a file can only be one or the
          *  other, this is just which signature file to look for). */
         @JvmStatic
-        fun verifyCurseForgeManifest(manifest: CurseForgeManifest): Boolean {
+        fun verifyCurseForgeManifest(manifest: CurseForgeManifest?): Boolean {
+            if (manifest == null) return false
             if ("minecraftModpack" != manifest.manifestType) return false
             if (manifest.minecraft?.version == null) return false
             return true

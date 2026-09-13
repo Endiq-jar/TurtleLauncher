@@ -92,6 +92,13 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
         this.fragmentActivity = requireActivity()
     }
 
+    override fun onDetach() {
+        // Drop the reference so late-finishing background tasks can't touch a dead
+        // Activity (every use site now null-checks and bails out instead of crashing).
+        this.fragmentActivity = null
+        super.onDetach()
+    }
+
     override fun onPause() {
         cancelTask()
         super.onPause()
@@ -198,7 +205,7 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
     }
 
     protected fun setFailedToLoad(reasons: String?) {
-        val text = fragmentActivity!!.getString(R.string.mod_failed_to_load_list)
+        val text = fragmentActivity?.getString(R.string.mod_failed_to_load_list) ?: return
         binding.failedToLoad.text = if (reasons == null) text else StringUtils.insertNewline(text, reasons)
         playVisibilityAnim(binding.failedToLoad, true)
     }
@@ -237,7 +244,7 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
     }
 
     fun switchToChild(adapter: RecyclerView.Adapter<*>?, title: String?) {
-        if (currentTask!!.isDone && adapter != null) {
+        if (currentTask?.isDone == true && adapter != null) {
             binding.apply {
                 //保存父级，设置选中的标题文本，切换至子级
                 parentAdapter = recyclerView.adapter

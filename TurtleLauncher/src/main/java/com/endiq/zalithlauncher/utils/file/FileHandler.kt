@@ -111,9 +111,9 @@ abstract class FileHandler(
 
     private fun cancelTask() {
         currentTask?.let {
-            if (!currentTask!!.isDone) {
-                currentTask?.cancel(true)
-                timer?.let { timer?.cancel() }
+            if (!it.isDone) {
+                it.cancel(true)
+                timer?.cancel()
             }
         }
     }

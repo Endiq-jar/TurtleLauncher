@@ -74,9 +74,15 @@ class FabricLikeUtils private constructor(
                 iconName + "_installer", false
             ) { input: String? -> input }
 
+            // A malformed/empty API response used to crash here with NPE or
+            // IndexOutOfBounds - fail with a parse error the installer task can
+            // report properly instead.
             val jsonArray = Gson().fromJson(jsonString, JsonArray::class.java)
+                ?: throw DownloadUtils.ParseException(null)
+            if (jsonArray.size() == 0) throw DownloadUtils.ParseException(null)
             val jsonObject = jsonArray[0].asJsonObject //始终获取最新的安装器信息
-            val url = jsonObject["url"].asString
+            val url = jsonObject["url"]?.takeIf { it.isJsonPrimitive }?.asString
+                ?: throw DownloadUtils.ParseException(null)
             println(url)
 
             return url

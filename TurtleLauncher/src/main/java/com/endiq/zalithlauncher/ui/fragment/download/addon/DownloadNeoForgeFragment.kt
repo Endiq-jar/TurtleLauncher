@@ -26,7 +26,7 @@ class DownloadNeoForgeFragment : ModListFragment() {
     }
 
     override fun refreshCreatedView() {
-        setIcon(ContextCompat.getDrawable(fragmentActivity!!, R.drawable.ic_neoforge))
+        fragmentActivity?.let { setIcon(ContextCompat.getDrawable(it, R.drawable.ic_neoforge)) }
         setTitleText("NeoForge")
         setLink("https://neoforged.net/")
         setMCMod("https://www.mcmod.cn/class/11433.html")
@@ -125,7 +125,7 @@ class DownloadNeoForgeFragment : ModListFragment() {
         TaskExecutors.runInUIThread {
             val recyclerView = recyclerView
             runCatching {
-                recyclerView.layoutManager = LinearLayoutManager(fragmentActivity!!)
+                fragmentActivity?.let { recyclerView.layoutManager = LinearLayoutManager(it) }
                 recyclerView.adapter = adapter
             }.getOrElse { e ->
                 Logging.e("Set Adapter", Tools.printToString(e))

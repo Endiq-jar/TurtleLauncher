@@ -24,7 +24,7 @@ class DownloadForgeFragment : ModListFragment() {
     }
 
     override fun refreshCreatedView() {
-        setIcon(ContextCompat.getDrawable(fragmentActivity!!, R.drawable.ic_anvil))
+        fragmentActivity?.let { setIcon(ContextCompat.getDrawable(it, R.drawable.ic_anvil)) }
         setTitleText("Forge")
         setLink("https://forums.minecraftforge.net/")
         setMCMod("https://www.mcmod.cn/class/30.html")
@@ -77,8 +77,10 @@ class DownloadForgeFragment : ModListFragment() {
         forgeVersions.forEach(Consumer { forgeVersion: String ->
             currentTask?.apply { if (isCancelled) return@Consumer }
 
-            //查找并分组Minecraft版本与Forge版本
+            //查找并分组Minecraft版本与Forge版本 (a version string without a dash
+            // would make substring(0, -1) crash - skip the malformed entry)
             val dashIndex = forgeVersion.indexOf("-")
+            if (dashIndex <= 0) return@Consumer
             val gameVersion = forgeVersion.substring(0, dashIndex)
             addIfAbsent(mForgeVersions, gameVersion, forgeVersion)
         })
@@ -112,7 +114,7 @@ class DownloadForgeFragment : ModListFragment() {
         TaskExecutors.runInUIThread {
             val recyclerView = recyclerView
             runCatching {
-                recyclerView.layoutManager = LinearLayoutManager(fragmentActivity!!)
+                fragmentActivity?.let { recyclerView.layoutManager = LinearLayoutManager(it) }
                 recyclerView.adapter = adapter
             }.getOrElse { e ->
                 Logging.e("Set Adapter", Tools.printToString(e))

@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.movtery.inputmap"
+    namespace = "com.endiq.inputmap"
     compileSdk {
         version = release(37)
     }

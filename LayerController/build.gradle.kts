@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.movtery.layer_controller"
+    namespace = "com.endiq.layer_controller"
     compileSdk = 37
 
     defaultConfig {

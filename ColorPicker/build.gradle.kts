@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.movtery.colorpicker"
+    namespace = "com.endiq.colorpicker"
     compileSdk = 37
 
     defaultConfig {

@@ -182,6 +182,7 @@
     <string name="download_category_by_id">搜索ID</string>
     <string name="download_category_favorites">收藏</string>
     <string name="download_game_failed_to_get_versions">获取版本失败：%s，点击重试。</string>
+    <string name="download_game_group_version_count">%d 个版本</string>
     <string name="download_game_type_release">正式版</string>
     <string name="download_game_type_snapshot">快照版</string>
     <string name="download_game_type_april_fools">愚人节版</string>

@@ -64,6 +64,7 @@ import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.TitledNavKey
 import com.movtery.zalithlauncher.ui.screens.content.download.game.DownloadGameWithAddonScreen
 import com.movtery.zalithlauncher.ui.screens.content.download.game.SelectGameVersionScreen
+import com.movtery.zalithlauncher.ui.screens.content.download.game.VersionGroupDetailScreen
 import com.movtery.zalithlauncher.ui.screens.content.elements.TitleTaskFlowDialog
 import com.movtery.zalithlauncher.ui.screens.navigateTo
 import com.movtery.zalithlauncher.ui.screens.onBack
@@ -231,6 +232,19 @@ fun DownloadGameScreen(
                         mainScreenKey = mainScreenKey,
                         downloadScreenKey = downloadScreenKey,
                         downloadGameScreenKey = downloadGameScreenKey,
+                        eventViewModel = eventViewModel,
+                    ) { groupKey ->
+                        backStack.navigateTo(
+                            NormalNavKey.DownloadGame.SelectVersionGroup(groupKey)
+                        )
+                    }
+                }
+                entry<NormalNavKey.DownloadGame.SelectVersionGroup> { key ->
+                    VersionGroupDetailScreen(
+                        mainScreenKey = mainScreenKey,
+                        downloadScreenKey = downloadScreenKey,
+                        downloadGameScreenKey = downloadGameScreenKey,
+                        key = key,
                         eventViewModel = eventViewModel,
                     ) { versionString ->
                         backStack.navigateTo(

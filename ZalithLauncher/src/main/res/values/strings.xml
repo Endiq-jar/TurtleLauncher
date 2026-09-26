@@ -182,6 +182,7 @@
     <string name="download_category_by_id">Search by ID</string>
     <string name="download_category_favorites">Favorites</string>
     <string name="download_game_failed_to_get_versions">Failed to get version: %s. Tap to retry.</string>
+    <string name="download_game_group_version_count">%d versions</string>
     <string name="download_game_type_release">Release</string>
     <string name="download_game_type_snapshot">Snapshot</string>
     <string name="download_game_type_april_fools">April Fools</string>

@@ -159,8 +159,12 @@ sealed interface NormalNavKey : TitledNavKey {
 
     /** 下载游戏嵌套子屏幕 */
     sealed interface DownloadGame : NormalNavKey {
-        /** 选择游戏版本屏幕 */
+        /** 选择游戏版本屏幕（展示版本分组） */
         @Serializable data object SelectGameVersion : Versions
+        /** 选择版本分组下具体版本屏幕（例如 "1.21" 分组下的 1.21、1.21.1、1.21.2 ...） */
+        @Serializable data class SelectVersionGroup(val groupKey: String) : Versions {
+            @Contextual override val title: AndroidStringText = androidText(groupKey)
+        }
         /** 选择附加内容屏幕 */
         @Serializable data class Addons(val gameVersion: String) : Versions
     }

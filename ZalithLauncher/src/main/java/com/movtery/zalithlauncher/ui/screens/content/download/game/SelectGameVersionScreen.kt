@@ -73,7 +73,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersion
+import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersionGroup
 import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersions
+import com.movtery.zalithlauncher.game.versioninfo.groupByVersionSeries
 import com.movtery.zalithlauncher.game.versioninfo.models.isType
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.AndroidStringText
@@ -109,7 +111,17 @@ import java.nio.channels.UnresolvedAddressException
 
 private const val TAG = "SelectGameVersion"
 
-/** 版本列表加载状态 */
+/** 版本分组列表加载状态（主页面：仅展示大版本系列分组，如 "1.21"、"26.3"） */
+private sealed interface VersionGroupsState {
+    /** 加载中 */
+    data object Loading : VersionGroupsState
+    /** 加载完成 */
+    data class None(val groups: List<MinecraftVersionGroup>) : VersionGroupsState
+    /** 加载出现异常 */
+    data class Failure(val message: AndroidStringText) : VersionGroupsState
+}
+
+/** 版本列表加载状态（分组详情页面：展示某一分组下的所有具体版本，如 "1.21" 下的 1.21、1.21.1 ...） */
 private sealed interface VersionState {
     /** 加载中 */
     data object Loading : VersionState
@@ -124,7 +136,7 @@ private sealed interface VersionState {
  * @param release 是否保留正式版本
  * @param snapshot 是否保留快照版本
  * @param old 是否保留旧版本
- * @param id 搜索并过滤版本ID
+ * @param id 搜索并过滤版本ID（在分组详情页面中），或搜索并过滤分组名称（在分组列表页面中）
  */
 private data class VersionFilter(
     val release: Boolean = true,
@@ -134,8 +146,56 @@ private data class VersionFilter(
     val id: String = ""
 )
 
+/**
+ * 获取版本清单、刷新版本清单时可能抛出的异常，统一转换为可展示的错误信息
+ */
+private fun mapVersionFetchError(e: Throwable): AndroidStringText {
+    Logger.warning(TAG, "Failed to get version manifest!", e)
+    return when (e) {
+        is HttpRequestTimeoutException -> androidText(R.string.error_timeout)
+        is UnknownHostException, is UnresolvedAddressException -> androidText(R.string.error_network_unreachable)
+        is ConnectException -> androidText(R.string.error_connection_failed)
+        is ResponseException -> e.toLocal()
+        else -> {
+            Logger.error(TAG, "An unknown exception was caught!", e)
+            androidText(e.localizedMessage ?: e.message ?: e::class.qualifiedName ?: "Unknown error")
+        }
+    }
+}
+
+/**
+ * 仅按版本类型过滤（正式版/快照版/愚人节版/远古版），不涉及按名称搜索
+ * 用于版本分组列表页面：先按类型过滤出参与分组的版本，再动态分组
+ */
+private fun List<MinecraftVersion>.filterByType(
+    versionFilter: VersionFilter
+) = this.filter { version ->
+    version.isType(
+        release = versionFilter.release,
+        snapshot = versionFilter.snapshot,
+        aprilFools = versionFilter.aprilFools,
+        old = versionFilter.old
+    )
+}
+
+/**
+ * 按版本类型 + 版本ID关键字过滤
+ * 用于分组详情页面：过滤某一分组下的具体版本
+ */
+private fun List<MinecraftVersion>.filterVersions(
+    versionFilter: VersionFilter
+) = this.filterByType(versionFilter).filter { version ->
+    //Fix：单独过滤版本名称
+    val versionId = versionFilter.id
+    versionId.isEmptyOrBlank() || version.version.id.contains(versionId)
+}
+
+/**
+ * 版本分组列表页面的ViewModel
+ * 将全部版本动态分组为大版本系列（如 "1.21"、"26.3"），新增的版本会自动被归入正确的分组
+ */
 private class VersionsViewModel: ViewModel() {
-    var versionState by mutableStateOf<VersionState>(VersionState.Loading)
+    var versionState by mutableStateOf<VersionGroupsState>(VersionGroupsState.Loading)
         private set
 
     //简易版本类型过滤器
@@ -145,34 +205,34 @@ private class VersionsViewModel: ViewModel() {
     fun filterWith(filter: VersionFilter) {
         versionFilter = filter
         viewModelScope.launch {
-            val allVersions = MinecraftVersions.allVersions.value
-            versionState = VersionState.None(
-                versions = allVersions.filterVersions(versionFilter)
-            )
+            versionState = VersionGroupsState.None(groups = currentGroups())
         }
     }
 
     fun refresh(forceReload: Boolean = false) {
         viewModelScope.launch {
-            versionState = VersionState.Loading
+            versionState = VersionGroupsState.Loading
             versionState = runCatching {
                 MinecraftVersions.refreshVersions(forceReload)
-                val allVersions = MinecraftVersions.allVersions.value
-                VersionState.None(allVersions.filterVersions(versionFilter))
+                VersionGroupsState.None(groups = currentGroups())
             }.getOrElse { e ->
-                Logger.warning(TAG, "Failed to get version manifest!", e)
-                val message: AndroidStringText = when(e) {
-                    is HttpRequestTimeoutException -> androidText(R.string.error_timeout)
-                    is UnknownHostException, is UnresolvedAddressException -> androidText(R.string.error_network_unreachable)
-                    is ConnectException -> androidText(R.string.error_connection_failed)
-                    is ResponseException -> e.toLocal()
-                    else -> {
-                        Logger.error(TAG, "An unknown exception was caught!", e)
-                        androidText(e.localizedMessage ?: e.message ?: e::class.qualifiedName ?: "Unknown error")
-                    }
-                }
-                VersionState.Failure(message)
+                VersionGroupsState.Failure(mapVersionFetchError(e))
             }
+        }
+    }
+
+    /**
+     * 根据当前过滤条件，计算出应当展示的版本分组列表
+     * 分组本身按大版本系列动态计算，搜索关键字则用于过滤分组名称
+     */
+    private fun currentGroups(): List<MinecraftVersionGroup> {
+        val allVersions = MinecraftVersions.allVersions.value
+        val groups = allVersions.filterByType(versionFilter).groupByVersionSeries()
+        val keyword = versionFilter.id
+        return if (keyword.isEmptyOrBlank()) {
+            groups
+        } else {
+            groups.filter { it.key.contains(keyword, ignoreCase = true) }
         }
     }
 
@@ -186,13 +246,72 @@ private class VersionsViewModel: ViewModel() {
     }
 }
 
+/**
+ * 版本分组详情页面的ViewModel
+ * @param groupKey 当前展示的分组标识，例如 "1.21"
+ */
+private class VersionGroupDetailViewModel(
+    private val groupKey: String
+): ViewModel() {
+    var versionState by mutableStateOf<VersionState>(VersionState.Loading)
+        private set
+
+    //简易版本类型过滤器
+    var versionFilter by mutableStateOf(VersionFilter())
+        private set
+
+    fun filterWith(filter: VersionFilter) {
+        versionFilter = filter
+        viewModelScope.launch {
+            versionState = VersionState.None(versions = currentGroupVersions().filterVersions(versionFilter))
+        }
+    }
+
+    fun refresh(forceReload: Boolean = false) {
+        viewModelScope.launch {
+            versionState = VersionState.Loading
+            versionState = runCatching {
+                MinecraftVersions.refreshVersions(forceReload)
+                VersionState.None(currentGroupVersions().filterVersions(versionFilter))
+            }.getOrElse { e ->
+                VersionState.Failure(mapVersionFetchError(e))
+            }
+        }
+    }
+
+    /**
+     * 从最新的全部版本列表中，动态计算出当前分组标识所对应的版本列表
+     */
+    private fun currentGroupVersions(): List<MinecraftVersion> {
+        return MinecraftVersions.allVersions.value
+            .groupByVersionSeries()
+            .firstOrNull { it.key == groupKey }
+            ?.versions
+            ?: emptyList()
+    }
+
+    init {
+        //初始化后，刷新版本列表
+        refresh()
+    }
+
+    override fun onCleared() {
+        viewModelScope.cancel()
+    }
+}
+
+/**
+ * 游戏版本下载 - 主页面
+ * 仅展示版本分组（如 "1.21"、"26.3"、"1.20"），点击某个分组后进入 [VersionGroupDetailScreen]
+ * 查看该分组下的具体版本
+ */
 @Composable
 fun SelectGameVersionScreen(
     mainScreenKey: TitledNavKey?,
     downloadScreenKey: TitledNavKey?,
     downloadGameScreenKey: TitledNavKey?,
     eventViewModel: EventViewModel,
-    onVersionSelect: (String) -> Unit = {}
+    onGroupSelect: (String) -> Unit = {}
 ) {
     val viewModel = viewModel(
         key = NormalNavKey.DownloadGame.SelectGameVersion.toString()
@@ -206,6 +325,104 @@ fun SelectGameVersionScreen(
             Pair(NestedNavKey.DownloadGame::class.java, downloadScreenKey)
         ),
         Triple(NormalNavKey.DownloadGame.SelectGameVersion, downloadGameScreenKey, false)
+    ) { isVisible ->
+        val yOffset by swapAnimateDpAsState(
+            targetValue = (-40).dp,
+            swapIn = isVisible
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+        ) {
+            when (val state = viewModel.versionState) {
+                is VersionGroupsState.Loading -> {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LinearWavyProgressIndicator(
+                            modifier = Modifier.width(168.dp),
+                            wavelength = 32.dp
+                        )
+                    }
+                }
+
+                is VersionGroupsState.Failure -> {
+                    Box(Modifier.fillMaxSize()) {
+                        ScalingLabel(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = {
+                                AndroidStringText(
+                                    text = androidText(
+                                        R.string.download_game_failed_to_get_versions,
+                                        state.message
+                                    )
+                                )
+                            },
+                            onClick = {
+                                viewModel.refresh(true)
+                            }
+                        )
+                    }
+                }
+
+                is VersionGroupsState.None -> {
+                    Column {
+                        VersionHeader(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp),
+                            versionFilter = viewModel.versionFilter,
+                            onVersionFilterChange = { viewModel.filterWith(it) },
+                            itemContainerColor = cardColor(),
+                            itemContentColor = onCardColor(),
+                            onRefreshClick = {
+                                viewModel.refresh(true)
+                            }
+                        )
+
+                        VersionGroupList(
+                            modifier = Modifier.weight(1f),
+                            groups = state.groups,
+                            onGroupSelect = onGroupSelect
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 游戏版本下载 - 分组详情页面
+ * 展示某一个大版本系列分组下的所有具体版本（如 "1.21" 分组下的 1.21、1.21.1、1.21.2 ... 1.21.11）
+ * 点击返回后回到 [SelectGameVersionScreen]，展示版本分组列表
+ */
+@Composable
+fun VersionGroupDetailScreen(
+    mainScreenKey: TitledNavKey?,
+    downloadScreenKey: TitledNavKey?,
+    downloadGameScreenKey: TitledNavKey?,
+    key: NormalNavKey.DownloadGame.SelectVersionGroup,
+    eventViewModel: EventViewModel,
+    onVersionSelect: (String) -> Unit = {}
+) {
+    val groupKey = key.groupKey
+
+    val viewModel = viewModel(
+        key = key.toString()
+    ) {
+        VersionGroupDetailViewModel(groupKey)
+    }
+
+    BaseScreen(
+        listOf(
+            Pair(NestedNavKey.Download::class.java, mainScreenKey),
+            Pair(NestedNavKey.DownloadGame::class.java, downloadScreenKey),
+            Pair(NormalNavKey.DownloadGame.SelectVersionGroup::class.java, downloadGameScreenKey)
+        )
     ) { isVisible ->
         val yOffset by swapAnimateDpAsState(
             targetValue = (-40).dp,
@@ -280,23 +497,9 @@ fun SelectGameVersionScreen(
 }
 
 /**
- * 简易过滤器，过滤特定类型的版本
+ * 简易版本类型过滤器 + 搜索栏 + 刷新按钮
+ * 在版本分组列表页面中，搜索栏按分组名称过滤；在分组详情页面中，搜索栏按具体版本ID过滤
  */
-private fun List<MinecraftVersion>.filterVersions(
-    versionFilter: VersionFilter
-) = this.filter { version ->
-    version.isType(
-        release = versionFilter.release,
-        snapshot = versionFilter.snapshot,
-        aprilFools = versionFilter.aprilFools,
-        old = versionFilter.old
-    )
-}.filter { version ->
-    //Fix：单独过滤版本名称
-    val versionId = versionFilter.id
-    versionId.isEmptyOrBlank() || version.version.id.contains(versionId)
-}
-
 @Composable
 private fun VersionHeader(
     modifier: Modifier = Modifier,
@@ -412,6 +615,126 @@ private fun VersionTypeItem(
     )
 }
 
+/**
+ * 版本分组列表：主页面展示的卡片列表，每张卡片代表一个大版本系列（如 "1.21"）
+ * 点击卡片进入该分组的详情页面，而不是原地展开/收起
+ */
+@Composable
+private fun VersionGroupList(
+    modifier: Modifier = Modifier,
+    groups: List<MinecraftVersionGroup>,
+    onGroupSelect: (String) -> Unit
+) {
+    val scrollState = rememberLazyListState()
+    LazyColumn(
+        modifier = modifier.nonInteractiveScrollbar(
+            state = scrollState.scrollIndicatorState!!,
+            orientation = Orientation.Vertical,
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        state = scrollState,
+    ) {
+        items(groups) { group ->
+            VersionGroupItemLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                group = group,
+                onClick = {
+                    onGroupSelect(group.key)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun VersionGroupItemLayout(
+    modifier: Modifier = Modifier,
+    group: MinecraftVersionGroup,
+    onClick: () -> Unit = {},
+    shape: Shape = MaterialTheme.shapes.large,
+    influencedByBackground: Boolean = true,
+    color: Color = cardColor(influencedByBackground),
+    contentColor: Color = onCardColor(),
+    blur: Int = AllSettings.backgroundBlur.state,
+) {
+    val scale = remember { Animatable(initialValue = 0.95f) }
+    LaunchedEffect(Unit) {
+        scale.animateTo(targetValue = 1f, animationSpec = getAnimateTween())
+    }
+
+    val (icon, versionType, _, _) = getVersionComponents(group.latest)
+
+    Surface(
+        modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value),
+        onClick = onClick,
+        shape = shape,
+        color = color,
+        contentColor = contentColor
+    ) {
+        Row(
+            modifier = Modifier
+                .clip(shape = shape)
+                .backgroundGlass(blur, color, influencedByBackground)
+                .padding(all = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            icon?.let { versionIcon ->
+                Image(
+                    modifier = Modifier.size(32.dp),
+                    painter = versionIcon,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = group.key,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+
+                    LittleTextLabel(
+                        text = versionType
+                    )
+                }
+
+                Text(
+                    modifier = Modifier.alpha(0.7f),
+                    text = stringResource(R.string.download_game_group_version_count, group.versions.size),
+                    style = MaterialTheme.typography.labelMedium
+                )
+
+                Text(
+                    modifier = Modifier.alpha(0.7f),
+                    text = formatDate(
+                        input = group.latest.version.releaseTime,
+                        pattern = stringResource(R.string.date_format)
+                    ),
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(R.drawable.ic_arrow_right_rounded),
+                contentDescription = null
+            )
+        }
+    }
+}
+
+/**
+ * 版本列表：分组详情页面展示的具体版本列表（点击后进行下载/安装）
+ */
 @Composable
 private fun VersionList(
     modifier: Modifier = Modifier,

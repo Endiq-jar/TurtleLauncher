@@ -159,10 +159,10 @@ object CrashAnalyzer {
     private fun readTail(file: File): String {
         if (!file.exists() || !file.isFile) return ""
         val length = file.length()
-        file.buffered().use { stream ->
+        return file.inputStream().buffered().use { stream ->
             val skip = (length - MAX_TAIL_BYTES).coerceAtLeast(0)
-            if (skip > 0) runCatching { stream.skip(skip.toLong()) }
-            return stream.readBytes().toString(Charsets.UTF_8.name())
+            if (skip > 0) runCatching { stream.skip(skip) }
+            stream.readBytes().decodeToString()
         }
     }
 

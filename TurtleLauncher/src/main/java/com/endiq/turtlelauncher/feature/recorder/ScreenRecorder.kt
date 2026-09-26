@@ -29,7 +29,6 @@ import android.os.Build
 import android.os.Environment
 import android.util.DisplayMetrics
 import android.view.WindowManager
-import android.view.WindowManager
 import androidx.core.content.getSystemService
 import com.endiq.turtlelauncher.utils.logging.Logger
 import java.io.File
@@ -81,6 +80,7 @@ object ScreenRecorder {
             ScreenRecorderService.start(context)
             val manager = context.getSystemService<MediaProjectionManager>()!!
             val proj = manager.getMediaProjection(resultCode, data)
+                ?: throw IllegalStateException("MediaProjectionManager returned null projection")
             projection = proj
 
             val cb = object : MediaProjection.Callback() {

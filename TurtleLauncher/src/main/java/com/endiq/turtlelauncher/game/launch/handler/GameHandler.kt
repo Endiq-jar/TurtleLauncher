@@ -36,6 +36,7 @@ import com.endiq.turtlelauncher.game.launch.GameLauncher
 import com.endiq.turtlelauncher.game.launch.LaunchConfig
 import com.endiq.turtlelauncher.game.launch.MCOptions
 import com.endiq.turtlelauncher.game.launch.loadLanguage
+import com.endiq.turtlelauncher.game.mod.NanoVGNativesFix
 import com.endiq.turtlelauncher.game.sdl.SdlBridge
 import com.endiq.turtlelauncher.game.sdl.handleGamepadKeyEvent
 import com.endiq.turtlelauncher.game.version.installed.GraphicsApi
@@ -51,6 +52,7 @@ import com.endiq.turtlelauncher.ui.screens.game.elements.mutableStateOfLog
 import com.endiq.turtlelauncher.viewmodel.ErrorViewModel
 import com.endiq.turtlelauncher.viewmodel.EventViewModel
 import com.endiq.turtlelauncher.viewmodel.GamepadViewModel
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -94,6 +96,13 @@ class GameHandler(
         TLBridge.setupBridgeWindow(surface)
 
         MCOptions.setup(activity, version)
+
+        //Installs the bundled lwjgl-nanovg natives compatibility mod (Fabric/Quilt only)
+        NanoVGNativesFix.ensureInstalled(
+            context = activity,
+            loader = version.getVersionInfo()?.loaderInfo?.loader,
+            modsDir = File(version.getGameDir(), "mods")
+        )
 
         MCOptions.apply {
             set("fullscreen", "false")

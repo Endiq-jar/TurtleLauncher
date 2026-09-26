@@ -1098,6 +1098,8 @@
     <string name="recorder_notification_text">Turtle Launcher is recording gameplay</string>
     <string name="recorder_start">Record</string>
     <string name="recorder_stop">Stop recording</string>
+    <string name="recorder_start_action">REC</string>
+    <string name="recorder_stop_action">STOP</string>
     <string name="recorder_saved">Recording saved</string>
     <string name="recorder_failed">Recording failed</string>
     <string name="crash_analyzer_title">Crash analysis</string>

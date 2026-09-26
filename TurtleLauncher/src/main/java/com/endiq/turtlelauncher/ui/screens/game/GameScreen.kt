@@ -33,9 +33,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FiberManualRecord
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -893,12 +890,12 @@ private fun ScreenRecorderButton(
         containerColor = if (isRecording) MaterialTheme.colorScheme.errorContainer
         else MaterialTheme.colorScheme.surfaceVariant
     ) {
-        Icon(
-            imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.FiberManualRecord,
-            contentDescription = stringResource(
-                if (isRecording) R.string.recorder_stop else R.string.recorder_start
+        Text(
+            text = stringResource(
+                if (isRecording) R.string.recorder_stop_action else R.string.recorder_start_action
             ),
-            tint = if (isRecording) MaterialTheme.colorScheme.error
+            style = MaterialTheme.typography.labelLarge,
+            color = if (isRecording) MaterialTheme.colorScheme.error
             else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }

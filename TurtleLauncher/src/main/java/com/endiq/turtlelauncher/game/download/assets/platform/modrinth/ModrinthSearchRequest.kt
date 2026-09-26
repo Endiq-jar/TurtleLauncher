@@ -28,10 +28,10 @@ import io.ktor.http.Parameters
  * [Modrinth api](https://docs.modrinth.com/api/operations/searchprojects/)
  */
 data class ModrinthSearchRequest(
-    /** 搜索词条 */
+    /** Search term */
     val query: String = "",
 
-    /** 应用于搜索的过滤器列表 */
+    /** Filter list applied to the search */
     val facets: List<ModrinthFacet> = listOf(ProjectTypeFacet.MOD),
 
     /** Sort order */
@@ -40,7 +40,7 @@ data class ModrinthSearchRequest(
     /** Number of result pages to skip (pagination) */
     val offset: Int = 0,
 
-    /** 要返回的结果页数，最大值为 100 */
+    /** Number of result pages to return, max 100 */
     val limit: Int = 20
 ) {
     /**

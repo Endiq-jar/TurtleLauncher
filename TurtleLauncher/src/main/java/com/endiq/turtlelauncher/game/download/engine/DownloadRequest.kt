@@ -22,16 +22,16 @@ import java.io.File
 import java.io.IOException
 
 /**
- * 一个待下载文件的任务规格。urls 为按优先级排列的候选源列表，
- * 引擎会在失败或受限时自动沿列表换源。
+ * Task spec for one file download. urls is a priority-ordered candidate source list,
+ * and the engine automatically switches down the list on failure or throttling.
  */
 class DownloadRequest(
     val urls: List<String>,
     val targetFile: File,
     val sha1: String? = null,
-    /** 已知的文件大小，未知时传 -1；仅用于预分配与进度统计，最终以实际响应为准 */
+    /** Known file size; -1 when unknown. Only used for pre-allocation and progress; the actual response wins */
     val expectedSize: Long = -1L,
-    /** 调用方附带的上下文对象，在进度与成功回调中原样带回 */
+    /** Caller-provided context object, carried back unchanged in the progress and success callbacks */
     val tag: Any? = null
 ) {
     init {
@@ -41,14 +41,14 @@ class DownloadRequest(
     override fun toString(): String = targetFile.name
 }
 
-/** 沿因果链查找第一个 HTTP 状态异常，用于调用方识别 404 等语义 */
+/** Finds the first HTTP status exception along the cause chain, letting callers recognize 404 and similar semantics */
 fun Throwable.findHttpCode(): Int? =
     generateSequence(this) { it.cause }
         .filterIsInstance<HttpResultException>()
         .firstOrNull()
         ?.code
 
-/** 全部源尝试完毕仍然失败时抛出，message 内含每个源的失败原因 */
+/** Thrown when every source still fails; the message carries each source's failure reason */
 class AllSourcesFailedException(
     summary: String,
     cause: Throwable?

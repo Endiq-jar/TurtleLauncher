@@ -37,7 +37,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 private const val TAG = "Fetcher"
 
-/** 响应的状态码、最终地址与响应头集合（键不区分大小写） */
+/** Response status code, final URL and header set (case-insensitive keys) */
 class ResponseInfo(
     val code: Int,
     val url: URL,
@@ -52,7 +52,7 @@ class ResponseInfo(
 
     companion object {
         /**
-         * 按索引枚举响应头
+         * Enumerates response headers by index
          */
         fun of(code: Int, url: URL, connection: HttpURLConnection): ResponseInfo {
             val headers = LinkedHashMap<String, MutableList<String>>()
@@ -70,7 +70,7 @@ class ResponseInfo(
     }
 }
 
-/** 响应体传输编码；不支持 broker 压缩（如 br），遇到即视为该次尝试失败 */
+/** Response body transfer encoding; brokered compression (e.g. br) is unsupported and fails the attempt */
 enum class ContentEncoding {
     IDENTITY, GZIP;
 
@@ -90,8 +90,8 @@ enum class ContentEncoding {
 }
 
 /**
- * Range 续传的资格上下文：只有 200 OK + accept-ranges: bytes + identity 编码 + 已知长度，
- * 且携带强 ETag 或 Last-Modified 的响应才具备续传资格。
+ * Range-resume eligibility context: only a response with 200 OK + accept-ranges: bytes + identity encoding + known length,
+ * plus a strong ETag or Last-Modified, qualifies for resume.
  */
 class ResumeContext private constructor(
     private val url: URL,
@@ -99,7 +99,7 @@ class ResumeContext private constructor(
     private val strongETag: String?,
     private val lastModified: String?
 ) {
-    /** 未压缩口径的已收字节，与 Content-Range 的起点语义对齐 */
+    /** Received bytes in uncompressed terms, aligned with the Content-Range start semantics */
     var countUncompressed = 0L
         private set
 
@@ -109,7 +109,7 @@ class ResumeContext private constructor(
 
     fun ifRange(): String = strongETag ?: lastModified!!
 
-    /** 206 响应是否与既有分段匹配：校验长度、验证器与 Content-Range 的逐字段一致性 */
+    /** Whether a 206 response matches the existing partial: validates length, validators and Content-Range field by field */
     fun canResume(code: Int, response: ResponseInfo): Boolean {
         if (code != HttpURLConnection.HTTP_PARTIAL) return false
         if (ContentEncoding.fromHeaders(response) != ContentEncoding.IDENTITY) return false
@@ -160,13 +160,13 @@ class ResumeContext private constructor(
     }
 }
 
-/** 单个候选源重试耗尽后的失败包装 */
+/** Failure wrapper for one candidate source after its retries are exhausted */
 class DownloadException(
     val url: String,
     cause: Throwable
 ) : IOException("Unable to download $url, ${cause.message}", cause)
 
-/** 下载内容的校验和与声明不符 */
+/** The downloaded content's checksum doesn't match the declared one */
 class ChecksumMismatchException(
     val algorithm: String,
     val expected: String,
@@ -176,9 +176,9 @@ class ChecksumMismatchException(
 /**
  * [Modified from HMCL FetchTask](https://github.com/HMCL-dev/HMCL/blob/59bcc7fe/HMCLCore/src/main/java/org/jackhuang/hmcl/task/FetchTask.java)
  *
- * 候选源顺序下载的核心实现：单源内至多重试 [DEFAULT_RETRY] 次（间隔 200ms），
- * 手动跟随重定向（上限 20 跳），Range 断点续传（强校验），连接与读取超时 10s；
- * 4xx 视为该源无货（不重试、立即换下一候选），写盘损坏从头重试且不消耗重试次数。
+ * Core of ordered candidate downloading: at most [DEFAULT_RETRY] retries within one source (200ms apart),
+ * manual redirect following (20 hops max), Range resume (strict validation), and 10s connect/read timeouts;
+ * 4xx means the source has nothing (no retry, straight to the next candidate); write corruption retries from scratch without consuming retries.
  */
 object Fetcher {
     const val DEFAULT_RETRY = 5
@@ -189,10 +189,10 @@ object Fetcher {
     private const val BUFFER_SIZE = 32 * 1024
 
     /**
-     * 按候选源顺序下载文件；全部候选耗尽后抛 [AllSourcesFailedException]，
-     * message 内含每个源，因果链保留最后一次失败。
+     * Downloads a file through candidates in order; throws [AllSourcesFailedException] once all are exhausted,
+     * with every source in the message and the last failure kept in the cause chain.
      *
-     * @param onBytes 每次成功落盘的增量字节回调（未压缩口径）
+     * @param onBytes incremental callback of bytes successfully written (uncompressed terms)
      */
     suspend fun downloadFile(
         urls: List<String>,
@@ -229,12 +229,12 @@ object Fetcher {
         throw AllSourcesFailedException("All ${urls.size} candidate source(s) failed:\n$detail", last)
     }
 
-    /** 单个候选源的跨尝试状态：落盘上下文与续传资格在重试间延续 */
+    /** Cross-attempt state of one candidate source: the sink context and resume eligibility persist across retries */
     private class CandidateState {
         var sink: FileSink? = null
         var resume: ResumeContext? = null
 
-        /** 丢弃落盘上下文：关闭并删除临时文件 */
+        /** Discards the sink context: closes and deletes the temp file */
         fun discardSink() {
             val current = sink
             if (current != null) {
@@ -269,7 +269,7 @@ object Fetcher {
                         attempt(url, targetFile, sha1, state, onBytes)
                     }
                     if (result == AttemptResult.DONE) return
-                    //续传失效或 416：从头重来且不消耗重试次数
+                    //Resume invalidated or 416: restart from scratch without consuming a retry
                     retryLimit++
                 } catch (e: CancellationException) {
                     throw e
@@ -293,7 +293,7 @@ object Fetcher {
         throw DownloadException(url.toString(), last)
     }
 
-    /** 一次完整尝试：手动跟随重定向、处理续传握手、流式落盘并提交。阻塞执行，取消依赖线程中断 */
+    /** One complete attempt: follow redirects manually, handle the resume handshake, stream to disk and commit. Runs blocking; cancellation relies on thread interruption */
     private fun attempt(
         url: URL,
         targetFile: File,
@@ -347,7 +347,7 @@ object Fetcher {
         val code = response.code
 
         if (resumeRequested && code == 416 /* HTTP_RANGE_NOT_SATISFIABLE */) {
-            //已有分段不再可用：丢弃续传上下文，从头下载
+            //The existing partial is no longer usable: discard the resume context and download from scratch
             state.resume = null
             state.discardSink()
             return AttemptResult.RESTART_FREE
@@ -365,7 +365,7 @@ object Fetcher {
             if (state.resume!!.canResume(code, response)) {
                 Logger.info(TAG, "Resuming $url from ${state.resume!!.countUncompressed}")
             } else {
-                //服务器没能按段续传：丢弃已有内容，从头开始
+                //The server couldn't resume by range: discard what we have and start over
                 state.resume = null
                 state.discardSink()
                 return AttemptResult.RESTART_FREE
@@ -385,7 +385,7 @@ object Fetcher {
             bodyConsumed = true
         } catch (e: Throwable) {
             if (state.sink?.broken == true) {
-                //写盘失败（磁盘错误等）：整个上下文作废，重试从零开始
+                //Write failure (disk error etc.): the whole context is invalidated and the retry starts from zero
                 state.resume = null
                 state.discardSink()
             }

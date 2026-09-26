@@ -180,7 +180,7 @@ private suspend fun analyseNewForge(
         }
     }
 
-    //开始下载 NeoForge 支持库
+    //Start downloading NeoForge 支持库
     libDownloader.download(task)
 
     task.updateProgress(1f)

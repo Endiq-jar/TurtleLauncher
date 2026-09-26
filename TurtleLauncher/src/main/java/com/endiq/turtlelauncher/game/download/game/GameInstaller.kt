@@ -246,7 +246,7 @@ class GameInstaller(
                     it.delete()
                 }
             }.onFailure {
-                //无法正常备份，只能硬着头皮干！
+                //Can't back up properly; brace and push ahead!
                 FileUtils.deleteQuietly(overrideClientJson)
                 FileUtils.deleteQuietly(overrideClientJar)
                 Logger.warning(TAG, "Backup failed, will proceed with overwrite installation directly!", it)
@@ -258,7 +258,7 @@ class GameInstaller(
         val tempGameVersionsDir = File(tempMinecraftDir, "versions")
         val tempClientDir = File(tempGameVersionsDir, info.gameVersion)
 
-        //ModLoader临时目录
+        //ModLoader temp directory
         val optifineDir = info.optifine?.let { File(tempGameVersionsDir, it.version) }
         val forgeDir = info.forge?.let { File(tempGameVersionsDir, "forge-${it.versionName}") }
         val neoforgeDir = info.neoforge?.let { File(tempGameVersionsDir, "neoforge-${it.versionName}") }
@@ -267,7 +267,7 @@ class GameInstaller(
         val quiltDir = info.quilt?.let { File(tempGameVersionsDir, "quilt-loader-${it.version}-${info.gameVersion}") }
         val cleanroomDir = info.cleanroom?.let { File(tempGameVersionsDir, "cleanroom-${it.version}-${info.gameVersion}") }
 
-        //Mods临时目录
+        //Mods temp directory
         val tempModsDir = File(tempGameDir, ".temp_mods")
 
         return InstallationPathConfig(
@@ -288,7 +288,7 @@ class GameInstaller(
     }
 
     /**
-     * 获取Installs the Minecraft game的任务流阶段
+     * Gets the task flow phase that installs the Minecraft game
      * @param onInstalled the game has been installed
      */
     suspend fun getTaskPhase(
@@ -299,14 +299,14 @@ class GameInstaller(
 
         listOf(
             buildPhase {
-                //开始之前，应该先清理一次临时Game directories，否则可能会影响安装结果
+                //Before starting, clean the temp game directory once, or the install result may suffer
                 addTask(
                     id = "Download.Game.ClearTemp",
                     title = androidText(R.string.download_install_clear_temp),
                     icon = R.drawable.ic_auto_delete_outlined,
                 ) {
                     clearTempGameDir()
-                    //清理完成缓存目录后，创建新的缓存目录
+                    //After cleaning the cache directory, create a fresh one
                     pathConfig.tempClientDir.createDirAndLog()
                     pathConfig.optifineDir?.createDirAndLog()
                     pathConfig.forgeDir?.createDirAndLog()
@@ -318,13 +318,13 @@ class GameInstaller(
                     pathConfig.tempModsDir.createDirAndLog()
                 }
 
-                //下载安装原版
+                //Download and install vanilla
                 addTask(
                     title = androidText(R.string.download_game_install_vanilla, info.gameVersion),
                     task = createMinecraftDownloadTask(info.gameVersion, pathConfig.tempGameVersionsDir)
                 )
 
-                //下载加载器/模组
+                //Download loaders/mods
                 addLoaderTasks(
                     tempGameDir = pathConfig.tempGameDir,
                     tempMinecraftDir = pathConfig.tempMinecraftDir,
@@ -337,11 +337,11 @@ class GameInstaller(
                     tempModsDir = pathConfig.tempModsDir
                 )
 
-                //最终游戏安装任务
+                //Final game install task
                 addTask(
                     title = androidText(R.string.download_game_install_game_files_progress),
                     icon = R.drawable.ic_build_outlined,
-                    //如果有非原版以外的任务，则需要进行处理安装（合并版本Json、迁移文件等）
+                    //If there are tasks beyond vanilla, a processing install is needed (merging version Json, migrating files, etc.)
                     task = if (
                         pathConfig.optifineDir != null ||
                         pathConfig.forgeDir != null ||
@@ -372,7 +372,7 @@ class GameInstaller(
                             }
                         )
                     } else {
-                        //仅仅下载了原版，只复制版本client文件
+                        //Vanilla only: just copy the version client file
                         createVanillaFilesCopyTask(
                             tempMinecraftDir = pathConfig.tempMinecraftDir,
                             onComplete = {
@@ -387,7 +387,7 @@ class GameInstaller(
     }
 
     /**
-     * 获取安装加载器更新的任务流阶段
+     * Gets the task flow phase for installing loader updates
      */
     private suspend fun getUpdateLoaderTaskPhase(
         onInstalled: suspend () -> Unit = {},
@@ -396,14 +396,14 @@ class GameInstaller(
 
         listOf(
             buildPhase {
-                //开始之前，应该先清理一次临时Game directories，否则可能会影响安装结果
+                //Before starting, clean the temp game directory once, or the install result may suffer
                 addTask(
                     id = "UpdateLoader.ClearTemp",
                     title = androidText(R.string.download_install_clear_temp),
                     icon = R.drawable.ic_auto_delete_outlined,
                 ) {
                     clearTempGameDir()
-                    //清理完成缓存目录后，创建新的缓存目录
+                    //After cleaning the cache directory, create a fresh one
                     pathConfig.tempClientDir.createDirAndLog()
                     pathConfig.optifineDir?.createDirAndLog()
                     pathConfig.forgeDir?.createDirAndLog()
@@ -415,7 +415,7 @@ class GameInstaller(
                     pathConfig.tempModsDir.createDirAndLog()
                 }
 
-                //下载原版的 Json/Jar，后续需要基于这个进行合并
+                //Download the vanilla Json/Jar as the base for later merging
                 addTask(
                     id = "UpdateLoader.DownloadVanilla",
                     title = androidText(R.string.download_game_install_base_download_file2, info.gameVersion)
@@ -423,13 +423,13 @@ class GameInstaller(
                     val clientVersion = info.gameVersion
                     val mcFolder = pathConfig.tempGameVersionsDir
 
-                    //下载原版 Json
+                    //Download the vanilla Json
                     task.updateProgress(-1f)
                     val manifest = downloader.findVersion(clientVersion)?.let {
                         downloader.createVersionJson(it, clientVersion, mcFolder)
                     } ?: error("Version not found: $clientVersion")
 
-                    //下载原版 Jar
+                    //Download the vanilla Jar
                     val tempJarFile = downloader.getVersionJarPath(clientVersion, mcFolder)
                     manifest.downloads?.client?.let { client ->
                         val urls = client.url.mapBMCLMirrorUrls()
@@ -437,7 +437,7 @@ class GameInstaller(
                             val totalSize = client.size
                             var downloadedSize: Long = 0L
                         }
-                        //开始下载
+                        //Start downloading
                         withSpeedReport(
                             onSpeedReport = { bytes ->
                                 task.updateSpeed(bytes)
@@ -460,7 +460,7 @@ class GameInstaller(
                             )
                         }
                     } ?: run {
-                        //如果未提供下载方式，则很可能是需要复制原版的Jar文件
+                        //If no download method is given, it most likely needs the vanilla Jar copied
                         val clientFile = downloader.getVersionJarPath(clientVersion, downloader.versionsTarget)
                         if (clientFile.exists()) {
                             clientFile.copyTo(tempJarFile)
@@ -472,7 +472,7 @@ class GameInstaller(
                     task.updateProgress(1f)
                 }
 
-                //下载加载器/模组
+                //Download loaders/mods
                 addLoaderTasks(
                     tempGameDir = pathConfig.tempGameDir,
                     tempMinecraftDir = pathConfig.tempMinecraftDir,
@@ -485,7 +485,7 @@ class GameInstaller(
                     tempModsDir = pathConfig.tempModsDir
                 )
 
-                //最终游戏安装任务
+                //Final game install task
                 addTask(
                     title = androidText(R.string.download_game_install_game_files_progress),
                     icon = R.drawable.ic_build_outlined,
@@ -495,7 +495,7 @@ class GameInstaller(
                         targetClientDir = pathConfig.targetClientDir,
                         tempClientDir = pathConfig.tempClientDir,
                         tempModsDir = pathConfig.tempModsDir,
-                        createIsolation = false, //这个安装流程针对的是已有的版本，所以不应该重新创建
+                        createIsolation = false, //this flow targets an existing version, so it must not be recreated
                         optiFineFolder = pathConfig.optifineDir,
                         forgeFolder = pathConfig.forgeDir,
                         neoForgeFolder = pathConfig.neoforgeDir,
@@ -524,13 +524,13 @@ class GameInstaller(
         cleanroomDir: File?,
         tempModsDir: File
     ) {
-        // OptiFine 安装
+        // OptiFine install
         info.optifine?.let { optifineVersion ->
             if (forgeDir == null && fabricDir == null) {
                 val isNewVersion: Boolean = optifineVersion.inherit.contains("w") || optifineVersion.inherit.split(".")[1].toInt() >= 14
                 val targetInstaller: File = targetTempOptiFineInstaller(tempGameDir, tempMinecraftDir, optifineVersion.fileName, isNewVersion)
 
-                //将OptiFine作为版本下载，其余情况则作为Mod下载
+                //OptiFine is downloaded as a version here; other cases download it as a Mod
                 addTask(
                     title = androidText(
                         R.string.download_game_install_base_download_file,
@@ -543,7 +543,7 @@ class GameInstaller(
                     )
                 )
 
-                //安装 OptiFine
+                //Install OptiFine
                 addTask(
                     title = androidText(
                         R.string.download_game_install_base_install,
@@ -560,7 +560,7 @@ class GameInstaller(
                     )
                 )
             } else {
-                //仅作为Mod进行下载
+                //Download as a Mod only
                 addTask(
                     title = androidText(
                         R.string.download_game_install_base_download_file,
@@ -575,7 +575,7 @@ class GameInstaller(
             }
         }
 
-        // Forge 安装
+        // Forge install
         info.forge?.let { forgeVersion ->
             createForgeLikeTask(
                 forgeLikeVersion = forgeVersion,
@@ -588,7 +588,7 @@ class GameInstaller(
             )
         }
 
-        // NeoForge 安装
+        // NeoForge install
         info.neoforge?.let { neoforgeVersion ->
             createForgeLikeTask(
                 forgeLikeVersion = neoforgeVersion,
@@ -632,7 +632,7 @@ class GameInstaller(
             )
         }
 
-        // Fabric 安装
+        // Fabric install
         info.fabric?.let { fabricVersion ->
             addFabricLike(fabricVersion, fabricDir!!.name)
         }
@@ -644,7 +644,7 @@ class GameInstaller(
             )
         }
 
-        // Legacy Fabric 安装
+        // Legacy Fabric install
         info.legacyFabric?.let { fabricVersion ->
             addFabricLike(fabricVersion, legacyFabricDir!!.name)
         }
@@ -656,7 +656,7 @@ class GameInstaller(
             )
         }
 
-        // Quilt 安装
+        // Quilt install
         info.quilt?.let { quiltVersion ->
             addFabricLike(quiltVersion, quiltDir!!.name)
         }
@@ -668,7 +668,7 @@ class GameInstaller(
             )
         }
 
-        // Cleanroom 安装
+        // Cleanroom install
         info.cleanroom?.let { cleanroomVersion ->
             createCleanroomTask(
                 cleanroomVersion = cleanroomVersion,
@@ -696,7 +696,7 @@ class GameInstaller(
         }
 
         CoroutineScope(Dispatchers.Main).launch {
-            //停止Jvm服务
+            //Stop the JVM service
             val intent = Intent(GlobalContext.applicationContext, JvmService::class.java)
             GlobalContext.applicationContext.stopService(intent)
             JVMSocketServer.stop()
@@ -704,7 +704,7 @@ class GameInstaller(
     }
 
     /**
-     * 清除临时Game directories
+     * Clears the temporary game directory
      */
     private suspend fun clearTempGameDir() = withContext(Dispatchers.IO) {
         PathManager.DIR_CACHE_GAME_DOWNLOADER.takeIf { it.exists() }?.let { folder ->
@@ -714,7 +714,7 @@ class GameInstaller(
     }
 
     /**
-     * 安装失败、取消安装时，都应该清除目标客户端版本文件夹
+     * On install failure or cancellation, the target client version folder must be cleared
      */
     private fun clearTargetClient() {
         val dirToDelete = targetClientDir //临时变量
@@ -1039,7 +1039,7 @@ class GameInstaller(
                 }
             }
 
-            //清除临时Game directories
+            //Clears the temporary game directory
             task.updateProgress(-1f)
             task.updateMessage(androidText(R.string.download_install_clear_temp))
             clearTempGameDir()
@@ -1066,7 +1066,7 @@ class GameInstaller(
                     targetVersion = info.customVersionName
                 )
 
-                //清除临时Game directories
+                //Clears the temporary game directory
                 task.updateProgress(-1f)
                 task.updateMessage(androidText(R.string.download_install_clear_temp))
                 clearTempGameDir()

@@ -28,7 +28,7 @@ import com.endiq.turtlelauncher.utils.string.containsChinese
 import com.endiq.turtlelauncher.utils.string.tokenize
 
 /**
- * 根据平台获取模组翻译信息
+ * Fetches mod translation info per platform
  */
 fun PlatformProject.getMcMod(
     classes: PlatformClasses
@@ -42,7 +42,7 @@ fun PlatformProject.getMcMod(
 }
 
 /**
- * 根据平台获取模组翻译信息
+ * Fetches mod translation info per platform
  */
 fun PlatformProject.getMcMod(
     translations: ModTranslations
@@ -55,16 +55,16 @@ fun PlatformProject.getMcMod(
 }
 
 /**
- * 获取 mcmod 模组翻译标题，若当前环境非中文环境，则返回原始模组名称
+ * Returns the mcmod-translated mod title; returns the original mod name outside a Chinese locale
  */
 fun ModTranslations.McMod?.getMcmodTitle(originTitle: String, context: Context? = null): String {
     return this?.displayName?.takeIf { isChinese(context) } ?: originTitle
 }
 
 /**
- * 修改自源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/d295e60/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteModRepository.java#L45-L64)
+ * Modified from the original source: [HMCL Github](https://github.com/HMCL-dev/HMCL/blob/d295e60/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteModRepository.java#L45-L64)
  * Copyright of the original project belongs to its authors; licensed under GPL v3
- * @return `Boolean` 是否包含中文, `String` 英文混合关键词 (不包含中文时，原样返回)
+ * @return `Boolean` whether Chinese is present, `String` mixed English keywords (returned unchanged when no Chinese)
  */
 suspend fun String.localizedModSearchKeywords(
     classes: PlatformClasses
@@ -84,7 +84,7 @@ suspend fun String.localizedModSearchKeywords(
 }
 
 /**
- * 如果搜索内容包含中文，返回搜索到的 MCMod 项目
+ * If the query contains Chinese, returns the found MCMod project
  */
 suspend fun String.searchMcMods(
     classes: PlatformClasses

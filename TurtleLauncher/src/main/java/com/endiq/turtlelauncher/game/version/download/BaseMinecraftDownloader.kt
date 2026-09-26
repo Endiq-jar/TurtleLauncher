@@ -118,7 +118,7 @@ class BaseMinecraftDownloader(
         gameManifest.downloads?.client?.let { client ->
             scheduleDownload(client.url.mapBMCLMirrorUrls(), client.sha1, clientFile, client.size)
         } ?: run {
-            //如果未提供下载方式，则很可能是需要复制原版的Jar文件
+            //If no download method is given, it most likely needs the vanilla Jar copied
             scheduleCopy(clientFile)
         }
     }

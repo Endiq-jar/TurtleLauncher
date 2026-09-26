@@ -21,21 +21,21 @@ package com.endiq.turtlelauncher.game.download.assets.platform.modrinth.models
 import kotlinx.serialization.json.Json
 
 /**
- * Modrinth搜索过滤器
+ * Modrinth search filters
  */
 interface ModrinthFacet {
     /**
-     * 过滤器名称
+     * Filter name
      */
     fun facetName(): String
 
     /**
-     * 过滤器值
+     * Filter value
      */
     fun facetValue(): String
 
     /**
-     * 转换为Modrinth接受的格式
+     * Converts to the format Modrinth accepts
      */
     fun describe(): String? = "${facetName()}:${facetValue()}"
 }
@@ -72,7 +72,7 @@ enum class ProjectTypeFacet : ModrinthFacet {
 }
 
 /**
- * 转换为Modrinth接受的格式
+ * Converts to the format Modrinth accepts
  */
 fun List<ModrinthFacet>.toFacetsString(): String {
     val rawFacets = this.map { listOfNotNull(it.describe()) }

@@ -23,17 +23,17 @@ import com.endiq.turtlelauncher.game.download.assets.platform.PlatformClasses
 import com.endiq.turtlelauncher.game.download.assets.platform.PlatformFilterCode
 
 /**
- * CurseForge类别过滤器
+ * CurseForge category filters
  */
 interface CurseForgeCategory {
     /**
-     * 转换为CurseForge接受的格式
+     * Converts to the format CurseForge accepts
      */
     fun describe(): String
 }
 
 /**
- * CurseForge 模组下载类别
+ * CurseForge mod download categories
  */
 enum class CurseForgeModCategory : CurseForgeCategory, PlatformFilterCode {
     WORLDGEN {
@@ -141,7 +141,7 @@ enum class CurseForgeModCategory : CurseForgeCategory, PlatformFilterCode {
 }
 
 /**
- * CurseForge 整合包下载类别
+ * CurseForge modpack download categories
  */
 enum class CurseForgeModpackCategory : CurseForgeCategory, PlatformFilterCode {
     MULTIPLAYER {
@@ -213,7 +213,7 @@ enum class CurseForgeModpackCategory : CurseForgeCategory, PlatformFilterCode {
 }
 
 /**
- * CurseForge 资源包下载类别
+ * CurseForge resource pack download categories
  */
 enum class CurseForgeResourcePackCategory : CurseForgeCategory, PlatformFilterCode {
     TRADITIONAL {
@@ -273,7 +273,7 @@ enum class CurseForgeResourcePackCategory : CurseForgeCategory, PlatformFilterCo
 }
 
 /**
- * CurseForge 存档下载类别
+ * CurseForge save download categories
  */
 enum class CurseForgeSavesCategory : CurseForgeCategory, PlatformFilterCode {
     ADVENTURE {
@@ -309,7 +309,7 @@ enum class CurseForgeSavesCategory : CurseForgeCategory, PlatformFilterCode {
 }
 
 /**
- * CurseForge 光影包下载类别
+ * CurseForge shader pack download categories
  */
 enum class CurseForgeShadersCategory : CurseForgeCategory, PlatformFilterCode {
     FANTASY {

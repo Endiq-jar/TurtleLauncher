@@ -26,13 +26,13 @@ import com.endiq.turtlelauncher.game.download.assets.platform.modrinth.models.Ve
 import com.endiq.turtlelauncher.utils.string.isNotEmptyOrBlank
 
 /**
- * Modrinth 平台的 API 链接
+ * API links for the Modrinth platform
  * [Modrinth Docs](https://docs.modrinth.com/api/operations/searchprojects)
  */
 const val MODRINTH_API = "https://api.modrinth.com/v2"
 
 /**
- * MCIM 镜像：Modrinth 平台的 API 链接
+ * MCIM mirror: API links for the Modrinth platform
  * [MCIM Modrinth API](https://github.com/mcmod-info-mirror/mcim-rust-api?tab=readme-ov-file#modrinth)
  */
 const val MCIM_MODRINTH_API = "https://mod.mcimirror.top/modrinth/v2"
@@ -54,7 +54,7 @@ fun PlatformSearchFilter.toModrinthRequest(
     return ModrinthSearchRequest(
         query = query,
         facets = listOfNotNull(
-            platformClasses.modrinth!!, //必须为非空处理
+            platformClasses.modrinth!!, //must be handled as non-null
             modrinthVersion,
             *modrinthCategories,
             modrinthModLoader

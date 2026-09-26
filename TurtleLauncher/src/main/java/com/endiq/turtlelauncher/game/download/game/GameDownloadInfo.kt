@@ -30,9 +30,9 @@ import com.endiq.turtlelauncher.game.addons.modloader.optifine.OptiFineVersion
 data class GameDownloadInfo(
     /** Minecraft version */
     val gameVersion: String,
-    /** 自定义Version name */
+    /** Custom version name */
     val customVersionName: String,
-    /** 是否进行覆盖安装 */
+    /** Whether to install over an existing install */
     val overwrite: Boolean = false,
     val optifine: OptiFineVersion? = null,
     val forge: ForgeVersion? = null,

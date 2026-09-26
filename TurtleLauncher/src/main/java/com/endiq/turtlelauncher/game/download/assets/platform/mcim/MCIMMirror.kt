@@ -37,7 +37,7 @@ private fun assetPlatformPriority(): MirrorPriority =
     resolveMirrorPriority(AllSettings.assetPlatformSource.getValue(), mainland = true)
 
 /**
- * 按是否中国大陆决定是否启用 MCIM 镜像，并按偏好生成有序候选链接
+ * Decides whether to enable the MCIM mirror based on mainland-China status, generating ordered candidate links per preference
  */
 fun String.mapMCIMMirrorUrls(): List<String> {
     if (!isChinaMainland()) return listOf(this)
@@ -52,7 +52,7 @@ fun String.mapMCIMMirrorUrls(): List<String> {
 }
 
 /**
- * 多链接形式：把数组内可被镜像替换的链接生成镜像版本，按偏好穿插到原列表前/后
+ * Multi-link form: generates mirror versions of the replaceable links in the array, interleaving them before/after the originals per preference
  */
 fun Array<String>.mapMCIMMirrorUrls(): List<String> {
     if (!isChinaMainland()) return toList()

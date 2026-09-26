@@ -100,7 +100,7 @@ fun getOptiFineModsDownloadTask(
             ))
             val optifineUrl = getOFUrlMirrorable(optifine)
 
-            //开始下载为 Mod
+            //Start downloading为 Mod
             task.updateProgress(-1f)
             task.updateMessage(androidText(
                 R.string.download_game_install_base_download_file, ModLoader.OPTIFINE.displayName, optifine.realVersion

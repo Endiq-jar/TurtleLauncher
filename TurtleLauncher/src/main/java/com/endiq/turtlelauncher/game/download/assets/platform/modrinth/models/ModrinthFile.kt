@@ -23,11 +23,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class ModrinthFile(
-    /** 文件哈希的映射。键为哈希算法，值为哈希的字符串形式 */
+    /** Map of file hashes: key = hash algorithm, value = hash string */
     @SerialName("hashes")
     val hashes: Hash,
 
-    /** 文件的直接链接 */
+    /** The file's direct URL */
     @SerialName("url")
     val url: String,
 
@@ -36,16 +36,16 @@ class ModrinthFile(
     val fileName: String,
 
     /**
-     * 该文件是否为其版本的主文件。每个版本最多只有一个文件会被设置为主文件。如果没有任何主文件，则可以推断第一个文件为主文件。
+     * Whether the file is its version's primary file. Each version has at most one primary file; with none, the first file counts as primary.
      */
     @SerialName("primary")
     val primary: Boolean,
 
-    /** 文件的大小，单位为字节 */
+    /** File size, in bytes */
     @SerialName("size")
     val size: Long,
 
-    /** 附加文件的类型，主要用于将资源包添加到数据包中 */
+    /** Type of an additional file, mainly for attaching resource packs to data packs */
     @SerialName("file_type")
     val fileType: String? = null
 ) {
@@ -63,5 +63,5 @@ fun Array<ModrinthFile>.getPrimary(): ModrinthFile? {
     val files = this.takeIf { it.isNotEmpty() } ?: run {
         return null
     }
-    return files.find { it.primary } ?: this[0] //仅下载主文件
+    return files.find { it.primary } ?: this[0] //only download the primary file
 }

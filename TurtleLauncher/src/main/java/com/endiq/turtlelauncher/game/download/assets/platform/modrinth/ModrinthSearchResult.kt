@@ -35,18 +35,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Modrinth 搜索得到的项目返回值
+ * Project entries returned by a Modrinth search
  */
 @Serializable
 class ModrinthSearchResult(
     /**
-     * 搜索得到的项目 **required**
+     * Found projects **required**
      */
     @SerialName("hits")
     val hits: Array<ModrinthProject>,
 
     /**
-     * 查询跳过的结果数 **required**
+     * Results skipped by the query **required**
      */
     @SerialName("offset")
     val offset: Int,
@@ -66,49 +66,49 @@ class ModrinthSearchResult(
     @Serializable
     class ModrinthProject(
         /**
-         * 项目唯一标识 ID **required**
+         * Unique project identifier ID **required**
          */
         @SerialName("project_id")
         val projectId: String,
 
         /**
-         * 项目类型 **required**
+         * Project type **required**
          */
         @SerialName("project_type")
         val projectType: String,
 
         /**
-         * 项目简洁字符串标识符 **un-required**
+         * Project slug **un-required**
          */
         @SerialName("slug")
         val slug: String? = null,
 
         /**
-         * 项目的作者的用户名 **required**
+         * Username of the project's author **required**
          */
         @SerialName("author")
         val author: String,
 
         /**
-         * 项目的标题 **un-required**
+         * The project's title **un-required**
          */
         @SerialName("title")
         val title: String? = null,
 
         /**
-         * 项目的描述介绍 **un-required**
+         * The project's summary **un-required**
          */
         @SerialName("description")
         val description: String? = null,
 
         /**
-         * 项目具有的类别的列表 **un-required**
+         * List of the project's categories **un-required**
          */
         @SerialName("categories")
         val categories: Array<String>? = null,
 
         /**
-         * 项目具有的非次要类别的列表 **un-required**
+         * List of the project's non-secondary categories **un-required**
          */
         @SerialName("display_categories")
         val displayCategories: Array<String>? = null,
@@ -120,31 +120,31 @@ class ModrinthSearchResult(
         val versions: Array<String>,
 
         /**
-         * 项目的下载总数 **required**
+         * The project's total downloads **required**
          */
         @SerialName("downloads")
         val downloads: Long,
 
         /**
-         * 关注项目的用户总数 **required**
+         * Total users following the project **required**
          */
         @SerialName("follows")
         val follows: Long,
 
         /**
-         * 项目图标的 URL **un-required**
+         * Project icon URL **un-required**
          */
         @SerialName("icon_url")
         val iconUrl: String? = null,
 
         /**
-         * 将项目添加到搜索的日期 **required**
+         * Date the project was added to search **required**
          */
         @SerialName("date_created")
         val dateCreated: String,
 
         /**
-         * 上次修改项目的日期 **required**
+         * Date the project was last modified **required**
          */
         @SerialName("date_modified")
         val dateModified: String,
@@ -156,43 +156,43 @@ class ModrinthSearchResult(
         val latestVersion: String? = null,
 
         /**
-         * 项目的 SPDX 许可证 ID **required**
+         * The project's SPDX license ID **required**
          */
         @SerialName("license")
         val license: String,
 
         /**
-         * 项目的客户端支持 **un-required**
+         * The project's client-side support **un-required**
          */
         @SerialName("client_side")
         val clientSide: ModrinthSide? = null,
 
         /**
-         * 项目的服务器端支持 **un-required**
+         * The project's server-side support **un-required**
          */
         @SerialName("server_side")
         val serverSide: ModrinthSide? = null,
 
         /**
-         * 附加到项目的所有图库图像 **un-required**
+         * All gallery images attached to the project **un-required**
          */
         @SerialName("gallery")
         val gallery: Array<String>? = null,
 
         /**
-         * 项目的特色图库图片 **un-required**
+         * The project's featured gallery image **un-required**
          */
         @SerialName("featured_gallery")
         val featuredGallery: String? = null,
 
         /**
-         * 项目的 RGB 颜色，从项目图标提取 **un-required**
+         * The project's RGB color, extracted from its icon **un-required**
          */
         @SerialName("color")
         val color: Int? = null,
 
         /**
-         * 与此项目关联的审核线程的 ID **un-required**
+         * ID of the moderation thread associated with the project **un-required**
          */
         @SerialName("thread_id")
         val threadId: String? = null,
@@ -238,7 +238,7 @@ class ModrinthSearchResult(
                 ?.toSet()
                 ?.takeIf { it.isNotEmpty() }
                 ?: categories
-                    ?.take(4) //没有主要类别，则展示前4个
+                    ?.take(4) //without main categories, show the first 4
                     ?.mapNotNull { string ->
                         string.mapModrinthCategory(classes)
                     }

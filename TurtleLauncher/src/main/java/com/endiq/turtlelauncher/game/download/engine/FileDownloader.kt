@@ -19,8 +19,8 @@
 package com.endiq.turtlelauncher.game.download.engine
 
 /**
- * 单文件下载作业：把 [DownloadRequest] 交给 [Fetcher] 按候选源顺序下载，
- * 期间把落盘字节计入 [stats]。
+ * Single-file download job: hands the [DownloadRequest] to [Fetcher] for ordered candidate downloading,
+ * counting the written bytes into [stats] along the way.
  */
 class FileDownloader(
     private val request: DownloadRequest,

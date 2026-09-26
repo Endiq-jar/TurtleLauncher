@@ -146,7 +146,7 @@ class ModPackInstaller(
                     icon = R.drawable.ic_auto_delete_outlined
                 ) { _ ->
                     clearTempModPackDir()
-                    //清理完成缓存目录后，创建新的缓存目录
+                    //After cleaning the cache directory, create a fresh one
                     tempModPackDir.createDirAndLog()
                     tempVersionsDir.createDirAndLog()
                     VersionFolders.MOD.getDir(tempVersionsDir).createDirAndLog() //创建临时模组目录

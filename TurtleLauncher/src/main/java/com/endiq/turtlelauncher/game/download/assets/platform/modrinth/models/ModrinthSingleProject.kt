@@ -29,106 +29,106 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class ModrinthSingleProject(
-    /** 项目简洁字符串标识符 */
+    /** Project slug */
     @SerialName("slug")
     val slug: String,
 
-    /** 项目的标题或名称 */
+    /** The project's title or name */
     @SerialName("title")
     val title: String,
 
-    /** 项目简介 */
+    /** Project summary */
     @SerialName("description")
     val description: String,
 
-    /** 项目具有的类别的列表 */
+    /** List of the project's categories */
     @SerialName("categories")
     val categories: Array<String>,
 
-    /** 项目的客户端支持 */
+    /** The project's client-side support */
     @SerialName("client_side")
     val clientSide: ModrinthSide,
 
-    /** 项目的服务器端支持 */
+    /** The project's server-side support */
     @SerialName("server_side")
     val serverSide: ModrinthSide,
 
-    /** 项目的长篇描述 */
+    /** The project's long body description */
     @SerialName("body")
     val body: String,
 
-    /** 项目状态 */
+    /** Project status */
     @SerialName("status")
     val status: String,
 
-    /** 提交以供审核或安排项目发布时的请求状态 */
+    /** Review/submission status when submitted for approval or scheduled for release */
     @SerialName("requested_status")
     val requestedStatus: String? = null,
 
-    /** 可搜索但非主要类别的列表 */
+    /** Categories that show in search but aren't main categories */
     @SerialName("additional_categories")
     val additionalCategories: Array<String>,
 
-    /** 一个可选链接，指向在何处提交项目的 bug 或 issue */
+    /** Optional link to where the project's bugs or issues are reported */
     @SerialName("issues_url")
     val issuesUrl: String? = null,
 
-    /** 指向项目源代码的可选链接 */
+    /** Optional link to the project's source code */
     @SerialName("source_url")
     val sourceUrl: String? = null,
 
-    /** 指向项目 Wiki 页面或其他相关信息的可选链接 */
+    /** Optional link to the project's wiki or other relevant info */
     @SerialName("wiki_url")
     val wikiUrl: String? = null,
 
-    /** 项目 Discord 的可选邀请链接 */
+    /** Optional invite link to the project's Discord */
     @SerialName("discord_url")
     val discordUrl: String? = null,
 
-    /** 该项目的捐赠链接列表 */
+    /** Donation links of the project */
     @SerialName("donation_urls")
     val donationUrls: Array<DonationUrl>,
 
-    /** 项目的项目类型 */
+    /** The project's project type */
     @SerialName("project_type")
     val projectType: String,
 
-    /** 项目的下载总数 */
+    /** The project's total downloads */
     @SerialName("downloads")
     val downloads: Long,
 
-    /** 项目图标的 URL */
+    /** Project icon URL */
     @SerialName("icon_url")
     val iconUrl: String? = null,
 
-    /** 项目的 RGB 颜色，从项目图标提取 */
+    /** The project's RGB color, extracted from its icon */
     @SerialName("color")
     val color: Int? = null,
 
-    /** 与此项目关联的审核线程的 ID */
+    /** ID of the moderation thread associated with the project */
     @SerialName("thread_id")
     val threadId: String,
 
     @SerialName("monetization_status")
     val monetizationStatus: MonetizationStatus,
 
-    /** 项目的 ID，编码为 base62 字符串 */
+    /** The project's ID, encoded as a base62 string */
     @SerialName("id")
     val id: String,
 
-    /** 拥有此项目所有权的团队的 ID */
+    /** ID of the team owning the project */
     @SerialName("team")
     val team: String? = null,
 
-    /** 拥有此项目所有权的组织的 ID */
+    /** ID of the organization owning the project */
     @SerialName("organization")
     val organization: String? = null,
 
-    /** 指向项目详细描述的链接。始终为 null，仅用于旧版兼容性。 */
+    /** Link to the project's body description. Always null, kept for legacy compatibility. */
     @SerialName("body_url")
     val bodyUrl: String? = null,
 
-    /** 审核者发送的有关项目的消息 */
+    /** Message a moderator sent about the project */
     @SerialName("moderator_message")
     val moderatorMessage: ModeratorMessage? = null,
 
@@ -136,106 +136,106 @@ class ModrinthSingleProject(
     @SerialName("published")
     val published: String,
 
-    /** 上次更新项目的日期 */
+    /** Date the project was last updated */
     @SerialName("updated")
     val updated: String,
 
-    /** 项目状态设置为已批准状态的日期 */
+    /** Date the project's status became approved */
     @SerialName("approved")
     val approved: String? = null,
 
-    /** 项目状态提交给审核者的日期 */
+    /** Date the project was submitted to moderators */
     @SerialName("queued")
     val queued: String? = null,
 
-    /** 关注项目的用户总数 */
+    /** Total users following the project */
     @SerialName("followers")
     val followers: Long,
 
-    /** 项目的许可证 */
+    /** The project's license */
     @SerialName("license")
     val license: License,
 
-    /** 项目的版本 ID 列表（除非 draft 状态，否则永远不会为空） */
+    /** List of the project's version IDs (never empty unless in draft status) */
     @SerialName("versions")
     val versions: Array<String>,
 
-    /** 项目支持的所有游戏版本的列表 */
+    /** List of all game versions the project supports */
     @SerialName("game_versions")
     val gameVersions: Array<String>,
 
-    /** 项目支持的所有加载器的列表 */
+    /** List of all loaders the project supports */
     @SerialName("loaders")
     val loaders: Array<String>,
 
-    /** 已上传到项目图库的图像列表 */
+    /** Images uploaded to the project's gallery */
     @SerialName("gallery")
     val gallery: Array<Gallery>
 ): PlatformProject {
     @Serializable
     class DonationUrl(
-        /** 捐赠平台的 ID */
+        /** Donation platform ID */
         @SerialName("id")
         val id: String,
 
-        /** 此链接指向的捐赠平台 */
+        /** The donation platform this link points to */
         @SerialName("platform")
         val platform: String,
 
-        /** 捐赠平台和用户的 URL */
+        /** URL of the donation platform and user */
         @SerialName("url")
         val url: String,
     )
 
     @Serializable
     class ModeratorMessage(
-        /** 审核者为项目留下的消息 */
+        /** Message a moderator left on the project */
         @SerialName("message")
         val message: String,
 
-        /** 审核者为项目留下的消息的较长正文 */
+        /** Longer body of the moderator's message */
         @SerialName("body")
         val body: String? = null
     )
 
     @Serializable
     class License(
-        /** 项目的 SPDX 许可证 ID */
+        /** The project's SPDX license ID */
         @SerialName("id")
         val id: String,
 
-        /** 许可证的长名称 */
+        /** The license's long name */
         @SerialName("name")
         val name: String,
 
-        /** 此许可证的 URL */
+        /** This license's URL */
         @SerialName("url")
         val url: String? = null
     )
 
     @Serializable
     class Gallery(
-        /** 图库图像的 URL */
+        /** Gallery image URL */
         @SerialName("url")
         val url: String,
 
-        /** 这张图片是否在画廊中被推荐展示 */
+        /** Whether the image is featured in the gallery */
         @SerialName("featured")
         val featured: Boolean,
 
-        /** 图库图像的标题 */
+        /** Gallery image title */
         @SerialName("title")
         val title: String? = null,
 
-        /** 图库图像的描述 */
+        /** Gallery image description */
         @SerialName("description")
         val description: String? = null,
 
-        /** 创建图库图像的日期和时间 */
+        /** When the gallery image was created */
         @SerialName("created")
         val created: String,
 
-        /** 图库图像的顺序 */
+        /** Ordering of the gallery image */
         @SerialName("ordering")
         val ordering: Int
     )
@@ -271,12 +271,12 @@ class ModrinthSingleProject(
     }
 
     override fun checkClasses() {
-        //fixme: 插件类、数据包类项目被标为模组类别
+        //fixme: plugin-type and datapack-type projects are tagged as mods
         if (projectType.mapModrinthType() == null) throw UnsupportedClassesException(projectType)
     }
 
     override fun platformCategories(classes: PlatformClasses): List<PlatformFilterCode>? {
-        return categories.take(4) //没有主要类别，则展示前4个
+        return categories.take(4) //without main categories, show the first 4
             .mapNotNull { string ->
                 string.mapModrinthCategory(classes)
             }
@@ -307,7 +307,7 @@ class ModrinthSingleProject(
 }
 
 /**
- * @return 该项目是否公开可见
+ * @return whether the project is publicly visible
  */
 fun ModrinthSingleProject.isPublic(): Boolean {
     return when (this.status) {

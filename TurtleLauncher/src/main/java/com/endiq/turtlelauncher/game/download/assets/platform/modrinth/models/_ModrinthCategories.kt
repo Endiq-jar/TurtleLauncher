@@ -26,7 +26,7 @@ import com.endiq.turtlelauncher.game.download.assets.platform.PlatformFilterCode
 import kotlinx.parcelize.Parcelize
 
 /**
- * Modrinth 模组加载器类别
+ * Modrinth mod loader categories
  */
 @Parcelize
 enum class ModrinthModLoaderCategory : ModrinthFacet, ModLoaderDisplayLabel {
@@ -54,7 +54,7 @@ enum class ModrinthModLoaderCategory : ModrinthFacet, ModLoaderDisplayLabel {
         override fun facetValue(): String = "bta-babric"
         override fun getDisplayName(): String = "BTA (Babric)"
     },
-//    注入型，非正常情况使用，排除
+//    Injection type: not for normal use, excluded
 //    JAVA_AGENT {
 //        override fun facetValue(): String = "java-agent"
 //        override fun getDisplayName(): String = "Java Agent"
@@ -89,7 +89,7 @@ enum class ModrinthModLoaderCategory : ModrinthFacet, ModLoaderDisplayLabel {
 }
 
 /**
- * 可视化筛选器支持的模组加载器
+ * Mod loaders supported by the visual filter
  */
 val modrinthModLoaderFilters: List<ModrinthModLoaderCategory> = listOf(
     ModrinthModLoaderCategory.FABRIC,
@@ -99,7 +99,7 @@ val modrinthModLoaderFilters: List<ModrinthModLoaderCategory> = listOf(
 )
 
 /**
- * Modrinth 模组下载类别
+ * Modrinth mod download categories
  */
 enum class ModrinthModCategory : ModrinthFacet, PlatformFilterCode {
     WORLDGEN {
@@ -168,7 +168,7 @@ enum class ModrinthModCategory : ModrinthFacet, PlatformFilterCode {
 }
 
 /**
- * Modrinth 整合包下载类别
+ * Modrinth modpack download categories
  */
 enum class ModrinthModpackCategory : ModrinthFacet, PlatformFilterCode {
     MULTIPLAYER {
@@ -217,7 +217,7 @@ enum class ModrinthModpackCategory : ModrinthFacet, PlatformFilterCode {
 }
 
 /**
- * Modrinth 资源包下载类别
+ * Modrinth resource pack download categories
  */
 enum class ModrinthResourcePackCategory : ModrinthFacet, PlatformFilterCode {
     COMBAT {
@@ -246,7 +246,7 @@ enum class ModrinthResourcePackCategory : ModrinthFacet, PlatformFilterCode {
 }
 
 /**
- * Modrinth 光影包下载类别
+ * Modrinth shader pack download categories
  */
 enum class ModrinthShadersCategory : ModrinthFacet, PlatformFilterCode {
     CARTOON {

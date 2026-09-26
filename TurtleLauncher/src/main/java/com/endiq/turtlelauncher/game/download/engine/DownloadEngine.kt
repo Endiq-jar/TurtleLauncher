@@ -28,12 +28,12 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * 引擎的单一文件便捷入口，适合独立的小批量场景；大规模批量请使用 [BatchDownloader]。
+ * The engine's single-file convenience entry, suited to small ad-hoc jobs; use [BatchDownloader] for large batches.
  */
 object DownloadEngine {
 
     /**
-     * @param sizeCallback 落盘字节的增量回调；引擎内部的重试与换源已被消化，调用方只会收到正值增量
+     * @param sizeCallback incremental callback of bytes written; retries and source switches are absorbed by the engine, so callers only see positive deltas
      */
     suspend fun download(
         request: DownloadRequest,

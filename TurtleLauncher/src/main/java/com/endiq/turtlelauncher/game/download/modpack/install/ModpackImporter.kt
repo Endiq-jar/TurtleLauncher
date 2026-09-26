@@ -136,7 +136,7 @@ class ModpackImporter(
                     GamePathManager.waitForRefresh()
                     VersionsManager.waitForRefresh()
                     clearTempModPackDir()
-                    //清理完成缓存目录后，创建新的缓存目录
+                    //After cleaning the cache directory, create a fresh one
                     tempModPackDir.createDirAndLog()
                     tempVersionsDir.createDirAndLog()
                     installerDir.createDirAndLog()

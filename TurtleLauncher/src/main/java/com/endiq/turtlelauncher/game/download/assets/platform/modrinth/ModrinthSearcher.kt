@@ -57,15 +57,15 @@ class ModrinthSearcher(
         val project = httpGetJson<ModrinthSingleProject>(
             url = "$api/project/$projectID"
         )
-        // 默认不做处理，不可访问的话，Modrinth 那边自己就会返回 404
+        // No handling by default; if unreachable, Modrinth itself returns 404
 //        if (!project.isPublic()) throw NotFoundException("The project {$projectID} is not in a publicly available state.")
         return project
     }
 
     /**
-     * 获取 Modrinth 项目的版本列表（可设置区间）
-     * @param pageSize entries requested per page，null则为获取所有版本
-     * @param offset 开始处，null则为获取所有版本
+     * Fetches a Modrinth project's version list (optional range)
+     * @param pageSize entries requested per page; null fetches all versions
+     * @param offset start index; null fetches all versions
      */
     suspend fun getVersionsChunk(
         projectID: String,
@@ -94,7 +94,7 @@ class ModrinthSearcher(
     }
 
     /**
-     * 获取 Modrinth 指定Id的单个版本
+     * Fetches a single Modrinth version by ID
      */
     suspend fun getVersion(versionID: String): ModrinthVersion {
         return httpGetJson(
@@ -119,7 +119,7 @@ class ModrinthSearcher(
     }
 
     /**
-     * 通过多个本地文件的 SHA-1 值批量获取对应的版本信息
+     * Batch-fetches version info via multiple local files' SHA-1 values
      * @return key = SHA-1, value = matched version; missed fingerprints are excluded
      */
     suspend fun getVersionFiles(
@@ -134,7 +134,7 @@ class ModrinthSearcher(
 }
 
 /**
- * 批量获取版本信息的请求体
+ * Request body for bulk version info
  */
 @Serializable
 private data class ModrinthVersionFilesRequest(

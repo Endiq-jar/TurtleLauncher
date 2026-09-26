@@ -77,7 +77,7 @@ enum class CurseForgeModLoader(val code: Int) : ModLoaderDisplayLabel {
 }
 
 /**
- * 可视化筛选器支持的模组加载器
+ * Mod loaders supported by the visual filter
  */
 val curseForgeModLoaderFilters = listOf(
     CurseForgeModLoader.FORGE,

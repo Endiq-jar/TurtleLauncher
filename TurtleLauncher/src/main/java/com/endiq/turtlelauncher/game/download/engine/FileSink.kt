@@ -32,9 +32,9 @@ import java.security.MessageDigest
 /**
  * [Modified from HMCL FileDownloadTask](https://github.com/HMCL-dev/HMCL/blob/59bcc7fe/HMCLCore/src/main/java/org/jackhuang/hmcl/task/FileDownloadTask.java)
  *
- * 下载落盘上下文：先写入目标同目录下的临时文件，成功收尾时校验 SHA-1
- * 并原子替换目标文件；失败丢弃时删除临时文件。
- * 写盘失败由 [broken] 标记，调用方据此在重试时放弃续传、从头开始。
+ * Download sink context: writes into a temp file next to the target first, and validates the SHA-1 on successful finalization
+ * then atomically replaces the target file; a failed discard deletes the temp file.
+ * Write failures are marked by [broken], telling callers to abandon resume and retry from scratch.
  */
 class FileSink(
     targetFile: File,
@@ -45,7 +45,7 @@ class FileSink(
     private val channel: FileChannel
     private val digest: MessageDigest? = expectedChecksum?.let { MessageDigest.getInstance("SHA-1") }
 
-    /** 最近一次写盘是否失败；为真时既有内容不可信，重试不得续传 */
+    /** Whether the latest write failed; when true the existing content is untrusted and retries must not resume */
     var broken = false
         private set
 
@@ -74,7 +74,7 @@ class FileSink(
         }
     }
 
-    /** 下载成功后的收尾：校验 SHA-1 并把临时文件原子替换为目标文件；抛出视为可重试失败 */
+    /** Finalization after a successful download: validates the SHA-1 and atomically replaces the target with the temp file; throwing counts as a retriable failure */
     fun finish() {
         var moved = false
         try {

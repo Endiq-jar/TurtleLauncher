@@ -113,7 +113,7 @@ val allAprilFools = listOf(
 )
 
 /**
- * 给出的 MC 版本号是否为正式版
+ * 给出的 MC 版本号Whether it's a full release
  */
 fun filterRelease(versionString: String): Boolean {
     return GameVersionNumber.asGameVersion(versionString).isRelease

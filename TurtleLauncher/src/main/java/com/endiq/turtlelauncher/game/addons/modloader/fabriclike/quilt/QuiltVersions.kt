@@ -24,7 +24,7 @@ import com.endiq.turtlelauncher.game.addons.modloader.fabriclike.models.FabricLi
 object QuiltVersions : FabricLikeVersions("https://meta.quiltmc.org/v3") {
 
     /**
-     * 获取 Quilt 列表
+     * Fetches the Quilt list
      */
     suspend fun fetchQuiltLoaderList(mcVersion: String, force: Boolean = false): List<QuiltVersion>? {
         val list: List<FabricLikeLoader> = fetchLoaderList(force, "QuiltVersions", mcVersion) ?: return null

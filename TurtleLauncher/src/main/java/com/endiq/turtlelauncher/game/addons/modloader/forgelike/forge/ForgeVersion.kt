@@ -29,15 +29,15 @@ class ForgeVersion(
     versionName: String,
     branch: String?,
     inherit: String,
-    /** 发布时间，格式为“yyyy/MM/dd HH:mm” */
+    /** Release time, formatted as "yyyy/MM/dd HH:mm" */
     val releaseTime: String,
-    /** 文件的 MD5 或 SHA1 */
+    /** MD5 or SHA1 of the file */
     val hash: String?,
-    /** 是否为推荐版本 */
+    /** Whether it's the recommended version */
     val isRecommended: Boolean,
-    /** 安装类型: installer、client、universal */
+    /** Install type: installer, client, universal */
     val category: String,
-    /** 用于下载的文件版本名。可能在 Version 的基础上添加了分支。 */
+    /** File version name used for downloading. May have a branch added onto the Version. */
     val fileVersion: String
 ) : ForgeLikeVersion(
     loaderName = ModLoader.FORGE.displayName,

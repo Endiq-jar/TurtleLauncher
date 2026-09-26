@@ -105,7 +105,7 @@ class LaunchGameViewModel : ViewModel() {
 
     /**
      * 快速启动（通过存档管理快速游玩存档）
-     * @param saveName 存档文件名称
+     * @param saveName 存档File name
      */
     fun quickPlaySave(
         version: Version,

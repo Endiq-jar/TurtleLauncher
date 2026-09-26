@@ -46,12 +46,12 @@ import java.nio.channels.UnresolvedAddressException
 private const val TAG = "DownloadSingle"
 
 /**
- * 为一些版本下载单独的资源文件
- * @param version 要下载单独资源版本信息
- * @param versions 为哪些游戏版本下载
- * @param folder 版本Game directories下的相对路径
- * @param onFileCopied 文件已成功复制到版本Game directories后 单独回调
- * @param onFileCancelled 文件安装已取消 单独回调
+ * Downloads standalone resource files for certain versions
+ * @param version version info of the standalone resource to download
+ * @param versions which game versions to download for
+ * @param folder path relative to the version's game directory
+ * @param onFileCopied per-file callback after the file was copied into the version directory
+ * @param onFileCancelled per-file callback when the install was cancelled
  */
 fun downloadSingleForVersions(
     version: PlatformVersion,
@@ -76,7 +76,7 @@ fun downloadSingleForVersions(
                 val targetFile = File(targetFolder, version.platformFileName())
                 if (targetFile.exists() && !targetFile.delete()) throw IOException("Failed to properly delete the existing target file.")
                 cacheFile.copyTo(targetFile)
-                onFileCopied(targetFile, targetFolder) //文件已复制回调
+                onFileCopied(targetFile, targetFolder) //file copied callback
             }
         },
         onError = { e ->
@@ -95,7 +95,7 @@ fun downloadSingleForVersions(
                 val targetFolder = File(ver.getGameDir(), folder)
                 val targetFile = File(targetFolder, version.platformFileName())
                 if (targetFile.exists()) FileUtils.deleteQuietly(targetFile)
-                onFileCancelled(targetFile, targetFolder) //文件已取消回调
+                onFileCancelled(targetFile, targetFolder) //file cancelled callback
             }
         },
         onFinally = {
@@ -106,8 +106,8 @@ fun downloadSingleForVersions(
 }
 
 /**
- * 下载任务的Id
- * 同一文件安装到不同的游戏版本时属于不同的任务，避免被误判为重复任务而丢弃目标版本
+ * Download task ID
+ * The same file installed into different game versions counts as distinct tasks, so false duplicate detection can't drop target versions
  */
 private fun downloadTaskId(fileKey: String, versions: List<Version>): String {
     if (versions.isEmpty()) return fileKey
@@ -130,7 +130,7 @@ private fun downloadSingleFile(
                 val totalFileSize = version.platformFileSize()
                 var downloadedSize = 0L
 
-                //更新下载任务进度
+                //Update download task progress
                 fun updateProgress() {
                     task.updateProgress(
                         (downloadedSize.toDouble() / totalFileSize.toDouble()).toFloat()

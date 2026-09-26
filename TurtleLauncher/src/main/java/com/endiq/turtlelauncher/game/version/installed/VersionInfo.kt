@@ -51,7 +51,7 @@ class VersionInfo(
         val version: String
     ): Parcelable {
         /**
-         * 通过加载器名称，获得对应的环境变量键名
+         * 通过Loader name，获得对应的环境变量键名
          */
         fun getLoaderEnvKey(): String? {
             return when(loader) {

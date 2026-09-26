@@ -45,7 +45,7 @@ private const val MATCH_PARALLELISM = 4
 
 /**
  * 本地模组指纹的平台匹配结果
- * @param byProject 以平台项目Id为键
+ * @param byProject 以平台Project ID为键
  * @param byVersion 以平台版本Id为键
  * @param complete 是否所有指纹分块都匹配成功，存在失败分块时部分指纹未匹配
  */
@@ -179,7 +179,7 @@ suspend fun matchInstalledMods(
 }
 
 /**
- * 可能为模组的文件扩展名（.disabled 后缀的文件已去除后缀再判断）
+ * 可能为模组的File extension（.disabled 后缀的文件已去除后缀再判断）
  */
 private val MOD_FILE_EXTENSIONS = setOf("jar", "zip", "litemod")
 

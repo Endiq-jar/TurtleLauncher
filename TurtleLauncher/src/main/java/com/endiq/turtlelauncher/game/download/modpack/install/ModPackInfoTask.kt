@@ -52,7 +52,7 @@ abstract class ModPackInfoTask(
     protected lateinit var modpackInfo: ModPackInfo
 
     /**
-     * 用户指定的预安装版本名称
+     * 用户指定的预安装Version name
      */
     protected lateinit var targetVersionName: String
 
@@ -94,7 +94,7 @@ abstract class ModPackInfoTask(
                     modpackInfo = readInfo(task, versionFolder, root)
                 }
 
-                //等待用户输入预安装版本名称
+                //等待用户输入预安装Version name
                 addTask(
                     id = "ImportModpack.WaitUserForVersionName",
                     title = androidText(R.string.download_install_input_version_name),

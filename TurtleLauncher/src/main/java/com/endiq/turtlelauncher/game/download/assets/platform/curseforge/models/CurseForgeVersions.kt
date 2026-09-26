@@ -23,11 +23,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class CurseForgeVersions(
-    /** 响应数据 */
+    /** Response data */
     @SerialName("data")
     val data: Array<CurseForgeFile>,
 
-    /** 响应分页信息 */
+    /** Response pagination info */
     @SerialName("pagination")
     val pagination: CurseForgePagination
 )

@@ -23,7 +23,7 @@ import androidx.annotation.Keep
 import kotlinx.parcelize.Parcelize
 
 /**
- * 皮肤模型枚举
+ * Skin model enum
  */
 @Keep
 @Parcelize
@@ -32,10 +32,10 @@ enum class SkinModelType(
     val targetParity: Int,
     val modelType: String
 ): Parcelable {
-    /** 未设定 */
+    /** Unspecified */
     NONE("none", -1, ""),
-    /** 粗臂类型 */
+    /** Classic (wide) arms */
     STEVE("wide", 0, "classic"),
-    /** 细臂类型 */
+    /** Slim (Alex) arms */
     ALEX("slim", 1, "slim")
 }

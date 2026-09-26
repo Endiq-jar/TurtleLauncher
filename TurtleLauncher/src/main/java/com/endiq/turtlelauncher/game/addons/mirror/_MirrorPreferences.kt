@@ -20,17 +20,17 @@ package com.endiq.turtlelauncher.game.addons.mirror
 
 import com.endiq.turtlelauncher.setting.enums.MirrorSourceType
 
-/** 设置折算后的镜像使用策略 */
+/** Mirror usage strategy resolved from the settings */
 enum class MirrorPriority {
-    /** 只使用官方源 */
+    /** Only the official source */
     OFFICIAL,
-    /** 镜像在前、官方在后 */
+    /** Mirrors first, official last */
     MIRROR_FIRST
 }
 
 /**
- * 把三档设置折算成镜像使用策略
- * 自动档依据是否中国大陆静态判定，失败换源由下载引擎在运行时自适应，无需网络探测。
+ * Resolves the three-level setting into a mirror usage strategy
+ * Auto is decided statically from mainland-China detection; source failover is handled adaptively by the download engine at runtime, no probing needed.
  */
 fun resolveMirrorPriority(source: MirrorSourceType, mainland: Boolean): MirrorPriority =
     when {
@@ -40,7 +40,7 @@ fun resolveMirrorPriority(source: MirrorSourceType, mainland: Boolean): MirrorPr
         else -> MirrorPriority.OFFICIAL
     }
 
-/** 按生效策略产出候选列表；官方档不注入镜像，镜像链接不存在时仅保留官方源 */
+/** Produces the candidate list per the active strategy; official-only mode injects no mirrors, and only the official source remains when a mirror link is missing */
 fun orderCandidates(official: String, mirror: String?, priority: MirrorPriority): List<String> =
     when (priority) {
         MirrorPriority.OFFICIAL -> listOfNotNull(official)

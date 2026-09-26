@@ -58,7 +58,7 @@ class DownloadModViewModel : ViewModel() {
 
     private var scanJob: Job? = null
 
-    /** 最近一次扫描对应的版本名称，用于判断扫描目标是否变化 */
+    /** 最近一次扫描对应的Version name，用于判断扫描目标是否变化 */
     private var scannedVersionName: String? = null
 
     /** 最近一次扫描得到的所有本地模组文件指纹 */

@@ -47,7 +47,7 @@ object OptiFineVersions {
     private var cacheResult: List<OptiFineVersion>? = null
 
     /**
-     * 获取 OptiFine 版本列表
+     * Fetches the OptiFine version list
      */
     suspend fun fetchOptiFineList(
         force: Boolean = false,
@@ -87,7 +87,7 @@ object OptiFineVersions {
             val forgePattern = Regex("<td class=['\"]colForge['\"]>([^<]+)</td>")
             val jarPattern = Regex("adfoc\\.us[^>]+f=([^&]+\\.jar)")
 
-            //提取所有匹配项
+            //Extract all matches
             val names = namePattern.findAll(html).map { it.groupValues[1].trim() }.toList()
             val dates = datePattern.findAll(html).map { it.groupValues[1].trim() }.toList()
             val forges = forgePattern.findAll(html).map { it.groupValues[1].trim() }.toList()
@@ -127,7 +127,7 @@ object OptiFineVersions {
                 val parts = rawDate.split('.')
                 val formattedDate = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else rawDate
 
-                //提取Forge版本
+                //Extract the Forge version
                 val forgeVersion = forges[i]
                     .takeIf { !it.contains("N/A") }
                     ?.removePrefix("Forge ")
@@ -201,7 +201,7 @@ object OptiFineVersions {
     }
 
     /**
-     * 获取 OF 对应文件下载链接
+     * Returns the download URL of the matching OptiFine file
      */
     suspend fun fetchOptiFineDownloadUrl(fileName: String): String? = withContext(Dispatchers.Default) {
         try {

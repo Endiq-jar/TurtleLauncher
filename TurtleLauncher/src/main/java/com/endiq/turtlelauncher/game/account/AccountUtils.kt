@@ -433,7 +433,7 @@ fun getAccountTypeName(account: Account): String {
 
 /**
  * Modified from the original source: [HMCL Core: AuthlibInjectorServer.java](https://github.com/HMCL-dev/HMCL/blob/b38076f/HMCLCore/src/main/java/org/jackhuang/hmcl/auth/authlibinjector/AuthlibInjectorServer.java#L53-L85)
- * <br>原项目版权归原作者所有，遵循GPL v3协议
+ * <br>Copyright of the original project belongs to its authors; licensed under GPL v3
  */
 fun tryGetFullServerUrl(baseUrl: String): String {
     fun String.addSlashIfMissing(): String {
@@ -468,8 +468,8 @@ fun tryGetFullServerUrl(baseUrl: String): String {
 }
 
 /**
- * 修改自源代码：[HMCL Core: AuthlibInjectorServer.java](https://github.com/HMCL-dev/HMCL/blob/main/HMCLCore/src/main/java/org/jackhuang/hmcl/auth/authlibinjector/AuthlibInjectorServer.java#L90-#L96)
- * <br>原项目版权归原作者所有，遵循GPL v3协议
+ * Modified from the original source: [HMCL Core: AuthlibInjectorServer.java](https://github.com/HMCL-dev/HMCL/blob/main/HMCLCore/src/main/java/org/jackhuang/hmcl/auth/authlibinjector/AuthlibInjectorServer.java#L90-#L96)
+ * <br>Copyright of the original project belongs to its authors; licensed under GPL v3
  */
 private fun addHttpsIfMissing(baseUrl: String): String {
     return if (!baseUrl.startsWith("http://", true) && !baseUrl.startsWith("https://")) {
@@ -478,8 +478,8 @@ private fun addHttpsIfMissing(baseUrl: String): String {
 }
 
 /**
- * 检查是否为32位16进制字符串，这可能是一个
- * 统一通行证的服务器ID
+ * Checks whether it's a 32-character hex string, which may be a
+ * unified-passport server ID
  */
 private fun isValidPassportId(id: String): Boolean {
     val pattern = Regex("^[0-9a-f]{32}$", RegexOption.IGNORE_CASE)

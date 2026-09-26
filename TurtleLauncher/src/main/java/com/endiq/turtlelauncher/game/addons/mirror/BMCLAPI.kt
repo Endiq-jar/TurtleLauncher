@@ -57,7 +57,7 @@ private val REPLACE_MIRROR_HOLDERS = mapOf(
 )
 
 /**
- * 替换为镜像源链接并按用户偏好排序；非中国大陆不注入任何镜像。
+ * Replaces links with mirror sources and sorts them per user preference; no mirrors are injected outside mainland China.
  */
 fun String.mapBMCLMirrorUrls(): List<String> {
     if (!isChinaMainland()) return listOf(this)

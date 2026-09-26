@@ -132,7 +132,7 @@ class ModrinthSingleProject(
     @SerialName("moderator_message")
     val moderatorMessage: ModeratorMessage? = null,
 
-    /** 项目的发布日期 */
+    /** The project's release date */
     @SerialName("published")
     val published: String,
 

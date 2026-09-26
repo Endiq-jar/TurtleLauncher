@@ -26,7 +26,7 @@ import kotlinx.parcelize.Parcelize
 /**
  * 模组在平台上对应的文件
  * @param id 文件ID
- * @param platform 所属平台
+ * @param platform Owning platform
  * @param datePublished 发布日期
  */
 @Parcelize

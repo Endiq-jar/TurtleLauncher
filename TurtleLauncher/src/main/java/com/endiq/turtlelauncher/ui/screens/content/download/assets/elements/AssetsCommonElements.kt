@@ -218,7 +218,7 @@ private fun BasicIdentifier(
 
 /**
  * 资源封面网络图标
- * @param iconUrl 图标链接
+ * @param iconUrl Icon URL
  */
 @Composable
 fun AssetsIcon(

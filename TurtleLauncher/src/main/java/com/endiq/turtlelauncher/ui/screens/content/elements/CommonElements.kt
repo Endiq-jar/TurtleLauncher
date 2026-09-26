@@ -136,12 +136,12 @@ data class CategoryItem(
 )
 
 /**
- * 排序方式枚举
+ * Sort order枚举
  */
 enum class SortByEnum(val textRes: Int) {
     /** 按照名称排序 */
     Name(R.string.sort_by_name),
-    /** 按照文件名称排序 */
+    /** 按照File name排序 */
     FileName(R.string.sort_by_file_name),
     /** 按照文件上次修改时间排序 */
     FileModifiedTime(R.string.sort_by_last_modified),
@@ -150,10 +150,10 @@ enum class SortByEnum(val textRes: Int) {
 }
 
 /**
- * 通用的排序方式下来菜单
- * @param enums 当前菜单支持的排序方式
- * @param currentEnum 当前的排序方式
- * @param onEnumChanged 变更当前的排序方式
+ * 通用的Sort order下来菜单
+ * @param enums 当前菜单支持的Sort order
+ * @param currentEnum 当前的Sort order
+ * @param onEnumChanged 变更当前的Sort order
  * @param isAscending 当前是否为升序
  * @param onToggleSortOrder 切换当前的排序顺序
  */

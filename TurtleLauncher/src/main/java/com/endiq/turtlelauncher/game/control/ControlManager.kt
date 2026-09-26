@@ -47,7 +47,7 @@ import java.io.InputStream
 private const val TAG = "ControlManager"
 
 /**
- * 控制布局管理者
+ * Control layout manager
  */
 object ControlManager {
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -58,21 +58,21 @@ object ControlManager {
     private var currentJob: Job? = null
 
     private val _selectedLayout = MutableStateFlow<ControlData?>(null)
-    /** 当前选择的控制布局 */
+    /** Currently selected control layout */
     val selectedLayout = _selectedLayout.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
-    /** 是否正在刷新控制布局 */
+    /** Whether control layouts are being refreshed */
     val isRefreshing = _isRefreshing.asStateFlow()
 
     /**
-     * 获取一个新的布局文件文件，名称随机
+     * Gets a new layout file with a random name
      */
     private fun getNewRandomFile() = File(PathManager.DIR_CONTROL_LAYOUTS, "${newRandomFileName()}.json")
 
     /**
-     * 检查当前是否不存在控制布局，不存在则解压一份默认控制布局
-     * @param context 访问assets的上下文
+     * Checks whether no control layout exists, and unpacks the default one
+     * @param context a context for accessing assets
      */
     fun checkDefaultAndRefresh(context: Context) {
         scope.launch(Dispatchers.IO) {
@@ -131,7 +131,7 @@ object ControlManager {
     }
 
     /**
-     * 检查并更新设置
+     * Checks and updates the settings
      */
     private fun checkSettings() {
         val setting = AllSettings.controlLayout.getValue()
@@ -148,7 +148,7 @@ object ControlManager {
     }
 
     /**
-     * 解压默认控制布局
+     * Unpacks the default control layout
      */
     private suspend fun unpackDefaultControl(
         context: Context
@@ -162,7 +162,7 @@ object ControlManager {
     }
 
     /**
-     * 选择控制布局
+     * Selects a control layout
      */
     fun selectControl(data: ControlData) {
         if (!data.file.exists() || !data.isSupport) return
@@ -171,7 +171,7 @@ object ControlManager {
     }
 
     /**
-     * 在协程内删除控制布局
+     * Deletes a control layout in a coroutine
      */
     fun deleteControl(data: ControlData) {
         scope.launch(Dispatchers.IO) {
@@ -182,7 +182,7 @@ object ControlManager {
     }
 
     /**
-     * 在协程内保存控制布局的数据
+     * Saves control layout data in a coroutine
      */
     fun saveControl(
         data: ControlData,
@@ -205,7 +205,7 @@ object ControlManager {
     }
 
     /**
-     * 尝试导入控制布局
+     * Tries to import a control layout
      */
     suspend fun importControl(
         inputStream: InputStream,

@@ -30,18 +30,18 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(with = PlatformDependencyType.Serializer::class)
 enum class PlatformDependencyType(val curseforgeCode: Int) {
     @SerialName("required")
-    REQUIRED(3),            //依赖
+    REQUIRED(3),            //Required
     @SerialName("optional")
-    OPTIONAL(2),            //可选
+    OPTIONAL(2),            //Optional
     @SerialName("incompatible")
-    INCOMPATIBLE(5),        //不兼容
+    INCOMPATIBLE(5),        //Incompatible
     @SerialName("embedded")
-    EMBEDDED(1),            //嵌入式
+    EMBEDDED(1),            //Embedded
 
     @SerialName("tool")
-    TOOL(4),                //工具 (CurseForge)
+    TOOL(4),                //Tool (CurseForge)
     @SerialName("include")
-    INCLUDE(6);             //包括 (CurseForge)
+    INCLUDE(6);             //Include (CurseForge)
 
     companion object {
         private val map = PlatformDependencyType.entries.associateBy { it.curseforgeCode }

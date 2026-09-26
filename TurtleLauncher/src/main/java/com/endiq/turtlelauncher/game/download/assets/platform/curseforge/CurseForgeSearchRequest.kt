@@ -28,36 +28,36 @@ import io.ktor.http.Parameters
  * [CurseForge api](https://docs.curseforge.com/rest-api/?shell#search-mods)
  */
 data class CurseForgeSearchRequest(
-    /** 游戏 ID */
-    val gameId: Int = 432, //Minecraft 游戏 ID
+    /** Game ID */
+    val gameId: Int = 432, //Minecraft game ID
 
     val classId: Int = CurseForgeClassID.MOD.classID,
 
-    /** 搜索的资源的类别 */
+    /** Category of the searched resource */
     val categories: Set<CurseForgeCategory>? = null,
 
-    /** 资源名称过滤搜索 */
+    /** Resource name filter */
     val searchFilter: String? = null,
 
-    /** 游戏版本过滤 */
+    /** Game version filter */
     val gameVersion: String? = null,
 
-    /** 排序方式 */
+    /** Sort order */
     val sortField: PlatformSortField = PlatformSortField.RELEVANCE,
 
     val sortOrder: String = "desc",
 
-    /** 模组加载器过滤 */
+    /** Mod loader filter */
     val modLoader: CurseForgeModLoader? = null,
 
-    /** 要跳过的结果页数（用于分页） */
+    /** Number of result pages to skip (pagination) */
     val index: Int = 0,
 
-    /** 要返回的结果页数，最大值为 50 */
+    /** Number of result pages to return, max 50 */
     val pageSize: Int = 20,
 ) {
     /**
-     * 转换为 GET 参数
+     * Converts to GET parameters
      */
     fun toParameters(): Parameters = Parameters.build {
         append("gameId", gameId.toString())
@@ -85,8 +85,8 @@ data class CurseForgeSearchRequest(
     }
 
     /**
-     * 分情况选择不同的参数名，处理参数列表为字符串值
-     * 目前只有 categoryIds 能够正常使用
+     * Picks parameter names case by case, serializing parameter lists as string values
+     * Currently only categoryIds works properly
      */
     private fun <E> Collection<E>?.mutableParameters(
         singleName: String,
@@ -99,7 +99,7 @@ data class CurseForgeSearchRequest(
                 c1.mapNotNull { it.toString(it) }
                     .takeIf { it.isNotEmpty() }
                     ?.let { categoryStrings ->
-                        //多过滤器的配置方式：name=[aaa,bbb,...]
+                        //Multi-filter format: name=[aaa,bbb,...]
                         append(mutableName, categoryStrings.joinToString(separator = ",", prefix = "[", postfix = "]") { it })
                     }
             } else {

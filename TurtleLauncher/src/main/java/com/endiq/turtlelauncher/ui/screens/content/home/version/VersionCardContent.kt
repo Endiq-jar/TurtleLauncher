@@ -406,7 +406,7 @@ private fun CardTexts(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        //版本名称
+        //Version name
         card?.record?.versionName?.let { name ->
             Text(
                 modifier = Modifier

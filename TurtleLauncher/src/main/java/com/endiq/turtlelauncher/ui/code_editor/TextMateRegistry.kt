@@ -71,7 +71,7 @@ object TextMateRegistry {
     )
 
     /**
-     * 文件扩展名对应的 TextMate scope
+     * File extension对应的 TextMate scope
      */
     private val textMateScopes = mapOf(
         "md" to "text.html.markdown",

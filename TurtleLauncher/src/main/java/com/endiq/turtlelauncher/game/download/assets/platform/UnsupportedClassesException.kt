@@ -19,6 +19,6 @@
 package com.endiq.turtlelauncher.game.download.assets.platform
 
 /**
- * 不受支持的项目类别
+ * Unsupported project category
  */
 class UnsupportedClassesException(classes: Any?): IllegalArgumentException("Unsupported classes: $classes")

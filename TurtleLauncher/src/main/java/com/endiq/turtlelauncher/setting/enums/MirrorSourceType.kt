@@ -28,7 +28,7 @@ enum class MirrorSourceType(val textRes: Int) {
     AUTO(R.string.settings_launcher_mirror_auto),
 
     /**
-     * 尽量使用官方源
+     * 尽量使用Official source
      */
     OFFICIAL(R.string.settings_launcher_mirror_official),
 

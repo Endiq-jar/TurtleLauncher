@@ -34,7 +34,7 @@ import java.util.Objects
 private const val TAG = "AuthServerHelper"
 
 /**
- * 帮助登录外置账号（创建新的外置账号、仅登录当前外置账号）
+ * Helps log into external accounts (creating new ones, or just logging in with an existing one)
  */
 class AuthServerHelper(
     private val baseUrl: String,
@@ -110,8 +110,8 @@ class AuthServerHelper(
     }
 
     /**
-     * 启动前自检
-     * @return 两者都被服务端拒绝时返回 false
+     * Pre-launch self-check
+     * @return false when both were rejected by the server
      */
     suspend fun validateOrRefresh(context: Context, account: Account): Boolean {
         if (apiServer.validate(context, account)) return true
@@ -126,7 +126,7 @@ class AuthServerHelper(
     }
 
     /**
-     * 使用账号密码重新登录并匹配当前角色，仅在 validate 与 refresh 均被拒绝时调用
+     * Re-logins with username/password and matches the current role; only called when both validate and refresh were rejected
      */
     suspend fun passwordLogin(context: Context, account: Account) {
         val authResult = apiServer.authenticate(context, account.otherAccount!!, password)
@@ -146,15 +146,15 @@ class AuthServerHelper(
     }
 
     /**
-     * 从账号管理中查找同一个配置Id的账号（当前账号类型）
+     * Finds the account with the same profileId in the account manager (for the current account type)
      */
     private fun loadFromProfileID(profileId: String): Account {
         return AccountsManager.loadFromProfileID(profileId, serverName) ?: Account()
     }
 
     /**
-     * 通过账号密码，登录一个新的账号
-     * @param selectRole 当账号拥有多个角色时，需要选择角色
+     * Logs into a new account with username/password
+     * @param selectRole role selection, needed when the account has multiple roles
      */
     fun createNewAccount(
         context: Context,
@@ -181,12 +181,12 @@ class AuthServerHelper(
     }
 
     /**
-     * 仅仅只是登录外置账号（使用账号密码登录）
+     * Merely logs into an external account (username/password login)
      * JUST DO IT!!!
-     * @return 登陆的任务对象
+     * @return the login task object
      */
     fun justLogin(context: Context, account: Account): Task {
-        fun roleNotFound() { //未找到匹配的ID
+        fun roleNotFound() { //no matching role ID found
             onFailed(ResponseException(context.getString(R.string.account_other_login_role_not_found)))
         }
 
@@ -203,7 +203,7 @@ class AuthServerHelper(
             hasMultipleRoles = { authResult, task ->
                 authResult.availableProfiles!!.forEach { profile ->
                     if (profile.id == account.profileId) {
-                        //匹配当前账号的ID时，那么这个角色就是这个账号
+                        //When the ID matches the current account, that role belongs to the account
                         updateAccountInfo(account, authResult, profile.name, profile.id)
                         onSuccess(account, task)
                         return@login

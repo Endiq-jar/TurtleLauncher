@@ -52,13 +52,13 @@ class ModrinthSearchResult(
     val offset: Int,
 
     /**
-     * 查询返回的结果数 **required**
+     * Number of results returned for the query **required**
      */
     @SerialName("limit")
     val limit: Int,
 
     /**
-     * 与查询匹配的结果总数 **required**
+     * Total number of results matching the query **required**
      */
     @SerialName("total_hits")
     val totalHits: Int
@@ -114,7 +114,7 @@ class ModrinthSearchResult(
         val displayCategories: Array<String>? = null,
 
         /**
-         * 项目支持的 Minecraft 版本列表  **required**
+         * Minecraft versions supported by the project  **required**
          */
         @SerialName("versions")
         val versions: Array<String>,

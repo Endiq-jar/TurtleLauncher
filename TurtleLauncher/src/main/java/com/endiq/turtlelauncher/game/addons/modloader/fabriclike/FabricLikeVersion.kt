@@ -21,13 +21,13 @@ package com.endiq.turtlelauncher.game.addons.modloader.fabriclike
 import com.endiq.turtlelauncher.game.addons.modloader.AddonVersion
 
 abstract class FabricLikeVersion(
-    /** Minecraft 版本 */
+    /** Minecraft version */
     inherit: String,
-    /** 加载器名称 */
+    /** Loader name */
     val loaderName: String,
-    /** 加载器版本 */
+    /** Loader version */
     val version: String,
-    /** 版本状态: true 为稳定版 (Quilt忽略此值) */
+    /** Version status: true = stable (ignored by Quilt) */
     val stable: Boolean = true
 ) : AddonVersion(
     inherit = inherit
@@ -35,7 +35,7 @@ abstract class FabricLikeVersion(
     abstract val loaderUrl: String
 
     /**
-     * 获取对应版本的版本 Json 下载地址
+     * Returns the version JSON download URL of the matching version
      */
     val loaderJsonUrl: String =
         "$loaderUrl/${

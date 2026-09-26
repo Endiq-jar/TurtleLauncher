@@ -133,7 +133,7 @@ private class VersionsScreenViewModel : ViewModel() {
     var allVersionsCount by mutableIntStateOf(0)
     /** 原版版本数量 */
     var vanillaVersionsCount by mutableIntStateOf(0)
-    /** 模组加载器版本数量 */
+    /** 模组Loader version数量 */
     var modloaderVersionsCount by mutableIntStateOf(0)
 
     fun startRefreshVersions() {

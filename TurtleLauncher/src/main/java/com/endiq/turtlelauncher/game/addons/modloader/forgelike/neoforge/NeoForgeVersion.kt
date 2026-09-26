@@ -66,9 +66,9 @@ private fun parseVersionName(rawVersion: String): String {
 private fun parseInherit(rawVersion: String): String {
     return when {
         rawVersion.contains("1.20.1") -> "1.20.1"
-        //暂时认为0开头代表特殊版本
+        //Treat a 0 prefix as a special version for now
         rawVersion.startsWith("0.") -> {
-            //特殊版本
+            //Special version
             val versionPart = rawVersion.replace("0.", "").substringBefore("-")
             //"25w14craftmine.3" -> "25w14craftmine"
             val version = versionPart.substringBeforeLast(".")
@@ -76,7 +76,7 @@ private fun parseInherit(rawVersion: String): String {
         }
         else -> {
             val version = parseVersion(rawVersion)
-            //优先解析26.1+新版本格式
+            //Parse the new 26.1+ format first
             parseNewInherit(version) ?: run {
                 buildString {
                     append("1.").append(version.major)

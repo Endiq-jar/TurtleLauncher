@@ -22,7 +22,7 @@ import java.io.File
 
 class CapeFileDownloader: WardrobeDownloader() {
     /**
-     * 尝试下载yggdrasil皮肤
+     * Tries to download the Yggdrasil skin
      */
     @Throws(Exception::class)
     suspend fun download(

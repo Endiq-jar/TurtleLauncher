@@ -33,7 +33,7 @@ data class SaveData(
     val isValid: Boolean,
     /** 存档真正的名字 */
     val levelName: String? = null,
-    /** 游戏的版本名称 */
+    /** 游戏的Version name */
     val levelMCVersion: String? = null,
     /** 上次保存此存档的时间戳 */
     val lastPlayed: Long? = null,

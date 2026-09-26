@@ -51,8 +51,8 @@ import kotlin.math.min
 private const val TAG = "Version"
 
 /**
- * Minecraft 版本，由版本名称进行区分
- * @param versionName 版本名称
+ * Minecraft 版本，由Version name进行区分
+ * @param versionName Version name
  * @param gameHome 版本所在的Game directories（.minecraft）
  * @param versionConfig 独立版本的配置
  * @param versionInfo 版本信息
@@ -113,7 +113,7 @@ class Version(
     fun getVersionPath(): File = File(getVersionsFolder(), versionName)
 
     /**
-     * @return 获取版本名称
+     * @return 获取Version name
      */
     fun getVersionName(): String = versionName
 

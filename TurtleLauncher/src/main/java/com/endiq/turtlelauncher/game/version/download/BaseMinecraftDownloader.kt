@@ -73,7 +73,7 @@ class BaseMinecraftDownloader(
 
     /**
      * 创建版本 Json
-     * @param targetVersion 目标版本名称
+     * @param targetVersion 目标Version name
      */
     suspend fun createVersionJson(
         version: Version,
@@ -172,7 +172,7 @@ class BaseMinecraftDownloader(
                         ?.replace("http://", "https://")
                         ?: run {
                             //对于没有提供下载链接的，可能是需要文件已经安装，而不是临时获取
-                            //不过尝试使用官方源下载，若下载失败则表明这个版本 文件有缺失的情况
+                            //不过尝试使用Official source下载，若下载失败则表明这个版本 文件有缺失的情况
                             isDownloadable = false
                             "https://libraries.minecraft.net/"
                         }

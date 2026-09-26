@@ -31,47 +31,47 @@ import com.endiq.turtlelauncher.ui.AndroidStringText
 import com.endiq.turtlelauncher.ui.androidText
 
 /**
- * Xbox 登陆出现的各种异常
+ * Various exceptions from Xbox login
  */
 class XboxLoginException(val status: ExceptionStatus) : RuntimeException() {
     enum class ExceptionStatus {
         /**
-         * 被封禁
+         * The account is banned
          */
         BANNED,
 
         /**
-         * 受到限制
+         * The account is restricted
          */
         RESTRICTED,
 
         /**
-         * 未创建个人资料
+         * The Xbox profile hasn't been created
          */
         UNREGISTERED,
 
         /**
-         * 未同意服务条款
+         * Terms of service not accepted
          */
         NOT_ACCEPTED_SERVICE,
 
         /**
-         * 地区被禁止登陆
+         * Login is banned in this region
          */
         BLOCKED_REGION,
 
         /**
-         * 未提供年龄证明
+         * Age proof not provided
          */
         REQUIRES_PROOF_OF_AGE,
 
         /**
-         * 达到游玩时间限制
+         * Play-time limit reached
          */
         REACHED_PLAYTIME_LIMIT,
 
         /**
-         * 未成年
+         * The account holder is a minor
          */
         UNDERAGE
     }

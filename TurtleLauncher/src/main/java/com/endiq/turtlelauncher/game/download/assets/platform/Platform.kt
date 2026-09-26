@@ -24,7 +24,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 可用的资源搜索平台
+ * Available resource search platforms
  */
 @Serializable
 @Parcelize

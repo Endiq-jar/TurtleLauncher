@@ -19,61 +19,61 @@
 package com.endiq.turtlelauncher.game.download.assets.platform
 
 /**
- * 平台的Search results单项数据实现
+ * Platform search result item data implementation
  */
 interface PlatformSearchData {
     /**
-     * 所属平台
+     * Owning platform
      */
     fun platform(): Platform
 
     /**
-     * 项目Id
+     * Project ID
      */
     fun platformId(): String
 
     /**
-     * 在平台上的标题
+     * Title on the platform
      */
     fun platformTitle(): String
 
     /**
-     * 在平台上的描述
+     * Description on the platform
      */
     fun platformDescription(): String
 
     /**
-     * 在平台上的主要作者
+     * Main author on the platform
      */
     fun platformAuthor(): String
 
     /**
-     * 在平台上的作者列表
+     * Author list on the platform
      */
     fun platformAuthors(): List<String> = listOfNotNull(platformAuthor().takeIf { it.isNotBlank() })
 
     /**
-     * 图标链接
+     * Icon URL
      */
     fun platformIconUrl(): String?
 
     /**
-     * 在平台上的下载数量
+     * Download count on the platform
      */
     fun platformDownloadCount(): Long
 
     /**
-     * 在平台上的收藏数量（Modrinth）
+     * Favorite count on the platform (Modrinth)
      */
     fun platformFollows(): Long?
 
     /**
-     * 在平台上标注的模组加载器信息
+     * Mod loader info marked on the platform
      */
     fun platformModLoaders(): List<PlatformDisplayLabel>?
 
     /**
-     * 在平台上标注的类别信息
+     * Category info marked on the platform
      */
     fun platformCategories(classes: PlatformClasses): List<PlatformFilterCode>?
 }

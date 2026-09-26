@@ -128,7 +128,7 @@ sealed interface LaunchGameOperation {
     data object None : LaunchGameOperation
     /** 没有安装版本/没有选中有效版本 */
     data object NoVersion : LaunchGameOperation
-    /** 版本名称非法时 */
+    /** Version name非法时 */
     data class InvalidVersionName(val th: InvalidFilenameException) : LaunchGameOperation
     /** 没有可用账号 */
     data object NoAccount : LaunchGameOperation

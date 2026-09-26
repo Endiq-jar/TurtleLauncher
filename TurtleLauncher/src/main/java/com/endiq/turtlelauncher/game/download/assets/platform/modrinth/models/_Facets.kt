@@ -41,7 +41,7 @@ interface ModrinthFacet {
 }
 
 /**
- * Minecraft 版本过滤器
+ * Minecraft version filter
  */
 class VersionFacet(val version: String) : ModrinthFacet {
     override fun facetValue(): String = version

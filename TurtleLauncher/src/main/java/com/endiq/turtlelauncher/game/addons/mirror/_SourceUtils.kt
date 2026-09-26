@@ -33,8 +33,8 @@ data class MirrorSource<T>(
 )
 
 /**
- * 按顺序尝试各源，首个成功者胜出
- * 全部失败时抛出最后一次异常
+ * Tries each source in order; the first success wins
+ * Throws the last exception when every source fails
  */
 suspend fun <T> runMirrorable(
     sources: List<MirrorSource<T>>
@@ -63,8 +63,8 @@ suspend fun <T> runMirrorable(
 }
 
 /**
- * 把官方在前、镜像在后的规范源列表按“游戏内容下载源”设置重排；
- * 自动档下大陆用户镜像优先，官方档仅保留官方源
+ * Reorders the canonical official-first, mirror-last source list per the "game content download source" setting;
+ * in auto mode mainland users get mirrors first; official mode keeps only the official source
  */
 fun <T> List<MirrorSource<T>>.orderedByGameSourcePreference(): List<MirrorSource<T>> =
     when (resolveMirrorPriority(AllSettings.gameDownloadSource.getValue(), mainland = true)) {

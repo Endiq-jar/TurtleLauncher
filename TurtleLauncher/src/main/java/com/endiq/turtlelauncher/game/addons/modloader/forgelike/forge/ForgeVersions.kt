@@ -187,7 +187,7 @@ object ForgeVersions {
     }
 
     /**
-     * 获取 Forge 对应版本的下载链接
+     * Returns the download URL of the matching Forge version
      */
     fun getDownloadUrl(version: ForgeVersion) =
         "$FORGE_FILE_URL/${version.inherit}-${version.fileVersion}/forge-${version.inherit}-${version.fileVersion}-${version.category}.${version.fileExtension}"

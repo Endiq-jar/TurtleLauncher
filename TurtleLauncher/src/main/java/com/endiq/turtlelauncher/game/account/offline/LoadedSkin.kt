@@ -23,12 +23,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 玩家皮肤和披风的完整信息
- * @param skinHash 皮肤文件的哈希值（SHA-256）
- * @param skinBytes 皮肤文件内容
- * @param capeHash 披风文件的哈希值（SHA-256）
- * @param capeBytes 披风文件内容
- * @param model 皮肤模型类型
+ * Complete info of a player's skin and cape
+ * @param skinHash SHA-256 hash of the skin file
+ * @param skinBytes skin file content
+ * @param capeHash SHA-256 hash of the cape file
+ * @param capeBytes cape file content
+ * @param model the skin model type
  */
 @Serializable
 data class LoadedSkin(

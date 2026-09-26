@@ -81,8 +81,8 @@ private val SCOPES = listOf("XboxLive.signin", "offline_access", "openid", "prof
 private const val TENANT = "/consumers"
 
 /**
- * 轮询令牌时允许的最大连续网络失败次数
- * 网络环境较差时，偶发的失败不应中断登录，但持续失败说明网络不可用，应提前放弃
+ * Maximum consecutive network failures allowed while polling for the token
+ * On poor networks, occasional failures shouldn't abort the login, but sustained failures mean the network is down; give up early
  */
 private const val MAX_CONSECUTIVE_POLL_FAILURES = 5
 
@@ -93,8 +93,8 @@ const val XSTS_AUTH_URL = "https://xsts.auth.xboxlive.com"
 const val MINECRAFT_SERVICES_URL = "https://api.minecraftservices.com"
 
 /**
- * 从 Microsoft 身份验证终端节点获取设备代码响应
- * 设备代码用于在单独的设备或浏览器上授权用户
+ * Fetches a device code response from the Microsoft identity endpoint
+ * The device code authorizes the user on a separate device or browser
  */
 suspend fun fetchDeviceCodeResponse(context: CoroutineContext): DeviceCodeResponse = coroutineScope {
     withRetry {
@@ -110,8 +110,8 @@ suspend fun fetchDeviceCodeResponse(context: CoroutineContext): DeviceCodeRespon
 }
 
 /**
- * 使用设备代码流从 Microsoft Azure Active Directory 检索访问令牌和刷新令牌
- * 此函数会定期轮询 Microsoft 令牌端点，直到获取访问令牌或超时
+ * Retrieves access and refresh tokens from Microsoft Azure Active Directory via the device code flow
+ * This function polls the Microsoft token endpoint regularly until a token is obtained or it times out
  */
 suspend fun getTokenResponse(
     codeResponse: DeviceCodeResponse,
@@ -127,7 +127,7 @@ suspend fun getTokenResponse(
         return cancelled > 1
     }
 
-    //连续的网络层失败次数，避免网络长期不可用时无意义地轮询到设备码过期
+    //Consecutive network-layer failures, to avoid polling pointlessly until the device code expires when the network is long down
     var consecutiveFailures = 0
 
     Logger.debug(TAG, "Polling for token, interval = ${pollingInterval}ms, expires in ${codeResponse.expiresIn}s")
@@ -159,8 +159,8 @@ suspend fun getTokenResponse(
             Logger.warning(TAG, "Token endpoint responded without a Bearer token, continuing to poll")
         } catch (e: ClientRequestException) {
             when (val error = e.errorCode()) {
-                // 服务器正常响应，说明网络可用
-                "authorization_pending" -> consecutiveFailures = 0 // 正常情况，继续轮询
+                // Server responded normally: the network is usable
+                "authorization_pending" -> consecutiveFailures = 0 // normal case, keep polling
                 "slow_down" -> {
                     consecutiveFailures = 0
                     pollingInterval += 1000L
@@ -175,8 +175,8 @@ suspend fun getTokenResponse(
             Logger.debug(TAG, "Authentication cancelled")
             throw e
         } catch (e: Exception) {
-            // 轮询期间的临时性错误（网络波动、DNS解析失败、服务器5xx、请求超时等）不应中断整个登录流程
-            // 只要设备码尚未过期，就继续轮询；但网络持续不可用时应提前放弃
+            // Transient errors during polling (network jitter, DNS failures, server 5xx, request timeouts) shouldn't abort the whole login flow
+            // Keep polling while the device code is still valid, but give up early when the network stays unavailable
             consecutiveFailures++
             if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES ||
                 System.currentTimeMillis() + pollingInterval >= expireTime
@@ -201,7 +201,7 @@ suspend fun getTokenResponse(
 }
 
 /**
- * 从 OAuth 错误响应中解析 error 字段
+ * Parses the error field from an OAuth error response
  */
 private suspend fun ClientRequestException.errorCode(): String? {
     return runCatching {
@@ -210,14 +210,14 @@ private suspend fun ClientRequestException.errorCode(): String? {
 }
 
 /**
- * 使用不同的身份验证类型异步验证用户，并检索其 Minecraft 帐户信息
- * 函数通过执行一系列步骤来编排身份验证过程，具体取决于提供的 [authType]。
+ * Asynchronously authenticates the user with the given auth type and retrieves their Minecraft account info
+ * The function orchestrates the authentication through a series of steps, depending on the provided [authType].
  *
- * 支持刷新现有访问令牌或使用提供的访问令牌。然后，继续使用 Xbox Live （XBL）、Xbox 安全令牌服务 （XSTS） 进行身份验证，最后访问 Minecraft。
+ * Supports refreshing an existing access token or using a provided one. It then continues with Xbox Live (XBL) and the Xbox Secure Token Service (XSTS), and finally Minecraft.
  *
- * 支持验证用户是否拥有游戏，然后创建 [Account] 对象。
+ * It can verify the user owns the game and then builds the [Account] object.
  *
- * @param statusUpdate 验证执行到哪个步骤，通过这个进行回调更新
+ * @param statusUpdate callback reporting which authentication step is running
  */
 suspend fun microsoftAuthAsync(
     authType: AuthType,
@@ -244,8 +244,8 @@ suspend fun microsoftAuthAsync(
 }
 
 /**
- * 校验缓存的 accessToken 是否仍被服务端接受
- * @return false 表示服务端已拒绝该凭据
+ * Checks whether the cached accessToken is still accepted by the server
+ * @return false when the server has rejected the credential
  */
 suspend fun validateAccessToken(account: Account): Boolean = try {
     getPlayerProfile(MINECRAFT_SERVICES_URL, account.accessToken)
@@ -282,7 +282,7 @@ private suspend fun refreshAccessToken(
                 response["refresh_token"]?.jsonPrimitive?.content ?: refreshToken
             )
         } catch (e: ClientRequestException) {
-            //刷新令牌已被撤销或失效，无法自动恢复
+            //The refresh token was revoked or expired; no automatic recovery possible
             if (e.errorCode() == "invalid_grant") throw CredentialsExpiredException()
             throw e
         }
@@ -308,7 +308,7 @@ private suspend fun authenticateXBL(accessToken: String, update: (AsyncStatus) -
             setBody(requestBody)
         }.safeBodyAsJson<JsonObject>()
 
-        //提取uhs
+        //Extract the uhs
         val uhs = response["DisplayClaims"]?.jsonObject
             ?.get("xui")?.jsonArray
             ?.firstOrNull()?.jsonObject
@@ -322,7 +322,7 @@ private suspend fun authenticateXBL(accessToken: String, update: (AsyncStatus) -
         try {
             requestXblToken("d=$accessToken")
         } catch (e: ClientRequestException) {
-            // 参考 Wiki：RpsTicket 如遇 400 Bad Request，可尝试去掉 "d=" 前缀重新请求
+            // Per the wiki: if RpsTicket fails with 400 Bad Request, retry without the "d=" prefix
             // https://zh.minecraft.wiki/w/Tutorial:%E7%BC%96%E5%86%99%E5%90%AF%E5%8A%A8%E5%99%A8#Xbox_Live%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81
             if (e.response.status.value == 400) {
                 Logger.warning(TAG, "XBL authentication rejected the d= prefixed RpsTicket, retrying without the prefix")
@@ -357,8 +357,8 @@ private suspend fun authenticateXSTS(
 
             XSTSAuthResult(token = response["Token"].text(), uhs = uhs)
         } catch (e: ClientRequestException) {
-            // XSTS 对账号类问题统一返回 4xx 及 XErr 错误码，expectSuccess 会提前抛出异常
-            // 因此必须从异常响应体中解析 XErr，才能向用户展示真实的失败原因
+            // XSTS uniformly returns 4xx with an XErr code for account issues; expectSuccess throws early
+            // so the XErr must be parsed from the error response body to show the user the real failure reason
             val errorBody = runCatching { e.response.safeBodyAsJson<JsonObject>() }.getOrNull()
             when (val xErr = errorBody?.get("XErr").text()) {
                 //Reference : https://github.com/PrismarineJS/prismarine-auth/blob/1aef6e1/src/common/Constants.js#L50-L59
@@ -433,7 +433,7 @@ private suspend fun createAccount(
     )
 
     val profileId = profile.id
-    //避免同一个账号反复添加
+    //Avoid adding the same account repeatedly
     val account = AccountsManager.loadFromProfileID(profileId, AccountType.MICROSOFT.tag) ?: Account()
 
     return account.apply {

@@ -98,7 +98,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
- * 收藏排序方式
+ * 收藏Sort order
  */
 private enum class FavoriteSortBy {
     /** 收藏时间，新到旧 */
@@ -153,7 +153,7 @@ private class FavoritesScreenViewModel : ViewModel() {
 
     fun onCategoryChange(value: PlatformClasses?) {
         category = value
-        //分类不再需要模组加载器过滤时，重置过滤器，避免过滤器继续对列表生效
+        //分类不再需要Mod loader filter时，重置过滤器，避免过滤器继续对列表生效
         if (value != PlatformClasses.MOD && value != PlatformClasses.MOD_PACK) {
             modloaderFilter = emptyList()
         }
@@ -482,7 +482,7 @@ private fun FavoritesFilter(
             )
         }
 
-        //排序方式过滤
+        //Sort order过滤
         item {
             FilterListLayout(
                 modifier = Modifier.fillMaxWidth(),

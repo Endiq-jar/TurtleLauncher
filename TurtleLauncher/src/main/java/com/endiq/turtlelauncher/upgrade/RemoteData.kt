@@ -24,7 +24,7 @@ import kotlinx.serialization.Serializable
 /**
  * 远端返回的最新版本的启动器的信息，用于与本地启动器版本进行检查并更新
  * @param code 最新启动器的版本号
- * @param version 最新启动器的版本名称
+ * @param version 最新启动器的Version name
  * @param createdAt 发布时间
  * @param defaultCloudDrive 默认的网盘链接
  * @param cloudDrives 可用的网盘链接
@@ -82,7 +82,7 @@ data class RemoteData(
 
     /**
      * 最新版本的启动器的安装包文件
-     * @param fileName 可直接展示的文件名称
+     * @param fileName 可直接展示的File name
      * @param uri 可直接在浏览器下载的链接
      * @param arch 该安装包的架构
      * @param size 该安装包文件的大小 (bytes)

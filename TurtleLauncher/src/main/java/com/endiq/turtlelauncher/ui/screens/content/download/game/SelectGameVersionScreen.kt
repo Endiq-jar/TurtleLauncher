@@ -292,7 +292,7 @@ private fun List<MinecraftVersion>.filterVersions(
         old = versionFilter.old
     )
 }.filter { version ->
-    //Fix：单独过滤版本名称
+    //Fix：单独过滤Version name
     val versionId = versionFilter.id
     versionId.isEmptyOrBlank() || version.version.id.contains(versionId)
 }

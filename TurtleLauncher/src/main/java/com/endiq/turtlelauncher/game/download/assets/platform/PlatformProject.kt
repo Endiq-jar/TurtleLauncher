@@ -19,100 +19,100 @@
 package com.endiq.turtlelauncher.game.download.assets.platform
 
 /**
- * 平台项目实现
+ * Platform project implementation
  */
 interface PlatformProject {
     /**
-     * 所属平台
+     * Owning platform
      */
     fun platform(): Platform
 
     /**
-     * 该项目在平台上的Id
+     * The project's platform ID
      */
     fun platformId(): String
 
     /**
-     * 该项目的类型
+     * The project's type
      */
     fun platformClasses(defaultClasses: PlatformClasses): PlatformClasses
 
     /**
-     * 该项目的别名
+     * The project's alias (slug)
      */
     fun platformSlug(): String
 
     /**
-     * 该项目的图标链接
+     * The project's icon URL
      */
     fun platformIconUrl(): String?
 
     /**
-     * 该项目在平台上的标题名称
+     * The project's title on the platform
      */
     fun platformTitle(): String
 
     /**
-     * 该项目在平台上的描述
+     * The project's description on the platform
      */
     fun platformSummary(): String?
 
     /**
-     * 该项目在平台上的主要作者
+     * The project's main author on the platform
      */
     fun platformAuthor(): String?
 
     /**
-     * 该项目在平台上的作者列表
+     * The project's author list on the platform
      */
     fun platformAuthors(): List<String> = listOfNotNull(platformAuthor()?.takeIf { it.isNotBlank() })
 
     /**
-     * 该项目在平台上的总下载量
+     * The project's total downloads on the platform
      */
     fun platformDownloadCount(): Long
 
     /**
-     * 在平台上的收藏数量（Modrinth）
+     * Favorite count on the platform (Modrinth)
      */
     fun platformFollows(): Long?
 
     /**
-     * 在平台上标注的模组加载器信息
+     * Mod loader info marked on the platform
      */
     fun platformModLoaders(): List<PlatformDisplayLabel>?
 
     /**
-     * 该项目在平台上是否仍然可用
+     * Whether the project is still available on the platform
      */
     fun platformAvailable(): Boolean = true
 
     /**
-     * 检查项目类别是否受支持
+     * Checks whether the project category is supported
      */
     fun checkClasses()
 
     /**
-     * 在平台上标注的类别信息
+     * Category info marked on the platform
      */
     fun platformCategories(classes: PlatformClasses): List<PlatformFilterCode>?
 
     /**
-     * 该项目的所有相关链接
+     * All related links of the project
      */
     fun platformUrls(defaultClasses: PlatformClasses): Urls
 
     /**
-     * 该项目在平台上上传的所有截图
+     * All screenshots uploaded for the project on the platform
      */
     fun platformScreenshots(): List<Screenshot>
 
     /**
-     * 资源项目各类外链
-     * @param projectUrl 平台项目链接
-     * @param sourceUrl 源代码仓库链接
-     * @param issuesUrl 议题链接
-     * @param wikiUrl wiki链接
+     * Various external links of the resource project
+     * @param projectUrl platform project URL
+     * @param sourceUrl source repository URL
+     * @param issuesUrl issue tracker URL
+     * @param wikiUrl wiki URL
      */
     class Urls(
         val projectUrl: String? = null,
@@ -122,10 +122,10 @@ interface PlatformProject {
     )
 
     /**
-     * 屏幕截图
-     * @param imageUrl 图片链接
-     * @param title 截图标题
-     * @param description 截图描述
+     * Screenshot
+     * @param imageUrl image URL
+     * @param title screenshot title
+     * @param description screenshot description
      */
     class Screenshot(
         val imageUrl: String,
@@ -135,7 +135,7 @@ interface PlatformProject {
 }
 
 /**
- * 所有的链接是否都为null
+ * Whether all links are null
  */
 fun PlatformProject.Urls.isAllNull(): Boolean {
     return projectUrl == null &&

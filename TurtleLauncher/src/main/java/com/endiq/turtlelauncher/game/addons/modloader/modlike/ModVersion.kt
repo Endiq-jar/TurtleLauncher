@@ -23,16 +23,16 @@ import com.endiq.turtlelauncher.game.download.assets.platform.modrinth.models.Mo
 import com.endiq.turtlelauncher.game.download.assets.platform.modrinth.models.ModrinthVersion
 
 /**
- * 模组版本，因 Modrinth 访问优势，暂只支持 Modrinth
+ * Mod versions; only Modrinth is supported for now thanks to its accessibility
  */
 open class ModVersion(
-    /** Minecraft 版本 */
+    /** Minecraft version */
     inherit: String,
-    /** 显示名称 */
+    /** Display name */
     val displayName: String,
-    /** 版本详细信息类 */
+    /** Detailed version info class */
     val version: ModrinthVersion,
-    /** 可下载的主文件 */
+    /** Downloadable main file */
     val file: ModrinthFile
 ) : AddonVersion(
     inherit = inherit

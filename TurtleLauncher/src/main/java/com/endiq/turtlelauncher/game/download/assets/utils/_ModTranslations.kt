@@ -63,7 +63,7 @@ fun ModTranslations.McMod?.getMcmodTitle(originTitle: String, context: Context? 
 
 /**
  * 修改自源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/d295e60/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteModRepository.java#L45-L64)
- * 原项目版权归原作者所有，遵循GPL v3协议
+ * Copyright of the original project belongs to its authors; licensed under GPL v3
  * @return `Boolean` 是否包含中文, `String` 英文混合关键词 (不包含中文时，原样返回)
  */
 suspend fun String.localizedModSearchKeywords(

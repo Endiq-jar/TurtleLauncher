@@ -64,7 +64,7 @@ class ModrinthSearcher(
 
     /**
      * 获取 Modrinth 项目的版本列表（可设置区间）
-     * @param pageSize 每页请求数量，null则为获取所有版本
+     * @param pageSize entries requested per page，null则为获取所有版本
      * @param offset 开始处，null则为获取所有版本
      */
     suspend fun getVersionsChunk(
@@ -120,7 +120,7 @@ class ModrinthSearcher(
 
     /**
      * 通过多个本地文件的 SHA-1 值批量获取对应的版本信息
-     * @return 键为 SHA-1 值，值为匹配到的版本，未命中的指纹不在结果中
+     * @return key = SHA-1, value = matched version; missed fingerprints are excluded
      */
     suspend fun getVersionFiles(
         sha1List: List<String>

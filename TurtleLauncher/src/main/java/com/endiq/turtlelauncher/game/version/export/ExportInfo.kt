@@ -63,7 +63,7 @@ data class ExportInfo(
 ) {
     /**
      * 模组加载器信息
-     * @param version 加载器版本
+     * @param version Loader version
      */
     data class LoaderVersion(
         val loader: ModLoader,

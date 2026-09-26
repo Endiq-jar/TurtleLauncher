@@ -24,16 +24,16 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "servers")
 data class AuthServer(
     /**
-     * Authentication servers基础链接
+     * Authentication server base URL
      */
     @PrimaryKey
     val baseUrl: String,
     /**
-     * Authentication servers显示名称
+     * Authentication server display name
      */
     var serverName: String,
     /**
-     * Authentication servers注册链接（注册新账号跳转）
+     * Authentication server registration URL (link for registering a new account)
      */
     var register: String? = null
 )

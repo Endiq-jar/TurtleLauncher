@@ -55,9 +55,9 @@ private const val TAG = "ModPackInstaller"
 /**
  * 在线下载的整合包安装器，仅支持 CurseForge、Modrinth
  * @param version 选中的整合包的版本信息
- * @param iconUrl 整合包的图标链接
+ * @param iconUrl 整合包的Icon URL
  * @param scope 在有生命周期管理的scope中执行安装任务
- * @param waitForVersionName 等待用户输入版本名称
+ * @param waitForVersionName 等待用户输入Version name
  * @param waitForConfirmMobileData 等待用户确认使用移动网络
  */
 class ModPackInstaller(
@@ -81,7 +81,7 @@ class ModPackInstaller(
     private lateinit var modpackInfo: ModPackInfo
 
     /**
-     * 用户指定的预安装版本名称
+     * 用户指定的预安装Version name
      */
     private lateinit var targetVersionName: String
 
@@ -217,7 +217,7 @@ class ModPackInstaller(
                     )
                 }
 
-                //等待用户输入预安装版本名称
+                //等待用户输入预安装Version name
                 addTask(
                     id = "Download.ModPack.WaitUserForVersionName",
                     title = androidText(R.string.download_install_input_version_name),

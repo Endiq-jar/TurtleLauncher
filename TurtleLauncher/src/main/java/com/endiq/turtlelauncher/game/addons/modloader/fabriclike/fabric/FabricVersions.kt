@@ -27,7 +27,7 @@ object FabricVersions : FabricLikeVersions(
 ) {
 
     /**
-     * 获取 Fabric 列表
+     * Fetches the Fabric list
      */
     suspend fun fetchFabricLoaderList(mcVersion: String, force: Boolean = false): List<FabricVersion>? {
         val list: List<FabricLikeLoader> = fetchLoaderList(force, "FabricVersions", mcVersion) ?: return null

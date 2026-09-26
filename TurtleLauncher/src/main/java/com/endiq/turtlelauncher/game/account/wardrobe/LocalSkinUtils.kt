@@ -41,7 +41,7 @@ private fun getLocalUuid(name: String): String {
 
     val hashCode = name.hashCode().toLong() and 0xFFFFFFFFL
     val hashHex = hashCode.toString(16)
-    val hashPart = legacyStrFill(hashHex, '0', 16) //确保最长16位
+    val hashPart = legacyStrFill(hashHex, '0', 16) //ensure at most 16 chars
 
     return buildString(34) {
         append(lengthPart.take(12))
@@ -53,7 +53,7 @@ private fun getLocalUuid(name: String): String {
 }
 
 /**
- * 根据皮肤模型类型，生成 profileId
+ * Generates a profileId from the skin model type
  */
 fun getLocalUUIDWithSkinModel(userName: String, skinModelType: SkinModelType): String {
     val baseUuid = getLocalUuid(userName)
@@ -79,7 +79,7 @@ fun getLocalUUIDWithSkinModel(userName: String, skinModelType: SkinModelType): S
 }
 
 /**
- * 检查皮肤像素合法性，Minecraft仅支持使用64x64或64x32像素的皮肤
+ * Validates the skin's pixel size; Minecraft only supports 64x64 or 64x32 skins
  */
 suspend fun validateSkinFile(skinFile: File): Boolean {
     return withContext(Dispatchers.IO) {
@@ -91,14 +91,14 @@ suspend fun validateSkinFile(skinFile: File): Boolean {
 }
 
 /**
- * 是否为双层皮肤：64x64
+ * Whether it's a double-layer skin: 64x64
  */
 fun BitmapFactory.Options.isDualLayerSkin(): Boolean {
     return outWidth == 64 && outHeight == 64
 }
 
 /**
- * 是否为经典皮肤（单层皮肤），早期皮肤类型，双手、双腿的贴图是分别共用的
+ * Whether it's a classic (single-layer) skin: the early type where both arms / both legs share one texture
  * 64x32
  */
 fun BitmapFactory.Options.isClassicSkin(): Boolean {
@@ -106,14 +106,14 @@ fun BitmapFactory.Options.isClassicSkin(): Boolean {
 }
 
 /**
- * 检查皮肤是否为纤细（Alex）模型
+ * Checks whether the skin uses the slim (Alex) model
  */
 suspend fun File.isSlimModel(): Boolean = withContext(Dispatchers.IO) {
     val options = BitmapFactory.Options()
     val bitmap = BitmapFactory.decodeFile(absolutePath, options) ?: return@withContext false
     try {
         if (options.isClassicSkin()) {
-            //旧版单层皮肤不支持细臂
+            //Legacy single-layer skins don't support slim arms
             false
         } else {
             val rightHand = bitmap.isTransparent(50..51, 16..19)

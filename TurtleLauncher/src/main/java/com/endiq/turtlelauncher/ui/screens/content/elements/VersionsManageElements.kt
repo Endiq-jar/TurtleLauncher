@@ -907,7 +907,7 @@ fun CommonVersionInfoLayout(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            //版本名称
+            //Version name
             Text(
                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                 maxLines = 1,

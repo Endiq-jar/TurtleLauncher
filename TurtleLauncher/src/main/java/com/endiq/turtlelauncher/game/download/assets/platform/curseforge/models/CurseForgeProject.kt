@@ -93,6 +93,6 @@ class CurseForgeProject(
 }
 
 /**
- * @return 该项目是否可见
+ * @return whether the project is visible
  */
 fun CurseForgeProject.isApproved(): Boolean = this.data.isApproved()

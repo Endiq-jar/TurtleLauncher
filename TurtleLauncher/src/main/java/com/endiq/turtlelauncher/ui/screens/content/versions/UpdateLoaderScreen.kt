@@ -87,7 +87,7 @@ data class AddonDiffs(
     }
 
     /**
-     * 差异: 模组加载器版本
+     * 差异: 模组Loader version
      * @param original 当前版本使用的版本
      * @param updateTo 要变更的版本
      */
@@ -121,7 +121,7 @@ data class AddonDiffs(
 }
 
 /**
- * 生成模组加载器版本差异信息
+ * 生成模组Loader version差异信息
  */
 private fun CurrentAddon.generateDiff(
     loaderInfo: VersionInfo.LoaderInfo?
@@ -198,7 +198,7 @@ private class AddonsViewModel(
     val addonList = AddonList()
     val currentAddon = CurrentAddon()
 
-    /** 是否已经找到游戏使用的模组加载器版本 */
+    /** 是否已经找到游戏使用的模组Loader version */
     private var isLoaderVersionFound: Boolean = false
     /** 所有加载器是否都已经完成初始化 */
     var isLoaded by mutableStateOf(false)
@@ -422,7 +422,7 @@ private class AddonsViewModel(
     }
 
     /**
-     * 一次性加载全部的模组加载器版本列表
+     * 一次性加载全部的模组Loader version列表
      */
     private fun reloadAllLoaders() {
         viewModelScope.launch {

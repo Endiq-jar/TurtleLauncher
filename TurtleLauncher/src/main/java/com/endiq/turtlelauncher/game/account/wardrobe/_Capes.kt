@@ -23,12 +23,12 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.game.account.yggdrasil.PlayerProfile
 
 /**
- * 空披风，可用来表示不选择、重置披风
+ * An empty cape, usable to represent no selection / resetting the cape
  */
 val EmptyCape = PlayerProfile.Cape("", "", "", "")
 
 /**
- * @return 披风名称字符串资源
+ * @return the cape name string resource
  */
 @StringRes
 fun PlayerProfile.Cape.capeLocalRes(): Int? {

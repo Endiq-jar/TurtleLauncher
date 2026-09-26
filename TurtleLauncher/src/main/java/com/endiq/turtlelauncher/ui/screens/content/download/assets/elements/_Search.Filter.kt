@@ -96,10 +96,10 @@ import com.endiq.turtlelauncher.utils.animation.getAnimateTween
  * @param searchedMcMods 搜索得到的 MCMOD 项目
  * @param searchedVersions 搜索得到的Minecraft版本号
  * @param gameVersion 游戏版本
- * @param sortField 排序方式
+ * @param sortField Sort order
  * @param allCategories 可用资源类别列表
  * @param categories 已选择的资源类别
- * @param enableModLoader 是否启用模组加载器过滤
+ * @param enableModLoader 是否启用Mod loader filter
  * @param modloaders 可用模组加载器列表
  * @param modloader 模组加载器
  * @param onModLoaderChange 模组加载器变更时

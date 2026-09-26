@@ -37,7 +37,7 @@ object NeoForgeVersions {
     private var cacheResult: List<NeoForgeVersion>? = null
 
     /**
-     * 获取 NeoForge 版本列表
+     * Fetches the NeoForge version list
      */
     suspend fun fetchNeoForgeList(
         force: Boolean = false,
@@ -69,7 +69,7 @@ object NeoForgeVersions {
     }
 
     /**
-     * 在官方源获取版本列表
+     * Fetches the version list from the official source
      */
     private fun fetchListWithOfficial(): MirrorSource<List<NeoForgeVersion>?> = MirrorSource(
         type = SourceType.OFFICIAL
@@ -91,7 +91,7 @@ object NeoForgeVersions {
     }
 
     /**
-     * 在BMCL API源获取版本列表
+     * Fetches the version list from the BMCL API source
      */
     private fun fetchListWithBMCLAPI(): MirrorSource<List<NeoForgeVersion>?> = MirrorSource(
         type = SourceType.BMCLAPI
@@ -109,7 +109,7 @@ object NeoForgeVersions {
     }
 
     /**
-     * 统一处理任务，处理异常、排序
+     * Unified task wrapper: handles exceptions and sorting
      */
     private suspend fun processVersionList(
         sourceType: SourceType,
@@ -128,7 +128,7 @@ object NeoForgeVersions {
     }
 
     /**
-     * 获取 NeoForge 对应版本的下载链接
+     * Returns the download URL of the matching NeoForge version
      */
     fun getDownloadUrl(version: NeoForgeVersion) = "${version.baseUrl}-installer.jar"
 }

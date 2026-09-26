@@ -22,19 +22,19 @@ import com.endiq.turtlelauncher.game.addons.modloader.AddonVersion
 import java.time.Instant
 
 /**
- * Cleanroom 版本
- * @param version 版本名称（可直接向用户展示）
- * @param createdAt 创建时间
+ * Cleanroom version
+ * @param version version name (displayable to users)
+ * @param createdAt creation time
  */
 class CleanroomVersion(
     val version: String,
     val createdAt: Instant
 ): AddonVersion(
-    //固定写死 1.12.2
+    //Hardcoded to 1.12.2
     inherit = "1.12.2"
 ) {
     /**
-     * Cleanroom 安装器下载链接
+     * Cleanroom installer download URL
      */
     val installerUrl: String
         get() = "https://hmcl-dev.github.io/metadata/cleanroom/files/cleanroom-$version-installer.jar"

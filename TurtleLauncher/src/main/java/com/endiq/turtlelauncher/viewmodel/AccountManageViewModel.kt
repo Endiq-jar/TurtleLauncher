@@ -160,7 +160,7 @@ sealed interface AccountManageIntent {
     /** 删除账号及其相关数据 */
     data class DeleteAccount(val account: Account) : AccountManageIntent
 
-    /** 刷新账号的登录凭据（Token） */
+    /** Refreshes an account的登录凭据（Token） */
     data class RefreshAccount(val account: Account) : AccountManageIntent
 
     /** 凭据失效后，使用新密码重新登录外置账号 */
@@ -735,7 +735,7 @@ class AccountManageViewModel @AssistedInject constructor(
         onIntent(AccountManageIntent.UpdateAccountOp(AccountOperation.None))
     }
 
-    /** 强制刷新账号凭据 */
+    /** 强制Refreshes an account凭据 */
     private fun refreshAccount(account: Account) {
         AccountsManager.refreshAccount(context, account) { th ->
             onIntent(

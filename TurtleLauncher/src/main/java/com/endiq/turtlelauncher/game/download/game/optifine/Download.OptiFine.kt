@@ -139,7 +139,7 @@ private suspend fun getOFUrlMirrorable(
 }
 
 /**
- * 从官方源获取 OptiFine 主文件下载链接
+ * 从Official source获取 OptiFine 主文件下载链接
  */
 private fun fetchOfficialOptiFineUrlSource(optifine: OptiFineVersion): MirrorSource<String> =
     MirrorSource(SourceType.OFFICIAL) { fetchOptiFineDownloadUrl(optifine) }

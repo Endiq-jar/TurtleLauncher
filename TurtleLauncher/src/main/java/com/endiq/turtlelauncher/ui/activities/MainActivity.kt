@@ -377,7 +377,7 @@ class MainActivity : BaseAppCompatActivity() {
                     }
                 )
 
-                //用户确认版本名称 操作流程
+                //用户确认Version name 操作流程
                 ModpackVersionNameOperation(
                     operation = modpackImportViewModel.versionNameOperation,
                     onConfirmVersionName = { name ->

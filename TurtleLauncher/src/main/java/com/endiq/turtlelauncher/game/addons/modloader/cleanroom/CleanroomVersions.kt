@@ -34,10 +34,10 @@ object CleanroomVersions {
     private const val LOADER_LIST_URL = "https://hmcl-dev.github.io/metadata/cleanroom/index.json"
 
     /**
-     * 从 HMCL 源获取 Cleanroom 版本列表
+     * Fetches the Cleanroom version list from the HMCL source
      */
     suspend fun fetchLoaderList(mcVersion: String): List<CleanroomVersion>? {
-        //Cleanroom 仅支持 1.12.2
+        //Cleanroom only supports 1.12.2
         if (mcVersion != "1.12.2") {
             Logger.warning(TAG, "Cleanroom only supports 1.12.2, current input: $mcVersion")
             return null

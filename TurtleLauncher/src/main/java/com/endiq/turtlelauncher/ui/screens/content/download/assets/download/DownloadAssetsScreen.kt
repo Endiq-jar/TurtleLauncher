@@ -699,7 +699,7 @@ private fun ProjectInfo(
                             }
                         }
 
-                        //屏幕截图
+                        //Screenshot
                         items(screenshots) { screenshot ->
                             ScreenshotItemLayout(
                                 modifier = Modifier.fillMaxWidth(),

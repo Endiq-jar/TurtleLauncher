@@ -28,9 +28,9 @@ import com.endiq.turtlelauncher.game.addons.modloader.modlike.ModVersion
 import com.endiq.turtlelauncher.game.addons.modloader.optifine.OptiFineVersion
 
 data class GameDownloadInfo(
-    /** Minecraft 版本 */
+    /** Minecraft version */
     val gameVersion: String,
-    /** 自定义版本名称 */
+    /** 自定义Version name */
     val customVersionName: String,
     /** 是否进行覆盖安装 */
     val overwrite: Boolean = false,

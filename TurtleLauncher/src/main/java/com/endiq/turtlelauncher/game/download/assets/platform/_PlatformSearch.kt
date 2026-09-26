@@ -60,7 +60,7 @@ private val mirrorCurseForgeSearcher = CurseForgeSearcher(
 )
 
 /**
- * 对资源平台搜索启用镜像源机制进行操作
+ * Runs resource platform searches through the mirror-source mechanism
  */
 suspend fun <E: AbstractPlatformSearcher, T> mirroredPlatformSearcher(
     searchers: List<E>,
@@ -107,7 +107,7 @@ suspend fun <E: AbstractPlatformSearcher, T> mirroredPlatformSearcher(
 }
 
 /**
- * 镜像源只能在中国地区使用
+ * Mirror sources are only usable in China
  */
 fun mirroredCurseForgeSource(
     enabledMirror: Boolean = isChinaMainland()
@@ -122,7 +122,7 @@ fun mirroredCurseForgeSource(
 }
 
 /**
- * 镜像源只能在中国地区使用
+ * Mirror sources are only usable in China
  */
 fun mirroredModrinthSource(
     enabledMirror: Boolean = isChinaMainland()
@@ -145,12 +145,12 @@ suspend fun searchAssets(
 ) {
     runCatching {
         val (containsChinese, englishKeywords) = searchFilter.searchName.localizedModSearchKeywords(platformClasses)
-        //参考源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/d295e60/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteModRepository.java#L56-L68)
-        //逐个英文短语尝试搜索，取第一个有非空结果的
+        //Referenced source: [HMCL Github](https://github.com/HMCL-dev/HMCL/blob/d295e60/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteModRepository.java#L56-L68)
+        //Try each English phrase in turn; take the first with non-empty results
         val queries = englishKeywords?.takeIf { it.isNotEmpty() }?.toList()
             ?: listOf(searchFilter.searchName)
-        //参考源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/8767cc0e/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteAddonRepository.java)
-        //翻译出的英文短语搜索固定使用相关性排序，避免所选的排序方式将目标资源挤出结果页
+        //Referenced source: [HMCL Github](https://github.com/HMCL-dev/HMCL/blob/8767cc0e/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteAddonRepository.java)
+        //Translated English phrases always search with relevance sorting, so the chosen order can't push the target resource off the page
         val searchFilterForQuery = englishKeywords?.takeIf { it.isNotEmpty() }
             ?.let { searchFilter.copy(sortField = PlatformSortField.RELEVANCE) }
             ?: searchFilter
@@ -184,7 +184,7 @@ suspend fun searchAssets(
                 lastResult = r
                 if (r.getAssetsPage(platformClasses).data.isNotEmpty()) break
             } catch (e: Exception) {
-                //当前关键词搜索失败，记录异常并继续尝试下一个
+                //The current keyword failed; log it and try the next one
                 lastException = e
             }
         }
@@ -305,8 +305,8 @@ suspend fun getProjectByVersion(
 }
 
 /**
- * 获取指定平台上的单个版本
- * @param versionId 版本在平台上的Id
+ * Fetches a single version from the given platform
+ * @param versionId the version's platform ID
  */
 suspend fun getVersionById(
     versionId: String,
@@ -375,13 +375,13 @@ suspend fun getVersionByLocalFile(file: File, sha1: String): PlatformVersion? = 
     }
 }
 
-/** 单次批量指纹匹配的指纹数量上限，防止单次请求数据量过大 */
+/** Max fingerprints per batch match, keeping single requests reasonably sized */
 const val FINGERPRINT_BATCH_SIZE = 100
 
 /**
- * 通过本地文件的 SHA-1 值批量获取 Modrinth 平台对应的版本
- * @param sha1List SHA-1 值列表，长度不应超过 [FINGERPRINT_BATCH_SIZE]
- * @return 键为 SHA-1 值，值为匹配到的版本，未命中的指纹不在结果中
+ * Batch-fetches matching Modrinth versions via local files' SHA-1 values
+ * @param sha1List SHA-1 list, at most [FINGERPRINT_BATCH_SIZE] entries
+ * @return key = SHA-1, value = matched version; missed fingerprints are excluded
  */
 suspend fun getModrinthVersBySha1(
     sha1List: List<String>
@@ -393,9 +393,9 @@ suspend fun getModrinthVersBySha1(
 }
 
 /**
- * 通过本地文件的 CurseForge 指纹批量获取 CurseForge 平台对应的文件
- * @param fingerprints 指纹列表，长度不应超过 [FINGERPRINT_BATCH_SIZE]
- * @return 键为文件指纹，值为匹配到的文件，未命中的指纹不在结果中
+ * Batch-fetches matching CurseForge files via local files' CurseForge fingerprints
+ * @param fingerprints fingerprint list, at most [FINGERPRINT_BATCH_SIZE] entries
+ * @return key = file fingerprint, value = matched file; missed fingerprints are excluded
  */
 suspend fun getCFFilesByFingerprints(
     fingerprints: List<Long>

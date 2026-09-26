@@ -672,7 +672,7 @@ private fun ShaderPackItem(
                     .align(Alignment.CenterVertically)
                     .weight(1f),
             ) {
-                //文件名称
+                //File name
                 Text(
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                     text = shaderPackInfo.file.name,

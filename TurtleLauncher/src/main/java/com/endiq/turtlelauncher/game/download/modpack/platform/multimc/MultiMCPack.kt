@@ -54,7 +54,7 @@ open class MultiMCPack(
     private var configuration: MultiMCConfiguration? = null
 
     /**
-     * 用户指定的预安装版本名称
+     * 用户指定的预安装Version name
      */
     private lateinit var targetVersionName: String
 
@@ -117,7 +117,7 @@ open class MultiMCPack(
                     }
                 }
 
-                //等待用户输入预安装版本名称
+                //等待用户输入预安装Version name
                 addTask(
                     id = "ImportModpack.WaitUserForVersionName",
                     title = androidText(R.string.download_install_input_version_name),

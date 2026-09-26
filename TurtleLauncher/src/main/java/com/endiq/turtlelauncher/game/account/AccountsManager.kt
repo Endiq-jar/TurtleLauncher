@@ -47,7 +47,7 @@ private const val TAG = "AccountManager"
 object AccountsManager {
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    //账号相关
+    //Account-related
     private val _accounts = CopyOnWriteArrayList<Account>()
     private val _accountsFlow = MutableStateFlow<List<Account>>(emptyList())
     val accountsFlow = _accountsFlow.asStateFlow()
@@ -61,13 +61,13 @@ object AccountsManager {
     val authServersFlow = _authServersFlow.asStateFlow()
 
     private val _refreshWardrobe = MutableStateFlow(false)
-    /** 控制刷新所有账号衣橱 */
+    /** Controls refreshing all account wardrobes */
     val refreshWardrobe = _refreshWardrobe.asStateFlow()
 
     private val _isOffline = MutableStateFlow(false)
     val isOffline = _isOffline
 
-    //本次启动器会话内已通过服务端校验的账号
+    //Accounts already server-validated within this launcher session
     private val sessionValidatedAccounts: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     private lateinit var database: AppDatabase
@@ -75,7 +75,7 @@ object AccountsManager {
     private lateinit var authServerDao: AuthServerDao
 
     /**
-     * 初始化整个账号系统
+     * Initializes the whole account system
      */
     fun initialize(context: Context) {
         database = AppDatabase.getInstance(context)
@@ -84,7 +84,7 @@ object AccountsManager {
     }
 
     /**
-     * 刷新当前已登录的账号，已登录的账号保存在数据库中
+     * Refreshes the logged-in accounts, which are kept in the database
      */
     fun reloadAccounts() {
         scope.launch {
@@ -93,7 +93,7 @@ object AccountsManager {
     }
 
     /**
-     * 刷新所有账号的衣橱
+     * Refreshes all account wardrobes
      */
     fun refreshWardrobe() {
         _refreshWardrobe.update { !it }
@@ -120,7 +120,7 @@ object AccountsManager {
     }
 
     /**
-     * 刷新当前已保存的Authentication servers，Authentication servers保存在数据库中
+     * Refreshes the saved authentication servers, which are kept in the database
      */
     fun reloadAuthServers() {
         scope.launch {
@@ -136,7 +136,7 @@ object AccountsManager {
     }
 
     /**
-     * 执行登陆操作
+     * Executes the login
      */
     fun performLogin(
         context: Context,
@@ -149,7 +149,7 @@ object AccountsManager {
     }
 
     /**
-     * 获取登陆操作的任务对象
+     * Returns the login task object
      */
     fun performLoginTask(
         context: Context,
@@ -170,7 +170,7 @@ object AccountsManager {
         }
 
     /**
-     * 刷新账号
+     * Refreshes an account
      */
     fun refreshAccount(
         context: Context,
@@ -193,7 +193,7 @@ object AccountsManager {
     }
 
     /**
-     * 该账号在本次会话中是否已通过服务端校验
+     * Whether the account has passed server validation in this session
      */
     fun isSessionValidated(account: Account): Boolean =
         sessionValidatedAccounts.contains(account.uniqueUUID)
@@ -203,7 +203,7 @@ object AccountsManager {
     }
 
     /**
-     * 是否需要执行启动前的账号校验
+     * Whether the pre-launch account validation is needed
      */
     fun isLaunchCheckNeeded(account: Account): Boolean = when {
         account.isNoLoginRequired() -> false
@@ -213,7 +213,7 @@ object AccountsManager {
     }
 
     /**
-     * 获取当前已登录的账号
+     * Returns the current logged-in account
      */
     private fun getCurrentAccount(): Account? {
         return _accounts.find {
@@ -222,7 +222,7 @@ object AccountsManager {
     }
 
     /**
-     * 设置并保存当前账号
+     * Sets and persists the current account
      */
     fun setCurrentAccount(account: Account) {
         setCurrentAccountInternal(account)
@@ -234,13 +234,13 @@ object AccountsManager {
     }
 
     /**
-     * 刷新当前账号，同时刷新非中国大陆地区的正版状态
+     * Refreshes the current account, also refreshing the genuine status for non-mainland-China regions
      */
     private fun refreshCurrentAccountState() {
         val currentAccount = getCurrentAccount()
         val isOffline = checkLimit()
         _currentAccountFlow.update {
-            //若处于非正版状态，不允许使用账号
+            //Refuse account use while the status is non-genuine
             if (isOffline) null else currentAccount
         }
         _isOffline.update { isOffline }
@@ -252,7 +252,7 @@ object AccountsManager {
     }
 
     /**
-     * 保存账号到数据库
+     * Saves the account to the database
      */
     fun saveAccount(account: Account) {
         scope.launch {
@@ -261,13 +261,13 @@ object AccountsManager {
     }
 
     /**
-     * 保存账号到数据库
+     * Saves the account to the database
      */
     suspend fun suspendSaveAccount(account: Account) {
         runCatching {
             accountDao.saveAccount(account)
             Logger.info(TAG, "Saved account: ${account.username}")
-            //同时设置当前账号
+            //Also set it as the current account
             setCurrentAccountInternal(account)
         }.onFailure { e ->
             Logger.error(TAG, "Failed to save account: ${account.username}", e)
@@ -276,7 +276,7 @@ object AccountsManager {
     }
 
     /**
-     * 从数据库中删除账号，并刷新
+     * Deletes the account from the database and refreshes
      */
     fun deleteAccount(account: Account) {
         scope.launch {
@@ -288,7 +288,7 @@ object AccountsManager {
     }
 
     /**
-     * 保存Authentication servers到数据库
+     * Saves the authentication server to the database
      */
     suspend fun saveAuthServer(server: AuthServer) {
         runCatching {
@@ -301,7 +301,7 @@ object AccountsManager {
     }
 
     /**
-     * 从数据库中删除Authentication servers，并刷新
+     * Deletes the authentication server from the database and refreshes
      */
     fun deleteAuthServer(server: AuthServer) {
         scope.launch {
@@ -311,12 +311,12 @@ object AccountsManager {
     }
 
     /**
-     * 是否已登录过微软账号
+     * Whether a Microsoft account has ever been logged in
      */
     fun hasMicrosoftAccount(): Boolean = _accounts.any { it.isMicrosoftAccount() }
 
     /**
-     * 通过账号的profileId读取账号
+     * Reads an account by its profileId
      */
     fun loadFromProfileID(
         profileId: String,
@@ -325,14 +325,14 @@ object AccountsManager {
         _accounts.find { it.profileId == profileId && it.accountType == accountType }
 
     /**
-     * 账号是否存在
+     * Whether the account exists
      */
     fun isAccountExists(uniqueUUID: String): Boolean {
         return uniqueUUID.isNotEmpty() && _accounts.any { it.uniqueUUID == uniqueUUID }
     }
 
     /**
-     * Authentication servers是否存在
+     * Whether the authentication server exists
      */
     fun isAuthServerExists(baseUrl: String): Boolean {
         return baseUrl.isNotEmpty() && _authServers.any { it.baseUrl == baseUrl }

@@ -45,7 +45,7 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 
 /**
- * 收藏键，平台与项目Id唯一确定一个收藏项
+ * Favorite key: platform + project ID uniquely identify one favorite
  */
 data class FavoriteKey(
     val platform: Platform,
@@ -53,7 +53,7 @@ data class FavoriteKey(
 )
 
 /**
- * 收藏项目条目，本地缓存数据与已加载的远端项目数据
+ * Favorite project entry: local cache data plus loaded remote project data
  */
 data class FavoriteEntry(
     val platform: Platform,
@@ -63,26 +63,26 @@ data class FavoriteEntry(
 )
 
 /**
- * 收藏项目仓库
+ * Favorite projects repository
  */
 object FavoriteProjectsRepository {
     private const val TAG = "FavoriteProjectsRepository"
     private const val REFRESH_CONCURRENCY = 8
 
-    /** 所有收藏项目，键为 [FavoriteKey] */
+    /** All favorited projects, keyed by [FavoriteKey] */
     val projects = mutableStateMapOf<FavoriteKey, FavoriteEntry>()
 
-    /** 收藏数据是否已完成装载 */
+    /** Whether favorite data has finished loading */
     var initialized by mutableStateOf(false)
         private set
 
-    //仓库内部协程作用域，承载非挂起入口的异步任务
+    //Repository-internal coroutine scope, hosting async work for non-suspending entries
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    //串行化数据装载与读写，避免并发修改导致的状态错乱
+    //Serialize data loading and read/writes, avoiding state corruption from concurrent mutation
     private val mutex = Mutex()
 
     /**
-     * 仅读取内存数据池；数据未装载时触发一次异步装载
+     * Reads the in-memory pool only; triggers one async load when not yet loaded
      */
     fun isFavorite(platform: Platform, projectId: String): Boolean {
         if (!initialized) scope.launch { ensureLoaded() }
@@ -90,14 +90,14 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 收藏一个Search results项目
+     * Favorites a search result project
      */
     fun favorite(data: PlatformSearchData, classes: PlatformClasses) {
         scope.launch { saveFavorite(data.platform(), data.toFavoriteProject(classes)) }
     }
 
     /**
-     * 收藏一个远端项目
+     * Favorites a remote project
      */
     fun favorite(project: PlatformProject, defaultClasses: PlatformClasses) {
         scope.launch { saveFavorite(project.platform(), project.toFavoriteProject(defaultClasses)) }
@@ -108,7 +108,7 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 切换Search results项目的收藏状态
+     * Toggles a search result project's favorite state
      */
     fun toggle(data: PlatformSearchData, classes: PlatformClasses) {
         scope.launch {
@@ -123,7 +123,7 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 切换远端项目的收藏状态
+     * Toggles a remote project's favorite state
      */
     fun toggle(project: PlatformProject, defaultClasses: PlatformClasses) {
         scope.launch {
@@ -138,7 +138,7 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 确保收藏数据已装载
+     * Ensures favorite data is loaded
      */
     suspend fun ensureLoaded() {
         if (initialized) return
@@ -148,14 +148,14 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 从 MMKV 重新加载收藏数据
+     * Reloads favorite data from MMKV
      */
     suspend fun reload() = mutex.withLock {
         reloadLocked()
     }
 
     /**
-     * 并发刷新所有收藏项目的远端数据，逐条更新内存与本地缓存
+     * Concurrently refreshes the remote data of all favorited projects, updating memory and the local cache entry by entry
      */
     suspend fun refreshRemote() = coroutineScope {
         val pending = projects.values.toList()
@@ -170,7 +170,7 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 装载数据，须持有互斥锁调用
+     * Loads the data; must be called while holding the mutex
      */
     private suspend fun reloadLocked() {
         val latest = withContext(Dispatchers.IO) { readAll() }
@@ -219,11 +219,11 @@ object FavoriteProjectsRepository {
                 platform = entry.platform,
                 printLog = false
             )
-            //条目可能在刷新过程中被移除，仅更新仍然存在的条目
+            //Entries may be removed during the refresh; only update those still present
             mutex.withLock {
                 projects[key]?.let { current ->
                     if (!remote.platformAvailable()) {
-                        //项目被平台标记为不可见（如已删除），标记条目失效
+                        //The project was marked invisible by the platform (e.g. deleted); mark the entry stale
                         markInvalid(key, current)
                     } else {
                         val merged = mergeCache(current.project, remote)
@@ -235,7 +235,7 @@ object FavoriteProjectsRepository {
             throw e
         } catch (e: Throwable) {
             if (e.isProjectNotFound()) {
-                //远端项目已不可访问，标记条目失效
+                //The remote project is no longer accessible; mark the entry stale
                 mutex.withLock {
                     projects[key]?.let { current -> markInvalid(key, current) }
                 }
@@ -251,13 +251,13 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 平台接口是否返回了项目未找到
+     * Whether the platform API returned project-not-found
      */
     private fun Throwable.isProjectNotFound(): Boolean =
         this is NotFoundException || (this is ClientRequestException && response.status.value == 404)
 
     /**
-     * 以远端数据校正本地缓存，数据有变化时回写 MMKV，收藏时间保持不变
+     * Corrects the local cache with remote data and writes back to MMKV on changes; the favorite time is kept
      */
     private suspend fun mergeCache(cached: FavoriteProject, remote: PlatformProject): FavoriteProject {
         val classes = remote.platformClasses(cached.classes)
@@ -305,7 +305,7 @@ object FavoriteProjectsRepository {
 }
 
 /**
- * 从Search results数据生成收藏缓存
+ * Builds the favorite cache from search result data
  */
 fun PlatformSearchData.toFavoriteProject(classes: PlatformClasses): FavoriteProject = FavoriteProject(
     projectId = platformId(),
@@ -318,7 +318,7 @@ fun PlatformSearchData.toFavoriteProject(classes: PlatformClasses): FavoriteProj
 )
 
 /**
- * 从远端项目数据生成收藏缓存
+ * Builds the favorite cache from remote project data
  */
 fun PlatformProject.toFavoriteProject(defaultClasses: PlatformClasses): FavoriteProject = FavoriteProject(
     projectId = platformId(),

@@ -61,7 +61,7 @@ import java.util.concurrent.TimeUnit
 private const val TAG = "OfflineYggdrasil"
 
 /**
- * 离线账号 Yggdrasil 服务器，用于本地加载玩家皮肤、披风
+ * Yggdrasil server for offline accounts, loading player skins and capes locally
  * [Reference from HMCL](https://github.com/HMCL-dev/HMCL/blob/15e490f/HMCLCore/src/main/java/org/jackhuang/hmcl/auth/offline/YggdrasilServer.java)
  */
 class OfflineYggdrasilServer(
@@ -126,15 +126,15 @@ class OfflineYggdrasilServer(
             }
         }.apply {
             monitor.subscribe(ApplicationStarted) {
-                //服务器成功启动
+                //Server started successfully
                 serverStartedLatch.countDown()
             }
         }
 
         server?.start(wait = false)
 
-        //等待服务器启动完成
-        val startTimeout = 10L //10秒超时
+        //Wait for the server to finish starting
+        val startTimeout = 10L //10s timeout
         if (serverStartedLatch.await(startTimeout, TimeUnit.SECONDS)) {
             isServerRunning = true
         }
@@ -162,8 +162,8 @@ class OfflineYggdrasilServer(
     }
 
     /**
-     * 添加玩家角色
-     * @param account 离线账号对象
+     * Adds a player profile
+     * @param account the offline account object
      */
     fun addCharacter(account: Account) {
         val skinFile = account.getSkinFile()
@@ -262,7 +262,7 @@ class OfflineYggdrasilServer(
         val hash = call.parameters["hash"] ?: return call.respond(HttpStatusCode.NotFound)
         Logger.debug(TAG, "Try find skin with hash $hash")
 
-        // 查找对应hash的皮肤或披风
+        // Find the skin or cape matching the hash
         val match = charactersByUuid.values
             .firstNotNullOfOrNull { char ->
                 when (hash) {
@@ -284,7 +284,7 @@ class OfflineYggdrasilServer(
     }
 
     /**
-     * 签名工具
+     * Signature utility
      */
     private fun sign(data: String): String {
         val signature = Signature.getInstance("SHA1withRSA")
@@ -294,7 +294,7 @@ class OfflineYggdrasilServer(
     }
 
     /**
-     * 玩家角色模型
+     * Player profile model
      */
     data class Character(
         val uuid: String,
@@ -310,8 +310,8 @@ class OfflineYggdrasilServer(
                     skin?.skinHash?.let { hash ->
                         put("SKIN", buildJsonObject {
                             put("url", JsonPrimitive("$rootUrl/textures/$hash"))
-                            //仅在玩家模型为细臂时，才会存在metadata字段，否则为粗臂
-                            //Wiki：https://zh.minecraft.wiki/w/Mojang_API#%E8%8E%B7%E5%8F%96%E7%8E%A9%E5%AE%B6%E7%9A%84%E7%9A%AE%E8%82%A4%E5%92%8C%E6%8A%AB%E9%A3%8E
+                            //The metadata field only exists for slim-arm models; otherwise it's the classic arm
+                            //Wiki: https://zh.minecraft.wiki/w/Mojang_API#%E8%8E%B7%E5%8F%96%E7%8E%A9%E5%AE%B6%E7%9A%84%E7%9A%AE%E8%82%A4%E5%92%8C%E6%8A%AB%E9%A3%8E
                             if (skin.model == SkinModelType.ALEX) {
                                 put("metadata", buildJsonObject {
                                     put("model", JsonPrimitive("slim"))

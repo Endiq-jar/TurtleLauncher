@@ -19,16 +19,16 @@
 package com.endiq.turtlelauncher.game.addons.modloader
 
 abstract class AddonVersion(
-    /** Minecraft 版本 */
+    /** Minecraft version */
     open val inherit: String
 ) {
     /**
-     * 获取该组件的版本号
+     * Returns this component's version
      */
     abstract fun getAddonVersion(): String
 
     /**
-     * 检查组件的版本号是否符合要求
+     * Checks whether the component's version meets requirements
      */
     abstract fun isVersion(versionString: String): Boolean
 }

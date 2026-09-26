@@ -106,7 +106,7 @@ class GameLauncher(
 
         val manifest = GSON.fromJson(File(version.getVersionPath(), "${version.getVersionName()}.json").readText(), GameManifest::class.java)
         val clientJar = manifest.inheritsFrom?.let { inheritsFrom ->
-            //FIXME: 依赖的是一个原版ID的版本，但这个版本可能是用户自行安装的，只是版本名称与ID一致，不保证客户端真的是对应版本
+            //FIXME: 依赖的是一个原版ID的版本，但这个版本可能是用户自行安装的，只是Version name与ID一致，不保证客户端真的是对应版本
             version.getInheritedClientJar(inheritsFrom)
         } ?: version.getClientJar()
 

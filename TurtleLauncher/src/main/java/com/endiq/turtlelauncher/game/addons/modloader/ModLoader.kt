@@ -19,10 +19,10 @@
 package com.endiq.turtlelauncher.game.addons.modloader
 
 /**
- * 模组加载器/模组类别枚举
- * @param isLoader 该类别是一个模组加载器
- * @param isApiMod 该类别是一个 API 模组
- * @param autoDownloadable 该模组加载器是启动器支持自动安装的加载器
+ * Enum of mod loaders / mod categories
+ * @param isLoader whether this category is a mod loader
+ * @param isApiMod whether this category is an API mod
+ * @param autoDownloadable whether this loader can be auto-installed by the launcher
  */
 enum class ModLoader(
     val displayName: String,

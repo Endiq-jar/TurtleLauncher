@@ -54,7 +54,7 @@ abstract class WardrobeDownloader {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            //皮肤获取失败并不致命，保持既有语义：记录日志而不上抛
+            //Skin fetch failure isn't fatal; keep existing semantics: log it and don't rethrow
             Logger.error(TAG, "Failed to download skin file", e)
         }
     }

@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit
 private const val TAG = "YggdrasilApi"
 
 /**
- * 使用 Yggdrasil 上传皮肤
+ * Uploads a skin via Yggdrasil
  */
 suspend fun uploadSkin(
     apiUrl: String,
@@ -84,8 +84,8 @@ suspend fun uploadSkin(
 }
 
 /**
- * 使用 Yggdrasil 更改玩家披风
- * @param capeId 披风的uuid，为空字符串时则表示重置披风
+ * Changes the player's cape via Yggdrasil
+ * @param capeId the cape's uuid; an empty string resets the cape
  */
 suspend fun changeCape(
     apiUrl: String,
@@ -97,7 +97,7 @@ suspend fun changeCape(
     val logTag = "YggdrasilApi.changeCape"
 
     if (capeId.isBlank()) {
-        //重置玩家选择的披风
+        //Reset the player's chosen cape
         Logger.info(TAG, "$logTag: reset cape")
         withRetry(logTag = logTag, maxRetries = maxRetries) {
             GLOBAL_CLIENT.request(url) {
@@ -124,7 +124,7 @@ suspend fun changeCape(
 }
 
 /**
- * 使用 Yggdrasil 获取玩家配置信息
+ * Fetches the player profile via Yggdrasil
  */
 suspend fun getPlayerProfile(
     apiUrl: String,
@@ -143,7 +143,7 @@ suspend fun getPlayerProfile(
 }.getOrThrow()
 
 /**
- * 缓存玩家的所有披风图片文件
+ * Caches all of the player's cape image files
  */
 suspend fun cacheAllCapes(
     profile: PlayerProfile,
@@ -154,7 +154,7 @@ suspend fun cacheAllCapes(
             val file = cape.getFile(PathManager.DIR_ACCOUNT_CAPE)
             if (file.exists()) {
                 if (file.lastModified() + TimeUnit.DAYS.toMillis(7) < System.currentTimeMillis()) {
-                    //超过一周，更新一次缓存
+                    //Over a week old: refresh the cache
                     FileUtils.deleteQuietly(file)
                 } else {
                     return@mapNotNull null
@@ -185,7 +185,7 @@ suspend fun cacheAllCapes(
 }.getOrThrow()
 
 /**
- * 执行需要授权的操作，如果遇到未授权（HTTP 401），会调用刷新授权的回调
+ * Runs an action requiring authorization; on HTTP 401 it invokes the authorization-refresh callback
  */
 suspend fun executeWithAuthorization(
     block: suspend () -> Unit,
@@ -198,7 +198,7 @@ suspend fun executeWithAuthorization(
             break
         } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.Unauthorized) {
-                if (refreshed) throw e //已经刷新过，还是遇到这个问题就抛出异常
+                if (refreshed) throw e //already refreshed once; throw when it still fails
                 onRefreshRequest()
                 refreshed = true
                 continue

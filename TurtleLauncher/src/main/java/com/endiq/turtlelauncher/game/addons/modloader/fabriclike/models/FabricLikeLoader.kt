@@ -29,10 +29,10 @@ data class FabricLikeLoader(
     val build: Int,
     @SerialName("maven")
     val maven: String,
-    /** 加载器版本 */
+    /** Loader version */
     @SerialName("version")
     val version: String,
-    /** 版本状态: true 为稳定版 (Quilt忽略此值) */
+    /** Version status: true = stable (ignored by Quilt) */
     @SerialName("stable")
     val stable: Boolean = true
 )

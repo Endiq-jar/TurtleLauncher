@@ -73,7 +73,7 @@ class CurseForgeSearcher(
     }
 
     /**
-     * 在 CurseForge 平台获取某项目的某个文件
+     * Fetches one file of a project from CurseForge
      */
     suspend fun getVersion(
         projectID: String,
@@ -85,9 +85,9 @@ class CurseForgeSearcher(
     }
 
     /**
-     * 在 CurseForge 平台根据分页获取项目的版本列表
-     * @param index 开始处
-     * @param pageSize 每页请求数量
+     * Fetches a project's version list by page from CurseForge
+     * @param index start index
+     * @param pageSize entries requested per page
      */
     suspend fun getVersions(
         projectID: String,
@@ -142,8 +142,8 @@ class CurseForgeSearcher(
     }
 
     /**
-     * 通过多个本地文件的 CurseForge 指纹批量获取对应的文件信息
-     * @return 键为文件指纹，值为匹配到的文件，未命中的指纹不在结果中
+     * Batch-fetches the matching file info via multiple local files' CurseForge fingerprints
+     * @return key = file fingerprint, value = matched file; missed fingerprints are excluded
      */
     suspend fun getFilesByFingerprints(
         fingerprints: List<Long>
@@ -159,7 +159,7 @@ class CurseForgeSearcher(
 }
 
 /**
- * 批量获取文件指纹匹配的请求体
+ * Request body for bulk fingerprint matching
  */
 @Serializable
 private data class CurseForgeFingerprintsRequest(
@@ -168,14 +168,14 @@ private data class CurseForgeFingerprintsRequest(
 )
 
 /**
- * 持续分页获取项目的所有版本文件，直到全部加载完成
- * @param pageSize 每页请求数量
- * @param chunkSize 一个区间的最大页数
- * @param maxConcurrent 同时最多允许的请求数
- * @param pageCallback 加载每一页时都通过此函数回调
- * @param checkNotEmpty 检查请求内容返回结果不为空
- * @param asyncVersions 异步获取单区块的版本数据
- * @param processVersions 加工返回数据，同时需要返回当前结果实际的页面大小
+ * Keeps paginating through a project's version files until everything is loaded
+ * @param pageSize entries requested per page
+ * @param chunkSize max pages per range
+ * @param maxConcurrent max concurrent requests allowed
+ * @param pageCallback callback invoked as each page loads
+ * @param checkNotEmpty checks the response result is non-empty
+ * @param asyncVersions fetches one block of version data asynchronously
+ * @param processVersions processes returned data, also reporting the actual page size of the current result
  */
 private suspend fun <E, T> getAllVersions(
     pageSize: Int = 100,
@@ -188,17 +188,17 @@ private suspend fun <E, T> getAllVersions(
 ): List<T> = withContext(Dispatchers.IO) {
     coroutineScope {
         val allVersions = mutableListOf<T>()
-        /** 当前区间编号 */
+        /** Current range number */
         var currentChunk = 1
-        /** 起始页码 */
+        /** Starting page number */
         var startPage = 0
-        /** 是否已经到达过最后一页，控制是否进入下一区间 */
+        /** Whether the last page has been reached; controls advancing to the next range */
         var reachedEnd = false
 
         val semaphore = Semaphore(maxConcurrent)
 
         while (!reachedEnd) {
-            //创建当前区间的任务列表
+            //Create the task list for the current range
             val jobs = (0 until chunkSize).map { offset ->
                 val pageIndex = startPage + offset
                 val index = pageIndex * pageSize
@@ -206,10 +206,10 @@ private suspend fun <E, T> getAllVersions(
                 async {
                     semaphore.withPermit {
                         val response = asyncVersions(index, pageSize)
-                        //检查当前页返回的结果是否正常
-                        //如果是最后一页之后的内容，则这里的列表是空的
+                        //Check the current page's result is sane
+                        //Content beyond the last page yields an empty list here
                         if (checkNotEmpty(response)) {
-                            //有东西，回调即可
+                            //Non-empty: just invoke the callback
                             pageCallback(currentChunk, pageIndex + 1)
                             response
                         } else null
@@ -223,10 +223,10 @@ private suspend fun <E, T> getAllVersions(
                     allVersions.addAll(list)
                 }
 
-                //少于pageSize，已经是最后一页
+                //Under pageSize: this was already the last page
                 if (realSize < pageSize) {
                     reachedEnd = true
-                    //取消后续页
+                    //Cancel the remaining pages
                     for (j in (i + 1) until jobs.size) {
                         jobs[j].cancel()
                     }
@@ -234,7 +234,7 @@ private suspend fun <E, T> getAllVersions(
                 }
             }
 
-            //如果没发现最后一页，则进入下一区间
+            //If no last page was found, advance to the next range
             if (!reachedEnd) {
                 startPage += chunkSize
                 currentChunk++

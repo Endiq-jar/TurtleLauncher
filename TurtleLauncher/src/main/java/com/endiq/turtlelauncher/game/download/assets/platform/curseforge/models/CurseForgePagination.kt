@@ -24,25 +24,25 @@ import kotlinx.serialization.Serializable
 @Serializable
 class CurseForgePagination(
     /**
-     * 查询当前开始的索引
+     * Current start index of the query
      */
     @SerialName("index")
     val index: Int,
 
     /**
-     * 页面大小
+     * Page size
      */
     @SerialName("pageSize")
     val pageSize: Int,
 
     /**
-     * 查询返回的结果数
+     * Number of results returned for the query
      */
     @SerialName("resultCount")
     val resultCount: Int,
 
     /**
-     * 与查询匹配的结果总数
+     * Total number of results matching the query
      */
     @SerialName("totalCount")
     val totalCount: Long

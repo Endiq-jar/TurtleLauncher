@@ -26,22 +26,22 @@ import com.endiq.turtlelauncher.ui.AndroidStringText
 import com.endiq.turtlelauncher.ui.androidText
 
 /**
- * Minecraft 配置获取异常
+ * Minecraft profile acquisition exception
  */
 class MinecraftProfileException(val status: ExceptionStatus) : RuntimeException() {
     enum class ExceptionStatus {
         /**
-         * 登陆过于频繁
+         * Logging in too frequently
          */
         FREQUENT,
 
         /**
-         * IP 地址被禁止
+         * IP address banned
          */
         BLOCKED_IP,
 
         /**
-         * 未创建配置
+         * No Minecraft profile has been created
          */
         PROFILE_NOT_EXISTS
     }

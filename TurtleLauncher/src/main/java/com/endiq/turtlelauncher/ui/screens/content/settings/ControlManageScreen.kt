@@ -155,7 +155,7 @@ private sealed interface ControlOperation {
     ) : ControlOperation
     /** 编辑描述 */
     data class EditDescription(val data: ControlData) : ControlOperation
-    /** 编辑版本名称 */
+    /** 编辑Version name */
     data class EditVersion(val data: ControlData) : ControlOperation
 }
 

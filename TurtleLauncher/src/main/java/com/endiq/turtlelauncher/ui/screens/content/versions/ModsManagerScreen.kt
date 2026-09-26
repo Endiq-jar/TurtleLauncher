@@ -1192,7 +1192,7 @@ private fun ModItemLayout(
                     val localMod = mod.localMod
                     when {
                         isUnknown -> {
-                            //非模组，只展示文件名称
+                            //非模组，只展示File name
                             Text(
                                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                 text = localMod.file.name,

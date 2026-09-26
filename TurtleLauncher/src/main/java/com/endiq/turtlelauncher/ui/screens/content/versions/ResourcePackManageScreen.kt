@@ -909,7 +909,7 @@ private fun ResourcePackInfoTooltip(
                 }
             )
         )
-        //文件名称
+        //File name
         Text(text = stringResource(R.string.generic_file_name, resourcePackInfo.file.name))
         //文件大小
         resourcePackInfo.fileSize?.let { fileSize ->

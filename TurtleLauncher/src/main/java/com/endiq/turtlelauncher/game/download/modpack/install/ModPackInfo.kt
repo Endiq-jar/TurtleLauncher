@@ -55,7 +55,7 @@ suspend fun ModPackInfo.retrieveLoaderTask(
         customVersionName = targetVersionName
     )
 
-    //匹配目标加载器版本，获取详细版本信息
+    //匹配目标Loader version，获取详细版本信息
     loaders.forEach { pair ->
         pair.retrieveLoader(
             gameVersion = gameVersion,
@@ -72,7 +72,7 @@ suspend fun ModPackInfo.retrieveLoaderTask(
 /**
  * 模组加载器解析匹配，并粘贴游戏下载信息
  * @param gameVersion 当前游戏版本
- * @param pasteGameInfo 将识别到的模组加载器版本贴回信息类
+ * @param pasteGameInfo 将识别到的模组Loader version贴回信息类
  */
 suspend fun Pair<ModLoader, String>.retrieveLoader(
     gameVersion: String,

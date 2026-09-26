@@ -53,18 +53,18 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "DownloadDependency"
 
-/** 同一次依赖安装中允许处理的依赖项目数量上限，防止异常元数据导致依赖爆炸 */
+/** Max dependencies processed within one dependency install, preventing a dependency explosion from abnormal metadata */
 private const val MAX_DEPENDENCY_PROJECTS = 64
 
-/** 同时解析的依赖项目数量上限 */
+/** Max dependencies resolved concurrently */
 private const val DEPENDENCY_PARALLELISM = 4
 
 /**
- * 需要一并安装的依赖项
- * @param projectId 依赖项目在平台上的Id
- * @param versionId 依赖的精确版本Id，为null则代表只指定了依赖项目
- * @param classes 依赖资源的类别，决定其安装目录
- * @param projectTitle 依赖项目标题，用于提示信息
+ * Dependencies that must be installed alongside
+ * @param projectId the dependency project's platform ID
+ * @param versionId exact version ID of the dependency; null means only the project was specified
+ * @param classes resource class of the dependency, deciding its install directory
+ * @param projectTitle dependency project title, used in notices
  */
 class DependencyRequest(
     val platform: Platform,
@@ -75,9 +75,9 @@ class DependencyRequest(
 )
 
 /**
- * 为给定的游戏版本安装选中的依赖项，并递归展开它们标注的必装依赖
- * @param requests 需要安装的依赖项
- * @param versions 依赖项的目标游戏版本
+ * Installs the selected dependencies for the given game version, recursively expanding the required dependencies they declare
+ * @param requests the dependencies to install
+ * @param versions the target game versions of the dependencies
  */
 fun downloadDependenciesForVersions(
     requests: List<DependencyRequest>,
@@ -86,7 +86,7 @@ fun downloadDependenciesForVersions(
 ) {
     if (requests.isEmpty() || versions.isEmpty()) return
 
-    // 整理唯一任务id
+    // Deduplicate task IDs
     val distinctRequests = requests.distinctBy { "${it.platform.name}/${it.projectId}/${it.versionId.orEmpty()}" }
     val taskId = distinctRequests
         .map { "${it.projectId}@${it.versionId.orEmpty()}" }
@@ -126,28 +126,28 @@ fun downloadDependenciesForVersions(
 }
 
 /**
- * 统一展开依赖图时的共享上下文
+ * Shared context while expanding the dependency graph
  */
 private class DependencyContext(
     val task: Task,
     val semaphore: Semaphore,
-    /** 依赖项目已处理过的目标游戏版本，键为项目键 */
+    /** Target game versions already processed per dependency project, keyed by project key */
     val processed: ConcurrentHashMap<String, MutableSet<String>>,
-    /** 依赖项目信息缓存，避免重复查询 */
+    /** Dependency project info cache, avoiding repeated queries */
     val projectCache: ConcurrentHashMap<String, PlatformProject>,
-    /** 剩余可处理的依赖项目数量 */
+    /** Remaining processable dependency count */
     val budget: AtomicInteger,
-    /** 已解析出的下载分组，键为平台版本键 */
+    /** Resolved download groups, keyed by platform version key */
     val downloadGroups: ConcurrentHashMap<String, DownloadGroup>,
     val failures: DependencyFailures
 ) {
-    /** 目标游戏版本对应的本地已安装模组项目集合 */
+    /** Locally installed mod projects per target game version */
     val installedMemo = ConcurrentHashMap<String, Set<String>>()
     val installedMutex = Mutex()
 
     /**
-     * 认领依赖项目尚未处理过的目标游戏版本
-     * @return 尚未处理过的目标游戏版本，为空则表示该项目无需继续处理
+     * Claims the unprocessed target game versions of a dependency project
+     * @return the unprocessed target game versions; empty means the project needs no further work
      */
     fun claimTargets(key: String, targets: List<Version>): List<Version> {
         val claimed = processed[key] ?: run {
@@ -162,8 +162,8 @@ private class DependencyContext(
 }
 
 /**
- * 一并下载的依赖版本及其目标游戏版本
- * @param folder 安装到Game directories下的相对路径
+ * Dependency versions downloaded alongside, with their target game versions
+ * @param folder path relative to the game directory to install into
  */
 private class DownloadGroup(
     val version: PlatformVersion,
@@ -179,7 +179,7 @@ private class DownloadGroup(
 }
 
 /**
- * 依赖失败信息，键为项目标题，值为未找到适配版本的目标游戏版本名
+ * Dependency failure info: key = project title, value = the target game version for which no compatible version was found
  */
 private class DependencyFailures {
     private val byProject = ConcurrentHashMap<String, MutableList<String>>()
@@ -220,7 +220,7 @@ private fun projectKey(
 ): String = "${platform.name}/$projectId"
 
 /**
- * 执行依赖解析操作，失败时写日志并返回null
+ * Runs a dependency resolution step; logs and returns null on failure
  */
 private suspend fun <T> resolveOrNull(
     description: String,
@@ -237,29 +237,29 @@ private suspend fun <T> resolveOrNull(
 }
 
 /**
- * 展开一个依赖项
- * 解析出具体版本、登记下载任务，并递归展开该版本的必装依赖
+ * Expands one dependency
+ * Resolves the concrete version, registers download tasks, and recursively expands that version's required dependencies
  */
 private suspend fun expand(
     request: DependencyRequest,
     targets: List<Version>,
     context: DependencyContext
 ) {
-    // 只处理该项目尚未处理过的目标游戏版本，既避免重复处理，也能阻断依赖成环
+    // Only process target game versions not yet processed for this project: avoids duplicate work and breaks dependency cycles
     val pendingTargets = context.claimTargets(projectKey(request.platform, request.projectId), targets)
     if (pendingTargets.isEmpty()) return
 
     try {
         val folder = request.classes.versionFolder
         if (folder == VersionFolders.NONE) {
-            // 无法确定依赖的安装目录
+            // The dependency's install directory can't be determined
             pendingTargets.forEach {
                 context.failures.record(request.projectTitle, it.getVersionName())
             }
             return
         }
 
-        // 仅模组类型依赖会跳过本地已安装的目标游戏版本，已安装的依赖不再展开其依赖
+        // Only mod-type dependencies skip locally installed targets; an installed dependency's own dependencies are not expanded
         val installTargets = if (request.classes == PlatformClasses.MOD) {
             pendingTargets.filterNot { context.isInstalled(request, it) }
         } else {
@@ -274,8 +274,8 @@ private suspend fun expand(
             context.registerDownload(request, version, group)
         }
 
-        // 递归展开已解析版本的必装依赖
-        // 信号量只在解析期间持有，进入子树前已释放，避免递归等待许可造成死锁
+        // Recursively expand the required dependencies of resolved versions
+        // The semaphore is only held during resolution and released before entering subtrees, preventing deadlocks from recursive permit waits
         resolved.forEach { (version, group) ->
             val dependencies = resolveOrNull("Failed to read the dependencies of: ${request.projectTitle}") {
                 version.platformDependencies()
@@ -301,8 +301,8 @@ private suspend fun expand(
 }
 
 /**
- * 解析依赖项在目标游戏版本上的具体版本
- * @return 各具体版本与其对应的目标游戏版本
+ * Resolves the concrete version of a dependency on the target game version
+ * @return each concrete version with its corresponding target game version
  */
 private suspend fun DependencyContext.resolve(
     request: DependencyRequest,
@@ -313,7 +313,7 @@ private suspend fun DependencyContext.resolve(
     )
 
     if (request.versionId != null) {
-        // 主资源指定了依赖的精确版本，直接下载该版本
+        // The main resource pinned an exact version: download that version directly
         val version = resolveOrNull("Failed to retrieve the dependency version: ${request.versionId}") {
             getVersionById(
                 versionId = request.versionId,
@@ -330,8 +330,8 @@ private suspend fun DependencyContext.resolve(
         return listOf(version to targets)
     }
 
-    // 拉取依赖项目的全部版本，再按各个目标游戏版本本地挑选
-    // initAll 已按发布时间倒序排列，取第一个适配的即为最新的版本
+    // Fetch all versions of the dependency project, then pick locally per target game version
+    // initAll sorts by release time descending, so the first compatible one is the newest
     val allVersions = resolveOrNull("Failed to retrieve the dependency versions: ${request.projectId}") {
         getVersions(
             projectID = request.projectId,
@@ -360,8 +360,8 @@ private suspend fun DependencyContext.resolve(
 }
 
 /**
- * 将发现的传递依赖转换为可安装的依赖项
- * 同一个项目在整张依赖图中只会被处理一次
+ * Converts discovered transitive dependencies into installable ones
+ * Each project is processed only once across the whole dependency graph
  */
 private suspend fun DependencyContext.expandChild(
     dependency: PlatformVersion.PlatformDependency,
@@ -387,8 +387,8 @@ private suspend fun DependencyContext.expandChild(
 }
 
 /**
- * 获取依赖项目的类别与标题
- * 查询失败时回退到父依赖的类别，类别只影响安装目录，不应中断整条依赖链
+ * Fetches the dependency project's category and title
+ * On lookup failure fall back to the parent dependency's category; the category only affects the install directory and must not break the chain
  */
 private suspend fun DependencyContext.resolveProject(
     platform: Platform,
@@ -419,7 +419,7 @@ private fun DependencyContext.registerDownload(
 }
 
 /**
- * 依赖图展开完成后，统一发布下载任务
+ * After the dependency graph is fully expanded, publish the download tasks together
  */
 private fun DependencyContext.publishDownloads(
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
@@ -437,8 +437,8 @@ private fun DependencyContext.publishDownloads(
 }
 
 /**
- * 目标游戏版本的模组目录中是否已安装该依赖项目
- * 检查失败时按未安装处理，避免漏装
+ * Whether the dependency project is already installed in the target version's mods directory
+ * Check failures are treated as not-installed, to avoid missing installations
  */
 private suspend fun DependencyContext.isInstalled(
     request: DependencyRequest,
@@ -460,7 +460,7 @@ private suspend fun DependencyContext.isInstalled(
 }
 
 /**
- * 该依赖版本是否适配目标游戏版本
+ * Whether the dependency version fits the target game version
  */
 private fun PlatformVersion.isCompatibleWith(
     target: Version,
@@ -469,7 +469,7 @@ private fun PlatformVersion.isCompatibleWith(
     val info = target.getVersionInfo() ?: return true
     if (info.minecraftVersion !in platformGameVersion()) return false
 
-    // 仅模组依赖需要校验模组加载器
+    // Only mod dependencies need loader validation
     if (classes != PlatformClasses.MOD) return true
     val targetLoader = info.loaderInfo?.loader?.toPlatformLoader(platform()) ?: return true
     val versionLoaders = platformLoaders()
@@ -477,7 +477,7 @@ private fun PlatformVersion.isCompatibleWith(
 }
 
 /**
- * 将本地模组加载器转换为平台上的加载器标识
+ * Converts a local mod loader into the platform's loader identifier
  */
 private fun ModLoader.toPlatformLoader(platform: Platform): PlatformDisplayLabel? {
     if (displayName.isEmpty()) return null

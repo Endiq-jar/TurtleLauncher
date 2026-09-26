@@ -21,96 +21,96 @@ package com.endiq.turtlelauncher.game.download.assets.platform
 import java.time.Instant
 
 /**
- * 平台版本项实现，使用前，需要注意使用[initFile]函数进行初始化
+ * Platform version implementation; [initFile] must be called before use
  */
 interface PlatformVersion {
     /**
-     * 初始化版本数据，一些版本可能需要额外的操作来完成初始化
-     * @param currentProjectId 当前版本所属的项目Id，辅助完成初始化
-     * @return 是否初始化成功，若未成功可以考虑跳过该版本
+     * Initializes version data; some versions need extra steps to finish
+     * @param currentProjectId the project ID this version belongs to, assisting initialization
+     * @return whether initialization succeeded; failed versions may be skipped
      */
     suspend fun initFile(currentProjectId: String): Boolean
 
     /**
-     * 所属平台
+     * Owning platform
      */
     fun platform(): Platform
 
     /**
-     * 该版本在平台上的Id
+     * The version's platform ID
      */
     fun platformId(): String
 
     /**
-     * 该版本在平台上所属的项目Id
+     * The project ID the version belongs to on the platform
      */
     fun platformProjectId(): String
 
     /**
-     * 该版本在平台上的显示名称
+     * The version's display name on the platform
      */
     fun platformDisplayName(): String
 
     /**
-     * 该版本的文件名称
+     * The version's file name
      */
     fun platformFileName(): String
 
     /**
-     * 该版本兼容的游戏主版本
+     * Compatible major game versions
      */
     fun platformGameVersion(): Array<String>
 
     /**
-     * 该版本在平台上标注的支持的加载器列表
+     * Supported loaders marked on the platform
      */
     fun platformLoaders(): List<PlatformDisplayLabel>
 
     /**
-     * 该版本在平台上的发布类型
+     * The version's release type on the platform
      */
     fun platformReleaseType(): PlatformReleaseType
 
     /**
-     * 该版本在平台上所依赖的项目
+     * Projects this version depends on
      */
     fun platformDependencies(): List<PlatformDependency>
 
     /**
-     * 该版本在平台上的总下载量
+     * The version's total downloads on the platform
      */
     fun platformDownloadCount(): Long
 
     /**
-     * 该版本的下载链接
+     * The version's download URL
      */
     fun platformDownloadUrl(): String
 
     /**
-     * 该版本在平台上的发布日期
+     * The version's release date on the platform
      */
     fun platformDatePublished(): Instant
 
     /**
-     * 该版本的文件sha1值
+     * The version's file SHA-1
      */
     fun platformSha1(): String?
 
     /**
-     * 该版本的文件总大小
+     * The version's file size
      */
     fun platformFileSize(): Long
 
     /**
-     * 该版本在平台上标注的版本号名称
+     * The version number name marked on the platform
      */
     fun platformVersion(): String
 
     /**
-     * 平台版本依赖项目类，保存依赖项关键信息
-     * @param projectId 依赖项目Id，若平台只提供了精确版本Id，则该值为null
-     * @param versionId 依赖的精确版本Id，为null则代表只指定了依赖项目
-     * @param type 依赖类型
+     * Platform version dependency, keeping the key info of a dependency
+     * @param projectId dependency project ID; null when the platform only gave an exact version ID
+     * @param versionId exact version ID of the dependency; null means only the project was specified
+     * @param type dependency type
      */
     class PlatformDependency(
         val platform: Platform,
@@ -121,7 +121,7 @@ interface PlatformVersion {
 }
 
 /**
- * 依赖项在缓存与去重时使用的键
+ * Key used when caching and deduping dependencies
  */
 fun PlatformVersion.PlatformDependency.cacheKey(): String {
     return "${platform.name}/${projectId.orEmpty()}/${versionId.orEmpty()}"

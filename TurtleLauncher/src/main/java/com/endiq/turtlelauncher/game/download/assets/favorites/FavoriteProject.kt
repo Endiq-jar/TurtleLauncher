@@ -23,14 +23,14 @@ import com.endiq.turtlelauncher.game.download.assets.platform.PlatformClasses
 import kotlinx.parcelize.Parcelize
 
 /**
- * 收藏的项目本地缓存数据
- * @param projectId 项目在平台上的Id
- * @param iconUrl 项目图标链接
- * @param title 项目名
- * @param description 项目描述
- * @param authors 作者列表
- * @param classes 项目类型
- * @param followTime 收藏时间戳（ms）
+ * Local cache data of a favorited project
+ * @param projectId the project's platform ID
+ * @param iconUrl the project's icon URL
+ * @param title project name
+ * @param description project description
+ * @param authors author list
+ * @param classes project type
+ * @param followTime favorite timestamp (ms)
  */
 @Parcelize
 class FavoriteProject(

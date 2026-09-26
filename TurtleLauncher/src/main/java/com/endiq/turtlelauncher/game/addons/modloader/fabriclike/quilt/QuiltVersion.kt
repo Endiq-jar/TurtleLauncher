@@ -29,8 +29,8 @@ class QuiltVersion(
     loaderName = ModLoader.QUILT.displayName,
     version = version,
     /**
-     * Quilt 没有在 Json 中提供 stable 键值
-     * 只能通过版本名称是否带有 'beta' 来判断
+     * Quilt doesn't provide a stable key in its JSON
+     * It can only be told from whether the version name carries 'beta'
      */
     stable = version.contains("beta")
 ) {

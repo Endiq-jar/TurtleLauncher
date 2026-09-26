@@ -27,7 +27,7 @@ import kotlinx.parcelize.Parcelize
 
 /**
  * 本地模组文件在平台上匹配到的安装信息
- * @param platform 所属平台
+ * @param platform Owning platform
  * @param projectId 平台项目ID
  * @param versionId 平台版本（文件）ID
  * @param versionName 平台版本号

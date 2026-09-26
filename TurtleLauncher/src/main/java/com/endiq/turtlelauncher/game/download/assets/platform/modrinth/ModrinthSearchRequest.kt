@@ -34,17 +34,17 @@ data class ModrinthSearchRequest(
     /** 应用于搜索的过滤器列表 */
     val facets: List<ModrinthFacet> = listOf(ProjectTypeFacet.MOD),
 
-    /** 排序方式 */
+    /** Sort order */
     val index: PlatformSortField = PlatformSortField.RELEVANCE,
 
-    /** 要跳过的结果页数（用于分页） */
+    /** Number of result pages to skip (pagination) */
     val offset: Int = 0,
 
     /** 要返回的结果页数，最大值为 100 */
     val limit: Int = 20
 ) {
     /**
-     * 转换为 GET 参数
+     * Converts to GET parameters
      */
     fun toParameters(): Parameters = Parameters.build {
         append("query", query)

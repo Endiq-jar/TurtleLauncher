@@ -97,7 +97,7 @@ private sealed interface GameInstallOperation {
 
 private class GameDownloadViewModel(): ViewModel() {
     /**
-     * 用于刷新游戏下载页面版本名称的检查
+     * 用于刷新游戏下载页面Version name的检查
      */
     var versionNameErrorCheck by mutableStateOf(false)
     var installOperation by mutableStateOf<GameInstallOperation>(GameInstallOperation.None)
@@ -108,7 +108,7 @@ private class GameDownloadViewModel(): ViewModel() {
     var installer by mutableStateOf<GameInstaller?>(null)
 
     /**
-     * 刷新游戏下载页面内的版本名称检查
+     * 刷新游戏下载页面内的Version name检查
      */
     private fun refreshVersionNameCheck() {
         versionNameErrorCheck = !versionNameErrorCheck
@@ -140,7 +140,7 @@ private class GameDownloadViewModel(): ViewModel() {
                     //很有可能发生在刚安装完成，再次点击安装按钮时
                     //Resets the state，避免无法发起新的安装的问题
                     installOperation = GameInstallOperation.None
-                    //保险起见，再次刷新版本名称错误检查
+                    //保险起见，再次刷新Version name错误检查
                     refreshVersionNameCheck()
                     onStop()
                 }

@@ -53,7 +53,7 @@ fun String?.getJsonOrNull(tag: String): JsonObject? {
  * @param sourceGameFolder 源Game directories
  * @param sourceVersion 源游戏版本名
  * @param destinationGameFolder 要复制到的Game directories
- * @param targetVersion 要复制为的版本名称
+ * @param targetVersion 要复制为的Version name
  * @param filesToCopy 指定要复制的文件的后缀名
  */
 fun copyVanillaFiles(

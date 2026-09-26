@@ -65,27 +65,27 @@ data class PlayerProfile(
 }
 
 /**
- * 该皮肤是否正在使用中
+ * Whether the skin is currently in use
  */
 fun PlayerProfile.Skin.isUsing(): Boolean = this.state == "ACTIVE"
 
 /**
- * 该披风是否正在使用中
+ * Whether the cape is currently in use
  */
 fun PlayerProfile.Cape.isUsing(): Boolean = this.state == "ACTIVE"
 
 /**
- * 查找玩家当前正在使用的皮肤
+ * Finds the player's currently used skin
  */
 fun List<PlayerProfile.Skin>.findUsing(): PlayerProfile.Skin? = this.find { it.isUsing() }
 
 /**
- * 查找玩家当前正在使用的披风
+ * Finds the player's currently used cape
  */
 fun List<PlayerProfile.Cape>.findUsing(): PlayerProfile.Cape? = this.find { it.isUsing() }
 
 /**
- * 获取玩家皮肤模型类型
+ * Returns the player's skin model type
  */
 fun PlayerProfile.Skin.getSkinModel(): SkinModelType {
     return when (variant) {
@@ -96,7 +96,7 @@ fun PlayerProfile.Skin.getSkinModel(): SkinModelType {
 }
 
 /**
- * 获取披风在本地的目标文件
+ * Returns the cape's local target file
  */
 fun PlayerProfile.Cape.getFile(path: File): File {
     return File(path, "$id.png")

@@ -31,7 +31,7 @@ class ModrinthFile(
     @SerialName("url")
     val url: String,
 
-    /** 文件名称 */
+    /** File name */
     @SerialName("filename")
     val fileName: String,
 

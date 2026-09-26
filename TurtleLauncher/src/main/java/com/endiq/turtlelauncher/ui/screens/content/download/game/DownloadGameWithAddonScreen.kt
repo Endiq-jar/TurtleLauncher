@@ -225,7 +225,7 @@ private class AddonsViewModel(
 
 /**
  * 下载游戏页面（选择附加内容）
- * @param refreshErrorCheck 刷新版本名称错误检查
+ * @param refreshErrorCheck 刷新Version name错误检查
  */
 @Composable
 fun DownloadGameWithAddonScreen(
@@ -560,7 +560,7 @@ private fun ScreenHeader(
             )
 
             var nameValue by remember { mutableStateOf(gameVersion) }
-            //用户是否对版本名称进行过编辑
+            //用户是否对Version name进行过编辑
             var editedByUser by remember { mutableStateOf(false) }
 
             AutoChangeVersionName(
@@ -603,7 +603,7 @@ private fun ScreenHeader(
                     onValueChange = {
                         nameValue = it
                         if (!editedByUser) {
-                            //用户已经对版本名称进行了编辑
+                            //用户已经对Version name进行了编辑
                             editedByUser = true
                         }
                     },
@@ -743,8 +743,8 @@ private fun VersionIconPreview(
 }
 
 /**
- * 根据当前已选择的Addon，自动修改版本名称
- * @param editedByUser 版本名称是否已被用户修改，如果用户已经修改过版本名称，则阻止自动修改
+ * 根据当前已选择的Addon，自动修改Version name
+ * @param editedByUser Version name是否已被用户修改，如果用户已经修改过Version name，则阻止自动修改
  */
 @Composable
 private fun AutoChangeVersionName(

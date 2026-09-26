@@ -22,7 +22,7 @@ import com.endiq.layer_controller.observable.ObservableControlLayout
 import java.io.File
 
 /**
- * 控件管理数据类
+ * Widget management data class
  */
 data class ControlData(
     val file: File,

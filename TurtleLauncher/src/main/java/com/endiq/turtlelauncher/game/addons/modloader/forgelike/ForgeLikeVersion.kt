@@ -24,22 +24,22 @@ import com.endiq.turtlelauncher.game.addons.modloader.AddonVersion
  * [Reference PCL2](https://github.com/Hex-Dragon/PCL2/blob/44aea3e/Plain%20Craft%20Launcher%202/Modules/Minecraft/ModDownload.vb#L512-L563)
  */
 abstract class ForgeLikeVersion(
-    /** 加载器展示名称 */
+    /** Loader display name */
     val loaderName: String,
-    /** 标准化后的版本号，仅可用于比较与排序 */
+    /** Normalized version number, only usable for comparison and sorting */
     val forgeBuildVersion: ForgeBuildVersion,
-    /** 可对玩家显示的非格式化版本名 */
+    /** Non-normalized version name displayable to players */
     val versionName: String,
-    /** 对应的 Minecraft 版本 */
+    /** Corresponding Minecraft version */
     inherit: String,
-    /** 文件扩展名 */
+    /** File extension */
     val fileExtension: String
 ) : AddonVersion(
     inherit = inherit
 ) {
     /**
-     * Forge：MC 版本是否小于 1.13。（1.13+ 的版本号首位都大于 20）
-     * NeoForge：MC 版本是否为 1.20.1。（1.20.1 的版本号首位人为规定为 19 开头）
+     * Forge: whether the MC version is below 1.13. (1.13+ version numbers always have a major part over 20)
+     * NeoForge: whether the MC version is 1.20.1. (1.20.1's major number is artificially defined to start with 19)
      */
     val isLegacy: Boolean get() = forgeBuildVersion.major < 20
 

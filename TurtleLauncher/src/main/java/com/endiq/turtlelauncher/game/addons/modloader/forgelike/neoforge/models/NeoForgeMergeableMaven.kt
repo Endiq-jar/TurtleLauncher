@@ -22,13 +22,13 @@ import com.endiq.turtlelauncher.game.addons.modloader.forgelike.neoforge.NeoForg
 
 interface NeoForgeMergeableMaven<E>  {
     /**
-     * 将自己的版本数据与其他的版本数据进行合并
+     * Merges its own version data with other version data
      */
     operator fun plus(maven: E): List<NeoForgeVersion>
 
     fun isVersionInvalid(versionId: String): Boolean {
-        val cantDownload = versionId == "47.1.82" //这个版本虽然在版本列表中，但不能下载
-        val isAlpha = versionId.contains("-alpha") //Alpha版本不太稳定，避免下载
+        val cantDownload = versionId == "47.1.82" //this version is listed but cannot be downloaded
+        val isAlpha = versionId.contains("-alpha") //alpha builds are unstable; avoid downloading them
         return cantDownload || isAlpha
     }
 }

@@ -108,10 +108,10 @@ private sealed interface ModPackInstallOperation {
     data object Success : ModPackInstallOperation
 }
 
-/** 整合包版本名称自定义状态操作 */
+/** 整合包Version name自定义状态操作 */
 private sealed interface VersionNameOperation {
     data object None : VersionNameOperation
-    /** 等待用户输入版本名称 */
+    /** 等待用户输入Version name */
     data class Waiting(val info: ModPackInfo) : VersionNameOperation
 }
 
@@ -120,7 +120,7 @@ private class ModPackViewModel: ViewModel() {
     var versionNameOperation by mutableStateOf<VersionNameOperation>(VersionNameOperation.None)
     var confirmMobileDataOperation by mutableStateOf<ConfirmMobileDataOperation>(ConfirmMobileDataOperation.None)
 
-    //等待用户输入版本名称相关
+    //等待用户输入Version name相关
     private var versionNameContinuation: (Continuation<String>)? = null
     suspend fun waitForVersionName(modPackInfo: ModPackInfo): String {
         return suspendCancellableCoroutine { cont ->
@@ -130,7 +130,7 @@ private class ModPackViewModel: ViewModel() {
     }
 
     /**
-     * 用户确认输入版本名称
+     * 用户确认输入Version name
      */
     fun confirmVersionName(name: String) {
         //恢复continuation
@@ -268,7 +268,7 @@ fun DownloadModPackScreen(
         }
     )
 
-    //用户确认版本名称 操作流程
+    //用户确认Version name 操作流程
     VersionNameOperation(
         operation = viewModel.versionNameOperation,
         onConfirmVersionName = { name ->
@@ -484,9 +484,9 @@ private fun VersionNameOperation(
 }
 
 /**
- * 将要安装的整合包版本名称
- * @param name 预填写的整合包版本名称
- * @param onConfirmVersionName 用户输入并确认了版本名称
+ * 将要安装的整合包Version name
+ * @param name 预填写的整合包Version name
+ * @param onConfirmVersionName 用户输入并确认了Version name
  * @param onCancel 用户取消了导入
  */
 @Composable

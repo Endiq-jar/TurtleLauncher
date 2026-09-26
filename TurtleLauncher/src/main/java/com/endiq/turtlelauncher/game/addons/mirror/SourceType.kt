@@ -20,12 +20,12 @@ package com.endiq.turtlelauncher.game.addons.mirror
 
 enum class SourceType(val displayName: String) {
     /**
-     * 官方源
+     * Official source
      */
     OFFICIAL("Official"),
 
     /**
-     * BMCL API 镜像源
+     * BMCL API mirror source
      */
     BMCLAPI("BMCL API")
 }

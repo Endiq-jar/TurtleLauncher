@@ -118,7 +118,7 @@ private class SearchScreenViewModel(
     }
 
     /**
-     * 仅更新版本名称
+     * 仅更新Version name
      */
     fun updateVersionFilter(version: String) {
         searchFilter = searchFilter.copy(gameVersion = version)
@@ -249,7 +249,7 @@ private fun rememberSearchAssetsViewModel(
  * @param enablePlatform 是否允许更改平台
  * @param getCategories 根据平台获取可用的资源类别过滤器
  * @param enableModLoader 是否允许更改模组加载器
- * @param getModloaders 根据平台获取可用的模组加载器过滤器
+ * @param getModloaders 根据平台获取可用的Mod loader filter器
  * @param mapCategories 通过平台获取类别本地化信息
  * @param swapToDownload 跳转到下载详情页
  * @param installedInfo 查询项目本地是否已安装，键为平台与平台项目ID
@@ -336,7 +336,7 @@ fun SearchAssetsScreen(
                         },
                         onSearch = { newIndex ->
                             viewModel.searchFilter = viewModel.searchFilter.copy(index = newIndex)
-                            viewModel.search() //搜索下一页
+                            viewModel.search() //Fetch the next page
                         }
                     )
                 },
@@ -350,7 +350,7 @@ fun SearchAssetsScreen(
                         },
                         onSearch = { newIndex ->
                             viewModel.searchFilter = viewModel.searchFilter.copy(index = newIndex)
-                            viewModel.search() //搜索目标页
+                            viewModel.search() //Fetch the target page
                         }
                     )
                 }

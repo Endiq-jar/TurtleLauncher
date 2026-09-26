@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class CurseForgeVersion(
-    /** 响应数据 */
+    /** Response data */
     @SerialName("data")
     val data: CurseForgeFile
 )

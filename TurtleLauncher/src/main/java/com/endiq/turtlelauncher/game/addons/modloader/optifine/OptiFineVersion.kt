@@ -21,19 +21,19 @@ package com.endiq.turtlelauncher.game.addons.modloader.optifine
 import com.endiq.turtlelauncher.game.addons.modloader.AddonVersion
 
 class OptiFineVersion(
-    /** 显示名称 */
+    /** Display name */
     val displayName: String,
-    /** 文件名称 */
+    /** File name */
     val fileName: String,
-    /** 版本名称 */
+    /** Version name */
     val version: String,
-    /** Minecraft 版本 */
+    /** Minecraft version */
     inherit: String,
-    /** 发布时间，格式为“yyyy/mm/dd” */
+    /** Release time, formatted as "yyyy/mm/dd" */
     val releaseDate: String,
-    /** 最低需求 Forge 版本：null 为不兼容，空字符串为无限制 */
+    /** Minimum required Forge version: null = incompatible, empty = unlimited */
     val forgeVersion: String?,
-    /** 是否为预览版本 */
+    /** Whether it's a preview version */
     val isPreview: Boolean
 ) : AddonVersion(
     inherit = inherit

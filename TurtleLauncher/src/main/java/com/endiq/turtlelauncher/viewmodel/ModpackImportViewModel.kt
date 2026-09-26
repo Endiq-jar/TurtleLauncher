@@ -82,10 +82,10 @@ sealed interface ModpackImportOperation {
     data class Error(val th: Throwable) : ModpackImportOperation
 }
 
-/** 整合包版本名称自定义状态操作 */
+/** 整合包Version name自定义状态操作 */
 sealed interface VersionNameOperation {
     data object None : VersionNameOperation
-    /** 等待用户输入版本名称 */
+    /** 等待用户输入Version name */
     data class Waiting(val name: String) : VersionNameOperation
 }
 
@@ -104,7 +104,7 @@ class ModpackImportViewModel : ViewModel() {
     var versionNameOperation by mutableStateOf<VersionNameOperation>(VersionNameOperation.None)
     var confirmMobileDataOperation by mutableStateOf<ConfirmMobileDataOperation>(ConfirmMobileDataOperation.None)
 
-    //等待用户输入版本名称相关
+    //等待用户输入Version name相关
     private var versionNameContinuation: (Continuation<String>)? = null
     suspend fun waitForVersionName(name: String): String {
         return suspendCancellableCoroutine { cont ->
@@ -114,7 +114,7 @@ class ModpackImportViewModel : ViewModel() {
     }
 
     /**
-     * 用户确认输入版本名称
+     * 用户确认输入Version name
      */
     fun confirmVersionName(name: String) {
         //恢复continuation

@@ -30,7 +30,7 @@ private const val TAG = "CurrentGameInfo"
 
 /**
  * 当前游戏状态信息（支持旧配置迁移）
- * @property version 当前选择的版本名称
+ * @property version 当前选择的Version name
  * @property favoritesMap 收藏夹映射表 <收藏夹名称, 包含的版本集合>
  */
 @Keep

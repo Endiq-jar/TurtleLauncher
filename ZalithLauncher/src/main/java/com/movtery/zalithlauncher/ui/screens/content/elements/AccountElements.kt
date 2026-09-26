@@ -394,6 +394,37 @@ fun AccountItem(
     }
 }
 
+/**
+ * 一个预先知晓地址的第三方验证服务器，用于在登录菜单中提供“一键添加”入口，
+ * 免去用户手动查找、输入完整验证服务器地址的步骤
+ *
+ * @param displayName 在登录菜单中展示的名称
+ * @param baseUrl 用于探测的初始地址（会经过 ALI 协议解析为真实 API 地址）
+ * @param matchToken 用于判断该服务器是否已经被添加过的关键字（通常是域名）
+ */
+private data class QuickAddAuthServer(
+    val displayName: String,
+    val baseUrl: String,
+    val matchToken: String
+)
+
+/**
+ * 目前仅收录了 Ely.by —— 它公开维护着一套符合 authlib-injector 规范的验证服务器
+ * （https://authserver.ely.by），因此可以放心地内置一个一键添加入口。
+ *
+ * 注意：并不是每一个“皮肤站”或第三方启动器都提供这种可互通的验证服务器，
+ * 在没有确认某个服务确实实现了 Yggdrasil / authlib-injector 协议之前，
+ * 不应该把它加入这个列表——错误的预设地址只会导致登录失败。
+ * 如果未来出现更多确认可用的服务器，可以直接在这里追加。
+ */
+private val quickAddAuthServers = listOf(
+    QuickAddAuthServer(
+        displayName = "Ely.by",
+        baseUrl = "https://ely.by",
+        matchToken = "ely.by"
+    )
+)
+
 @Composable
 fun LoginMenuDialog(
     onDismissRequest: () -> Unit,
@@ -402,6 +433,7 @@ fun LoginMenuDialog(
     authServers: List<AuthServer>,
     onAuthServerLogin: (server: AuthServer) -> Unit,
     onAddAuthServer: () -> Unit,
+    onQuickAddServer: (url: String) -> Unit = {},
     onDeleteAuthServer: (server: AuthServer) -> Unit,
 ) {
     Dialog(
@@ -462,6 +494,15 @@ fun LoginMenuDialog(
                             )
                         }
 
+                        //已内置地址的第三方验证服务器（如 Ely.by），尚未添加时才展示一键添加入口
+                        val notYetAddedQuickServers = remember(authServers) {
+                            quickAddAuthServers.filter { preset ->
+                                authServers.none { existing ->
+                                    existing.baseUrl.contains(preset.matchToken, ignoreCase = true)
+                                }
+                            }
+                        }
+
                         LazyColumn(
                             modifier = Modifier.weight(1f),
                             contentPadding = PaddingValues(
@@ -480,6 +521,19 @@ fun LoginMenuDialog(
                                     showArrow = true,
                                     onClick = {
                                         onAddAuthServer()
+                                        onDismissRequest()
+                                    }
+                                )
+                            }
+
+                            items(notYetAddedQuickServers) { preset ->
+                                LoginItem(
+                                    title = stringResource(
+                                        R.string.account_quick_add_server,
+                                        preset.displayName
+                                    ),
+                                    onClick = {
+                                        onQuickAddServer(preset.baseUrl)
                                         onDismissRequest()
                                     }
                                 )

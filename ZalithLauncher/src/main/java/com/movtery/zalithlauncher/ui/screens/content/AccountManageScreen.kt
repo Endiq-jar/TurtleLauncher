@@ -406,6 +406,10 @@ private fun LoginMenuOperation(
                 onAddAuthServer = {
                     actions.onIntent(AccountManageIntent.UpdateServerOp(ServerOperation.AddNew))
                 },
+                onQuickAddServer = { url ->
+                    //一键添加已知的第三方验证服务器（如 Ely.by），复用与手动添加相同的探测/校验逻辑
+                    actions.onIntent(AccountManageIntent.AddServer(url))
+                },
                 onDeleteAuthServer = { server ->
                     actions.onIntent(
                         AccountManageIntent.UpdateServerOp(

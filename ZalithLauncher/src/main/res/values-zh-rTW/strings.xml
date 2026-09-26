@@ -439,6 +439,7 @@
     <string name="account_type_local">離線帳號</string>
     <string name="account_add_new_server">新增驗證伺服器</string>
     <string name="account_add_new_server_button">新增驗證伺服器</string>
+    <string name="account_quick_add_server">新增 %1$s</string>
     <string name="account_add_new_account">新增帳號</string>
     <string name="account_label_username">填寫使用者名稱</string>
     <string name="account_label_server_url">填寫伺服器位址</string>

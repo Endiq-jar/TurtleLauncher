@@ -493,6 +493,7 @@
     <string name="account_type_local">离线账号</string>
     <string name="account_add_new_server">添加认证服务器</string>
     <string name="account_add_new_server_button">添加认证服务器</string>
+    <string name="account_quick_add_server">添加 %1$s</string>
     <string name="account_add_new_account">添加账号</string>
     <string name="account_label_username">填写用户名</string>
     <string name="account_label_server_url">填写服务器地址</string>

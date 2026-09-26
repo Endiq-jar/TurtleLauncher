@@ -71,6 +71,17 @@ object ControlManager {
     private fun getNewRandomFile() = File(PathManager.DIR_CONTROL_LAYOUTS, "${newRandomFileName()}.json")
 
     /**
+     * Bundled control layouts: the launcher's own default plus the presets
+     * imported from Turtle-Launcher.
+     * Key: asset file name; value: the layout's display name (`info.name` field)
+     */
+    private val bundledPresetDisplayNames: List<Pair<String, String>> = listOf(
+        "default_layout.json" to "Default",
+        "turtle_control_presets/default.json" to "Default",
+        "turtle_control_presets/survival.json" to "Survival"
+    )
+
+    /**
      * Checks whether no control layout exists, and unpacks the default one
      * @param context a context for accessing assets
      */
@@ -82,8 +93,42 @@ object ControlManager {
                 }
             if (files.isEmpty()) {
                 unpackDefaultControl(context)
+            } else {
+                //Presets shipped in later updates never appeared for existing
+                //installs because unpacking only ran on an empty directory
+                ensureBundledPresets(context)
             }
             refresh()
+        }
+    }
+
+    /**
+     * Copies any bundled preset whose display name is missing from the layouts
+     * directory, so layouts added in newer launcher builds also show up for
+     * existing installs.
+     */
+    private suspend fun ensureBundledPresets(
+        context: Context
+    ) = withContext(Dispatchers.IO) {
+        val presentNames = PathManager.DIR_CONTROL_LAYOUTS.listFiles().orEmpty()
+            .filter { file -> file.isFile && file.extension.equals("json", true) }
+            .mapNotNull { file ->
+                runCatching {
+                    ObservableControlLayout(loadLayoutFromFile(file)).info.name.default
+                }.getOrNull()
+            }
+            .toMutableSet()
+
+        for ((preset, displayName) in bundledPresetDisplayNames) {
+            if (presentNames.none { it.equals(displayName, ignoreCase = true) }) {
+                try {
+                    val file = getNewRandomFile()
+                    context.copyAssetFile(fileName = preset, output = file, overwrite = false)
+                    presentNames.add(displayName)
+                } catch (e: Exception) {
+                    Logger.warning(TAG, "Failed to unpack bundled control layout: $preset", e)
+                }
+            }
         }
     }
 
@@ -153,15 +198,7 @@ object ControlManager {
     private suspend fun unpackDefaultControl(
         context: Context
     ) = withContext(Dispatchers.IO) {
-        //Bundled control layouts: the launcher's own default plus the presets
-        //imported from Turtle-Launcher (entries: asset file name; display names
-        //come from each layout's `info.name` field)
-        val presets = listOf(
-            "default_layout.json",
-            "turtle_control_presets/default.json",
-            "turtle_control_presets/survival.json"
-        )
-        for (preset in presets) {
+        for ((preset, _) in bundledPresetDisplayNames) {
             try {
                 val file = getNewRandomFile()
                 context.copyAssetFile(fileName = preset, output = file, overwrite = false)

@@ -18,61 +18,36 @@
 
 package com.endiq.turtlelauncher.ui.screens.content.settings
 
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.materialkolor.PaletteStyle
-import com.endiq.colorpicker.ColorPickerController
-import com.endiq.colorpicker.components.HueBarPicker
-import com.endiq.colorpicker.rememberColorPickerController
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.contract.MediaPickerContract
 import com.endiq.turtlelauncher.coroutine.Task
@@ -89,15 +64,8 @@ import com.endiq.turtlelauncher.ui.androidText
 import com.endiq.turtlelauncher.ui.base.BaseScreen
 import com.endiq.turtlelauncher.ui.components.AnimatedColumn
 import com.endiq.turtlelauncher.ui.components.IconTextButton
-import com.endiq.turtlelauncher.ui.components.MarqueeText
-import com.endiq.turtlelauncher.ui.components.RadioCard
 import com.endiq.turtlelauncher.ui.components.SimpleAlertDialog
-import com.endiq.turtlelauncher.ui.components.SimpleEditDialog
 import com.endiq.turtlelauncher.ui.components.TitleAndSummary
-import com.endiq.turtlelauncher.ui.components.fadeEdge
-import com.endiq.turtlelauncher.ui.components.rememberDialogMaxHeight
-import com.endiq.turtlelauncher.ui.components.toColorOrNull
-import com.endiq.turtlelauncher.ui.components.toHex
 import com.endiq.turtlelauncher.ui.components.verticalScrollWithBar
 import com.endiq.turtlelauncher.ui.screens.NestedNavKey
 import com.endiq.turtlelauncher.ui.screens.NormalNavKey
@@ -110,9 +78,6 @@ import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.ListSettings
 import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.SettingsCard
 import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.SettingsCardColumn
 import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.SwitchSettingsCard
-import com.endiq.turtlelauncher.ui.theme.ColorThemeType
-import com.endiq.turtlelauncher.ui.theme.cardColor
-import com.endiq.turtlelauncher.ui.theme.onCardColor
 import com.endiq.turtlelauncher.utils.animation.TransitionAnimationType
 import com.endiq.turtlelauncher.utils.file.shareFile
 import com.endiq.turtlelauncher.utils.isChinaMainland
@@ -125,12 +90,6 @@ import kotlinx.coroutines.Dispatchers
 import java.io.File
 
 private const val TAG = "LauncherSettingsScreen"
-
-private sealed interface CustomColorOperation {
-    data object None : CustomColorOperation
-    /** Show the custom theme color dialog */
-    data object Dialog: CustomColorOperation
-}
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -159,44 +118,9 @@ fun LauncherSettingsScreen(
                         .fillMaxWidth()
                         .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
                 ) {
-                    var customColorOperation by remember { mutableStateOf<CustomColorOperation>(CustomColorOperation.None) }
-                    CustomColorOperation(
-                        customColorOperation = customColorOperation,
-                        updateOperation = { customColorOperation = it }
-                    )
-
-                    EnumSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Top,
-                        unit = AllSettings.launcherColorTheme,
-                        title = stringResource(R.string.settings_launcher_color_theme_title),
-                        summary = stringResource(R.string.settings_launcher_color_theme_summary),
-                        entries = ColorThemeType.entries,
-                        getRadioEnable = { enum ->
-                            if (enum == ColorThemeType.DYNAMIC) Build.VERSION.SDK_INT >= Build.VERSION_CODES.S else true
-                        },
-                        getRadioText = { enum ->
-                            when (enum) {
-                                ColorThemeType.DYNAMIC -> stringResource(R.string.theme_color_dynamic)
-                                ColorThemeType.EMBERMIRE -> stringResource(R.string.theme_color_embermire)
-                                ColorThemeType.VELVET_ROSE -> stringResource(R.string.theme_color_velvet_rose)
-                                ColorThemeType.MISTWAVE -> stringResource(R.string.theme_color_mistwave)
-                                ColorThemeType.GLACIER -> stringResource(R.string.theme_color_glacier)
-                                ColorThemeType.VERDANTFIELD -> stringResource(R.string.theme_color_verdant_field)
-                                ColorThemeType.URBAN_ASH -> stringResource(R.string.theme_color_urban_ash)
-                                ColorThemeType.VERDANT_DAWN -> stringResource(R.string.theme_color_verdant_dawn)
-                                ColorThemeType.CUSTOM -> stringResource(R.string.generic_custom)
-                            }
-                        },
-                        maxItemsInEachRow = 5,
-                        onRadioClick = { enum ->
-                            if (enum == ColorThemeType.CUSTOM) customColorOperation = CustomColorOperation.Dialog
-                        }
-                    )
-
                     ListSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
+                        position = CardPosition.Top,
                         unit = AllSettings.launcherDarkMode,
                         items = DarkMode.entries,
                         title = stringResource(R.string.settings_launcher_dark_mode_title),
@@ -483,276 +407,6 @@ fun LauncherSettingsScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun CustomColorOperation(
-    customColorOperation: CustomColorOperation,
-    updateOperation: (CustomColorOperation) -> Unit
-) {
-    when (customColorOperation) {
-        is CustomColorOperation.None -> {}
-        is CustomColorOperation.Dialog -> {
-            var tempColor by remember {
-                mutableStateOf(Color(AllSettings.launcherCustomColor.getValue()))
-            }
-            //Temporary color palette state
-            val originalStyle = remember { AllSettings.launcherCustomPaletteStyle.getValue() }
-            var paletteStyle by remember {
-                mutableStateOf(originalStyle)
-            }
-
-            val colorController = rememberColorPickerController(initialColor = tempColor)
-            val currentColor by remember(colorController) { colorController.color }
-
-            CustomThemeDialog(
-                colorController = colorController,
-                paletteStyle = paletteStyle,
-                onPaletteStyleChange = { style ->
-                    paletteStyle = style
-                    AllSettings.launcherCustomPaletteStyle.updateState(style)
-                },
-                onChangeFinished = {
-                    AllSettings.launcherCustomColor.updateState(currentColor.toArgb())
-                },
-                onCancel = {
-                    //Restore colors and palette
-                    AllSettings.launcherCustomColor.updateState(colorController.getOriginalColor().toArgb())
-                    AllSettings.launcherCustomPaletteStyle.updateState(originalStyle)
-                    updateOperation(CustomColorOperation.None)
-                },
-                onConfirm = { selectedColor ->
-                    AllSettings.launcherCustomColor.save(selectedColor.toArgb())
-                    AllSettings.launcherCustomPaletteStyle.save(paletteStyle)
-                    updateOperation(CustomColorOperation.None)
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun CustomThemeDialog(
-    colorController: ColorPickerController,
-    paletteStyle: PaletteStyle,
-    onPaletteStyleChange: (PaletteStyle) -> Unit,
-    onChangeFinished: () -> Unit = {},
-    onCancel: () -> Unit,
-    onConfirm: (Color) -> Unit,
-) {
-    val selectedColor by colorController.color
-    val selectedHex = remember(selectedColor) {
-        selectedColor.toHex()
-    }
-
-    /**
-     * Whether the Hex edit dialog is open
-     */
-    var editHex by remember {
-        mutableStateOf(false)
-    }
-
-    Dialog(
-        onDismissRequest = {},
-        properties = DialogProperties(
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
-        )
-    ) {
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxWidth(0.55f)
-                .heightIn(max = rememberDialogMaxHeight())
-                .fillMaxHeight(),
-            contentAlignment = Alignment.Center
-        ) {
-            Surface(
-                modifier = Modifier
-                    .padding(all = 16.dp)
-                    .heightIn(max = (maxHeight - 32.dp).coerceAtMost(rememberDialogMaxHeight()))
-                    .wrapContentHeight(),
-                shadowElevation = 3.dp,
-                color = cardColor(false),
-                contentColor = onCardColor(),
-                shape = MaterialTheme.shapes.extraLarge
-            ) {
-                Column(
-                    modifier = Modifier.padding(all = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.settings_launcher_color_theme_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Column(
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .wrapContentHeight()
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            val scrollState = rememberLazyListState()
-                            //Color style
-                            LazyColumn(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fadeEdge(scrollState)
-                                    .nonInteractiveScrollbar(
-                                        state = scrollState.scrollIndicatorState!!,
-                                        orientation = Orientation.Vertical,
-                                    ),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                                state = scrollState,
-                            ) {
-                                //Title
-                                item {
-                                    Text(
-                                        text = stringResource(R.string.settings_launcher_color_theme_style),
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                }
-
-                                items(PaletteStyle.entries) { style ->
-                                    RadioCard(
-                                        selected = paletteStyle == style,
-                                        text = style.name,
-                                        onClick = {
-                                            onPaletteStyleChange(style)
-                                        }
-                                    )
-                                }
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .verticalScrollWithBar(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                HueBarPicker(
-                                    modifier = Modifier
-                                        .height(30.dp)
-                                        .fillMaxWidth(),
-                                    controller = colorController,
-                                    onChangeFinished = onChangeFinished
-                                )
-
-                                //Color preview
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    val originalColor = remember {
-                                        colorController.getOriginalColor()
-                                    }
-
-                                    //Initial color
-                                    Text(
-                                        text = originalColor.toHex(),
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(30.dp)
-                                            .background(color = originalColor)
-                                    )
-                                }
-
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    //Current color
-                                    Text(
-                                        text = selectedHex,
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(30.dp)
-                                                .background(color = selectedColor)
-                                        )
-                                        //Manual Hex editing
-                                        IconButton(
-                                            modifier = Modifier.size(36.dp),
-                                            onClick = { editHex = true }
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.ic_edit_outlined),
-                                                contentDescription = stringResource(R.string.theme_color_picker_edit_hex)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        FilledTonalButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                onChangeFinished()
-                                onCancel()
-                            }
-                        ) {
-                            MarqueeText(text = stringResource(R.string.generic_cancel))
-                        }
-                        Button(
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                onConfirm(selectedColor)
-                            }
-                        ) {
-                            MarqueeText(text = stringResource(R.string.generic_confirm))
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (editHex) {
-        var value by remember {
-            mutableStateOf(selectedHex)
-        }
-        val newColor = remember(value) {
-            //Try converting to a color
-            value.toColorOrNull()
-        }
-
-        SimpleEditDialog(
-            title = stringResource(R.string.theme_color_picker_edit_hex),
-            value = value,
-            onValueChange = { new ->
-                value = new
-            },
-            isError = newColor == null,
-            supportingText = {
-                if (newColor == null) {
-                    Text(text = stringResource(R.string.theme_color_picker_edit_hex_invalid))
-                }
-            },
-            onDismissRequest = { editHex = false },
-            onConfirm = {
-                if (newColor != null) {
-                    colorController.setColor(newColor.copy(alpha = 1f))
-                    editHex = false
-                }
-            }
-        )
     }
 }
 

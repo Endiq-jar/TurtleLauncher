@@ -72,3 +72,15 @@ Legend: ✅ already present · ➕ added in this round · ❌ missing (candidate
 
 ## Touch controls (status)
 Touch controls + the full Controls Editor already existed in this launcher (layers + buttons + joysticks with per-layer visibility, in-game live editor from the game menu, plus the three bundled presets). This stands in for Turtle-Launcher's controls support.
+
+## Extras settings page, bundled presets fix & single green theme
+
+- **Extras settings page**: a new dedicated tab in Settings (star icon, "Extras") that groups the three accessory features in one place — built-in **Screen Recorder** (enable/floating button + hide controls while recording), **Emotes** (Emotecraft mod selector/installer), and **Shizuku** (ADB-level file access). The recorder/emotes/Shizuku entries still exist in their original sections too.
+- **Control layout presets**: bundled presets (Default, Turtle default, Survival) are now unpacked not only on first launch but whenever a preset's display name is missing from the layouts directory, so presets shipped in updates (e.g. Survival) also appear for existing installs.
+- **Single fixed green theme**: the launcher color presets (dynamic, embermire, velvet rose, mistwave, glacier, verdant field, urban ash, custom picker) were removed. The launcher always uses the Verdant Dawn green palette in light and dark mode, and the color switcher card no longer exists in Launcher settings.
+
+Feature | Completion
+------- | ----------
+Extras tab (recorder + emotes + Shizuku page) | 100%
+Survival control preset unpacking for existing installs | 100%
+Green-only theme, presets + custom picker deleted | 100%

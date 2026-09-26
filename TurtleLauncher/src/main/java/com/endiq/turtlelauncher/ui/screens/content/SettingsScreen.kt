@@ -59,6 +59,7 @@ import com.endiq.turtlelauncher.ui.screens.content.elements.CategoryItem
 import com.endiq.turtlelauncher.ui.screens.content.settings.AboutInfoScreen
 import com.endiq.turtlelauncher.ui.screens.content.settings.ControlManageScreen
 import com.endiq.turtlelauncher.ui.screens.content.settings.ControlSettingsScreen
+import com.endiq.turtlelauncher.ui.screens.content.settings.ExtrasSettingsScreen
 import com.endiq.turtlelauncher.ui.screens.content.settings.GameSettingsScreen
 import com.endiq.turtlelauncher.ui.screens.content.settings.GamepadSettingsScreen
 import com.endiq.turtlelauncher.ui.screens.content.settings.JavaManageScreen
@@ -116,6 +117,7 @@ private val settingItems = listOf(
     CategoryItem(NormalNavKey.Settings.Control, { CategoryIcon(R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control) }, R.string.settings_tab_control),
     CategoryItem(NormalNavKey.Settings.Gamepad, { CategoryIcon(R.drawable.ic_sports_esports_outlined, R.string.settings_tab_gamepad) }, R.string.settings_tab_gamepad),
     CategoryItem(NormalNavKey.Settings.Launcher, { CategoryIcon(R.drawable.ic_setting_launcher, R.string.settings_tab_launcher) }, R.string.settings_tab_launcher),
+    CategoryItem(NormalNavKey.Settings.Extras, { CategoryIcon(R.drawable.ic_star_filled, R.string.settings_tab_extras) }, R.string.settings_tab_extras),
     CategoryItem(NormalNavKey.Settings.JavaManager, { CategoryIcon(R.drawable.ic_java, R.string.settings_tab_java_manage) }, R.string.settings_tab_java_manage, division = true),
     CategoryItem(NormalNavKey.Settings.ControlManager, { CategoryIcon(R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control_manage) }, R.string.settings_tab_control_manage),
     CategoryItem(NormalNavKey.Settings.AboutInfo, { CategoryIcon(R.drawable.ic_info_outlined, R.string.settings_tab_info_about) }, R.string.settings_tab_info_about, division = true)
@@ -225,6 +227,9 @@ private fun NavigationUI(
                         mainScreenKey = mainScreenKey,
                         submitError = submitError,
                     )
+                }
+                entry<NormalNavKey.Settings.Extras> {
+                    ExtrasSettingsScreen(key, settingsScreenKey, mainScreenKey, eventViewModel)
                 }
                 entry<NormalNavKey.Settings.JavaManager> {
                     JavaManageScreen(key, settingsScreenKey, mainScreenKey, eventViewModel, submitError)

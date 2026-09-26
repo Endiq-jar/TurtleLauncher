@@ -86,14 +86,6 @@
     <string name="launcher_version_debug_warning">You are using a test version of %s! This version may be unstable and is primarily intended for feature testing and early access. It is not recommended for long-term use! If you encounter any issues during testing, please report them to us via GitHub and we will address them as soon as possible.</string>
     <string name="launcher_version_debug_warning_cant_close">This warning cannot be dismissed</string>
     <!-- Themes -->
-    <string name="theme_color_dynamic">Dynamic (Android 12+)</string>
-    <string name="theme_color_embermire">Embermire</string>
-    <string name="theme_color_velvet_rose">Velvet Rose</string>
-    <string name="theme_color_mistwave">Mistwave</string>
-    <string name="theme_color_glacier">Glacier</string>
-    <string name="theme_color_verdant_field">Verdant Twilight</string>
-    <string name="theme_color_urban_ash">Urban Ash</string>
-    <string name="theme_color_verdant_dawn">Silent Forest Dawn</string>
     <string name="theme_color_picker_title">Color Picker</string>
     <string name="theme_color_picker_edit_hex">Edit Hex</string>
     <string name="theme_color_picker_edit_hex_invalid">Invalid Hex</string>
@@ -899,6 +891,7 @@
     <string name="settings_tab_control">Controls</string>
     <string name="settings_tab_gamepad">Gamepad</string>
     <string name="settings_tab_launcher">Launcher</string>
+    <string name="settings_tab_extras">Extras</string>
     <string name="settings_tab_java_manage">Java</string>
     <string name="settings_tab_control_manage">Controls</string>
     <string name="settings_tab_info_about">About</string>
@@ -1074,9 +1067,6 @@
     <string name="settings_gamepad_config_create_name">Configuration Name</string>
     <string name="settings_gamepad_config_create_contains">A configuration with the same name already exists</string>
     <string name="settings_gamepad_config_no_items">No configurations created, unable to switch</string>
-    <string name="settings_launcher_color_theme_title">Color Theme</string>
-    <string name="settings_launcher_color_theme_summary">Customize launcher colors</string>
-    <string name="settings_launcher_color_theme_style">Palette Style</string>
     <string name="settings_launcher_dark_mode_title">Dark Mode</string>
     <string name="settings_launcher_language">Language</string>
     <string name="settings_launcher_full_screen_title">Fullscreen Mode</string>

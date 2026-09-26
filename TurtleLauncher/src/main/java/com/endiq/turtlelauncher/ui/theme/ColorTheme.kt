@@ -29,15 +29,3 @@ data class ColorTheme(
     val urbanAsh: Color,
     val verdantDawn: Color
 )
-
-enum class ColorThemeType {
-    DYNAMIC,
-    EMBERMIRE,
-    VELVET_ROSE,
-    MISTWAVE,
-    GLACIER,
-    VERDANTFIELD,
-    URBAN_ASH,
-    VERDANT_DAWN,
-    CUSTOM
-}

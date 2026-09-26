@@ -20,9 +20,6 @@ package com.endiq.turtlelauncher.setting
 
 import android.os.Build
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import com.materialkolor.PaletteStyle
 import com.endiq.layer_controller.utils.snap.SnapMode
 import com.endiq.turtlelauncher.BuildKeys
 import com.endiq.turtlelauncher.game.download.assets.platform.Platform
@@ -42,7 +39,6 @@ import com.endiq.turtlelauncher.ui.control.gamepad.JoystickMode
 import com.endiq.turtlelauncher.ui.control.mouse.CENTER_HOTSPOT
 import com.endiq.turtlelauncher.ui.control.mouse.CursorHotspot
 import com.endiq.turtlelauncher.ui.control.mouse.LEFT_TOP_HOTSPOT
-import com.endiq.turtlelauncher.ui.theme.ColorThemeType
 import com.endiq.turtlelauncher.utils.animation.TransitionAnimationType
 
 object AllSettings : SettingsRegistry() {
@@ -355,26 +351,6 @@ object AllSettings : SettingsRegistry() {
     val gyroscopeInvertY = boolSetting("gyroscopeInvertY", false)
 
     //Launcher
-    /**
-     * Color theme hue
-     * Android 12+ dynamic theme color by default
-     */
-    val launcherColorTheme = enumSetting(
-        "launcherColorTheme",
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ColorThemeType.DYNAMIC
-        else ColorThemeType.EMBERMIRE
-    )
-
-    /**
-     * Custom color theme hue
-     */
-    val launcherCustomColor = intSetting("launcherCustomColor", Color.Blue.toArgb())
-
-    /**
-     * Custom color palette style
-     */
-    val launcherCustomPaletteStyle = enumSetting("launcherCustomPaletteStyle", PaletteStyle.TonalSpot)
-
     /**
      * Launcher UI dark theme
      */

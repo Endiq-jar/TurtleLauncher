@@ -64,3 +64,11 @@ Legend: ✅ already present · ➕ added in this round · ❌ missing (candidate
 ## Build fix notes
 - `ShizukuManager`: `Shizuku.newUserServiceArgs(...)` → `Shizuku.UserServiceArgs(...)` constructor (the factory method does not exist in shizuku-api 13.x; CI `compileDebugKotlin` failed on it).
 - CI failure annotations now print `::error::` lines via the patched Build workflow for readable logs.
+
+## Crash analyzer + screen recorder + animations
+- **Crash analyzer** (`game/crash/CrashAnalyzer.kt`): 18-rule offline engine; findings (cause/fix/signature) render on `ErrorActivity` below the generic crash text. Setting: `crashAnalyzer` (default ON).
+- **Screen recorder** (`feature/recorder/`): MediaProjection + MediaRecorder H.264/MP4; REC/STOP FAB on the game overlay; `recorderHideControls` (default ON) hides only the button visuals while the virtual-mouse input layer keeps working; `ScreenRecorderService` (mediaProjection FGS type) + manifest permission registered; auto-stops on activity destroy. Videos land in `Android/data/com.endiq.turtlelauncher/files/Movies`.
+- **Transitions**: `TransitionAnimationType` now has 22 styles (Fade, 4xSlide, 4xFadeSlide, Scale, Zoom In/Out, Expand Center, Wipe V/H, Overshoot, Reveal, Zoom Dissolve + legacy CLOSE/JELLY/BOUNCE/SLICE_IN); implemented in `_Navigation.rememberTransitionSpec`, new `OvershootEasing`; picker in Launcher Settings auto-lists them; all English strings.
+
+## Touch controls (status)
+Touch controls + the full Controls Editor already existed in this launcher (layers + buttons + joysticks with per-layer visibility, in-game live editor from the game menu, plus the three bundled presets). This stands in for Turtle-Launcher's controls support.

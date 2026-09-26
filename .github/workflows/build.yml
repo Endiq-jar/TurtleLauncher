@@ -52,7 +52,16 @@ jobs:
       - name: Build APK for ${{ matrix.arch }}
         run: |
           chmod +x gradlew
-          ./gradlew TurtleLauncher:assemble${{ inputs.variant }} -Darch=${{ matrix.arch }}
+          # Surface the first compile errors as check-run annotations so failures
+          # are diagnosable without downloading multi-MB logs.
+          ./gradlew TurtleLauncher:assemble${{ inputs.variant }} -Darch=${{ matrix.arch }} --console=plain > build_output.txt 2>&1 || {
+            status=$?
+            grep -aE '^(e: |error:|warning: .*aidl|FAILURE|Execution failed|Caused by|> Task .*FAILED|> Compilation error)' build_output.txt | head -n 60 | while IFS= read -r line; do
+              line="${line//%/%%}"
+              echo "::error::$line"
+            done
+            exit $status
+          }
 
       - name: Upload Release APK for ${{ matrix.arch }}
         if: inputs.variant == 'Release'

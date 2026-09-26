@@ -1,5 +1,7 @@
 package com.endiq.turtlelauncher.shizuku;
 
+import android.os.ParcelFileDescriptor;
+
 /**
  * ADB-level file service exposed through Shizuku (runs as the shell user).
  * Lets the app read/write/delete files that are otherwise unreachable

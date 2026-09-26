@@ -129,6 +129,10 @@ android {
         compose = true
         buildConfig = true
         prefab = true
+        //Shizuku file service (TurtleLauncher/src/main/aidl) needs the AIDL compiler;
+        //buildFeatures.aidl defaults to false on modern AGP, which silently skips the
+        //AIDL sources and breaks compilation of the Shizuku service stubs.
+        aidl = true
     }
     testOptions {
         unitTests {

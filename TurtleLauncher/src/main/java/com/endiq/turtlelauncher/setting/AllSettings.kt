@@ -421,6 +421,23 @@ object AllSettings : SettingsRegistry() {
     val launcherSwapAnimateType = enumSetting("launcherSwapAnimateType", TransitionAnimationType.JELLY_BOUNCE)
 
     /**
+     * Analyze the game log after a crash and show probable causes and fixes
+     * on the error screen
+     */
+    val crashAnalyzer = boolSetting("crashAnalyzer", true)
+
+    /**
+     * Built-in screen recorder button on the in-game overlay
+     */
+    val screenRecorder = boolSetting("screenRecorder", false)
+
+    /**
+     * Hide the on-screen touch controls while the built-in recorder captures,
+     * so they do not appear in the resulting video
+     */
+    val recorderHideControls = boolSetting("recorderHideControls", true)
+
+    /**
      * Which side the home action menu docks to
      */
     val launcherActionMenuSide = enumSetting("launcherActionMenuSide", ActionMenuSide.END)

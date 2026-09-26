@@ -18,6 +18,10 @@
 
 package com.endiq.turtlelauncher.ui.screens.game
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -29,7 +33,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
@@ -75,6 +83,7 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.bridge.CURSOR_DISABLED
 import com.endiq.turtlelauncher.bridge.TLBridgeStates
 import com.endiq.turtlelauncher.bridge.TLNativeInvoker
+import com.endiq.turtlelauncher.feature.recorder.ScreenRecorder
 import com.endiq.turtlelauncher.game.input.LWJGLCharSender
 import com.endiq.turtlelauncher.game.keycodes.mapToKeycode
 import com.endiq.turtlelauncher.game.launch.handler.GameHandler
@@ -87,6 +96,7 @@ import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.setting.enums.isLauncherInDarkTheme
 import com.endiq.turtlelauncher.setting.enums.toAction
 import com.endiq.turtlelauncher.terracotta.Terracotta
+import com.endiq.turtlelauncher.ui.androidText
 import com.endiq.turtlelauncher.ui.components.BackgroundCard
 import com.endiq.turtlelauncher.ui.components.MenuState
 import com.endiq.turtlelauncher.ui.components.rememberBoxSize
@@ -516,6 +526,24 @@ fun GameScreen(
         getUserName = getAccountName
     )
 
+    //Built-in screen recorder state
+    val recorderEnabled = AllSettings.screenRecorder.state
+    val recorderHideControls = AllSettings.recorderHideControls.state
+    val isRecording by ScreenRecorder.isRecording.collectAsStateWithLifecycle()
+    val captureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            val started = ScreenRecorder.start(context, result.resultCode, result.data!!)
+            if (!started) {
+                eventViewModel.sendToast(
+                    androidText(R.string.recorder_failed),
+                    Toast.LENGTH_SHORT
+                )
+            }
+        }
+    }
+
     LaunchedEffect(viewModel.isEditingLayout, viewModel.gameMenuState) {
         //Sync state to VMActivity; editing controls or opening the game menu stops key handling
         val allowKeyHandle = !viewModel.isEditingLayout && viewModel.gameMenuState != MenuState.SHOW
@@ -589,21 +617,46 @@ fun GameScreen(
                 )
             }
 
-            //Control layout layer
-            ControlBoxLayout(
-                modifier = Modifier.fillMaxSize(),
-                observedLayout = viewModel.observableLayout,
-                eventHandler = viewModel.eventHandler,
-                checkOccupiedPointers = { viewModel.occupiedPointers.contains(it) },
-                opacity = (AllSettings.controlsOpacity.state.toFloat() / 100f).coerceIn(0f, 1f),
-                markPointerAsMoveOnly = { viewModel.moveOnlyPointers.add(it) },
-                onOccupiedPointer = { viewModel.occupiedPointers.add(it) },
-                onReleasePointer = { viewModel.occupiedPointers.remove(it) },
-                isCursorGrabbing = isGrabbing,
-                hideLayerWhen = viewModel.controlLayerHideState,
-                isDark = isLauncherInDarkTheme()
-            ) {
-                //Virtual mouse control layer
+            //Control layout layer. While the screen recorder is capturing (and
+            //the "hide controls" option is on) only the button visuals are
+            //skipped - the virtual-mouse input layer below stays fully
+            //functional, so gameplay continues uninterrupted.
+            val hideControlsForRecording = isRecording && recorderHideControls
+            if (!hideControlsForRecording) {
+                ControlBoxLayout(
+                    modifier = Modifier.fillMaxSize(),
+                    observedLayout = viewModel.observableLayout,
+                    eventHandler = viewModel.eventHandler,
+                    checkOccupiedPointers = { viewModel.occupiedPointers.contains(it) },
+                    opacity = (AllSettings.controlsOpacity.state.toFloat() / 100f).coerceIn(0f, 1f),
+                    markPointerAsMoveOnly = { viewModel.moveOnlyPointers.add(it) },
+                    onOccupiedPointer = { viewModel.occupiedPointers.add(it) },
+                    onReleasePointer = { viewModel.occupiedPointers.remove(it) },
+                    isCursorGrabbing = isGrabbing,
+                    hideLayerWhen = viewModel.controlLayerHideState,
+                    isDark = isLauncherInDarkTheme()
+                ) {
+                    //Virtual mouse control layer
+                    MouseControlLayout(
+                        isTouchProxyEnabled = isTouchProxyEnabled,
+                        modifier = Modifier.fillMaxSize(),
+                        cursorMode = cursorMode,
+                        screenSize = screenSize,
+                        onInputAreaRectUpdated = onInputAreaRectUpdated,
+                        textInputMode = textInputMode,
+                        isMoveOnlyPointer = { viewModel.moveOnlyPointers.contains(it) },
+                        onOccupiedPointer = { viewModel.occupiedPointers.add(it) },
+                        onReleasePointer = {
+                            viewModel.occupiedPointers.remove(it)
+                            viewModel.moveOnlyPointers.remove(it)
+                        },
+                        onMouseMoved = { viewModel.switchControlLayer(HideLayerWhen.WhenMouse) },
+                        onTouch = { viewModel.switchControlLayer(HideLayerWhen.None) },
+                        gamepadViewModel = gamepadViewModel.takeIf { AllSettings.gamepadControl.state }
+                    )
+                }
+            } else {
+                //Recording with hidden controls: input layer only, no button visuals
                 MouseControlLayout(
                     isTouchProxyEnabled = isTouchProxyEnabled,
                     modifier = Modifier.fillMaxSize(),
@@ -702,6 +755,24 @@ fun GameScreen(
                 eventViewModel.sendToast(text, duration)
             }
         )
+
+        //Built-in screen recorder toggle button
+        if (recorderEnabled && !viewModel.isEditingLayout) {
+            ScreenRecorderButton(
+                isRecording = isRecording,
+                onStart = { captureLauncher.launch(ScreenRecorder.createCaptureIntent(context)) },
+                onStop = {
+                    val saved = ScreenRecorder.stop(context)
+                    eventViewModel.sendToast(
+                        androidText(
+                            if (saved != null) R.string.recorder_saved else R.string.recorder_failed
+                        ),
+                        Toast.LENGTH_LONG
+                    )
+                },
+                modifier = Modifier.align(Alignment.BottomEnd)
+            )
+        }
 
         if (AllSettings.gamepadControl.state) {
             //Gamepad event capture layer
@@ -806,6 +877,30 @@ fun GameScreen(
                     else -> { /*ignore*/ }
                 }
             }
+    }
+}
+
+@Composable
+private fun ScreenRecorderButton(
+    isRecording: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FloatingActionButton(
+        onClick = { if (isRecording) onStop() else onStart() },
+        modifier = modifier.padding(16.dp),
+        containerColor = if (isRecording) MaterialTheme.colorScheme.errorContainer
+        else MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Icon(
+            imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.FiberManualRecord,
+            contentDescription = stringResource(
+                if (isRecording) R.string.recorder_stop else R.string.recorder_start
+            ),
+            tint = if (isRecording) MaterialTheme.colorScheme.error
+            else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

@@ -46,3 +46,14 @@ val BounceEasing: Easing = Easing { t ->
         else -> bounce(input - 1.0435f) + 0.95f
     }
 }
+
+/**
+ * Overshoot/back-out easing: the value travels past 1.0 and settles,
+ * like Android's OvershootInterpolator with default tension.
+ */
+val OvershootEasing: Easing = Easing { t ->
+    val c1 = 1.70158f
+    val c3 = c1 + 1f
+    val x = t - 1f
+    c3 * x * x * x + c1 * x * x + 1f
+}

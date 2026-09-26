@@ -365,6 +365,39 @@ fun LauncherSettingsScreen(
                 }
             }
 
+            //Crash analyzer + built-in screen recorder
+            AnimatedItem(scope) { yOffset ->
+                SettingsCardColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                ) {
+                    SwitchSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Top,
+                        unit = AllSettings.crashAnalyzer,
+                        title = stringResource(R.string.settings_crash_analyzer_title),
+                        summary = stringResource(R.string.settings_crash_analyzer_summary)
+                    )
+
+                    SwitchSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Middle,
+                        unit = AllSettings.screenRecorder,
+                        title = stringResource(R.string.settings_screen_recorder_title),
+                        summary = stringResource(R.string.settings_screen_recorder_summary)
+                    )
+
+                    SwitchSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Bottom,
+                        unit = AllSettings.recorderHideControls,
+                        title = stringResource(R.string.settings_recorder_hide_controls_title),
+                        summary = stringResource(R.string.settings_recorder_hide_controls_summary)
+                    )
+                }
+            }
+
             //Shizuku integration (ADB-level file access)
             AnimatedItem(scope) { yOffset ->
                 com.endiq.turtlelauncher.shizuku.ShizukuSettingsSection(

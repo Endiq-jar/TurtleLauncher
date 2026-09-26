@@ -114,8 +114,10 @@ fun <E> getSwapAnimateTween(
     return if (swapIn) {
         when (AllSettings.launcherSwapAnimateType.state) {
             TransitionAnimationType.CLOSE -> snap()
-            TransitionAnimationType.BOUNCE -> getAnimateTweenBounce(adjustedDelayMillis)
-            TransitionAnimationType.JELLY_BOUNCE -> getAnimateTweenJellyBounce(adjustedDelayMillis)
+            TransitionAnimationType.BOUNCE,
+            TransitionAnimationType.OVERSHOOT -> getAnimateTweenBounce(adjustedDelayMillis)
+            TransitionAnimationType.JELLY_BOUNCE,
+            TransitionAnimationType.ZOOM_DISSOLVE -> getAnimateTweenJellyBounce(adjustedDelayMillis)
             else -> getAnimateTween(adjustedDelayMillis)
         }
     } else {

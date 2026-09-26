@@ -24,15 +24,28 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Modifier
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.context.COPY_LABEL_LINK
+import com.endiq.turtlelauncher.game.crash.CrashAnalyzer
 import com.endiq.turtlelauncher.path.PathManager
+import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.ui.base.BaseAppCompatActivity
 import com.endiq.turtlelauncher.ui.screens.main.ErrorScreen
 import com.endiq.turtlelauncher.ui.screens.main.crashlogs.ShareLinkOperation
@@ -101,14 +114,20 @@ class ErrorActivity : BaseAppCompatActivity() {
                 val messageResId = if (jvmCrash.isSignal) R.string.crash_singnal_message else R.string.crash_exit_message
                 val message = getString(messageResId, jvmCrash.code)
                 val messageBody = getString(R.string.crash_exit_note)
+                val log = File(jvmCrash.logPath)
+                //Run the offline crash analyzer over the game log (setting-controlled)
+                val findings = if (AllSettings.crashAnalyzer.getValue()) {
+                    CrashAnalyzer.analyze(log)
+                } else emptyList()
                 ErrorMessage(
                     message = message,
                     messageBody = messageBody,
                     crashType = CrashType.GAME_CRASH,
-                    logFile = File(jvmCrash.logPath).also { file ->
+                    logFile = log.also { file ->
                         //Check whether the log file is suitable for upload
                         viewModel.check(file)
-                    }
+                    },
+                    analysisFindings = findings
                 )
             }
             else -> {
@@ -176,6 +195,9 @@ class ErrorActivity : BaseAppCompatActivity() {
                             text = errorMessage.messageBody,
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        CrashAnalysisFindings(
+                            findings = errorMessage.analysisFindings
+                        )
                     }
                 }
             }
@@ -186,7 +208,8 @@ class ErrorActivity : BaseAppCompatActivity() {
         val message: String,
         val messageBody: String,
         val crashType: CrashType,
-        val logFile: File
+        val logFile: File,
+        val analysisFindings: List<CrashAnalyzer.Finding> = emptyList()
     )
 }
 
@@ -217,4 +240,40 @@ fun showLauncherCrash(context: Context, throwable: Throwable, canRestart: Boolea
         putExtra(BUNDLE_CAN_RESTART, canRestart)
     }
     context.startActivity(intent)
+}
+
+/**
+ * Renders the offline crash analyzer results underneath the generic crash
+ * message: probable causes with concrete corrective actions.
+ */
+@Composable
+private fun CrashAnalysisFindings(findings: List<CrashAnalyzer.Finding>) {
+    if (findings.isEmpty()) return
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.crash_analyzer_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        findings.forEach { finding ->
+            Text(
+                text = "${stringResource(R.string.crash_analyzer_cause)}: ${finding.cause}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "${stringResource(R.string.crash_analyzer_fix)}: ${finding.suggestion}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "${stringResource(R.string.crash_analyzer_signature)}: ${finding.signature}",
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+        }
+    }
 }

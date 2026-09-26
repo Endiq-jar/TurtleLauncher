@@ -73,6 +73,7 @@ import com.endiq.turtlelauncher.bridge.CURSOR_DISABLED
 import com.endiq.turtlelauncher.bridge.FliteTts
 import com.endiq.turtlelauncher.bridge.LoggerBridge
 import com.endiq.turtlelauncher.bridge.TLBridge
+import com.endiq.turtlelauncher.feature.recorder.ScreenRecorder
 import com.endiq.turtlelauncher.bridge.TLBridgeStates
 import com.endiq.turtlelauncher.coroutine.DataBridge
 import com.endiq.turtlelauncher.game.account.Account
@@ -638,6 +639,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     }
 
     override fun onDestroy() {
+        runCatching { ScreenRecorder.stop(this) }
         stopAllService()
         withHandler { onDestroy() }
         SdlBridge.reset()

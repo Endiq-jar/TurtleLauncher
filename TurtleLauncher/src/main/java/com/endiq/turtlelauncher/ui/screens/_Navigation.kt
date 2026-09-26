@@ -21,15 +21,33 @@ package com.endiq.turtlelauncher.ui.screens
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.IntOffset
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.scene.Scene
 import com.endiq.turtlelauncher.setting.AllSettings
+import com.endiq.turtlelauncher.utils.animation.BounceEasing
+import com.endiq.turtlelauncher.utils.animation.JellyBounce
+import com.endiq.turtlelauncher.utils.animation.OvershootEasing
 import com.endiq.turtlelauncher.utils.animation.TransitionAnimationType
 import com.endiq.turtlelauncher.utils.animation.getAnimateSpeed
 import kotlin.reflect.KClass
@@ -122,16 +140,188 @@ fun <T : Any> rememberTransitionSpec(): AnimatedContentTransitionScope<Scene<T>>
     val type = AllSettings.launcherSwapAnimateType.state
     val speed = AllSettings.launcherAnimateSpeed.state
     return remember(type, speed) {
-        val tween: FiniteAnimationSpec<Float> = when (type) {
-            TransitionAnimationType.CLOSE -> snap()
-            else -> tween(durationMillis = (getAnimateSpeed() / 5) * 2)
-        }
+        val duration = (getAnimateSpeed() / 5) * 2
+        val floatTween: FiniteAnimationSpec<Float> = tween(durationMillis = duration)
+        val bounce: FiniteAnimationSpec<Float> = tween(durationMillis = duration, easing = BounceEasing)
+        val jelly: FiniteAnimationSpec<Float> = tween(durationMillis = duration, easing = JellyBounce)
+        val overshoot: FiniteAnimationSpec<Float> = tween(durationMillis = duration, easing = OvershootEasing)
+        val springy: FiniteAnimationSpec<Float> = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        )
+        val offsetTween: FiniteAnimationSpec<IntOffset> = tween(durationMillis = duration)
+        val offsetBounce: FiniteAnimationSpec<IntOffset> = tween(durationMillis = duration, easing = BounceEasing)
 
-        {
-            ContentTransform(
-                fadeIn(animationSpec = tween),
-                fadeOut(animationSpec = tween),
-            )
+        fun fadePair(): ContentTransform =
+            ContentTransform(fadeIn(floatTween), fadeOut(floatTween))
+
+        when (type) {
+            TransitionAnimationType.CLOSE -> {
+                { ContentTransform(fadeIn(snap()), fadeOut(snap())) }
+            }
+            TransitionAnimationType.JELLY_BOUNCE -> {
+                {
+                    ContentTransform(
+                        scaleIn(jelly, initialScale = 0.85f) + fadeIn(jelly),
+                        scaleOut(jelly, targetScale = 1.05f) + fadeOut(jelly)
+                    )
+                }
+            }
+            TransitionAnimationType.BOUNCE -> {
+                {
+                    ContentTransform(
+                        scaleIn(bounce, initialScale = 0.85f) + fadeIn(bounce),
+                        scaleOut(bounce, targetScale = 1.05f) + fadeOut(bounce)
+                    )
+                }
+            }
+            TransitionAnimationType.SLICE_IN -> {
+                {
+                    ContentTransform(
+                        slideInVertically(offsetBounce) { it / 6 } + fadeIn(floatTween),
+                        slideOutVertically(offsetTween) { -it / 6 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.FADE -> {
+                { fadePair() }
+            }
+            TransitionAnimationType.SLIDE_UP -> {
+                {
+                    ContentTransform(
+                        slideInVertically(offsetTween) { it / 4 } + fadeIn(floatTween),
+                        slideOutVertically(offsetTween) { -it / 4 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.SLIDE_DOWN -> {
+                {
+                    ContentTransform(
+                        slideInVertically(offsetTween) { -it / 4 } + fadeIn(floatTween),
+                        slideOutVertically(offsetTween) { it / 4 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.SLIDE_LEFT -> {
+                {
+                    ContentTransform(
+                        slideInHorizontally(offsetTween) { it / 4 } + fadeIn(floatTween),
+                        slideOutHorizontally(offsetTween) { -it / 4 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.SLIDE_RIGHT -> {
+                {
+                    ContentTransform(
+                        slideInHorizontally(offsetTween) { -it / 4 } + fadeIn(floatTween),
+                        slideOutHorizontally(offsetTween) { it / 4 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.FADE_SLIDE_UP -> {
+                {
+                    ContentTransform(
+                        slideInVertically(offsetTween) { it / 8 } + fadeIn(floatTween),
+                        slideOutVertically(offsetTween) { -it / 8 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.FADE_SLIDE_DOWN -> {
+                {
+                    ContentTransform(
+                        slideInVertically(offsetTween) { -it / 8 } + fadeIn(floatTween),
+                        slideOutVertically(offsetTween) { it / 8 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.FADE_SLIDE_LEFT -> {
+                {
+                    ContentTransform(
+                        slideInHorizontally(offsetTween) { it / 8 } + fadeIn(floatTween),
+                        slideOutHorizontally(offsetTween) { -it / 8 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.FADE_SLIDE_RIGHT -> {
+                {
+                    ContentTransform(
+                        slideInHorizontally(offsetTween) { -it / 8 } + fadeIn(floatTween),
+                        slideOutHorizontally(offsetTween) { it / 8 } + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.SCALE -> {
+                {
+                    ContentTransform(
+                        scaleIn(floatTween, initialScale = 0.9f),
+                        scaleOut(floatTween, targetScale = 0.9f)
+                    )
+                }
+            }
+            TransitionAnimationType.ZOOM_IN -> {
+                {
+                    ContentTransform(
+                        scaleIn(floatTween, initialScale = 0.7f) + fadeIn(floatTween),
+                        scaleOut(floatTween, targetScale = 1.3f) + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.ZOOM_OUT -> {
+                {
+                    ContentTransform(
+                        scaleIn(floatTween, initialScale = 1.3f) + fadeIn(floatTween),
+                        scaleOut(floatTween, targetScale = 0.7f) + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.EXPAND_CENTER -> {
+                {
+                    ContentTransform(
+                        expandIn(tween(durationMillis = duration)) + scaleIn(floatTween, initialScale = 0.9f) + fadeIn(floatTween),
+                        shrinkOut(tween(durationMillis = duration)) + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.WIPE_VERTICAL -> {
+                {
+                    ContentTransform(
+                        expandVertically(tween(durationMillis = duration)) + fadeIn(floatTween),
+                        shrinkVertically(tween(durationMillis = duration)) + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.WIPE_HORIZONTAL -> {
+                {
+                    ContentTransform(
+                        expandHorizontally(tween(durationMillis = duration)) + fadeIn(floatTween),
+                        shrinkHorizontally(tween(durationMillis = duration)) + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.OVERSHOOT -> {
+                {
+                    ContentTransform(
+                        scaleIn(overshoot, initialScale = 0.85f) + fadeIn(floatTween),
+                        scaleOut(floatTween, targetScale = 1.05f) + fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.REVEAL -> {
+                {
+                    ContentTransform(
+                        expandIn(tween(durationMillis = duration)) + fadeIn(floatTween),
+                        fadeOut(floatTween)
+                    )
+                }
+            }
+            TransitionAnimationType.ZOOM_DISSOLVE -> {
+                {
+                    ContentTransform(
+                        scaleIn(springy, initialScale = 0.8f) + fadeIn(springy),
+                        scaleOut(springy, targetScale = 1.2f) + fadeOut(springy)
+                    )
+                }
+            }
         }
     }
 }

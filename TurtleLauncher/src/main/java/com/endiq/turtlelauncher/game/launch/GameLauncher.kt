@@ -43,6 +43,8 @@ import com.endiq.turtlelauncher.game.plugin.driver.DriverPluginManager
 import com.endiq.turtlelauncher.game.plugin.renderer.RendererPluginManager
 import com.endiq.turtlelauncher.game.renderer.Renderers
 import com.endiq.turtlelauncher.game.renderer.renderers.GL4ESRenderer
+import com.endiq.turtlelauncher.game.renderer.renderers.LTWRenderer
+import com.endiq.turtlelauncher.game.renderer.renderers.MobileGluesRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.NGGL4ESRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.NWRenderer
 import com.endiq.turtlelauncher.game.support.touch_controller.ControllerProxy
@@ -403,7 +405,9 @@ private fun setRendererEnv(envMap: MutableMap<String, String>) {
 
     if (RendererPluginManager.selectedRendererPlugin != null) return
 
-    if (renderer != GL4ESRenderer && renderer != NGGL4ESRenderer && renderer != NWRenderer) {
+    if (renderer != GL4ESRenderer && renderer != NGGL4ESRenderer && renderer != NWRenderer &&
+        renderer != LTWRenderer && renderer != MobileGluesRenderer
+    ) {
         envMap["MESA_LOADER_DRIVER_OVERRIDE"] = "zink"
         envMap["MESA_GLSL_CACHE_DIR"] = PathManager.DIR_CACHE.absolutePath
         envMap["MESA_GL_VERSION_OVERRIDE"] = "4.6"

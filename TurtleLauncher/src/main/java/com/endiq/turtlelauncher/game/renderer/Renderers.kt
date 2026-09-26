@@ -21,6 +21,8 @@ package com.endiq.turtlelauncher.game.renderer
 import com.endiq.turtlelauncher.game.renderer.renderers.FreedrenoRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.GL4ESRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.KopperZinkRenderer
+import com.endiq.turtlelauncher.game.renderer.renderers.LTWRenderer
+import com.endiq.turtlelauncher.game.renderer.renderers.MobileGluesRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.NGGL4ESRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.NWRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.PanfrostRenderer
@@ -52,6 +54,8 @@ object Renderers {
             NGGL4ESRenderer,
             GL4ESRenderer,
             NWRenderer,
+            LTWRenderer,
+            MobileGluesRenderer,
             KopperZinkRenderer,
             VirGLRenderer,
             FreedrenoRenderer,

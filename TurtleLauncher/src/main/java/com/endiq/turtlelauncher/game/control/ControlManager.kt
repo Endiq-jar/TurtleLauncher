@@ -153,11 +153,21 @@ object ControlManager {
     private suspend fun unpackDefaultControl(
         context: Context
     ) = withContext(Dispatchers.IO) {
-        try {
-            val file = getNewRandomFile()
-            context.copyAssetFile(fileName = "default_layout.json", output = file, overwrite = false)
-        } catch (e: Exception) {
-            Logger.warning(TAG, "Failed to unpack default control layout", e)
+        //Bundled control layouts: the launcher's own default plus the presets
+        //imported from Turtle-Launcher (entries: asset file name; display names
+        //come from each layout's `info.name` field)
+        val presets = listOf(
+            "default_layout.json",
+            "turtle_control_presets/default.json",
+            "turtle_control_presets/survival.json"
+        )
+        for (preset in presets) {
+            try {
+                val file = getNewRandomFile()
+                context.copyAssetFile(fileName = preset, output = file, overwrite = false)
+            } catch (e: Exception) {
+                Logger.warning(TAG, "Failed to unpack bundled control layout: $preset", e)
+            }
         }
     }
 

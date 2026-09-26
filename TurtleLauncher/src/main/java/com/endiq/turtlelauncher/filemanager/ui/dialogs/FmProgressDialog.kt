@@ -39,9 +39,9 @@ import com.endiq.turtlelauncher.ui.components.MarqueeText
 import com.endiq.turtlelauncher.utils.file.formatFileSize
 
 /**
- * 任务进度对话框，展示进度、当前条目与速度。
- * @param progress Task progress state，为 null 时不显示弹窗
- * @param onCancel 取消任务并关闭弹窗
+ * Task progress dialog, showing progress, the current entry and speed.
+ * @param progress task progress state; null hides the dialog
+ * @param onCancel cancels the task and closes the dialog
  */
 @Composable
 fun FmProgressDialog(

@@ -23,33 +23,33 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import java.nio.file.Path
 
-/** 输出目标抽象 */
+/** Output target abstraction */
 internal sealed interface OutputTarget {
-    /** 本地目录（可访问范围目录内） */
+    /** Local directory (inside the accessible scope) */
     data class Local(val dir: Path) : OutputTarget
-    /** SAF 树目录根 */
+    /** SAF tree directory root */
     data class Saf(val treeUri: Uri) : OutputTarget
-    /** SAF 树目录下的具名子目录（独立文件夹） */
+    /** Named subdirectory under an SAF tree (standalone folder) */
     data class SafDir(val treeUri: Uri, val name: String) : OutputTarget
 }
 
 /**
- * 在 SAF 树目录中按名称查找子文档
- * @return 存在则返回其 document URI
+ * Finds a child document by name inside an SAF tree directory
+ * @return its document URI when it exists
  */
 internal fun findChildDocument(context: Context, treeUri: Uri, name: String): Uri? {
     return runCatching {
         val docId = DocumentsContract.getTreeDocumentId(treeUri)
         val child = DocumentsContract.buildDocumentUriUsingTree(treeUri, "$docId/$name")
         if (DocumentsContract.isDocumentUri(context, child)) {
-            //存在性以 try 打开为准
+            //Existence is settled by trying to open it
             context.contentResolver.openInputStream(child)?.close()
             child
         } else null
     }.getOrNull()
 }
 
-/** 按文件扩展名推断 MIME 类型 */
+/** Infers the MIME type from the file extension */
 internal fun guessMime(name: String): String {
     val lower = name.lowercase()
     return when {

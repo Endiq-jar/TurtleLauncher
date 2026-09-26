@@ -20,7 +20,7 @@ package com.endiq.turtlelauncher.filemanager.viewmodel
 
 import java.nio.file.Path
 
-/** 当前目录的后退/前进历史 */
+/** Back/forward navigation history of directory browsing */
 class NavHistory(initialCurrent: Path) {
 
     private val backStack = ArrayDeque<Path>()
@@ -31,7 +31,7 @@ class NavHistory(initialCurrent: Path) {
     val canForward: Boolean get() = forwardStack.isNotEmpty()
     val currentPath: Path get() = current
 
-    /** 进入一个新目录，清空前进栈 */
+    /** Enters a new directory, clearing the forward stack */
     fun navigate(to: Path) {
         if (to == current) return
         backStack.addLast(current)
@@ -40,8 +40,8 @@ class NavHistory(initialCurrent: Path) {
     }
 
     /**
-     * 后退
-     * @return 上一个目录，或 null 表示无历史
+     * Goes back
+     * @return the previous directory, or null without history
      */
     fun back(): Path? {
         if (backStack.isEmpty()) return null
@@ -52,8 +52,8 @@ class NavHistory(initialCurrent: Path) {
     }
 
     /**
-     * 前进
-     * @return 撤销上一次后退，或 null 表示无可前进
+     * Goes forward
+     * @return the directory to move forward to, or null when nothing can be forwarded
      */
     fun forward(): Path? {
         if (forwardStack.isEmpty()) return null
@@ -64,7 +64,7 @@ class NavHistory(initialCurrent: Path) {
     }
 
     /**
-     * 目录被删除后清理历史
+     * Cleans up history after a directory is deleted
      */
     fun pruneDeleted(deleted: Path) {
         fun inside(p: Path): Boolean {

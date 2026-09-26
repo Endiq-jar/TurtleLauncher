@@ -44,10 +44,10 @@ import com.endiq.turtlelauncher.filemanager.ui.components.FmEditDialog
 import com.endiq.turtlelauncher.filemanager.ui.theme.fmErrorColor
 
 /**
- * Extraction settings dialog。
- * @param archiveName 待解压的压缩包名称
- * @param onDismiss 取消并关闭对话框
- * @param onConfirm 确认解压，参数表示是否解压到独立文件夹
+ * Extraction settings dialog.
+ * @param archiveName name of the archive to extract
+ * @param onDismiss cancels and closes the dialog
+ * @param onConfirm confirm-extraction callback; the argument says whether to extract into a standalone folder
  */
 @Composable
 fun FmExtractDialog(
@@ -89,10 +89,10 @@ fun FmExtractDialog(
 }
 
 /**
- * Archive password input dialog。
- * @param errorText 密码错误时展示的提示文本，可为 null
- * @param onDismiss 取消解压并关闭对话框
- * @param onConfirm 以输入的密码继续解压
+ * Archive password input dialog.
+ * @param errorText text shown when the password is wrong; may be null
+ * @param onDismiss cancels the extraction and closes the dialog
+ * @param onConfirm continues extraction with the entered password
  */
 @Composable
 fun FmExtractPasswordDialog(

@@ -29,43 +29,43 @@ import com.endiq.turtlelauncher.filemanager.logic.trash.TrashItem
 import com.endiq.turtlelauncher.ui.code_editor.EditorState
 import java.nio.file.Path
 
-/** 目录属性扫描状态 */
+/** Directory property scan state */
 data class DirScanUiState(
     val running: Boolean,
     val stats: DirStats?
 )
 
-/** 文本编辑器状态 */
+/** Text editor state */
 data class EditorUiState(
-    /** 正在编辑的文件路径 */
+    /** Path of the file being edited */
     val path: Path? = null,
-    /** 文件内容状态（加载中 / 加载完成） */
+    /** File content state (loading / loaded) */
     val state: EditorState = EditorState.Loading,
-    /** 文件是否可写，不可写时以只读方式打开 */
+    /** Whether the file is writable; non-writable files open read-only */
     val writable: Boolean = true,
     /** Whether unsaved changes exist */
     val dirty: Boolean = false,
-    /** 是否正在保存 */
+    /** Whether a save is in progress */
     val saving: Boolean = false,
-    /** 是否请求显示退出确认弹窗 */
+    /** Whether the exit confirmation dialog was requested */
     val exitConfirm: Boolean = false,
-    /** 打开 / 加载失败的错误提示 */
+    /** Error message for open/load failures */
     val error: String? = null
 )
 
-/** 搜索状态 */
+/** Search state */
 data class SearchUiState(
-    /** 是否正在搜索 */
+    /** Whether a search is in progress */
     val running: Boolean = false,
-    /** 当前正在扫描的目录 */
+    /** Directory currently being scanned */
     val currentDir: Path? = null,
-    /** Search results列表 */
+    /** Search results list */
     val hits: List<SearchHitView> = emptyList(),
-    /** 最近一次搜索的关键词 */
+    /** Keyword of the most recent search */
     val lastKeyword: String = ""
 )
 
-/** 搜索命中结果视图 */
+/** Search hit result view */
 data class SearchHitView(
     val path: Path,
     val name: String,
@@ -73,10 +73,10 @@ data class SearchHitView(
     val size: Long
 )
 
-/** 文件管理器状态集合 */
+/** File manager state store */
 data class FileManagerUiState(
     val currentDir: Path? = null,
-    /** 刷新流水线是否运行中 */
+    /** Whether the refresh pipeline is running */
     val refreshing: Boolean = false,
     val visibleEntries: List<FmEntry> = emptyList(),
     val rawList: RawList? = null,
@@ -95,13 +95,13 @@ data class FileManagerUiState(
     val locateHighlightPath: Path? = null,
     val canNavigateBack: Boolean = false,
     val canNavigateForward: Boolean = false,
-    /** 当前打开的Dialog intents；为空表示无对话框 */
+    /** Currently open dialog intent; empty means no dialog */
     val dialogIntent: DialogIntent? = null
 ) {
     val canBack: Boolean get() = rawList?.let { it.currentDir != it.rootDir } ?: false
 }
 
-/** 原始浏览结果 */
+/** Raw browse result */
 data class RawList(
     val currentDir: Path,
     val rootDir: Path,
@@ -122,10 +122,10 @@ data class RawList(
     }
 }
 
-/** 回收站视图 */
+/** Trash view */
 sealed interface TrashViewState {
     data object Idle : TrashViewState
-    /** 回收站已打开 */
+    /** Trash opened */
     data class Opened(
         val rawItems: List<TrashItem>,
         val trashListView: TrashListView

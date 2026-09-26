@@ -88,7 +88,7 @@ fun Account.isSkinChangeAllowed(): Boolean {
 
 fun Account.accountTypePriority(): Int {
     return when (this.accountType) {
-        AccountType.MICROSOFT.tag -> 0 //微软账号优先
+        AccountType.MICROSOFT.tag -> 0 //Microsoft accounts first
         null -> Int.MAX_VALUE
         else -> 1
     }
@@ -97,7 +97,7 @@ fun Account.accountTypePriority(): Int {
 private const val MICROSOFT_LOGGING_TASK = "microsoft_logging_task"
 
 /**
- * 检查当前微软账号登陆是否正在进行中
+ * Checks whether a Microsoft account login is currently in progress
  */
 fun isMicrosoftLogging() = TaskSystem.containsTask(MICROSOFT_LOGGING_TASK)
 
@@ -131,8 +131,8 @@ fun microsoftLogin(
             val tokenResponse = getTokenResponse(deviceCode, coroutineContext) { time ->
                 (!checkIfInWebScreen()).also { exit ->
                     if (exit && time > 0) {
-                        //如果已退出网页，则视为用户想要退出登录
-                        //弹出提示
+                        //If the page was already closed, treat it as the user wanting to abort the login
+                        //Pop a notice
                         Logger.debug(TAG, "User left the web page during device code polling")
                         showToast(
                             androidText(R.string.account_microsoft_exit_by_user),
@@ -296,7 +296,7 @@ fun otherLogin(
 }
 
 /**
- * 该异常代表本地存储的凭据已被服务端拒绝，无法通过刷新恢复，需要重新登录账号
+ * This exception means the locally stored credentials were rejected by the server; refreshing cannot recover them and the account must log in again
  */
 fun Throwable.isReloginRequired(): Boolean {
     return this is CredentialsExpiredException ||
@@ -321,7 +321,7 @@ fun accountErrorText(th: Throwable): AndroidStringText = when (th) {
 }
 
 /**
- * 离线账号登陆
+ * Offline account login
  */
 fun localLogin(userName: String, userUUID: String?) {
     val account = if (userUUID != null) {
@@ -331,7 +331,7 @@ fun localLogin(userName: String, userUUID: String?) {
             accountType = AccountType.LOCAL.tag
         )
     } else {
-        //如果不填，则使用默认生成的 uuid
+        //If absent, use the default generated uuid
         Account(
             username = userName,
             accountType = AccountType.LOCAL.tag
@@ -374,7 +374,7 @@ fun addOtherServer(
             task.updateMessage(androidText(R.string.account_other_login_getting_full_url))
             val isNide8 = isValidPassportId(serverUrl)
             val fullServerUrl = if (isNide8) {
-                //可能是一个统一通行证服务器ID
+                //Possibly a unified passport server ID
                 "https://auth.mc-user.com:233/$serverUrl"
             } else {
                 tryGetFullServerUrl(serverUrl)
@@ -390,7 +390,7 @@ fun addOtherServer(
             }.getOrNull()?.let { data ->
                 JSONObject(data).optJSONObject("meta")?.let { meta ->
                     if (AccountsManager.isAuthServerExists(fullServerUrl)) {
-                        //确保服务器不重复
+                        //Ensure servers don't duplicate
                         return@runTask
                     }
                     val server = AuthServer(
@@ -418,7 +418,7 @@ fun addOtherServer(
 }
 
 /**
- * 获取账号类型名称
+ * Returns the account type name
  */
 @Composable
 fun getAccountTypeName(account: Account): String {
@@ -432,7 +432,7 @@ fun getAccountTypeName(account: Account): String {
 }
 
 /**
- * 修改自源代码：[HMCL Core: AuthlibInjectorServer.java](https://github.com/HMCL-dev/HMCL/blob/b38076f/HMCLCore/src/main/java/org/jackhuang/hmcl/auth/authlibinjector/AuthlibInjectorServer.java#L53-L85)
+ * Modified from the original source: [HMCL Core: AuthlibInjectorServer.java](https://github.com/HMCL-dev/HMCL/blob/b38076f/HMCLCore/src/main/java/org/jackhuang/hmcl/auth/authlibinjector/AuthlibInjectorServer.java#L53-L85)
  * <br>原项目版权归原作者所有，遵循GPL v3协议
  */
 fun tryGetFullServerUrl(baseUrl: String): String {

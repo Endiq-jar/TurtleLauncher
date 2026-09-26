@@ -51,7 +51,7 @@ import java.nio.file.attribute.BasicFileAttributes
 
 private const val TAG = "FmExtract"
 
-/** 解压控制器：解压设置、密码、输出位置选择、冲突决策与执行。 */
+/** Extraction controller: settings, password, output location selection, conflict decisions and execution. */
 class ExtractController(
     private val context: Context,
     private val logic: FileManagerLogic,
@@ -60,9 +60,9 @@ class ExtractController(
     private val browse: BrowseController,
     private val coroutineScope: CoroutineScope
 ) {
-    /** 暂存待执行的解压请求（缓存） */
+    /** Stashed pending extraction request (cache) */
     private var pendingExtract: PendingExtract? = null
-    /** 解压目标（缓存） */
+    /** Extraction target (cache) */
     private var pendingExtractOutputTarget: OutputTarget? = null
 
     fun showExtract(entry: FmEntry) {
@@ -79,14 +79,14 @@ class ExtractController(
         }
     }
 
-    /** 解压设置确认 */
+    /** Extraction settings confirmation */
     fun onExtractSetupConfirmed(independentFolder: Boolean) {
         val pending = pendingExtract ?: return
         pendingExtract = pending.copy(options = pending.options.copy(independentFolder = independentFolder))
         store.updateState { it.copy(dialogIntent = DialogIntent.ExtractOutputChoice) }
     }
 
-    /** 解压密码确认 */
+    /** Extraction password confirmation */
     fun onExtractPasswordConfirmed(password: String) {
         val target = pendingExtractOutputTarget ?: run {
             store.dismissDialog()
@@ -106,7 +106,7 @@ class ExtractController(
         coroutineScope.launch(Dispatchers.IO) { executeExtract(target, withPassword) }
     }
 
-    /** 在当前目录解压 */
+    /** Extracts into the current directory */
     fun onExtractOutputChoiceCurrent() {
         val pending = pendingExtract ?: run {
             store.dismissDialog()
@@ -119,14 +119,14 @@ class ExtractController(
         }
     }
 
-    /** 通过 SAF 选择输出目录 */
+    /** Picks the output directory via SAF */
     fun onExtractOutputChoiceSaf() {
         store.updateState {
             it.copy(dialogIntent = DialogIntent.ExtractOutputPick)
         }
     }
 
-    /** SAF 选定输出目录 */
+    /** SAF selected an output directory */
     fun onExtractOutputPicked(treeUri: Uri) {
         val pending = pendingExtract ?: run {
             store.dismissDialog()
@@ -138,13 +138,13 @@ class ExtractController(
         }
     }
 
-    /** 解压输出目录选择取消 */
+    /** Extraction output directory selection cancelled */
     fun onExtractOutputPickedCancelled() {
         pendingExtract = null
         store.dismissDialog()
     }
 
-    /** 解压冲突决策 */
+    /** Extraction conflict decision */
     fun resolveExtractConflict(resolution: ConflictResolution) {
         val target = pendingExtractOutputTarget ?: run {
             store.dismissDialog()
@@ -190,7 +190,7 @@ class ExtractController(
                     val finalTarget = if (pending.keepBoth && pending.options.independentFolder) {
                         nextKeepBothExtractTarget(target)
                     } else {
-                        // 直接解压：KEEP_BOTH 在写入时对冲突顶层条目逐个改名，不触碰目标目录本身
+                        // Direct extraction: KEEP_BOTH renames conflicting top-level entries one by one at write time, never touching the target directory itself
                         target
                     }
                     writeExtractToTarget(
@@ -219,8 +219,8 @@ class ExtractController(
         } catch (e: Exception) {
             FmLog.warn(TAG, "Extract failed", e)
             if (isPasswordError(e)) {
-                // 密码错误或缺失
-                // 保留目标与请求，弹密码输入对话框
+                // Password wrong or missing
+                // Keep the target and request, pop the password input dialog
                 keepPendingForPassword = true
                 pendingExtract = pending
                 pendingExtractOutputTarget = target
@@ -237,7 +237,7 @@ class ExtractController(
                 browse.refreshCurrentDir()
             }
         } finally {
-            // 半成品清理
+            // Cleanup of half-done output
             logic.tempWorkspace.delete(tempDir)
             if (!keepPendingForPassword) {
                 pendingExtract = null
@@ -268,7 +268,7 @@ class ExtractController(
         return name
     }
 
-    /** 校验目标冲突（无冲突则直接Executes extraction） */
+    /** Checks target conflicts (executes the extraction directly when clean) */
     private suspend fun stageExtractOrExecute(targetBase: OutputTarget, pending: PendingExtract) {
         val finalTarget = extractFinalDir(targetBase, pending)
         val conflictName = findExtractConflict(finalTarget, pending)
@@ -297,8 +297,8 @@ class ExtractController(
                 else -> null
             }
         }
-        // 直接解压到目标目录
-        // 检查压缩包顶层条目是否与目标目录已有内容冲突
+        // Extract directly into the target directory
+        // Check whether the archive's top-level entries conflict with existing target content
         val topLevels = Extractor.topLevelNames(pending.archivePath)
         return topLevels.firstOrNull { name ->
             when (target) {
@@ -348,9 +348,9 @@ class ExtractController(
         when (target) {
             is OutputTarget.Local -> {
                 if (overwrite && independentFolder) {
-                    // 独立文件夹：覆盖时整体删除该文件夹
+                    // Standalone folder: delete the whole folder on overwrite
                     runCatching { Files.deleteIfExists(target.dir) }
-                } // 直接解压：目标为当前目录，仅按条目覆盖
+                } // Direct extraction: the target is the current directory; overwrite per entry
                 withContext(Dispatchers.IO) {
                     Files.createDirectories(target.dir)
                 }

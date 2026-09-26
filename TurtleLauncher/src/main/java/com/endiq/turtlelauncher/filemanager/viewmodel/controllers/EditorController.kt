@@ -41,17 +41,17 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * 文本编辑器控制器
+ * Text editor controller
  */
 class EditorController(
     private val store: FmStateStore,
     private val browse: BrowseController,
     private val coroutineScope: CoroutineScope
 ) {
-    /** 当前文件使用的编码，保存时按原编码写回 */
+    /** Encoding of the current file; saved back in the original encoding */
     private var charset: Charset = StandardCharsets.UTF_8
 
-    /** 进行中的保存任务 */
+    /** In-progress save task */
     private var saveJob: Job? = null
 
     /** Opens a file and loads its content asynchronously */
@@ -77,13 +77,13 @@ class EditorController(
         }
     }
 
-    /** 内容被修改（供编辑器事件回调） */
+    /** Content modified (for the editor event callback) */
     fun onTextChanged() {
         store.updateEditorUi { it.copy(dirty = true) }
     }
 
     /**
-     * 保存当前内容到文件
+     * Saves the current content to the file
      */
     fun save(onDone: (Boolean) -> Unit = {}) {
         if (store.editorUiValue().saving) return
@@ -98,8 +98,8 @@ class EditorController(
                         Files.write(path, content.toString().toByteArray(charset))
                     }.isSuccess
                 }
-                // 写入完成后若用户已取消（Files.write 为阻塞调用，无法中途中断），
-                // 保持未保存状态，不更新 dirty、不提示结果
+                // If the user cancelled after the write completed (Files.write is blocking, cannot be interrupted),
+                // keep the unsaved state: don't update dirty, don't report a result
                 ensureActive()
                 if (!success) {
                     FmLog.error(TAG, "Save editor file failed: $path")
@@ -107,14 +107,14 @@ class EditorController(
                 store.updateEditorUi { it.copy(dirty = false) }
                 if (success) {
                     store.emitSnackbar(FmSnackbar(store.stringResolver(R.string.generic_saved), long = false))
-                    // 文件大小 / 修改时间已变化，刷新列表展示
+                    // File size / mtime changed; refresh the list display
                     browse.refreshDir()
                 } else {
                     store.emitSnackbar(FmSnackbar(store.stringResolver(R.string.fm_editor_save_failed)))
                 }
                 onDone(success)
             } catch (e: CancellationException) {
-                // 用户取消保存：不更新 dirty、不提示结果
+                // User cancelled the save: don't update dirty, don't report a result
                 onDone(false)
                 throw e
             } finally {
@@ -132,7 +132,7 @@ class EditorController(
         store.updateEditorUi { it.copy(saving = false) }
     }
 
-    /** 请求显示退出确认弹窗 */
+    /** Requests the exit confirmation dialog */
     fun requestExitConfirm() {
         store.updateEditorUi { it.copy(exitConfirm = true) }
     }
@@ -142,7 +142,7 @@ class EditorController(
         store.updateEditorUi { it.copy(exitConfirm = false) }
     }
 
-    /** Whether unsaved changes exist（供系统返回键判定） */
+    /** Whether unsaved changes exist (for the system back-key check) */
     fun hasDirty(): Boolean = store.editorUiValue().dirty
 
     private fun loadFile(path: Path): Content {
@@ -161,7 +161,7 @@ class EditorController(
     }
 
     /**
-     * 判断剩余堆内存能否容纳该文件的加载峰值，内存不足时直接拒绝加载
+     * Checks whether the remaining heap can hold the file's peak load; refuses to load when short
      */
     private fun hasEnoughMemoryFor(fileSize: Long): Boolean {
         val runtime = Runtime.getRuntime()
@@ -171,8 +171,8 @@ class EditorController(
     }
 
     /**
-     * 解码文件内容：优先识别 BOM，否则按严格 UTF-8 解码，
-     * 解码失败回退 GBK（兼容旧编码的中文文本文件）。
+     * Decodes file content: prefers BOM detection, otherwise strict UTF-8,
+     * falling back to GBK on decode failure (compatible with legacy-encoded Chinese text files).
      */
     private fun decode(bytes: ByteArray): String {
         val bom = detectBom(bytes)
@@ -216,11 +216,11 @@ class EditorController(
 
     companion object {
         private const val TAG = "EditorController"
-        /** 加载文本文件时的内存放大系数（字节数组 + UTF-16 字符串 + 编辑器行结构等） */
+        /** Memory amplification factor when loading a text file (byte array + UTF-16 string + editor line structures) */
         private const val MEMORY_MULTIPLIER: Long = 6
-        /** 加载过程中的固定内存开销（语法分析等其他分配） */
+        /** Fixed memory overhead during loading (syntax analysis and other allocations) */
         private const val MEMORY_OVERHEAD: Long = 16L * 1024 * 1024
-        /** 允许占用的可用堆内存比例，保留余量给应用其他部分 */
+        /** Allowed fraction of the available heap, leaving headroom for the rest of the app */
         private const val MEMORY_SAFE_RATIO = 0.75
     }
 }

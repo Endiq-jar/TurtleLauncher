@@ -21,11 +21,11 @@ package com.endiq.turtlelauncher.filemanager.viewmodel
 import com.endiq.turtlelauncher.filemanager.config.FmConfig
 import com.endiq.turtlelauncher.filemanager.logic.entry.FmEntry
 
-/** 目录列表排序配置 */
+/** Directory list sort configuration */
 data class SortConfig(
     val field: FmConfig.SortField = FmConfig.SortField.NAME,
     val ascending: Boolean = true,
-    /** 目录在前 */
+    /** Directories first */
     val folderFirst: Boolean = true
 ) {
     companion object {
@@ -39,12 +39,12 @@ data class SortConfig(
     }
 }
 
-/** 回收站专用排序配置 */
+/** Trash-specific sort configuration */
 data class TrashSortConfig(
     val field: FmConfig.TrashSortField = FmConfig.TrashSortField.DELETED,
-    /** 默认降序 删除时间越新越靠前 */
+    /** Descending by default; newer deletions come first */
     val ascending: Boolean = false,
-    /** 目录在前 */
+    /** Directories first */
     val folderFirst: Boolean = true
 ) {
     companion object {
@@ -82,7 +82,7 @@ fun applyVisibility(
     val comparator: Comparator<FmEntry> = when (config.field) {
         FmConfig.SortField.NAME -> compareBy { it.name.lowercase() }
 
-        // 目录无大小，按大小排序时目录回退为按名称排序
+        // Directories have no size; size sorting falls back to name order for them
         FmConfig.SortField.SIZE -> compareBy<FmEntry> {
             if (it.isDirectory) 0L else it.size
         }.thenBy { it.name.lowercase() }
@@ -97,7 +97,7 @@ fun applyVisibility(
 
     if (!config.folderFirst) return ordered
 
-    // 保持排序中的“目录在前 / 文件在后”，目录间维持当前顺序
+    // Keep "directories first / files after"; preserve current order among directories
     val dirs = ordered.filter { it.isDirectory }
     val files = ordered.filter { it.isFile }
     return dirs + files

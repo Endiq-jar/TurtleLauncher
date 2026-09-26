@@ -204,7 +204,7 @@ private fun baseNameWithoutSuffix(name: String): String {
 /**
  * Compression output location dialog
  * @param onCurrentDir creates the archive in the current directory
- * @param onSaf 通过 SAF 选择输出目录
+ * @param onSaf picks the output directory via SAF
  */
 @Composable
 fun FmCompressOutputChoiceDialog(
@@ -306,7 +306,7 @@ private fun AdvancedCompressSection(
     onPasswordChange: (String) -> Unit,
     onConfirmPasswordChange: (String) -> Unit
 ) {
-    // 压缩等级（1..9）
+    // Compression level (1..9)
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.fm_compress_level, level),
@@ -320,7 +320,7 @@ private fun AdvancedCompressSection(
         )
     }
 
-    // 压缩方法
+    // Compression method
     ExposedDropdown(
         selectedText = method.displayName,
         label = stringResource(R.string.fm_compress_method),
@@ -329,7 +329,7 @@ private fun AdvancedCompressSection(
         onSelect = onMethodChange
     )
 
-    // 密码
+    // Password
     PasswordField(
         value = password,
         onValueChange = onPasswordChange,

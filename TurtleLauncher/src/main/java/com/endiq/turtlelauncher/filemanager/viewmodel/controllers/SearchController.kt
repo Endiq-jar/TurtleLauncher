@@ -34,7 +34,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-/** 搜索控制器 */
+/** Search controller */
 class SearchController(
     private val logic: FileManagerLogic,
     private val taskManager: TaskManager,
@@ -42,8 +42,8 @@ class SearchController(
     private val coroutineScope: CoroutineScope
 ) {
     /**
-     * 打开搜索入口
-     * 本次会话已有结果时直接显示结果列表，否则显示搜索设置
+     * Opens the search entry
+     * Shows the result list directly when this session already has results; otherwise the search settings
      */
     fun showSearchDialog() {
         store.dismissDialog()
@@ -54,8 +54,8 @@ class SearchController(
     }
 
     /**
-     * 提交搜索
-     * 非空校验后进入搜索任务，完成后展示结果列表
+     * Submits a search
+     * After non-empty validation, starts the search task and shows the results on completion
      */
     fun submitSearch(keyword: String, caseSensitive: Boolean) {
         if (keyword.isBlank()) return
@@ -83,7 +83,7 @@ class SearchController(
                 is RunResult.Ok -> {
                     when (val search = result.value) {
                         is SearchResult.Ok -> {
-                            // 隐藏过滤由数据控制层完成
+                            // Hidden-file filtering is done by the data-control layer
                             val showHidden = FmConfig.showHidden()
                             val hits = search.hits
                                 .filterNot { !showHidden && it.hidden }
@@ -117,7 +117,7 @@ class SearchController(
         }
     }
 
-    /** 清除Search results，返回Search settings dialog */
+    /** Clears the search results and returns to the search settings */
     fun clearSearch() {
         store.setSearchUi(SearchUiState())
         store.updateState {
@@ -125,7 +125,7 @@ class SearchController(
         }
     }
 
-    /** 从Search results列表返回Search settings dialog（发起新搜索） */
+    /** Returns from the results list to the search settings (start a new search) */
     fun backToSearchSetup() {
         store.updateState {
             it.copy(dialogIntent = DialogIntent.Search)

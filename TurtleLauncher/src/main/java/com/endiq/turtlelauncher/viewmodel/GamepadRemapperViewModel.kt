@@ -44,7 +44,7 @@ class GamepadRemapperViewModel: ViewModel() {
     val allRemappers = mutableMapOf<String, GamepadRemapper>()
 
     /**
-     * 是否正在保存映射
+     * Whether a save is in progress映射
      */
     var isSavingMapping by mutableStateOf(false)
 

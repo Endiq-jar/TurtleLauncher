@@ -246,7 +246,7 @@ private class ServerListViewModel(
     }
 
     /**
-     * 是否正在保存服务器列表
+     * Whether a save is in progress服务器列表
      */
     var saving by mutableStateOf(false)
         private set

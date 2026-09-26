@@ -44,7 +44,7 @@ private const val TAG = "Account"
 @Entity(tableName = "accounts")
 data class Account(
     /**
-     * 唯一 UUID，标识该账号
+     * Unique UUID identifying the account
      */
     @PrimaryKey
     val uniqueUUID: String = UUID.randomUUID().toString().lowercase(),
@@ -72,7 +72,7 @@ data class Account(
     private fun getTempCapeFile() = File(PathManager.DIR_CACHE, "account_cape_${uniqueUUID}.tmp.png")
 
     /**
-     * 下载并更新账号的皮肤文件
+     * Downloads and updates the account's skin file
      */
     suspend fun downloadYggdrasil() = withContext(Dispatchers.IO) {
         val baseUrl = when {

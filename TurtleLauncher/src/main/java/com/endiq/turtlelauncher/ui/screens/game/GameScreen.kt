@@ -209,10 +209,10 @@ private class GameViewModel(
 
     /** Whether the layout is currently being edited */
     var isEditingLayout by mutableStateOf(false)
+        private set
 
     /** Whether the Emotes (Emotecraft) selection dialog is open */
     var showEmotesDialog by mutableStateOf(false)
-        private set
 
     fun switchControlLayer(hideWhen: HideLayerWhen) {
         if (controlLayerHideState != hideWhen) controlLayerHideState = hideWhen

@@ -27,11 +27,11 @@ import android.view.PointerIcon as NativePointerIcon
 object TLBridgeStates {
 
     private val _cursorMode = MutableStateFlow(CURSOR_ENABLED)
-    /** 状态：指针模式（启用、禁用） */
+    /** State: pointer mode (enabled, disabled) */
     val cursorMode = _cursorMode.asStateFlow()
 
     /**
-     * 变更指针模式
+     * Changes the pointer mode
      */
     @JvmStatic
     fun changeCursorMode(mode: Int) {
@@ -40,11 +40,11 @@ object TLBridgeStates {
     }
 
     private val _cursorShape = MutableStateFlow(CursorShape.Arrow)
-    /** 状态：指针形状 */
+    /** State: pointer shape */
     val cursorShape = _cursorShape.asStateFlow()
 
     /**
-     * 变更指针形状
+     * Changes the pointer shape
      */
     @JvmStatic
     fun changeCursorShape(shape: CursorShape) {
@@ -53,7 +53,7 @@ object TLBridgeStates {
 
     @JvmStatic
     private val _windowChangeKey = MutableStateFlow(false)
-    /** 状态：窗口变更刷新key */
+    /** State: window change refresh key */
     val windowChangeKey = _windowChangeKey.asStateFlow()
 
     fun onWindowChange() {
@@ -61,54 +61,54 @@ object TLBridgeStates {
     }
 }
 
-/** 指针:启用 */
+/** Pointer: enabled */
 const val CURSOR_ENABLED = 1
-/** 指针:禁用 */
+/** Pointer: disabled */
 const val CURSOR_DISABLED = 0
 
 /**
- * 指针形状（目前仅支持箭头、输入、手型）
+ * Pointer shapes (currently arrow, ibeam, and hand only)
  */
 enum class CursorShape(
     val composeIcon: PointerIcon
 ) {
     /**
-     * 箭头
+     * Arrow
      */
     Arrow(PointerIcon.Default),
 
     /**
-     * 输入
+     * Ibeam
      */
     IBeam(PointerIcon.Text),
 
     /**
-     * 手形
+     * Hand
      */
     Hand(PointerIcon.Hand),
 
     /**
-     * 十字
+     * Cross
      */
     CrossHair(PointerIcon.Crosshair),
 
     /**
-     * 调整大小（上下）
+     * Resize (vertical)
      */
     ResizeNS(PointerIcon(NativePointerIcon.TYPE_VERTICAL_DOUBLE_ARROW)),
 
     /**
-     * 调整大小（左右）
+     * Resize (horizontal)
      */
     ResizeEW(PointerIcon(NativePointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW)),
 
     /**
-     * 调整大小（全部方向）
+     * Resize (all directions)
      */
     ResizeAll(PointerIcon(NativePointerIcon.TYPE_ALL_SCROLL)),
 
     /**
-     * 禁止/无效操作
+     * Not allowed / invalid operation
      */
     NotAllowed(PointerIcon(NativePointerIcon.TYPE_NO_DROP))
 }

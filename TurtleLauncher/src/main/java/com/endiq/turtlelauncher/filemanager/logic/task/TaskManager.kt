@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 
 /**
- * 长任务进度
+ * Long-running task progress
  */
 data class TaskProgress(
     val kind: TaskKind,
@@ -45,7 +45,7 @@ data class TaskProgress(
 }
 
 /**
- * 任务状态
+ * Task state
  */
 sealed interface TaskState {
     data object Idle : TaskState
@@ -53,7 +53,7 @@ sealed interface TaskState {
 }
 
 /**
- * 任务被拒绝的原因
+ * Reason a task was rejected
  */
 sealed interface TaskReject {
     data object Busy : TaskReject
@@ -71,10 +71,10 @@ class TaskManager {
     private var currentJob: Job? = null
 
     /**
-     * 尝试运行任务，已有任务进行中时返回 [TaskReject.Busy]
-     * @param kind 任务类型
-     * @param block 任务体，可在 [TaskProgressScope] 中上报进度
-     * @return 任务执行结果
+     * Tries to run a task; returns [TaskReject.Busy] when one is already in progress
+     * @param kind the task kind
+     * @param block the task body, which may report progress via [TaskProgressScope]
+     * @return the task execution result
      */
     suspend fun <T> run(
         kind: TaskKind,
@@ -88,8 +88,8 @@ class TaskManager {
             _state.value = TaskState.Busy(kind)
             _progress.value = TaskProgress(kind = kind)
             val scope = TaskProgressScopeImpl(kind, _progress)
-            // 使用 coroutineScope + async 创建可独立取消的子任务
-            // 任务块强制派发到 Dispatchers.IO，避免阻塞调用线程
+            // coroutineScope + async creates an independently cancellable child task
+            // The task block is forced onto Dispatchers.IO to avoid blocking the calling thread
             return coroutineScope {
                 val deferred = async(Dispatchers.IO) { scope.block() }
                 currentJob = deferred
@@ -111,14 +111,14 @@ class TaskManager {
     }
 
     /**
-     * 取消当前正在执行的任务
+     * Cancels the currently running task
      */
     fun cancel() {
         runCatching { currentJob?.cancel() }
     }
 }
 
-/** [TaskManager.run] 的结果 */
+/** Result of [TaskManager.run] */
 sealed interface RunResult<out T> {
     data class Ok<T>(val value: T) : RunResult<T>
     data class Failed(val error: Throwable) : RunResult<Nothing>
@@ -126,11 +126,11 @@ sealed interface RunResult<out T> {
     data class Rejected(val reason: TaskReject) : RunResult<Nothing>
 }
 
-/** 任务进度上报接口 */
+/** Task progress reporting interface */
 interface TaskProgressScope {
     val kind: TaskKind
 
-    /** 整体进度更新 */
+    /** Overall progress update */
     fun report(
         total: Int? = null,
         completed: Int? = null,

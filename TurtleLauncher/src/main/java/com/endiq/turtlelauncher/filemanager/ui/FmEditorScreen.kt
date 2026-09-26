@@ -119,7 +119,7 @@ import kotlinx.coroutines.launch
 import java.nio.file.Path
 import kotlin.math.roundToInt
 
-/** 不可见字符显示组合：行首 / 行内 / 行尾空白 + 行尾符 */
+/** Invisible-character display set: line-start / in-line / line-end whitespace plus the line terminator */
 private const val NON_PRINTABLE_FLAGS =
     CodeEditor.FLAG_DRAW_WHITESPACE_LEADING or
         CodeEditor.FLAG_DRAW_WHITESPACE_INNER or
@@ -131,13 +131,13 @@ private const val MAX_TEXT_SIZE_PX = 96f
 private const val TEXT_SIZE_STEP = 1.15f
 
 /**
- * 文本编辑器页面
- * @param path 待编辑文件的绝对路径
- * @param vm 文件管理器视图模型
- * @param snackHost 全局 Snackbar 宿主
- * @param onBack 返回主页面回调
- * @param onExit 退出文件管理器回调
- * @param onToggleOrientation 横竖屏切换回调
+ * Text editor page
+ * @param path absolute path of the file to edit
+ * @param vm the file manager view model
+ * @param snackHost the global Snackbar host
+ * @param onBack back-to-main-page callback
+ * @param onExit exit-file-manager callback
+ * @param onToggleOrientation orientation-toggle callback
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -185,12 +185,12 @@ fun FmEditorScreen(
     var replaceExpanded by remember { mutableStateOf(false) }
     var replaceQuery by remember { mutableStateOf("") }
 
-    /** 搜索选项 */
+    /** Search options */
     var matchCase by remember { mutableStateOf(FmConfig.editorSearchMatchCase()) }
     var wholeWord by remember { mutableStateOf(FmConfig.editorSearchWholeWord()) }
     var useRegex by remember { mutableStateOf(FmConfig.editorSearchRegex()) }
 
-    /** 根据当前选项构造搜索选项 */
+    /** Builds the searcher options from the current settings */
     fun currentSearchOptions(): EditorSearcher.SearchOptions {
         val type = when {
             useRegex -> EditorSearcher.SearchOptions.TYPE_REGULAR_EXPRESSION
@@ -200,10 +200,10 @@ fun FmEditorScreen(
         return EditorSearcher.SearchOptions(type, !matchCase)
     }
 
-    /** 读取搜索器当前匹配计数并同步到界面（无搜索模式时清零） */
+    /** Reads the searcher's current match count and syncs it to the UI (cleared when not searching) */
     fun updateSearchCount() {
         val searcher = editor?.searcher ?: return
-        // stopSearch 后 pattern 为空，访问计数会抛 IllegalStateException，须先判断
+        // After stopSearch the pattern is empty and reading the count throws IllegalStateException; check first
         if (!searcher.hasQuery()) {
             searchTotal = 0
             searchCurrent = 0
@@ -213,7 +213,7 @@ fun FmEditorScreen(
         searchCurrent = (searcher.currentMatchedPositionIndex + 1).coerceAtLeast(0)
     }
 
-    /** 用当前选项执行搜索；非法正则时停止搜索并清零计数 */
+    /** Runs a search with the current options; an invalid regex stops the search and clears the count */
     fun applySearch(pattern: String) {
         val searcher = editor?.searcher ?: return
         if (pattern.isEmpty()) {
@@ -229,23 +229,23 @@ fun FmEditorScreen(
         updateSearchCount()
     }
 
-    /** 输入变化时实时搜索 */
+    /** Searches in real time as the input changes */
     fun onSearchQueryChange(query: String) {
         searchQuery = query
         applySearch(query)
     }
 
-    /** 搜索选项变化时重新搜索 */
+    /** Re-runs the search when the options change */
     fun onSearchOptionChange() {
         applySearch(searchQuery)
     }
 
-    /** 替换后重新执行搜索以刷新匹配结果 */
+    /** Re-runs the search after a replace to refresh the matches */
     fun refreshSearch() {
         applySearch(searchQuery)
     }
 
-    /** 关闭搜索面板并清除高亮 */
+    /** Closes the search panel and clears highlights */
     fun closeSearch() {
         searchVisible = false
         searchQuery = ""
@@ -410,11 +410,11 @@ fun FmEditorScreen(
                     if (savedFontSize > 0f) {
                         e.setTextSizePx(savedFontSize)
                     } else {
-                        // 未设置过字号时，采用编辑器默认值并回写，后续调整以此为基础
+                        // With no font size set yet, take the editor default and write it back as the basis for later adjustments
                         fontSizePx = e.textSizePx
                     }
-                    // 搜索匹配在后台线程异步执行，完成（或 stopSearch）时派发事件，
-                    // 事件线程非主线程，post 回主线程刷新计数
+                    // Search matching runs async on a background thread and dispatches an event on completion (or stopSearch),
+                    // the event thread is not the main thread, so post back to the main thread to refresh the count
                     e.subscribeEvent(PublishSearchResultEvent::class.java) { _, _ ->
                         e.post {
                             updateSearchCount()
@@ -549,7 +549,7 @@ fun FmEditorScreen(
         }
     }
 
-    // 转到指定行对话框
+    // Go-to-line dialog
     if (gotoDialog) {
         FmGotoLineDialog(
             maxLine = editor?.lineCount ?: 1,
@@ -561,7 +561,7 @@ fun FmEditorScreen(
         )
     }
 
-    // 保存中
+    // Saving
     if (editorUi.saving) {
         FmDialogSurface(
             onDismissRequest = { vm.editorCancelSave() }
@@ -582,7 +582,7 @@ fun FmEditorScreen(
         }
     }
 
-    // 未保存修改的退出确认框
+    // Exit confirmation for unsaved changes
     if (editorUi.exitConfirm) {
         FmDialogSurface(
             onDismissRequest = { vm.editorCancelExitConfirm() }
@@ -604,7 +604,7 @@ fun FmEditorScreen(
                     position = ButtonPosition.Top,
                     onClick = {
                         vm.editorSave { success ->
-                            // 保存成功后才退出
+                            // Exit only after saving succeeds
                             if (success) {
                                 vm.editorCancelExitConfirm()
                                 onBack()
@@ -639,7 +639,7 @@ fun FmEditorScreen(
 }
 
 /**
- * 悬浮搜索面板
+ * Floating search panel
  */
 @Composable
 private fun EditorSearchBar(
@@ -680,7 +680,7 @@ private fun EditorSearchBar(
                 .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // 搜索结果计数
+            // Search result count
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -729,7 +729,7 @@ private fun EditorSearchBar(
                 }
             }
 
-            // 展开替换按钮
+            // Expand-replace button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -788,7 +788,7 @@ private fun EditorSearchBar(
                 )
             }
 
-            // 替换输入与替换按钮
+            // Replace input and replace button
             if (replaceExpanded) {
                 SmallOutlinedEditField(
                     modifier = Modifier
@@ -802,7 +802,7 @@ private fun EditorSearchBar(
                     shape = MaterialTheme.shapes.medium
                 )
 
-                // 替换按钮行
+                // Replace button row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
@@ -907,7 +907,7 @@ private fun SmallActionButton(
 }
 
 /**
- * 编辑器更多菜单
+ * Editor overflow menu
  */
 @Composable
 private fun EditorMoreMenu(
@@ -1024,7 +1024,7 @@ private fun EditorMoreMenu(
 
             HorizontalDivider()
 
-            // 字号
+            //Font size
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1062,9 +1062,9 @@ private fun EditorMoreMenu(
 }
 
 /**
- * 转到指定行对话框
- * @param maxLine 最大行数（1 起始）
- * @param onConfirm 确认跳转，参数为 1 起始行号
+ * Go-to-line dialog
+ * @param maxLine maximum line count (1-based)
+ * @param onConfirm confirm-jump callback, with a 1-based line number
  */
 @Composable
 private fun FmGotoLineDialog(

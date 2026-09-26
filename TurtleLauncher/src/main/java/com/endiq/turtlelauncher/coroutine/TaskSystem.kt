@@ -40,12 +40,12 @@ object TaskSystem {
     private val allListeners = ConcurrentHashMap<String, () -> Unit>()
 
     /**
-     * 提交并立即运行任务
+     * Submits and runs a task immediately
      */
     fun submitTask(task: Task) {
         if (containsTask(task)) return
         addTask(task)
-        //持有保活，避免启动器切至后台后任务被系统中断
+        //Hold keep-alive so the system cannot interrupt the task in the background
         TaskKeepAlive.acquire()
 
         allJobs[task.id] = scope.launch(task.dispatcher) {
@@ -64,7 +64,7 @@ object TaskSystem {
                 try {
                     onTaskEnded(task)
                 } finally {
-                    //确保保活一定被释放，避免任务异常导致前台服务无法停止
+                    //Ensure keep-alive is always released so a failing task cannot jam the foreground service
                     TaskKeepAlive.release()
                 }
             }
@@ -72,9 +72,9 @@ object TaskSystem {
     }
 
     /**
-     * 提交并立即运行任务
-     * 若任务已存在，则忽略，但任务监听器会被覆盖
-     * @param onEnded 任务结束时的监听器
+     * Submits and runs a task immediately
+     * If the task already exists it is ignored, but its listener is replaced
+     * @param onEnded listener called when the task ends
      */
     fun submitTask(task: Task, onEnded: () -> Unit) {
         putTaskEndedListener(taskId = task.id, onEnded = onEnded)
@@ -82,16 +82,16 @@ object TaskSystem {
     }
 
     /**
-     * 添加任务结束的监听器，监听器会在任务的一切流程结束时被调用
-     * 任务监听器执行时发生的异常将会被忽略
-     * @param taskId 指定监听器应用到的哪个任务上
+     * Adds a task-finish listener, invoked when every flow of the task ends
+     * Exceptions thrown while running the task listener are ignored
+     * @param taskId the task the listener applies to
      */
     fun putTaskEndedListener(taskId: String, onEnded: () -> Unit) {
         allListeners[taskId] = onEnded
     }
 
     /**
-     * 移除任务流程结束的监听器
+     * Removes a task-finish listener
      */
     fun removeTaskEndedListener(taskId: String) =
         allListeners.remove(taskId)
@@ -113,7 +113,7 @@ object TaskSystem {
     }
 
     /**
-     * 取消任务
+     * Cancels a task
      */
     fun cancelTask(task: Task) {
         allJobs[task.id]?.cancel()
@@ -121,7 +121,7 @@ object TaskSystem {
     }
 
     /**
-     * 取消任务
+     * Cancels a task
      */
     fun cancelTask(id: String) {
         allJobs[id]?.cancel()
@@ -129,17 +129,17 @@ object TaskSystem {
     }
 
     /**
-     * @return 是否包括任务
+     * @return whether it contains the task
      */
     fun containsTask(task: Task) = _tasksFlow.value.contains(task)
 
     /**
-     * @return 是否包括任务
+     * @return whether it contains the task
      */
     fun containsTask(id: String) = _tasksFlow.value.any { it.id == id }
 
     /**
-     * 停止所有任务
+     * Stops all tasks
      */
     fun stopAll() {
         scope.cancel()

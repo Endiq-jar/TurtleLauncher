@@ -42,7 +42,7 @@ class UnpackJreTask(
         runCatching {
             assetManager = context.assets
             if (!isJreArchSupported()) {
-                //当前设备架构不支持使用这个环境
+                //The current device architecture does not support this runtime
                 isCheckFailed = true
                 return@runCatching
             }
@@ -61,7 +61,7 @@ class UnpackJreTask(
         return runCatching {
             val installedRuntimeVersion = RuntimesManager.loadInternalRuntimeVersion(jre.jreName)
             when {
-                //未安装该环境
+                //This runtime is not installed
                 installedRuntimeVersion == null -> InstallableItem.State.NOT_STARTED
                 launcherRuntimeVersion != installedRuntimeVersion -> InstallableItem.State.PENDING
                 else -> InstallableItem.State.FINISHED
@@ -69,7 +69,7 @@ class UnpackJreTask(
         }.onFailure { e ->
             Logger.error("CheckJre", "An exception occurred while detecting the Java Runtime.", e)
         }.getOrElse {
-            //检查失败，要求重新进行安装
+            //Check failed; a reinstall is required
             InstallableItem.State.NOT_STARTED
         }
     }
@@ -77,7 +77,7 @@ class UnpackJreTask(
     private fun isJreArchSupported(): Boolean {
         return runCatching {
             val allPacks = assetManager.list(jre.jrePath) ?: return@runCatching false
-            //检查是否包含符合当前设备架构的环境
+            //Check whether it contains a runtime matching the device architecture
             val runtime = getRuntimeByArch()
             allPacks.contains(runtime).also {
                 Logger.info(TAG, "Device requires environment: ${jre.jrePath}/$runtime, contains = $it")

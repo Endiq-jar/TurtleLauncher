@@ -55,7 +55,7 @@ object AccountsManager {
     private val _currentAccountFlow = MutableStateFlow<Account?>(null)
     val currentAccountFlow = _currentAccountFlow.asStateFlow()
 
-    //认证服务器
+    //Authentication servers
     private val _authServers = CopyOnWriteArrayList<AuthServer>()
     private val _authServersFlow = MutableStateFlow<List<AuthServer>>(emptyList())
     val authServersFlow = _authServersFlow.asStateFlow()
@@ -120,7 +120,7 @@ object AccountsManager {
     }
 
     /**
-     * 刷新当前已保存的认证服务器，认证服务器保存在数据库中
+     * 刷新当前已保存的Authentication servers，Authentication servers保存在数据库中
      */
     fun reloadAuthServers() {
         scope.launch {
@@ -288,7 +288,7 @@ object AccountsManager {
     }
 
     /**
-     * 保存认证服务器到数据库
+     * 保存Authentication servers到数据库
      */
     suspend fun saveAuthServer(server: AuthServer) {
         runCatching {
@@ -301,7 +301,7 @@ object AccountsManager {
     }
 
     /**
-     * 从数据库中删除认证服务器，并刷新
+     * 从数据库中删除Authentication servers，并刷新
      */
     fun deleteAuthServer(server: AuthServer) {
         scope.launch {
@@ -332,7 +332,7 @@ object AccountsManager {
     }
 
     /**
-     * 认证服务器是否存在
+     * Authentication servers是否存在
      */
     fun isAuthServerExists(baseUrl: String): Boolean {
         return baseUrl.isNotEmpty() && _authServers.any { it.baseUrl == baseUrl }

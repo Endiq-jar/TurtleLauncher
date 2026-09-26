@@ -19,19 +19,19 @@
 package com.endiq.turtlelauncher.filemanager.logic.extract
 
 /**
- * 解压过程中检测到压缩包需要密码、或密码错误时抛出的异常
- * @param type 错误类型（需要密码 / 密码错误）
+ * Thrown when extraction detects the archive needs a password or the password is wrong
+ * @param type error type (password required / wrong password)
  */
 class ArchivePasswordException(
     val type: Type,
     message: String = type.message,
     cause: Throwable? = null
 ) : Exception(message, cause) {
-    /** 密码异常类型 */
+    /** Password exception types */
     enum class Type(val message: String) {
-        /** 压缩包已加密，尚未提供密码 */
+        /** The archive is encrypted and no password has been provided yet */
         REQUIRED("Archive requires a password"),
-        /** 提供的密码错误 */
+        /** The provided password is wrong */
         WRONG("Archive password is incorrect"),
     }
 }

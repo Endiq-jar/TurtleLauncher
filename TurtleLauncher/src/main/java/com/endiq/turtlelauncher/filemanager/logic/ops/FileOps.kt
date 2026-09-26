@@ -37,9 +37,9 @@ import java.nio.file.attribute.BasicFileAttributes
 private const val TAG = "FmFileOps"
 private const val BUFFER_SIZE = 64 * 1024
 
-/** 文件操作逻辑 */
+/** File operation logic */
 class FileOps(private val scope: AccessScope) {
-    /** 构建粘贴请求，并分析顶层项是否冲突 */
+    /** Builds a paste request and analyzes top-level conflicts */
     fun buildPasteRequest(
         sources: List<Path>,
         targetDir: Path,
@@ -52,7 +52,7 @@ class FileOps(private val scope: AccessScope) {
         if (!Files.isWritable(safeTarget)) {
             throw IllegalStateException("Target dir is not writable")
         }
-        // 源路径与目标路径相同、或目标位于源目录内部时视为无效操作
+        // Identical source/target paths, or the target inside the source directory: invalid operation
         for (src in sources) {
             val safeSource = src.normalize().toAbsolutePath()
             if (safeSource == safeTarget || safeTarget.startsWith(safeSource)) {
@@ -99,7 +99,7 @@ class FileOps(private val scope: AccessScope) {
 
         sources.forEachIndexed { index, rawSource ->
             checkCancel()
-            // 源不做可访问范围限制，仅归一化绝对路径
+            // Sources are not scope-limited here; only normalized to absolute paths
             val source = rawSource.normalize().toAbsolutePath()
             val name = source.fileName?.toString()
             if (name == null) {
@@ -109,7 +109,7 @@ class FileOps(private val scope: AccessScope) {
                 return@forEachIndexed
             }
 
-            //禁止把目录复制到自身或自身的子目录内，源与目标相同同样视为无效
+            //Copying a directory into itself or its own subdirectory is forbidden; identical source/target is equally invalid
             if (source == safeTarget || safeTarget.startsWith(source)) {
                 results += ItemResult(source, null, false, "Cannot copy/move into itself or its own subdirectory")
                 completed++
@@ -169,7 +169,7 @@ class FileOps(private val scope: AccessScope) {
         }
     }
 
-    /** 复制目录树 */
+    /** Copies a directory tree */
     suspend fun copyTree(
         source: Path,
         target: Path,
@@ -357,7 +357,7 @@ class FileOps(private val scope: AccessScope) {
     }
 }
 
-/** 递归删除路径 */
+/** Recursively deletes a path */
 suspend fun deleteRecursivePath(path: Path, checkCancel: () -> Unit = {}) = withContext(Dispatchers.IO) {
     if (Files.isSymbolicLink(path)) {
         runCatching {

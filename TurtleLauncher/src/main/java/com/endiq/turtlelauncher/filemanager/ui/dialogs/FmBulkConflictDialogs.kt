@@ -52,8 +52,8 @@ import com.endiq.turtlelauncher.ui.components.PositionButton
 import com.endiq.turtlelauncher.ui.components.PositionFilledTonalButton
 
 /**
- * 多选模式批量操作对话框
- * @param selectedCount 已选中的条目数量
+ * Bulk-operation dialog for multi-select mode
+ * @param selectedCount number of selected entries
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,7 +121,7 @@ fun FmBulkActionsDialog(
                     onCompress()
                 }
             )
-            //留白
+            //Spacer
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,12 +157,12 @@ private fun FmBulkActionItem(
 }
 
 /**
- * 冲突处理对话框，提供跳过、覆盖、保留两者三种处理方式
- * @param conflictName 冲突条目名称
- * @param totalConflicts 冲突总数
- * @param onSkip 跳过该冲突项
- * @param onOverwrite 覆盖目标
- * @param onKeepBoth 同时保留两者
+ * Conflict-resolution dialog offering skip, overwrite and keep-both
+ * @param conflictName name of the conflicting entry
+ * @param totalConflicts total conflict count
+ * @param onSkip skips this conflicting entry
+ * @param onOverwrite overwrites the target
+ * @param onKeepBoth keeps both
  */
 @Composable
 fun FmConflictDialog(

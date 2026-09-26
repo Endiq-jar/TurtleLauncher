@@ -26,9 +26,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * 任务流的日志输出接口，持有待展示的日志行状态
- * @param title 日志标题
- * @param maxLines 日志行数上限，超出后丢弃最旧的日志行
+ * Log output interface for task flows, holding the log lines to display
+ * @param title the log title
+ * @param maxLines log line cap; the oldest lines are dropped beyond it
  */
 @Keep
 class TaskLogOutput(
@@ -37,16 +37,16 @@ class TaskLogOutput(
 ) {
     private val _lines = MutableStateFlow<List<String>>(emptyList())
 
-    /** 当前已展示的日志行 */
+    /** Currently displayed log lines */
     val lines: StateFlow<List<String>> = _lines.asStateFlow()
 
     private val _active = MutableStateFlow(false)
 
-    /** 是否处于日志输出会话中 */
+    /** Whether a log output session is active */
     val active: StateFlow<Boolean> = _active.asStateFlow()
 
     /**
-     * 发起一次日志输出会话：清空已有内容并进入活跃状态
+     * Starts a log output session: clears existing content and becomes active
      */
     fun start() {
         _lines.update { emptyList() }
@@ -54,21 +54,21 @@ class TaskLogOutput(
     }
 
     /**
-     * 停止日志输出会话，保留已展示的内容
+     * Stops the log output session, keeping displayed content
      */
     fun stop() {
         _active.update { false }
     }
 
     /**
-     * 增量追加单行日志
+     * Appends one log line incrementally
      */
     fun appendLine(line: String) {
         appendLines(listOf(line))
     }
 
     /**
-     * 增量追加多行日志
+     * Appends multiple log lines incrementally
      */
     fun appendLines(lines: List<String>) {
         if (lines.isEmpty()) return
@@ -76,14 +76,14 @@ class TaskLogOutput(
     }
 
     companion object {
-        /** 默认日志行数上限 */
+        /** Default log line cap */
         const val DEFAULT_MAX_LINES = 1000
     }
 }
 
 /**
- * 创建并发起一次日志输出会话：立即创建 [TaskLogOutput] 并写入 [holder]，
- * [block] 结束（含异常、取消）后停止会话并将 [holder] 置空
+ * Creates and starts a log output session: immediately builds a [TaskLogOutput] and writes it into [holder];
+ * when [block] finishes (normally, exceptionally, or cancelled) the session stops and [holder] is cleared
  */
 suspend fun <R> withTaskLogOutput(
     holder: MutableStateFlow<TaskLogOutput?>,

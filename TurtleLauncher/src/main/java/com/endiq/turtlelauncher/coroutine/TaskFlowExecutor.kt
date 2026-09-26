@@ -39,13 +39,13 @@ import kotlinx.coroutines.withContext
 private const val TAG = "TaskFlowExecutor"
 
 /**
- * 动态任务流执行器，按照阶段顺序执行任务流
+ * Dynamic task flow executor that runs phases in order
  */
 class TaskFlowExecutor(
     private val scope: CoroutineScope
 ) {
     /**
-     * 任务流阶段，包含一个阶段的所有任务
+     * A task flow phase, holding all tasks of one phase
      */
     data class TaskPhase(
         val tasks: List<TitledTask>,
@@ -53,7 +53,7 @@ class TaskFlowExecutor(
     )
 
     /**
-     * 当前所有的任务流阶段
+     * All current task flow phases
      */
     private val phases: MutableList<TaskPhase> = mutableListOf()
 
@@ -61,13 +61,13 @@ class TaskFlowExecutor(
     val tasksFlow = _tasksFlow.asStateFlow()
 
     private var job: Job? = null
-    /** 当前正在执行的任务的Job */
+    /** Job of the currently running task */
     private var currentTaskJob: Job? = null
-    /** 当前任务流阶段索引 */
+    /** Current task flow phase index */
     private var currentPhaseIndex: Int = -1
 
     /**
-     * 获取下一个阶段
+     * Returns the next phase
      */
     private fun getNextPhase(): TaskPhase? {
         currentPhaseIndex++
@@ -75,21 +75,21 @@ class TaskFlowExecutor(
     }
 
     /**
-     * 添加阶段到末尾
+     * Appends a phase to the end
      */
     fun addPhase(phase: TaskPhase) {
         phases.add(phase)
     }
 
     /**
-     * 添加阶段列表到末尾
+     * Appends a phase list to the end
      */
     fun addPhases(phases: List<TaskPhase>) {
         this.phases.addAll(phases)
     }
 
     /**
-     * 同步执行多阶段任务流
+     * Synchronously runs a multi-phase task flow
      */
     suspend fun executePhases(
         onComplete: () -> Unit = {},
@@ -102,27 +102,27 @@ class TaskFlowExecutor(
             try {
                 ensureActive()
                 val phase = getNextPhase() ?: break
-                //更新当前任务列表
+                //Update the current task list
                 _tasksFlow.update { phase.tasks }
 
-                //执行阶段内的所有任务
+                //Run all tasks of the phase
                 for (task in phase.tasks) {
                     ensureActive()
                     task.task.updateStage(TaskStage.RUNNING)
 
-                    //为每个任务创建独立的Job，以便可以立即取消
-                    //使用SupervisorJob确保任务内部的子协程异常不会影响其他任务
+                    //Give each task its own Job so it can be cancelled instantly
+                    //SupervisorJob keeps child-coroutine failures from affecting other tasks
                     val parentJob = coroutineContext[Job]
                     val taskJob = SupervisorJob(parentJob)
                     currentTaskJob = taskJob
                     
                     try {
                         withContext(task.task.dispatcher + taskJob) {
-                            //使用coroutineScope确保任务内部的所有子协程都在这个作用域中
-                            //当taskJob被取消时，coroutineScope内的所有子协程都会被取消
+                            //coroutineScope keeps all child coroutines of the task inside this scope
+                            //Cancelling taskJob cancels every child coroutine in the coroutineScope
                             coroutineScope {
                                 try {
-                                    //将当前coroutineScope传递给任务，确保任务内部的launch都在这个作用域中
+                                    //Pass the current coroutineScope to the task so its launches stay in this scope
                                     task.task.task(this@coroutineScope, task.task)
                                 } catch (e: CancellationException) {
                                     task.task.onCancel()
@@ -137,13 +137,13 @@ class TaskFlowExecutor(
                         }
                         task.task.updateStage(TaskStage.COMPLETED)
                     } finally {
-                        //确保taskJob被取消和清理，无论任务成功还是失败
+                        //Ensure taskJob is cancelled and cleaned up whether the task succeeds or fails
                         taskJob.cancel()
                         currentTaskJob = null
                     }
                 }
 
-                //执行阶段完成回调
+                //Run the phase completion callback
                 phase.onComplete?.invoke()
             } catch (th: Throwable) {
                 if (th is CancellationException || th.isInterruptedIOException()) {
@@ -161,7 +161,7 @@ class TaskFlowExecutor(
     }
 
     /**
-     * 异步执行多阶段任务流
+     * Asynchronously runs a multi-phase task flow
      */
     fun executePhasesAsync(
         onStart: suspend () -> Unit = {},
@@ -170,7 +170,7 @@ class TaskFlowExecutor(
         onCancel: () -> Unit = {}
     ) {
         job = scope.launch(Dispatchers.IO) {
-            //持有保活，避免启动器切至后台后任务流被系统中断
+            //Hold keep-alive so the system cannot interrupt the flow in the background
             TaskKeepAlive.acquire()
             try {
                 onStart()
@@ -184,7 +184,7 @@ class TaskFlowExecutor(
     fun isRunning(): Boolean = job != null
 
     fun cancel() {
-        //先取消当前正在执行的任务及其所有子协程
+        //Cancel the currently running task and all its child coroutines first
         currentTaskJob?.cancel()
         currentTaskJob = null
         
@@ -197,7 +197,7 @@ class TaskFlowExecutor(
 }
 
 /**
- * 构建任务流阶段
+ * Builds a task flow phase
  */
 fun buildPhase(
     onComplete: (suspend () -> Unit)? = null,

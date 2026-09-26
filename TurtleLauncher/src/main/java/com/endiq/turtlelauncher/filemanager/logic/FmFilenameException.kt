@@ -18,27 +18,27 @@
 
 package com.endiq.turtlelauncher.filemanager.logic
 
-/** 文件名错误类别 */
+/** Filename error category */
 enum class FmFilenameError {
-    /** 包含非法字符 / 路径穿越序列（如 `..`、开头 `/` 或 `\`） */
+    /** Contains illegal characters / traversal sequences (like `..` or leading `/`, `\`) */
     ILLEGAL_CHARACTERS,
 
-    /** 名称过长（超过 255 字符） */
+    /** Name too long (over 255 characters) */
     INVALID_LENGTH,
 
-    /** 以空格开头或结尾 */
+    /** Starts or ends with a space */
     LEADING_OR_TRAILING_SPACE,
 
-    /** 与同目录下已有条目重名 */
+    /** Duplicates an existing entry in the same directory */
     NAME_CONFLICT
 }
 
 /**
- * 文件名校验异常
- * @param message 错误描述
- * @param type 错误类别
- * @param invalidLength 非法名称长度（[FmFilenameError.INVALID_LENGTH] 时有效，否则为 -1）
- * @param illegalCharacters 命中的非法字符（[FmFilenameError.ILLEGAL_CHARACTERS] 时有效，否则为 null）
+ * Filename validation exception
+ * @param message error description
+ * @param type error category
+ * @param invalidLength invalid name length (valid for [FmFilenameError.INVALID_LENGTH], otherwise -1)
+ * @param illegalCharacters the matched illegal characters (valid for [FmFilenameError.ILLEGAL_CHARACTERS], otherwise null)
  */
 class FmFilenameException(
     message: String,

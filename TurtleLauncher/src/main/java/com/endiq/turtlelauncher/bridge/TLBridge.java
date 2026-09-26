@@ -81,13 +81,13 @@ public final class TLBridge {
 
     //Narrator (flite)
     /**
-     * 返回当前（Dalvik/ART）JavaVM 指针，供游戏 JVM 侧原生代码经环境变量 attach 回安卓运行时
+     * Returns the current (Dalvik/ART) JavaVM pointer, so game-JVM native code can attach back to the Android runtime via an environment variable
      */
     @Keep
     public static native long getJavaVMPointer();
 
     /**
-     * 为对象创建全局引用并以十六进制字符串返回其地址，配合 {@link #getJavaVMPointer()} 注入环境变量
+     * Creates a global reference for the object and returns its address as a hex string; injected into environment variables together with {@link #getJavaVMPointer()}
      */
     @Keep
     public static native String jObjectToString(Object object);

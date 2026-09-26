@@ -21,7 +21,7 @@ package com.endiq.turtlelauncher.contract
 import android.webkit.MimeTypeMap
 
 /**
- * 将文件扩展名转化为 MimeType
+ * Converts a file extension into a MimeType
  */
 fun String.extensionToMimeType(): String {
     val extensionMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(this)

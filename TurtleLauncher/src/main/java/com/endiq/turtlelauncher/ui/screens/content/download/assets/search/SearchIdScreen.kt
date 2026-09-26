@@ -103,7 +103,7 @@ private sealed interface SearchIdOperation {
     data object None : SearchIdOperation
     /** 加载项目中 */
     data object Loading : SearchIdOperation
-    /** 已获得搜索结果 */
+    /** 已获得Search results */
     data class Result(
         val project: PlatformProject,
         val mcMod: ModTranslations.McMod?,

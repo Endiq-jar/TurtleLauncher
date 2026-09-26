@@ -163,7 +163,7 @@ private class DependencyContext(
 
 /**
  * 一并下载的依赖版本及其目标游戏版本
- * @param folder 安装到游戏目录下的相对路径
+ * @param folder 安装到Game directories下的相对路径
  */
 private class DownloadGroup(
     val version: PlatformVersion,

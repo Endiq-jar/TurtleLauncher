@@ -96,7 +96,7 @@ object VersionsManager {
                 _isRefreshing.update { true }
                 Logger.debug(TAG, "Initiated by $tag: starting to refresh the version list.")
 
-                //本次刷新绑定的游戏目录，避免刷新过程中目录切换导致数据串目录
+                //本次刷新绑定的Game directories，避免刷新过程中目录切换导致数据串目录
                 val gameHome = getGameHome()
 
                 if (trySetVersion != null) {
@@ -146,7 +146,7 @@ object VersionsManager {
     }
 
     /**
-     * 加载指定游戏目录下的单个版本
+     * 加载指定Game directories下的单个版本
      * @return 版本不存在或不是有效版本文件夹时返回 null
      */
     fun loadVersion(gameHome: String, versionName: String): Version? {

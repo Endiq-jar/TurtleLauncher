@@ -54,7 +54,7 @@ class EditorController(
     /** 进行中的保存任务 */
     private var saveJob: Job? = null
 
-    /** 打开文件并异步加载内容 */
+    /** Opens a file and loads its content asynchronously */
     fun open(path: Path) {
         store.updateEditorUi { EditorUiState(path = path) }
         coroutineScope.launch(Dispatchers.IO) {
@@ -124,7 +124,7 @@ class EditorController(
     }
 
     /**
-     * 取消进行中的保存
+     * Cancels an in-progress save
      */
     fun cancelSave() {
         saveJob?.cancel()
@@ -137,12 +137,12 @@ class EditorController(
         store.updateEditorUi { it.copy(exitConfirm = true) }
     }
 
-    /** 取消退出确认弹窗 */
+    /** Cancels the exit confirmation dialog */
     fun cancelExitConfirm() {
         store.updateEditorUi { it.copy(exitConfirm = false) }
     }
 
-    /** 是否存在未保存的修改（供系统返回键判定） */
+    /** Whether unsaved changes exist（供系统返回键判定） */
     fun hasDirty(): Boolean = store.editorUiValue().dirty
 
     private fun loadFile(path: Path): Content {

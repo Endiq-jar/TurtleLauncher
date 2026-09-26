@@ -65,7 +65,7 @@ object Logger : CoroutineScope {
     private var inMemoryLogs: ByteArrayOutputStream? = null
 
     /**
-     * 初始化日志
+     * Initializes logging
      */
     fun initialize(context: Context) {
         PACKAGE_PREFIX = "${context.packageName}."

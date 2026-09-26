@@ -19,10 +19,10 @@
 package com.endiq.turtlelauncher.coroutine
 
 enum class TaskStage {
-    /** 预备 */
+    /** Preparing */
     PREPARING,
-    /** 运行中 */
+    /** Running */
     RUNNING,
-    /** 已完成 */
+    /** Completed */
     COMPLETED
 }

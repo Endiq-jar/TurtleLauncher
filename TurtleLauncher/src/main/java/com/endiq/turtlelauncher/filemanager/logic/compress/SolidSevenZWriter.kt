@@ -359,7 +359,7 @@ object SolidSevenZWriter {
     private fun writeFolder(out: DataOutputStream, dictPropsByte: Int, iv: ByteArray) {
         writeUint64(out, 2) // numCoders
 
-        // coder0: AES256SHA256（methodId = 0x06F10701）
+        // coder0: AES256SHA256 (methodId = 0x06F10701)
         out.write(0x24)     // idSize=4 | hasAttributes=0x20
         out.write(0x06)
         out.write(0xF1)
@@ -370,7 +370,7 @@ object SolidSevenZWriter {
         out.write(0x0F)     // saltSize=0 | ivSize-1=15
         out.write(iv)
 
-        // coder1: LZMA2（methodId = 0x21）
+        // coder1: LZMA2 (methodId = 0x21)
         out.write(0x21)     // idSize=1 | hasAttributes=0x20
         out.write(0x21)
         writeUint64(out, 1) // properties length

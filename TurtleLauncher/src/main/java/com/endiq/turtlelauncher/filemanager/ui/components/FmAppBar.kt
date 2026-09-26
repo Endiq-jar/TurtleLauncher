@@ -56,7 +56,7 @@ import com.endiq.turtlelauncher.filemanager.ui.theme.fmSecondaryTextColor
 import com.endiq.turtlelauncher.filemanager.ui.theme.fmTopbarColors
 import com.endiq.turtlelauncher.filemanager.viewmodel.SortConfig
 
-/** 文件管理器顶部应用栏 */
+/** File manager top app bar */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FmAppBar(
@@ -142,7 +142,7 @@ fun FmAppBar(
                 )
             }
 
-            // 下拉菜单
+            // Dropdown menu
             DropdownMenu(
                 expanded = menuExpanded,
                 onDismissRequest = {

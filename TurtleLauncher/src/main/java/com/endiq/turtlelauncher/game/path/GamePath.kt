@@ -22,7 +22,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * 游戏目录
+ * Game directories
  */
 @Entity(tableName = "gamePaths")
 data class GamePath(
@@ -32,7 +32,7 @@ data class GamePath(
     @PrimaryKey
     val id: String,
     /**
-     * 游戏目录的标题
+     * Game directories的标题
      */
     var title: String,
     /**

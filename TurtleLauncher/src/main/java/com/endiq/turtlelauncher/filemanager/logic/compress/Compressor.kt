@@ -49,13 +49,13 @@ private const val BUFFER_SIZE = 64 * 1024
 
 object Compressor {
     /**
-     * 执行压缩，将一组条目打包为 ZIP / 7Z / TAR 压缩包
-     * @param sources 待压缩条目
-     * @param output 输出压缩包路径（已含正确后缀）
-     * @param options 压缩参数
-     * @param onProgress 进度回调（completed, total, currentName）
-     * @param checkCancel 取消检查；返回 true 表示取消
-     * @return 输出路径与总条目数
+     * Executes the compression, packing a set of entries into a ZIP / 7Z / TAR archive
+     * @param sources entries to compress
+     * @param output the output archive path (already carrying the correct suffix)
+     * @param options compression parameters
+     * @param onProgress progress callback (completed, total, currentName)
+     * @param checkCancel cancellation check; return true to cancel
+     * @return the output path and total entry count
      */
     suspend fun compress(
         sources: List<Path>,
@@ -176,7 +176,7 @@ object Compressor {
         ctx: Context
     ) {
         if (ctx.options.password != null) {
-            // 带密码走自定义 solid 写入器，使读取端只需一次密钥派生
+            // With a password, use the custom solid writer so the reader needs only one key derivation
             SolidSevenZWriter.write(
                 sources = sources,
                 output = output,
@@ -271,7 +271,7 @@ object Compressor {
         withContext(Dispatchers.IO) {
             Files.newOutputStream(output).use { fos ->
                 TarArchiveOutputStream(BufferedOutputStream(fos)).use { tarOut ->
-                    // TAR 长文件名处理格式：GNU / POSIX
+                    // TAR long file name handling format: GNU / POSIX
                     val gnu = ctx.options.method == CompressMethod.TAR_GNU
                     tarOut.setLongFileMode(
                         if (gnu) TarArchiveOutputStream.LONGFILE_GNU

@@ -65,7 +65,7 @@ import com.endiq.turtlelauncher.ui.components.fadeEdge
 import com.endiq.turtlelauncher.ui.components.lazyScrollWithBar
 
 /**
- * 搜索设置对话框。
+ * Search settings dialog。
  * @param initialKeyword 输入框的初始关键词
  * @param onSearch 发起搜索，回传关键词与大小写敏感设置
  */
@@ -143,7 +143,7 @@ fun FmSearchTaskDialog(
 }
 
 /**
- * 搜索结果列表对话框。
+ * Search result list dialog。
  * @param searchUi 搜索任务的实时状态（含命中结果）
  * @param onClear 清空结果并返回搜索设置
  * @param onResumeSearch 重新发起搜索

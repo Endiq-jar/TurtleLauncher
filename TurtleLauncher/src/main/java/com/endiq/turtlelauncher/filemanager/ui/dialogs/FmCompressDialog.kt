@@ -59,9 +59,9 @@ import com.endiq.turtlelauncher.ui.components.fadeEdge
 import com.endiq.turtlelauncher.ui.components.verticalScrollWithBar
 
 /**
- * 压缩设置对话框
- * @param defaultName 输出名称默认值
- * @param onConfirm 确认压缩，回传输出名称与压缩选项
+ * Compression settings dialog
+ * @param defaultName default value of the output name
+ * @param onConfirm confirm-compression callback, passing back the output name and compression options
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,7 +142,7 @@ fun FmCompressDialog(
             }
 
             if (advanced && format == CompressFormat.TAR) {
-                // TAR仅提供格式选择
+                // TAR only offers format selection
                 ExposedDropdown(
                     selectedText = method.displayName,
                     label = stringResource(R.string.fm_compress_method),
@@ -202,8 +202,8 @@ private fun baseNameWithoutSuffix(name: String): String {
 }
 
 /**
- * 压缩输出位置选择对话框
- * @param onCurrentDir 在当前目录生成压缩包
+ * Compression output location dialog
+ * @param onCurrentDir creates the archive in the current directory
  * @param onSaf 通过 SAF 选择输出目录
  */
 @Composable

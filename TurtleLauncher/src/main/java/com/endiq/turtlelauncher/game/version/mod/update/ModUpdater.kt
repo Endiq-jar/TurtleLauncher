@@ -71,7 +71,7 @@ class ModUpdater(
     val dataList: MutableList<ModData> = mutableListOf()
 
     /**
-     * 需要更新的模组列表
+     * Needs an update的模组列表
      */
     val allModsUpdate: MutableList<ModManifest> = mutableListOf()
 
@@ -114,7 +114,7 @@ class ModUpdater(
                     return@executePhasesAsync
                 }
                 if (th is NoModUpdatesAvailableException) {
-                    //所有模组都是最新版本，不需要更新
+                    //所有模组都是最新版本，不Needs an update
                     onNoModUpdates()
                     return@executePhasesAsync
                 }
@@ -220,7 +220,7 @@ class ModUpdater(
                                 if (version != null) data to version else null
                             }
                         }
-                    }.awaitAll().filterNotNull() // 等待所有任务完成，并过滤掉不需要更新的 null 结果
+                    }.awaitAll().filterNotNull() // 等待所有任务完成，并过滤掉不Needs an update的 null 结果
 
                     updateResults.forEach { (data, version) ->
                         allModsUpdate.add(ModManifest(data, version))

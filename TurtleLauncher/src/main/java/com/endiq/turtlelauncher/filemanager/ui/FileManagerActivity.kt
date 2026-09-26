@@ -47,28 +47,28 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.nio.file.Paths
 
 /**
- * 文件管理器初始化结果
+ * File manager initialization result
  */
 sealed interface FileManagerInitResult {
     data object Pending : FileManagerInitResult
-    /** Intent 参数解析成功 */
+    /** Intent arguments parsed successfully */
     data object Ok : FileManagerInitResult
     data class Failed(val message: String) : FileManagerInitResult
 }
 
 /**
- * 文件管理器 Activity
+ * File manager activity
  */
 @AndroidEntryPoint
 class FileManagerActivity : ComponentActivity() {
     private var initResult by mutableStateOf<FileManagerInitResult>(FileManagerInitResult.Pending)
 
-    /** Intent 中的可访问范围目录（仅字符串，作用域校验交给 ViewModel 初始化） */
+    /** Accessible scope directory from the Intent (string only; scope validation is left to ViewModel init) */
     private var rootPathStr: String? = null
-    /** Intent 中的可选初始当前目录（仅字符串） */
+    /** Optional initial current directory from the Intent (string only) */
     private var currentPathStr: String? = null
 
-    // Compose 可观察，重唤起重建 VM 后自动重组
+    // Compose-observable; automatically recomposes after a re-launch rebuilds the VM
     private var _vm by mutableStateOf<FileManagerViewModel?>(null)
 
     override val defaultViewModelCreationExtras: CreationExtras
@@ -100,8 +100,8 @@ class FileManagerActivity : ComponentActivity() {
     }
 
     /**
-     * 重唤起（任务已存在，经 SINGLE_TOP 送达）：重新解析可访问范围与当前路径，
-     * 重建 ViewModel 并刷新。文件管理器未 finish 时，此方法替代 onCreate 生效。
+     * Re-launch (task already exists, delivered via SINGLE_TOP): re-parse the scope and current path,
+     * rebuild the ViewModel and refresh. When the file manager hasn't finished, this replaces onCreate.
      */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -110,15 +110,15 @@ class FileManagerActivity : ComponentActivity() {
         initializeFromIntent()
     }
 
-    /** 从当前 Intent 解析参数并重建 ViewModel */
+    /** Parses arguments from the current Intent and rebuilds the ViewModel */
     private fun initializeFromIntent() {
-        // 日志初始化
+        // Log initialization
         val logsDir = intent.getStringExtra(FileManagerLauncher.EXTRA_LOGS_DIR)?.let { Paths.get(it) }
         FmLog.init(lifecycleScope, logsDir)
 
         initResult = parseIntent()
 
-        // 重建 ViewModel
+        // Rebuild the ViewModel
         viewModelStore.clear()
         _vm = if (initResult is FileManagerInitResult.Ok) {
             ViewModelProvider(this)[FileManagerViewModel::class.java]
@@ -127,7 +127,7 @@ class FileManagerActivity : ComponentActivity() {
         }
     }
 
-    /** 解析 Intent 参数 */
+    /** Parses the Intent arguments */
     private fun parseIntent(): FileManagerInitResult {
         val root = intent.getStringExtra(FileManagerLauncher.EXTRA_ROOT_PATH)
         if (root.isNullOrBlank()) {

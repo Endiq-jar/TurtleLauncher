@@ -68,31 +68,31 @@ import java.nio.file.Paths
 @Serializable
 sealed interface FmNavKey : NavKey {
     /**
-     * 文件管理器主页面
+     * File manager main page
      */
     @Serializable
     data object FileManager : FmNavKey
 
     /**
-     * 回收站页面
+     * Trash page
      */
     @Serializable
     data object Trash : FmNavKey
 
     /**
-     * 文本编辑器页面
-     * @param path 待编辑文件的绝对路径
+     * Text editor page
+     * @param path absolute path of the file to edit
      */
     @Serializable
     data class Editor(val path: String) : FmNavKey
 }
 
 /**
- * 文件管理器根界面
- * @param initResult 初始化结果
- * @param vm 文件管理器视图模型
- * @param onExit 退出文件管理器的回调
- * @param onToggleOrientation 横竖屏切换回调
+ * File manager root screen
+ * @param initResult the initialization result
+ * @param vm the file manager view model
+ * @param onExit exit-file-manager callback
+ * @param onToggleOrientation orientation-toggle callback
  */
 @OptIn(ExperimentalActivityApi::class)
 @Composable
@@ -118,7 +118,7 @@ fun FileManagerRootScreen(
         vm.consumeSnackbar()
     }
 
-    // 错误事件收集
+    // Error event collection
     var errorMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(vm) {
         vm?.initialize()
@@ -224,7 +224,7 @@ fun FileManagerRootScreen(
                     PredictiveBackHandler(enabled = backHandledInApp) { progressFlow ->
                         gestureActive = true
                         try {
-                            // 流正常结束 = 手势提交
+                            // Flow completing normally = gesture committed
                             progressFlow.collect { event ->
                                 gestureAlpha.snapTo(1f - event.progress)
                             }
@@ -237,7 +237,7 @@ fun FileManagerRootScreen(
                                     }
 
                                     is FmNavKey.Editor -> {
-                                        // 存在未保存修改时先弹确认框，由编辑器页面处理
+                                        // Unsaved changes: pop a confirmation first, handled by the editor page
                                         if (vm.editorHasDirty()) {
                                             vm.editorRequestExitConfirm()
                                         } else {
@@ -251,14 +251,14 @@ fun FileManagerRootScreen(
                                     }
                                 }
                             } else if (!vm.consumeBack()) {
-                                // 根目录之上，退出文件管理器
+                                // Above the root directory: exit the file manager
                                 onExit()
                             }
                             if (gestureAlpha.value < 1f) {
                                 gestureAlpha.animateTo(1f, tween(FmAnimations.FADE_IN_MS))
                             }
                         } catch (e: CancellationException) {
-                            // 手势取消：onBack 协程已被取消，须在 NonCancellable 中执行回弹动画
+                            // Gesture cancelled: the onBack coroutine was cancelled, so the rebound must run in NonCancellable
                             withContext(NonCancellable) {
                                 gestureAlpha.animateTo(1f, spring())
                             }
@@ -268,7 +268,7 @@ fun FileManagerRootScreen(
                         }
                     }
 
-                    // 错误对话框
+                    // Error dialog
                     errorMessage?.let { message ->
                         FmAlertDialog(
                             title = stringResource(R.string.generic_error),
@@ -277,7 +277,7 @@ fun FileManagerRootScreen(
                         )
                     }
 
-                    // 进度弹窗
+                    // Progress dialog
                     val progress = uiState.taskProgress
                     if (progress != null && progress.kind.shouldShowProgressDialog) {
                         FmProgressDialog(

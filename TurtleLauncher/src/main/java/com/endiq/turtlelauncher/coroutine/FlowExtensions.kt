@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
 /**
- * 支持 6 个参数的强类型 combine 扩展函数
+ * Strongly-typed combine extension for 6 flows
  */
 @Suppress("UNCHECKED_CAST")
 inline fun <T1, T2, T3, T4, T5, T6, R> combine(
@@ -47,7 +47,7 @@ inline fun <T1, T2, T3, T4, T5, T6, R> combine(
 }
 
 /**
- * 支持 11 个参数的强类型 combine 扩展函数
+ * Strongly-typed combine extension for 11 flows
  */
 @Suppress("UNCHECKED_CAST")
 inline fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, R> combine(

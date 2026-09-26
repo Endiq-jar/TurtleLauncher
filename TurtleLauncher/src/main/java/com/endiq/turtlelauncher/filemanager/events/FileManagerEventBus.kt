@@ -23,7 +23,7 @@ import com.endiq.turtlelauncher.filemanager.os.FmLog
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * 文件管理器事件总线，维护已注册客户端并向其派发文件变更事件
+ * File manager event bus: keeps registered clients and dispatches file change events to them
  */
 object FileManagerEventBus {
     private const val TAG = "FmEventBus"
@@ -41,8 +41,8 @@ object FileManagerEventBus {
     }
 
     /**
-     * 向所有已注册的客户端派发一个文件变更事件
-     * @param event 待派发的事件
+     * Dispatches a file change event to all registered clients
+     * @param event the event to dispatch
      */
     fun dispatch(event: FileManagerEvent) {
         if (clients.isEmpty()) {

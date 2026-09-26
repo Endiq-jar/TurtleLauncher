@@ -142,7 +142,7 @@ class CompressController(
         store.dismissDialog()
     }
 
-    /** SAF 选定输出目录，存在同名文件时弹冲突对话框，否则直接执行压缩。 */
+    /** SAF 选定输出目录，存在同名文件时弹冲突对话框，否则直接Executes compression。 */
     fun onCompressOutputPicked(treeUri: Uri) {
         val pending = pendingCompress ?: run {
             store.dismissDialog()
@@ -162,7 +162,7 @@ class CompressController(
         }
     }
 
-    /** 压缩冲突决策：按 SKIP/OVERWRITE/KEEP_BOTH 执行压缩。 */
+    /** 压缩冲突决策：按 SKIP/OVERWRITE/KEEP_BOTH Executes compression。 */
     fun resolveCompressConflict(resolution: ConflictResolution) {
         val target = pendingCompressOutputTarget ?: run {
             store.dismissDialog()

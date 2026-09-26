@@ -40,7 +40,7 @@ import com.endiq.turtlelauncher.utils.file.formatFileSize
 
 /**
  * 任务进度对话框，展示进度、当前条目与速度。
- * @param progress 任务进度状态，为 null 时不显示弹窗
+ * @param progress Task progress state，为 null 时不显示弹窗
  * @param onCancel 取消任务并关闭弹窗
  */
 @Composable

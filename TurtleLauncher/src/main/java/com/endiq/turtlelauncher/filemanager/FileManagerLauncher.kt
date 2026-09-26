@@ -23,27 +23,27 @@ import android.content.Intent
 import com.endiq.turtlelauncher.filemanager.ui.FileManagerActivity
 
 /**
- * 文件管理器启动接口
+ * File manager launch interface
  */
 object FileManagerLauncher {
     /**
-     * “可访问范围目录”绝对路径
+     * Absolute path of the "accessible scope directory"
      */
     const val EXTRA_ROOT_PATH = "fm.extra.ROOT_PATH"
     /**
-     * “当前访问目录”，需位于“可访问范围目录”之下
+     * "Current directory", must lie under the "accessible scope directory"
      */
     const val EXTRA_CURRENT_PATH = "fm.extra.CURRENT_PATH"
     /**
-     * 日志根目录
+     * Log root directory
      */
     const val EXTRA_LOGS_DIR = "fm.extra.LOGS_DIR"
 
     /**
-     * 启动文件管理器
-     * @param rootPath “可访问范围目录”绝对路径
-     * @param currentPath “当前访问目录”，非法时回退根目录
-     * @param logsDir 日志根目录
+     * Launches the file manager
+     * @param rootPath absolute path of the "accessible scope directory"
+     * @param currentPath the "current directory"; falls back to the root when invalid
+     * @param logsDir the log root directory
      */
     fun launch(
         context: Context,

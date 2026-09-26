@@ -61,14 +61,14 @@ class TLApplication : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         GlobalContext = this
         refreshContext(this)
-        //初始化任务保活控制器，需在任何任务开始前完成初始化
+        //Initialize the task keep-alive controller before any task can start
         TaskKeepAlive.initialize(this)
 
-        //注册 Shizuku 状态监听器（安装/权限/服务状态跟踪）
+        //Register the Shizuku state listener (tracks install/permission/service state)
         ShizukuManager.init(this)
 
         Thread.setDefaultUncaughtExceptionHandler { _, th ->
-            //停止所有任务
+            //Stop all tasks
             TaskSystem.stopAll()
 
             val throwable = if (th is SplashException) th.cause!!
@@ -126,7 +126,7 @@ class TLApplication : Application(), SingletonImageLoader.Factory {
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizeBytes(20L * 1024 * 1024) // 20MB
-                    .weakReferencesEnabled(true) //弱引用
+                    .weakReferencesEnabled(true) //weak references
                     .build()
             }
             .diskCachePolicy(CachePolicy.ENABLED)

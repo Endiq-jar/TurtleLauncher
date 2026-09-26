@@ -483,7 +483,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 文件管理器文件变更事件处理
+     * File change event of the file manager处理
      */
     private fun onFileManagerEvent(event: FileManagerEvent) {
         val versionsHome = File(getVersionsHome()).absolutePath

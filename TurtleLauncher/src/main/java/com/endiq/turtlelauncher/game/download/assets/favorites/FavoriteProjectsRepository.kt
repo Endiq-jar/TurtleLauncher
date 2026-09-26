@@ -90,7 +90,7 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 收藏一个搜索结果项目
+     * 收藏一个Search results项目
      */
     fun favorite(data: PlatformSearchData, classes: PlatformClasses) {
         scope.launch { saveFavorite(data.platform(), data.toFavoriteProject(classes)) }
@@ -108,7 +108,7 @@ object FavoriteProjectsRepository {
     }
 
     /**
-     * 切换搜索结果项目的收藏状态
+     * 切换Search results项目的收藏状态
      */
     fun toggle(data: PlatformSearchData, classes: PlatformClasses) {
         scope.launch {
@@ -305,7 +305,7 @@ object FavoriteProjectsRepository {
 }
 
 /**
- * 从搜索结果数据生成收藏缓存
+ * 从Search results数据生成收藏缓存
  */
 fun PlatformSearchData.toFavoriteProject(classes: PlatformClasses): FavoriteProject = FavoriteProject(
     projectId = platformId(),

@@ -18,31 +18,31 @@
 
 package com.endiq.turtlelauncher.filemanager.logic.editor
 
-/** 可编辑文件的体积上限，超过则拒绝以文本方式打开 */
+/** Size cap for editable files; larger files are refused as text */
 const val MAX_EDIT_SIZE: Long = 20L * 1024 * 1024
 
 /**
- * 常见的文本格式扩展名（小写）
- * 覆盖文档、标记、配置文件与常见源代码格式
+ * Common text format extensions (lowercase)
+ * Covers documents, markup, config files and common source code formats
  */
 private val KNOWN_TEXT_EXTENSIONS = setOf(
-    // 纯文本 / 文档
+    // Plain text / documents
     "txt", "text", "md", "markdown", "log", "rtf",
-    // 标记 / 序列化
+    // Markup / serialization
     "json", "yaml", "yml", "toml", "xml", "html", "htm", "css",
-    // 配置文件
+    // Configuration files
     "ini", "cfg", "conf", "properties", "env", "editorconfig",
-    // 常见源代码
+    // Common source code
     "js", "mjs", "cjs", "ts", "jsx", "tsx", "kt", "kts", "java",
     "c", "h", "cpp", "hpp", "cc", "cxx", "cs", "py", "sh", "bash",
     "zsh", "bat", "cmd", "ps1", "sql", "gradle", "groovy", "rb",
     "go", "rs", "php", "swift", "scala", "lua", "pl", "r",
-    // 数据 / 其他
+    // Data / other
     "csv", "tsv", "diff", "patch", "gitignore", "gitattributes"
 )
 
 /**
- * 判断文件名是否属于已知的常见文本格式
+ * Checks whether a file name matches a known common text format
  */
 fun isKnownTextFile(name: String): Boolean {
     val ext = name.substringAfterLast('.', "").lowercase()

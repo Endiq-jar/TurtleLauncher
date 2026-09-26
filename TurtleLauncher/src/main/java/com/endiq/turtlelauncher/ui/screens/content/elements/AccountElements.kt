@@ -473,7 +473,7 @@ fun LoginMenuDialog(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             item {
-                                //添加认证服务器
+                                //添加Authentication servers
                                 InfoLayoutTextItem(
                                     modifier = Modifier.fillMaxWidth(),
                                     title = stringResource(R.string.account_add_new_server_button),

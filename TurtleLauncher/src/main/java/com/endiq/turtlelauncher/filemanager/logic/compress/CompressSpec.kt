@@ -21,17 +21,17 @@ package com.endiq.turtlelauncher.filemanager.logic.compress
 import java.nio.file.Path
 
 /**
- * 压缩格式
+ * Compression format
  */
 enum class CompressFormat(val extension: String, val mimeType: String) {
     ZIP("zip", "application/zip"),
     SEVEN_Z("7z", "application/x-7z-compressed"),
     TAR("tar", "application/x-tar");
 
-    /** 输出文件名的标准后缀 */
+    /** Canonical suffix of the output file name */
     val suffix: String get() = ".$extension"
 
-    /** 该格式的默认压缩方法 */
+    /** Default compression method of the format */
     val defaultMethod: CompressMethod
         get() = when (this) {
             ZIP -> CompressMethod.DEFLATE
@@ -41,39 +41,39 @@ enum class CompressFormat(val extension: String, val mimeType: String) {
 }
 
 /**
- * 压缩方法
+ * Compression method
  */
 enum class CompressMethod(val displayName: String) {
-    /** Zip：不压缩直接存储；7Z：COPY 不压缩 */
+    /** Zip: stored without compression; 7Z: COPY without compression */
     STORE("Store"),
-    /** Zip 默认 */
+    /** Zip default */
     DEFLATE("Deflate"),
 
-    /** 7Z 默认 */
+    /** 7Z default */
     LZMA2("LZMA2"),
     BZIP2("BZIP2"),
 
-    /** TAR 长文件名处理：GNU 格式 */
+    /** TAR long file name handling: GNU format */
     TAR_GNU("GNU"),
-    /** TAR 长文件名处理：POSIX（PAX）格式 */
+    /** TAR long file name handling: POSIX (PAX) format */
     TAR_POSIX("POSIX");
 
     companion object {
-        /** ZIP 支持的方法 */
+        /** Methods supported by ZIP */
         val zipMethods = listOf(STORE, DEFLATE)
-        /** 7Z 支持的方法 */
+        /** Methods supported by 7Z */
         val sevenZMethods = listOf(LZMA2, BZIP2)
-        /** TAR 支持的方法（长文件名处理格式） */
+        /** Methods supported by TAR (long file name handling formats) */
         val tarMethods = listOf(TAR_GNU, TAR_POSIX)
     }
 }
 
 /**
- * 压缩参数。
- * @param format 压缩格式
- * @param method 压缩方法，null 表示使用格式默认
- * @param level 压缩等级（1-9），null 表示格式默认
- * @param password 密码，TAR 不支持
+ * Compression parameters.
+ * @param format compression format
+ * @param method compression method; null uses the format default
+ * @param level compression level (1-9); null uses the format default
+ * @param password password; not supported by TAR
  */
 data class CompressOptions(
     val format: CompressFormat,
@@ -83,7 +83,7 @@ data class CompressOptions(
 )
 
 /**
- * 压缩结果汇总。
+ * Compression result summary.
  */
 data class CompressSummary(
     val outputPath: Path,

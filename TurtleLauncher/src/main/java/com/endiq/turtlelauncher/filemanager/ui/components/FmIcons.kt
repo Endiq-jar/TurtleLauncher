@@ -37,8 +37,8 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.filemanager.logic.entry.ArchiveType
 
 /**
- * 条目类型对应的图标与配色，配色取自固定预设色板
- * 亮色主题下圆底使用 tone90、图标使用 tone30，暗色主题下互换
+ * Icon and tint per entry type; tints come from a fixed preset palette
+ * Light theme uses tone90 for the disc and tone30 for the icon; dark theme swaps them
  */
 private enum class FmFileIcon(
     @DrawableRes val iconRes: Int,
@@ -76,7 +76,7 @@ private enum class FmFileIcon(
 }
 
 object FmIcons {
-    /** 根据条目类型与扩展名显示对应图标 */
+    /** Shows the matching icon by entry type and extension */
     @Composable
     fun IconFor(
         name: String,

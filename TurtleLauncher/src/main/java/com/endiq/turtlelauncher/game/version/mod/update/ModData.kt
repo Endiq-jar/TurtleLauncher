@@ -34,7 +34,7 @@ import java.io.File
 private const val TAG = "ModData"
 
 /**
- * 需要更新的模组的数据类，记录模组文件和模组所属的项目
+ * Needs an update的模组的数据类，记录模组文件和模组所属的项目
  * @param modFile 模组在模组平台上对应的文件
  * @param project 模组在模组平台上所属的项目
  * @param mcMod 模组翻译信息

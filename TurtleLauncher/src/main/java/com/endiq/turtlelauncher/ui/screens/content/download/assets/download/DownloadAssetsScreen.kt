@@ -589,7 +589,7 @@ private fun ProjectInfo(
                         contentPadding = PaddingValues(all = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        //图标、标题、简介的骨架
+                        //Icon、标题、简介的骨架
                         item {
                             Column(
                                 modifier = Modifier
@@ -641,7 +641,7 @@ private fun ProjectInfo(
                         contentPadding = PaddingValues(all = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        //图标、标题、简介
+                        //Icon、标题、简介
                         item {
                             Column(
                                 modifier = Modifier

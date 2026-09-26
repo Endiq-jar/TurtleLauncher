@@ -19,9 +19,9 @@
 package com.endiq.turtlelauncher.filemanager.logic.extract
 
 /**
- * 解压选项。
- * @param independentFolder 是否解压到独立文件夹
- * @param password 解压密码
+ * Extraction options.
+ * @param independentFolder whether to extract into a standalone folder
+ * @param password the extraction password
  */
 data class ExtractOptions(
     val independentFolder: Boolean = true,
@@ -29,7 +29,7 @@ data class ExtractOptions(
 )
 
 /**
- * 解压结果汇总。
+ * Extraction result summary.
  */
 data class ExtractSummary(
     val entryCount: Int

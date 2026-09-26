@@ -44,18 +44,18 @@ import java.nio.file.Paths
 private const val TAG = "FmExtract"
 private const val BUFFER_SIZE = 64 * 1024
 
-/** 文件存在，但不是可识别的压缩包格式（或压缩包已损坏无法解析） */
+/** The file exists but is not a recognizable archive format (or the archive is corrupted beyond parsing) */
 class NotArchiveException(message: String) : Exception(message)
 
 object Extractor {
     /**
-     * 将压缩包全部条目解压到目标目录
-     * @param archive 压缩包路径
-     * @param outputDir 目标目录
-     * @param options 解压选项
-     * @param onProgress 进度回调（completed, total, currentName）
-     * @param checkCancel 取消检查；返回 true 表示取消
-     * @return 解压结果汇总
+     * Extracts all archive entries into the target directory
+     * @param archive the archive path
+     * @param outputDir the target directory
+     * @param options extraction options
+     * @param onProgress progress callback (completed, total, currentName)
+     * @param checkCancel cancellation check; return true to cancel
+     * @return the extraction result summary
      */
     suspend fun extract(
         archive: Path,
@@ -65,7 +65,7 @@ object Extractor {
         checkCancel: () -> Boolean,
         onBytes: (bytesDone: Long, bytesTotal: Long) -> Unit = { _, _ -> }
     ): ExtractSummary {
-        // 按内容探测候选格式并依次尝试，失败换下一种
+        // Probe candidate formats from the content and try them in order; move to the next on failure
         for (type in detectTypes(archive)) {
             try {
                 return extractWithType(
@@ -85,7 +85,7 @@ object Extractor {
                 FmLog.warn(TAG, "Extract failed as $type, trying next format", e)
             }
         }
-        // 所有候选格式均失败，文件存在时统一提示“不是有效的压缩包”，
+        // When all candidates fail, an existing file gets the unified message "not a valid archive",
         throw if (Files.exists(archive, LinkOption.NOFOLLOW_LINKS)) {
             NotArchiveException(archive.toString())
         } else {
@@ -142,8 +142,8 @@ object Extractor {
     }
 
     /**
-     * 依据文件内容魔数探测候选格式
-     * 无法识别时返回 ZIP / 7Z / TAR 的兜底顺序
+     * Probes candidate formats by the file's magic bytes
+     * Falls back to the ZIP / 7Z / TAR order when unrecognized
      */
     private suspend fun detectTypes(archive: Path): List<ArchiveType> {
         sniffType(archive)?.let {
@@ -189,18 +189,18 @@ object Extractor {
             }
 
             byte(0) == 0x1F.toByte() && byte(1) == 0x8B.toByte() -> {
-                ArchiveType.TAR     // gzip（tar.gz）
+                ArchiveType.TAR     // gzip (tar.gz)
             }
 
             byte(0) == 'B'.code.toByte() && byte(1) == 'Z'.code.toByte() &&
                     byte(2) == 'h'.code.toByte() -> {
-                ArchiveType.TAR     // bzip2（tar.bz2）
+                ArchiveType.TAR     // bzip2 (tar.bz2)
             }
 
             byte(0) == 0xFD.toByte() && byte(1) == '7'.code.toByte() && byte(2) == 'z'.code.toByte() &&
                     byte(3) == 'X'.code.toByte() && byte(4) == 'Z'.code.toByte() &&
                     byte(5) == 0x00.toByte() -> {
-                ArchiveType.TAR     // xz（tar.xz）
+                ArchiveType.TAR     // xz (tar.xz)
             }
 
             else -> null
@@ -208,7 +208,7 @@ object Extractor {
     }
 
     /**
-     * 判断文件头部是否具有 ZIP 签名
+     * Checks whether the file header carries a ZIP signature
      */
     private fun isZipSignature(archive: Path): Boolean = runCatching {
         Files.newInputStream(archive).use { input ->
@@ -257,8 +257,8 @@ object Extractor {
             throw e
         }
         zip.use { z ->
-            // zip4j 对无 ZIP 签名的内容（如空文件、纯文本）会宽容地视为空压缩包，
-            // 此处校验签名：不是 zip 时让位给后续格式尝试，最终提示“不是有效的压缩包”
+            // zip4j leniently treats content without a ZIP signature (empty files, plain text) as an empty archive,
+            // the signature is checked here: non-zip content yields to later format attempts and finally reports "not a valid archive"
             if (z.fileHeaders.isEmpty() && !isZipSignature(archive)) {
                 throw ZipException("Zip headers not found. Probably not a zip file")
             }
@@ -277,7 +277,7 @@ object Extractor {
                     val input = try {
                         z.getInputStream(header)
                     } catch (e: Exception) {
-                        // 密码缺失 / 错误：抛出异常而非静默跳过
+                        // Missing/wrong password: throw instead of silently skipping
                         if (isPasswordError(e)) throw passwordException(options, e)
                         FmLog.warn(TAG, "Skip unreadable zip entry: $name", e)
                         continue
@@ -348,7 +348,7 @@ object Extractor {
                     val entry = try {
                         sz.getNextEntry() ?: break
                     } catch (e: Exception) {
-                        // 密码缺失 / 错误：抛出异常而非静默跳过
+                        // Missing/wrong password: throw instead of silently skipping
                         if (isPasswordError(e)) throw passwordException(options, e)
                         throw e
                     }
@@ -451,7 +451,7 @@ object Extractor {
         }
     }
 
-    /** 打开 tar 输入流：自动解包 gzip / bzip2 / xz 压缩，原始 tar 直接透传。 */
+    /** Opens a tar input stream: auto-unpacks gzip / bzip2 / xz compression; raw tar passes straight through. */
     private fun openTarInput(archive: Path): InputStream {
         val buffered = BufferedInputStream(Files.newInputStream(archive))
         return try {
@@ -464,7 +464,7 @@ object Extractor {
 
 
     /**
-     * 读取压缩包顶层条目名。
+     * Reads the top-level entry names of an archive.
      */
     suspend fun topLevelNames(archive: Path): List<String> = withContext(Dispatchers.IO) {
         for (type in detectTypes(archive)) {
@@ -473,7 +473,7 @@ object Extractor {
         emptyList()
     }
 
-    /** 按指定格式读取顶层条目名；格式不匹配时返回 null。 */
+    /** Reads top-level entry names with the given format; returns null when the format doesn't match. */
     private fun collectTopLevelNames(type: ArchiveType, archive: Path): List<String>? {
         val names = LinkedHashSet<String>()
         val ok = when (type) {

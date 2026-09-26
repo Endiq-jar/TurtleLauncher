@@ -114,7 +114,7 @@ class PasteController(
         }
     }
 
-    /** 执行粘贴。 */
+    /** Executes a paste。 */
     suspend fun executePasteInternal(
         sources: List<Path>,
         targetDir: Path,

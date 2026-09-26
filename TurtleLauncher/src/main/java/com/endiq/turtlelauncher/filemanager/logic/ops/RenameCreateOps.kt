@@ -32,7 +32,7 @@ import java.nio.file.StandardCopyOption
 
 class RenameCreateOps(private val scope: AccessScope) {
 
-    /** 重命名条目 */
+    /** Renames an entry */
     suspend fun rename(
         target: Path,
         newName: String
@@ -59,10 +59,10 @@ class RenameCreateOps(private val scope: AccessScope) {
         return dest
     }
 
-    /** 新建文件夹 */
+    /** Creates a folder */
     suspend fun createFolder(parent: Path, name: String): Path = createEntry(parent, name, isFolder = true)
 
-    /** 新建空白文件 */
+    /** Creates a blank file */
     suspend fun createFile(parent: Path, name: String): Path = createEntry(parent, name, isFolder = false)
 
     private suspend fun createEntry(

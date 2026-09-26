@@ -56,24 +56,24 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import javax.inject.Inject
 
-/** 文件管理器初始化状态 */
+/** File manager initialization state */
 sealed interface FmInitState {
-    /** 初始化中（或尚未开始） */
+    /** Initializing (or not started yet) */
     data object Pending : FmInitState
-    /** 初始化完成 */
+    /** Initialization complete */
     data object Ready : FmInitState
-    /** 初始化失败 */
+    /** Initialization failed */
     data class Failed(val message: String) : FmInitState
 }
 
 /**
- * 文件管理器数据控制层门面：负责装配各功能控制器并转发 UI 调用。
- * 具体业务逻辑与协程启动由各控制器自行管理。
+ * Facade of the file manager data-control layer: assembles the feature controllers and forwards UI calls.
+ * Concrete business logic and coroutine launches are managed by the controllers themselves.
  *
- * 初始化策略：构造器只解析参数并创建纯内存状态容器（零 IO、零协程、零副作用），
- * 所有文件系统 / MMKV / 协程初始化收敛到 [initialize]，由 UI 在首帧组合提交后调用：
- * 避免启动早期主线程 IO 与首帧组合竞争（HyperOS 上可导致启动 ANR），
- * 且初始化失败可展示错误而非崩溃。
+ * Init strategy: the constructor only parses arguments and creates a pure in-memory state container (zero IO, zero coroutines, zero side effects);
+ * all filesystem / MMKV / coroutine initialization is gathered in [initialize], called by the UI after the first frame is composed:
+ * this avoids early main-thread IO racing first-frame composition (which can cause startup ANR on HyperOS),
+ * and lets initialization failures show an error instead of crashing.
  */
 @HiltViewModel
 class FileManagerViewModel @Inject constructor(
@@ -81,16 +81,16 @@ class FileManagerViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    /** 可访问范围目录的绝对路径。 */
+    /** Absolute path of the accessible scope directory. */
     private val rootPathStr: String = savedStateHandle[KEY_ROOT_PATH]
         ?: throw IllegalStateException("Missing required argument: $KEY_ROOT_PATH")
-    /** 可选的初始当前目录；无效时回退根目录。 */
+    /** Optional initial current directory; falls back to the root when invalid. */
     private val currentPathStr: String? = savedStateHandle[KEY_CURRENT_PATH]
 
     private val store = FmStateStore(context)
 
     private val _initState = MutableStateFlow<FmInitState>(FmInitState.Pending)
-    /** 初始化状态 */
+    /** Initialization state */
     val initState: StateFlow<FmInitState> = _initState.asStateFlow()
 
     private lateinit var taskManager: TaskManager
@@ -168,7 +168,7 @@ class FileManagerViewModel @Inject constructor(
         }
     }
 
-    // ---------------- 浏览 / 导航 ----------------
+    // ---------------- Browsing / navigation ----------------
 
     fun refresh() {
         browseCtr.refreshDir()
@@ -183,41 +183,41 @@ class FileManagerViewModel @Inject constructor(
     fun setSortConfig(config: SortConfig) = browseCtr.setSortConfig(config)
     fun toggleHidden() = browseCtr.toggleHidden()
 
-    // ---------------- 选择 / 多选 ----------------
+    // ---------------- Selection / multi-select ----------------
     fun toggleSelection(entry: FmEntry) = selectionCtr.toggleSelection(entry)
     fun swipeRangeSelect(entry: FmEntry) = selectionCtr.swipeRangeSelect(entry)
     fun selectAll() = selectionCtr.selectAll()
     fun clearSelection() = selectionCtr.clearSelection()
 
     /**
-     * 系统返回键处理
-     * 多选模式下先退出多选，否则后退
-     * @return 位于根目录时返回 false
+     * System back-key handling
+     * In multi-select mode, exit multi-select first; otherwise go back
+     * @return false while at the root directory
      */
     fun consumeBack(): Boolean {
         if (store.stateValue().multiSelect) {
             store.clearSelectionAndExitMulti()
             return true
         }
-        // 系统返回键视为返回上一层目录，而非后退到上一个访问的目录
+        // The system back key goes up one directory level, not back to a previously visited directory
         if (browseCtr.goParent()) return true
-        // 根目录
+        // Root directory
         return false
     }
 
-    // ---------------- 目录属性扫描 ----------------
+    // ---------------- Directory property scan ----------------
 
     fun startDirectoryScan(path: Path) = directoryScanCtr.startDirectoryScan(path)
     fun stopDirectoryScan() = directoryScanCtr.stopDirectoryScan()
 
-    // ---------------- 搜索 ----------------
+    // ---------------- Search ----------------
 
     fun showSearchDialog() = searchCtr.showSearchDialog()
     fun submitSearch(keyword: String, caseSensitive: Boolean) = searchCtr.submitSearch(keyword, caseSensitive)
     fun clearSearch() = searchCtr.clearSearch()
     fun backToSearchSetup() = searchCtr.backToSearchSetup()
 
-    // ---------------- 剪贴板 / 粘贴 ----------------
+    // ---------------- Clipboard / paste ----------------
     fun copyEntry(entry: FmEntry) {
         store.setClipboard(FmClipboard(listOf(entry.path), false))
     }
@@ -227,7 +227,7 @@ class FileManagerViewModel @Inject constructor(
     fun requestPaste() = pasteCtr.requestPaste()
     fun resolvePasteConflict(resolution: ConflictResolution) = pasteCtr.resolvePasteConflict(resolution)
 
-    /** 复制 / 剪贴登记剪贴板后，关闭批量操作对话框 */
+    /** After copy/cut registers the clipboard, close the bulk-operation dialog */
     fun bulkCopy() {
         val src = store.selectedEntries().map { it.path }
         if (!src.isEmpty()) {
@@ -243,7 +243,7 @@ class FileManagerViewModel @Inject constructor(
         store.dismissDialog()
     }
 
-    // ---------------- 压缩 ----------------
+    // ---------------- Compression ----------------
 
     fun bulkCompress() = compressCtr.bulkCompress()
     fun compressEntry(entry: FmEntry) = compressCtr.compressEntry(entry)
@@ -255,7 +255,7 @@ class FileManagerViewModel @Inject constructor(
     fun onCompressOutputPicked(treeUri: Uri) = compressCtr.onCompressOutputPicked(treeUri)
     fun resolveCompressConflict(resolution: ConflictResolution) = compressCtr.resolveCompressConflict(resolution)
 
-    // ---------------- 解压 ----------------
+    // ---------------- Extraction ----------------
 
     fun showExtract(entry: FmEntry) = extractCtr.showExtract(entry)
     fun onExtractSetupConfirmed(independentFolder: Boolean) = extractCtr.onExtractSetupConfirmed(independentFolder)
@@ -266,7 +266,7 @@ class FileManagerViewModel @Inject constructor(
     fun onExtractOutputPickedCancelled() = extractCtr.onExtractOutputPickedCancelled()
     fun resolveExtractConflict(resolution: ConflictResolution) = extractCtr.resolveExtractConflict(resolution)
 
-    // ---------------- 导入 ----------------
+    // ---------------- Import ----------------
 
     fun showImportFilesDialog() {
         store.dismissDialog()
@@ -286,7 +286,7 @@ class FileManagerViewModel @Inject constructor(
         store.dismissDialog()
     }
 
-    // ---------------- 删除 / 重命名 / 新建 / 分享 ----------------
+    // ---------------- Delete / rename / create / share ----------------
 
     fun stageSingleDelete(entry: FmEntry) = entryCtr.stageSingleDelete(entry)
     fun cancelStagedDelete() = entryCtr.cancelStagedDelete()
@@ -297,7 +297,7 @@ class FileManagerViewModel @Inject constructor(
     fun validateRename(entry: FmEntry, newName: String): String? = entryCtr.validateRename(entry, newName)
     fun showShare(entry: FmEntry) = entryCtr.showShare(entry)
 
-    // ---------------- 回收站 ----------------
+    // ---------------- Trash ----------------
 
     fun loadTrashList() = trashCtr.loadTrashList()
     fun refreshTrashList() = trashCtr.refreshTrashList()
@@ -317,32 +317,32 @@ class FileManagerViewModel @Inject constructor(
     fun trashRangeSelect(swipeItem: TrashItem) = trashCtr.trashRangeSelect(swipeItem)
     fun selectedTrashItems(): List<TrashItem> = trashCtr.selectedTrashItems()
 
-    // ---------------- 文本编辑器 ----------------
+    // ---------------- Text editor ----------------
 
-    /** 打开文件并异步加载内容 */
+    /** Opens a file and loads its content asynchronously */
     fun editorOpen(path: Path) = editorCtr.open(path)
-    /** 编辑器内容变化回调 */
+    /** Editor content-change callback */
     fun editorTextChanged() = editorCtr.onTextChanged()
-    /** 保存编辑器内容 */
+    /** Saves the editor content */
     fun editorSave(onDone: (Boolean) -> Unit = {}) = editorCtr.save(onDone)
-    /** 取消进行中的保存 */
+    /** Cancels an in-progress save */
     fun editorCancelSave() = editorCtr.cancelSave()
-    /** 请求显示未保存修改的退出确认弹窗 */
+    /** Requests the unsaved-changes exit confirmation dialog */
     fun editorRequestExitConfirm() = editorCtr.requestExitConfirm()
-    /** 取消退出确认弹窗 */
+    /** Cancels the exit confirmation dialog */
     fun editorCancelExitConfirm() = editorCtr.cancelExitConfirm()
-    /** 是否存在未保存的修改 */
+    /** Whether unsaved changes exist */
     fun editorHasDirty(): Boolean = editorCtr.hasDirty()
 
-    // ---------------- 对话框 / Snackbar ----------------
+    // ---------------- Dialogs / Snackbar ----------------
 
     fun dismissDialog() = store.dismissDialog()
     fun consumeSnackbar() = store.updateState { it.copy(snackbar = null) }
     fun consumeLocateHighlight() = store.updateState { it.copy(locateHighlightPath = null) }
 
-    // ---------------- 任务进度同步 ----------------
+    // ---------------- Task progress sync ----------------
 
-    /** 订阅 [TaskManager] 的任务状态与进度，同步到状态集合。 */
+    /** Subscribes to [TaskManager] task state and progress, syncing them into the state store. */
     fun observeTasks() {
         viewModelScope.launch {
             taskManager.state.collect { st ->
@@ -356,22 +356,22 @@ class FileManagerViewModel @Inject constructor(
         }
     }
 
-    /** 取消当前任务 */
+    /** Cancels the current task */
     fun cancelCurrentTask() {
         taskManager.cancel()
     }
 
-    /** 返回应用上下文 */
+    /** Returns the application context */
     fun appContext(): Context = context
 
     companion object {
         private const val TAG = "FileManagerViewModel"
         private const val TRASH_SUBDIR = "fileManagerTrash"
 
-        /** [SavedStateHandle] 键：可访问范围目录绝对路径。 */
+        /** [SavedStateHandle] key: absolute path of the accessible scope directory. */
         const val KEY_ROOT_PATH = "fm.rootPath"
 
-        /** [SavedStateHandle] 键：可选初始当前目录。 */
+        /** [SavedStateHandle] key: optional initial current directory. */
         const val KEY_CURRENT_PATH = "fm.currentPath"
     }
 }

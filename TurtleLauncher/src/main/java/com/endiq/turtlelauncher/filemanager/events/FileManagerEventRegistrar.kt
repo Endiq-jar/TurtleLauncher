@@ -35,7 +35,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 private const val TAG = "FmEventRegistrar"
 
 /**
- * 文件管理器事件注册器，负责绑定事件服务并接收派发的文件变更事件
+ * File manager event registrar: binds the event service and receives dispatched file change events
  */
 class FileManagerEventRegistrar(
     private val context: Context,
@@ -75,7 +75,7 @@ class FileManagerEventRegistrar(
 
     private val _events = MutableSharedFlow<FileManagerEvent>(extraBufferCapacity = 64)
     /**
-     * 接收到的文件管理器事件流
+     * Stream of received file manager events
      */
     val events: SharedFlow<FileManagerEvent> = _events.asSharedFlow()
 
@@ -99,7 +99,7 @@ class FileManagerEventRegistrar(
     }
 
     /**
-     * 启动监听，绑定事件服务并注册客户端
+     * Starts listening: binds the event service and registers the client
      */
     fun start() {
         if (_started) return
@@ -115,7 +115,7 @@ class FileManagerEventRegistrar(
     }
 
     /**
-     * 停止监听，注销客户端并解绑事件服务
+     * Stops listening: unregisters the client and unbinds the event service
      */
     fun stop() {
         if (!_started) return

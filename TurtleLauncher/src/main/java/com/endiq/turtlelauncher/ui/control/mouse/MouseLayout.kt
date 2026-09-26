@@ -94,7 +94,7 @@ val resizeEWPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("resize_EW_p
 val resizeAllPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("resize_ALL_pointer.image")
 
 /**
- * 禁止/无效操作鼠标指针图标文件
+ * Not allowed / invalid operation鼠标指针图标文件
  */
 val notAllowedPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("not_allowed_pointer.image")
 

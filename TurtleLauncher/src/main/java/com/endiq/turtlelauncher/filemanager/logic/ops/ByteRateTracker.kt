@@ -18,10 +18,10 @@
 
 package com.endiq.turtlelauncher.filemanager.logic.ops
 
-/** 采样窗口 */
+/** Sampling window */
 private const val WINDOW_NANOS = 500_000_000L
 
-/** 实时速率跟踪器 */
+/** Real-time rate tracker */
 class ByteRateTracker {
     private var lastSampleNanos = 0L
     private var lastBytes = 0L
@@ -34,9 +34,9 @@ class ByteRateTracker {
     }
 
     /**
-     * 以当前累计字节数计算实时速率
-     * @param cumulativeBytes 从任务开始到当前的累计处理字节数
-     * @return 实时速率（bytes/s）
+     * Computes the real-time rate from the accumulated bytes
+     * @param cumulativeBytes bytes processed from task start until now
+     * @return the real-time rate (bytes/s)
      */
     fun rate(cumulativeBytes: Long): Long {
         val now = System.nanoTime()

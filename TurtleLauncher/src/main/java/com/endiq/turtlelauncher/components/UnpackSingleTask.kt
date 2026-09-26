@@ -77,7 +77,7 @@ abstract class UnpackSingleTask(
             }.onFailure { e ->
                 Logger.error("CheckComponent", "An exception occurred while detecting the assets resource.", e)
             }.getOrElse {
-                //检查失败，要求重新进行安装
+                //Check failed; a reinstall is required
                 InstallableItem.State.NOT_STARTED
             }
         }
@@ -99,9 +99,9 @@ abstract class UnpackSingleTask(
     }
 
     /**
-     * 递归复制 assets 目录下的所有文件。
-     * 组件资产里可能存在子目录（如 lwjgl3/<ver>/natives/<abi>/），
-     * 而 copyAssetFile 仅支持文件，这里对子目录做递归处理。
+     * Recursively copies all files under the assets directory.
+     * Component assets may contain subdirectories (like lwjgl3/<ver>/natives/<abi>/),
+     * and copyAssetFile only supports files, so subdirectories are handled recursively here.
      */
     private suspend fun copyAssetDirectory(assetPath: String, outputDir: File) {
         outputDir.mkdirs()
@@ -120,7 +120,7 @@ abstract class UnpackSingleTask(
     }
 
     private fun isAssetDirectory(assetPath: String): Boolean {
-        // 目录无法用 open() 打开，而 list() 能列出其子项；空目录会误判为文件，但组件内不存在空目录
+        // Directories cannot be open()ed, but list() enumerates their children; empty dirs would be misread as files, but no component contains empty dirs
         return try {
             am.open(assetPath).close()
             false
@@ -130,7 +130,7 @@ abstract class UnpackSingleTask(
     }
 
     /**
-     * 执行更多操作
+     * Performs further operations
      */
     open suspend fun moreProgress(file: File) {}
 

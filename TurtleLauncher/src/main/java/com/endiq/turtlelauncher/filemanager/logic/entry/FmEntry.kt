@@ -23,9 +23,9 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 
 /**
- * 文件 / 目录条目
- * @param path 归一化后的绝对路径
- * @param archiveType 可解压压缩包类型，非压缩包为 null
+ * File / directory entry
+ * @param path normalized absolute path
+ * @param archiveType extractable archive type; null for non-archives
  */
 data class FmEntry(
     val path: Path,
@@ -40,7 +40,7 @@ data class FmEntry(
     val isFile: Boolean get() = !isDirectory
 }
 
-/** 压缩包后缀类型 */
+/** Archive suffix types */
 enum class ArchiveType {
     ZIP,
     SEVEN_Z,
@@ -65,10 +65,10 @@ enum class ArchiveType {
 }
 
 /**
- * 单次浏览结果
- * @param ancestors 从根目录到当前目录的祖先链（含根，不含当前）
- * @param entries 当前目录内全部条目（含隐藏条目）
- * @param writable 当前目录是否可写
+ * Result of a single browse
+ * @param ancestors ancestor chain from the root to the current directory (root included, current excluded)
+ * @param entries all entries inside the current directory (hidden entries included)
+ * @param writable whether the current directory is writable
  */
 data class FmListResult(
     val rootDir: Path,
@@ -79,7 +79,7 @@ data class FmListResult(
     val writable: Boolean
 )
 
-/** 浏览失败时抛出的异常 */
+/** Exception thrown when browsing fails */
 class BrowseException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 

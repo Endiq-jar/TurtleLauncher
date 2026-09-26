@@ -71,12 +71,12 @@ class TerracottaViewModel(
         private set
 
     /**
-     * 陶瓦联机核心版本号，在初始化完成后非null
+     * 陶瓦联机核心版本号，在Initialization complete后非null
      */
     var terracottaVer by mutableStateOf<String?>(null)
 
     /**
-     * EasyTier版本号，在初始化完成后非null
+     * EasyTier版本号，在Initialization complete后非null
      */
     var easyTierVer by mutableStateOf<String?>(null)
 

@@ -37,7 +37,7 @@ class UnpackJnaTask(context: Context) : UnpackSingleTask(
         if (file.extension == "zip") {
             withContext(Dispatchers.IO) {
                 ZipFile(file).use { zip ->
-                    //解压 jna 压缩包
+                    //Unpack the jna archive
                     zip.extractFromZip("", this@UnpackJnaTask.rootDir)
                 }
                 file.delete()

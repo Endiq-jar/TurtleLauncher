@@ -117,7 +117,7 @@ class SearchController(
         }
     }
 
-    /** 清除搜索结果，返回搜索设置对话框 */
+    /** 清除Search results，返回Search settings dialog */
     fun clearSearch() {
         store.setSearchUi(SearchUiState())
         store.updateState {
@@ -125,7 +125,7 @@ class SearchController(
         }
     }
 
-    /** 从搜索结果列表返回搜索设置对话框（发起新搜索） */
+    /** 从Search results列表返回Search settings dialog（发起新搜索） */
     fun backToSearchSetup() {
         store.updateState {
             it.copy(dialogIntent = DialogIntent.Search)

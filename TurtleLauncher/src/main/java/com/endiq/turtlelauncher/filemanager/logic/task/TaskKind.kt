@@ -18,7 +18,7 @@
 
 package com.endiq.turtlelauncher.filemanager.logic.task
 
-/** 任务种类，同一时间仅允许一个任务运行 */
+/** Task kinds; only one task may run at a time */
 enum class TaskKind {
     LIST,
     SEARCH,
@@ -32,7 +32,7 @@ enum class TaskKind {
     TRASH_PURGE,
     TRASH_CLEAR;
 
-    /** 是否应弹出任务对话框 */
+    /** Whether a task dialog should pop up */
     val shouldShowProgressDialog: Boolean
         get() = this != LIST && this != SEARCH
 }

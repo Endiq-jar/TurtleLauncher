@@ -37,138 +37,138 @@ private const val KEY_EDITOR_SEARCH_MATCH_CASE = "editor_search_match_case"
 private const val KEY_EDITOR_SEARCH_WHOLE_WORD = "editor_search_whole_word"
 private const val KEY_EDITOR_SEARCH_REGEX = "editor_search_regex"
 
-/** 文件管理器配置存储 */
+/** File manager configuration store */
 object FmConfig {
     private const val MMKV_ID = "turtle_file_manager"
 
     private fun mmkv(): MMKV = MMKV.mmkvWithID(MMKV_ID, MMKV.SINGLE_PROCESS_MODE)
 
-    /** 设置是否显示隐藏文件 */
+    /** Sets whether hidden files are shown */
     fun setShowHidden(value: Boolean) {
         mmkv().putBoolean(KEY_SHOW_HIDDEN, value)
     }
 
-    /** 是否显示隐藏文件 */
+    /** Whether hidden files are shown */
     fun showHidden(): Boolean = mmkv().decodeBool(KEY_SHOW_HIDDEN, true)
 
-    /** 设置主列表的排序字段 */
+    /** Sets the sort field of the main list */
     fun setSortField(value: String) {
         mmkv().putString(KEY_SORT_FIELD, value)
     }
 
-    /** 主列表排序字段 */
+    /** Main list sort field */
     fun sortField(): String = mmkv().decodeString(KEY_SORT_FIELD) ?: SortField.NAME.name
 
-    /** 设置主列表是否升序排序 */
+    /** Sets whether the main list sorts ascending */
     fun setSortAscending(value: Boolean) {
         mmkv().putBoolean(KEY_SORT_ASC, value)
     }
 
-    /** 主列表是否升序排序 */
+    /** Whether the main list sorts ascending */
     fun sortAscending(): Boolean = mmkv().decodeBool(KEY_SORT_ASC, true)
 
-    /** 设置主列表是否目录优先 */
+    /** Sets whether the main list puts directories first */
     fun setFolderFirst(value: Boolean) {
         mmkv().putBoolean(KEY_FOLDER_FIRST, value)
     }
 
-    /** 主列表是否目录优先 */
+    /** Whether the main list puts directories first */
     fun folderFirst(): Boolean = mmkv().decodeBool(KEY_FOLDER_FIRST, true)
 
-    /** 设置回收站列表的排序字段 */
+    /** Sets the sort field of the trash list */
     fun setTrashSortField(value: String) {
         mmkv().putString(KEY_TRASH_SORT_FIELD, value)
     }
 
-    /** 回收站列表排序字段 */
+    /** Trash list sort field */
     fun trashSortField(): String = mmkv().decodeString(KEY_TRASH_SORT_FIELD) ?: TrashSortField.DELETED.name
 
-    /** 设置回收站列表是否升序排序 */
+    /** Sets whether the trash list sorts ascending */
     fun setTrashSortAscending(value: Boolean) {
         mmkv().putBoolean(KEY_TRASH_SORT_ASC, value)
     }
 
-    /** 回收站列表是否升序排序 */
+    /** Whether the trash list sorts ascending */
     fun trashSortAscending(): Boolean = mmkv().decodeBool(KEY_TRASH_SORT_ASC, false)
 
-    /** 设置回收站列表是否目录优先 */
+    /** Sets whether the trash list puts directories first */
     fun setTrashFolderFirst(value: Boolean) {
         mmkv().putBoolean(KEY_TRASH_FOLDER_FIRST, value)
     }
 
-    /** 回收站列表是否目录优先 */
+    /** Whether the trash list puts directories first */
     fun trashFolderFirst(): Boolean = mmkv().decodeBool(KEY_TRASH_FOLDER_FIRST, true)
 
-    /** 设置编辑器自动换行 */
+    /** Sets editor line wrapping */
     fun setEditorWordwrap(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_WORDWRAP, value)
     }
 
-    /** 编辑器自动换行 */
+    /** Editor line wrapping */
     fun editorWordwrap(): Boolean = mmkv().decodeBool(KEY_EDITOR_WORDWRAP, true)
 
-    /** 设置编辑器代码补全开关 */
+    /** Sets the editor code-completion toggle */
     fun setEditorCompletionEnabled(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_COMPLETION, value)
     }
 
-    /** 编辑器代码补全开关 */
+    /** Editor code-completion toggle */
     fun editorCompletionEnabled(): Boolean = mmkv().decodeBool(KEY_EDITOR_COMPLETION, true)
 
-    /** 设置编辑器显示行号 */
+    /** Sets whether the editor shows line numbers */
     fun setEditorLineNumber(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_LINE_NUMBER, value)
     }
 
-    /** 编辑器显示行号 */
+    /** Whether the editor shows line numbers */
     fun editorLineNumber(): Boolean = mmkv().decodeBool(KEY_EDITOR_LINE_NUMBER, true)
 
-    /** 设置编辑器当前行高亮 */
+    /** Sets editor current-line highlight */
     fun setEditorHighlightLine(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_HIGHLIGHT_LINE, value)
     }
 
-    /** 编辑器当前行高亮 */
+    /** Editor current-line highlight */
     fun editorHighlightLine(): Boolean = mmkv().decodeBool(KEY_EDITOR_HIGHLIGHT_LINE, true)
 
-    /** 设置编辑器显示不可见字符 */
+    /** Sets whether the editor shows invisible characters */
     fun setEditorNonPrintable(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_NON_PRINTABLE, value)
     }
 
-    /** 编辑器显示不可见字符 */
+    /** The editor shows invisible characters */
     fun editorNonPrintable(): Boolean = mmkv().decodeBool(KEY_EDITOR_NON_PRINTABLE, false)
 
-    /** 设置编辑器字号（px，0 表示未设置使用默认值） */
+    /** Sets the editor font size (px; 0 means unset, use the default) */
     fun setEditorFontSize(value: Float) {
         mmkv().putFloat(KEY_EDITOR_FONT_SIZE, value)
     }
 
-    /** 编辑器字号（px，0 表示未设置使用默认值） */
+    /** Editor font size (px; 0 means unset, use the default) */
     fun editorFontSize(): Float = mmkv().decodeFloat(KEY_EDITOR_FONT_SIZE, 0f)
 
-    /** 设置搜索区分大小写 */
+    /** Sets case-sensitive search */
     fun setEditorSearchMatchCase(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_SEARCH_MATCH_CASE, value)
     }
 
-    /** 搜索区分大小写 */
+    /** Case-sensitive search */
     fun editorSearchMatchCase(): Boolean = mmkv().decodeBool(KEY_EDITOR_SEARCH_MATCH_CASE, false)
 
-    /** 设置搜索全字匹配 */
+    /** Sets whole-word search */
     fun setEditorSearchWholeWord(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_SEARCH_WHOLE_WORD, value)
     }
 
-    /** 搜索全字匹配 */
+    /** Whole-word search */
     fun editorSearchWholeWord(): Boolean = mmkv().decodeBool(KEY_EDITOR_SEARCH_WHOLE_WORD, false)
 
-    /** 设置搜索正则表达式 */
+    /** Sets regex search */
     fun setEditorSearchRegex(value: Boolean) {
         mmkv().putBoolean(KEY_EDITOR_SEARCH_REGEX, value)
     }
 
-    /** 搜索正则表达式 */
+    /** Regex search */
     fun editorSearchRegex(): Boolean = mmkv().decodeBool(KEY_EDITOR_SEARCH_REGEX, false)
 
     enum class SortField { NAME, SIZE, MODIFIED }

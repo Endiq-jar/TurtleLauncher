@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.crashlogs
 
 /**
- * API 站点返回的链接不可用、不存在
+ * The link returned by the API site is unavailable or missing
  */
 class LinkNotFoundException : RuntimeException(
     "Unable to find an available link from the data returned by the remote end"

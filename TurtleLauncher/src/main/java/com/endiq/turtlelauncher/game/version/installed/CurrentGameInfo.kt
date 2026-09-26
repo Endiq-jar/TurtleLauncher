@@ -42,7 +42,7 @@ data class CurrentGameInfo(
 ) {
     /**
      * 原子化保存当前状态到文件
-     * @param gameHome 信息所属的游戏目录
+     * @param gameHome 信息所属的Game directories
      */
     fun saveCurrentInfo(gameHome: String) {
         val infoFile = getInfoFile(gameHome)
@@ -59,7 +59,7 @@ private fun getInfoFile(gameHome: String) = File(gameHome, "turtle-game.cfg")
 
 /**
  * 刷新并返回最新的游戏信息（自动处理旧配置迁移）
- * @param gameHome 信息所属的游戏目录
+ * @param gameHome 信息所属的Game directories
  */
 fun refreshCurrentInfo(gameHome: String): CurrentGameInfo {
     val infoFile = getInfoFile(gameHome)

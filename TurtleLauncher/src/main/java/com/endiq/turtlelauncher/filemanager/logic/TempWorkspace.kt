@@ -26,9 +26,9 @@ private const val COMPRESS_SUBDIR = "fileManagerCompress"
 private const val EXTRACT_SUBDIR = "fileManagerExtract"
 private const val IMPORT_SUBDIR = "fileManagerImport"
 
-/** 临时工作区 */
+/** Temporary workspace */
 class TempWorkspace(private val cacheRoot: Path) {
-    /** 生成压缩用的临时文件路径 */
+    /** Generates a temporary file path for compression */
     fun compressTempFile(extension: String): Path {
         val dir = cacheRoot.resolve(COMPRESS_SUBDIR)
         runCatching {
@@ -37,18 +37,18 @@ class TempWorkspace(private val cacheRoot: Path) {
         return dir.resolve("tmp_${System.nanoTime()}.$extension")
     }
 
-    /** 生成解压用的临时目录路径 */
+    /** Generates a temporary directory path for extraction */
     fun extractTempDir(): Path = uniqueDir(EXTRACT_SUBDIR)
 
-    /** 生成导入用的临时目录路径 */
+    /** Generates a temporary directory path for imports */
     fun importTempDir(): Path = uniqueDir(IMPORT_SUBDIR)
 
-    /** 递归删除临时文件或目录 */
+    /** Recursively deletes a temporary file or directory */
     suspend fun delete(path: Path) {
         deleteRecursivePath(path)
     }
 
-    /** 判断路径是否位于临时工作区内 */
+    /** Checks whether a path lies inside the temporary workspace */
     fun isInside(path: Path): Boolean {
         val normalized = path.normalize().toAbsolutePath()
         return normalized.startsWith(cacheRoot)

@@ -35,12 +35,12 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * 文件管理器日志
+ * File manager logger
  */
 object FmLog {
     private const val SUB_DIR = "file_manager"
 
-    /** 默认保留的日志文件数量 */
+    /** Default number of log files to keep */
     const val DEFAULT_MAX_FILES = 5
 
     private val isInitialized = AtomicBoolean(false)
@@ -52,10 +52,10 @@ object FmLog {
     private var logWriter: PrintWriter? = null
 
     /**
-     * 初始化日志
-     * @param scope 日志消费协程的作用域
-     * @param logsDir 日志目录，写入 `<logsDir>/file_manager/`；为 null 时仅输出 logcat
-     * @param maxFiles 保留的日志文件数量，超出删除最旧
+     * Initializes logging
+     * @param scope the scope for the log-consuming coroutine
+     * @param logsDir log directory, writing to `<logsDir>/file_manager/`; null logs to logcat only
+     * @param maxFiles number of log files to keep; the oldest is deleted beyond it
      */
     fun init(
         scope: CoroutineScope,
@@ -64,27 +64,27 @@ object FmLog {
     ) {
         val keepFiles = maxFiles.coerceAtLeast(1)
         synchronized(this) {
-            // 重新初始化
+            // Re-initialize
             consumerJob?.cancel()
             consumerJob = null
             logWriter?.close()
             logWriter = null
 
             consumerJob = scope.launch(Dispatchers.IO) {
-                // 文件创建等磁盘操作放在消费协程内，避免阻塞调用线程
+                // Disk work like file creation happens in the consuming coroutine, avoiding blocking the caller
                 if (logsDir != null) {
                     try {
                         val dir = logsDir.resolve(SUB_DIR).toFile()
                         Files.createDirectories(dir.toPath())
                         val writer = PrintWriter(createLogFile(dir).writer())
-                        // 先建新文件再清理，保证清理时总数准确
+                        // Create the new file before cleanup so the total count stays accurate
                         cleanupOldLogs(dir, keepFiles)
                         writer.println("================ File Manager Log ================")
                         writer.flush()
                         logWriter = writer
                     } catch (e: Exception) {
                         Log.w("FmLog", "Failed to log the line.", e)
-                        // 文件日志失败不影响 logcat 输出
+                        // File logging failure doesn't affect logcat output
                         logWriter = null
                     }
                 }
@@ -96,7 +96,7 @@ object FmLog {
         }
     }
 
-    /** 停止消费并关闭日志文件，可再次 [init] */
+    /** Stops consuming and closes the log file; [init] can be called again */
     fun close() {
         synchronized(this) {
             consumerJob?.cancel()
@@ -178,7 +178,7 @@ object FmLog {
         }
     }
 
-    // 日志文件名：fm_<yyyy-MM-dd'T'HH-mm-ss>[.<counter>].log
+    // Log file name: fm_<yyyy-MM-dd'T'HH-mm-ss>[.<counter>].log
     private fun createLogFile(dir: File): File {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss", Locale.US)
         var counter = 0
@@ -208,7 +208,7 @@ object FmLog {
     }
 }
 
-/** 文件管理器日志级别 */
+/** File manager log levels */
 enum class FmLogLevel {
     ERROR,
     WARNING,
@@ -216,7 +216,7 @@ enum class FmLogLevel {
     DEBUG
 }
 
-/** 文件管理器日志消息 */
+/** File manager log messages */
 data class FmLogMessage(
     val time: Long,
     val tag: String,

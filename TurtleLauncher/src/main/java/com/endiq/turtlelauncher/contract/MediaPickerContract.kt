@@ -46,16 +46,16 @@ private fun buildMimeTypeArray(
 }
 
 /**
- * @param allowTypes 允许的 MimeType
- * @param allowMultiple 是否允许多选
+ * @param allowTypes allowed MimeTypes
+ * @param allowMultiple whether multiple selection is allowed
  */
 class MediaPickerContract(
     private val allowTypes: Array<String>,
     private val allowMultiple: Boolean = false
 ) : ActivityResultContract<Unit, List<Uri>?>() {
     /**
-     * @param allowImages 是否允许选择图片
-     * @param allowVideos 是否允许选择视频
+     * @param allowImages whether images may be picked
+     * @param allowVideos whether videos may be picked
      */
     constructor(
         allowImages: Boolean = true,
@@ -96,7 +96,7 @@ class MediaPickerContract(
             allowTypes.size == 1 -> allowTypes[0]
             else -> {
                 val mainType = allowTypes[0].substringBefore("/")
-                //检查所有类型是否都属于同一大类
+                //Check that all types belong to the same top-level category
                 if (allowTypes.all { it.startsWith("$mainType/") }) {
                     "$mainType/*"
                 } else {

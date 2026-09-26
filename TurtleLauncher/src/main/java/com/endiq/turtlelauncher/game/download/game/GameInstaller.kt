@@ -299,7 +299,7 @@ class GameInstaller(
 
         listOf(
             buildPhase {
-                //开始之前，应该先清理一次临时游戏目录，否则可能会影响安装结果
+                //开始之前，应该先清理一次临时Game directories，否则可能会影响安装结果
                 addTask(
                     id = "Download.Game.ClearTemp",
                     title = androidText(R.string.download_install_clear_temp),
@@ -396,7 +396,7 @@ class GameInstaller(
 
         listOf(
             buildPhase {
-                //开始之前，应该先清理一次临时游戏目录，否则可能会影响安装结果
+                //开始之前，应该先清理一次临时Game directories，否则可能会影响安装结果
                 addTask(
                     id = "UpdateLoader.ClearTemp",
                     title = androidText(R.string.download_install_clear_temp),
@@ -704,7 +704,7 @@ class GameInstaller(
     }
 
     /**
-     * 清除临时游戏目录
+     * 清除临时Game directories
      */
     private suspend fun clearTempGameDir() = withContext(Dispatchers.IO) {
         PathManager.DIR_CACHE_GAME_DOWNLOADER.takeIf { it.exists() }?.let { folder ->
@@ -1039,7 +1039,7 @@ class GameInstaller(
                 }
             }
 
-            //清除临时游戏目录
+            //清除临时Game directories
             task.updateProgress(-1f)
             task.updateMessage(androidText(R.string.download_install_clear_temp))
             clearTempGameDir()
@@ -1066,7 +1066,7 @@ class GameInstaller(
                     targetVersion = info.customVersionName
                 )
 
-                //清除临时游戏目录
+                //清除临时Game directories
                 task.updateProgress(-1f)
                 task.updateMessage(androidText(R.string.download_install_clear_temp))
                 clearTempGameDir()

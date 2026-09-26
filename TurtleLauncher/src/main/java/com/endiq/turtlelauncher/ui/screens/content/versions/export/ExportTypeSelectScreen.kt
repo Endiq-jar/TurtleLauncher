@@ -191,7 +191,7 @@ private fun TypeItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            //图标
+            //Icon
             Image(
                 modifier = Modifier.size(28.dp),
                 painter = icon,

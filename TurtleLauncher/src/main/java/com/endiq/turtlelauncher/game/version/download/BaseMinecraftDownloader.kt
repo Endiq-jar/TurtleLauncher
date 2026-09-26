@@ -41,7 +41,7 @@ const val MINECRAFT_RES: String = "https://resources.download.minecraft.net/"
 
 /**
  * 设计为通用化 Minecraft 原版完整下载
- * @param gameHome 下载目标所在的游戏目录
+ * @param gameHome 下载目标所在的Game directories
  */
 class BaseMinecraftDownloader(
     gameHome: String = getGameHome()

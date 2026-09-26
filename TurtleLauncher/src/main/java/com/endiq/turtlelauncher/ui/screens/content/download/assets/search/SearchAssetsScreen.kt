@@ -109,7 +109,7 @@ private class SearchScreenViewModel(
                 searchName.searchMcMods(classes = platformClasses) ?: emptyList()
             } catch (_: CancellationException) {
                 emptyList()
-            }.take(20) //仅展示20个搜索结果
+            }.take(20) //仅展示20个Search results
             withContext(Dispatchers.Main) {
                 _searchedMcMods.update { result }
             }
@@ -135,12 +135,12 @@ private class SearchScreenViewModel(
                 version.isEmpty() -> popularVersions
                 allVersions.isEmpty() -> popularVersions.filter { ver ->
                     ver.contains(version)
-                }.take(20) //仅展示20个搜索结果
+                }.take(20) //仅展示20个Search results
                 else -> allVersions.filter {
                     it.version.id.contains(version) &&
                             //CurseForge只能使用正式版进行过滤
                             (searchPlatform != Platform.CURSEFORGE || it.type == MinecraftVersion.Type.Release)
-                }.map { it.version.id }.take(20) //仅展示20个搜索结果
+                }.map { it.version.id }.take(20) //仅展示20个Search results
             }
             withContext(Dispatchers.Main) {
                 _searchedVersions.update { result }

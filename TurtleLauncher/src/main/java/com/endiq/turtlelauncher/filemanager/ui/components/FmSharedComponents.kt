@@ -29,7 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.endiq.turtlelauncher.filemanager.ui.theme.fmSecondaryTextColor
 
-/** 属性-值 行布局 */
+/** Property-value row layout */
 @Composable
 fun PropertyRow(
     labelRes: Int,

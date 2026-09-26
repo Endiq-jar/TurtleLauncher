@@ -53,7 +53,7 @@ private const val TAG = "Version"
 /**
  * Minecraft 版本，由版本名称进行区分
  * @param versionName 版本名称
- * @param gameHome 版本所在的游戏目录（.minecraft）
+ * @param gameHome 版本所在的Game directories（.minecraft）
  * @param versionConfig 独立版本的配置
  * @param versionInfo 版本信息
  * @param isValid 版本的有效性
@@ -98,7 +98,7 @@ class Version(
     }
 
     /**
-     * @return 版本所在的游戏目录（.minecraft）
+     * @return 版本所在的Game directories（.minecraft）
      */
     fun getGameHome(): String = gameHome
 

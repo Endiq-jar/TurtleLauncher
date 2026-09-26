@@ -85,7 +85,7 @@ fun FmCreateDialog(
     var name by remember { mutableStateOf("") }
     var type by remember { mutableStateOf(CreateType.File) }
 
-    // 实时校验文件名合法性，错误就地标注在输入框下方
+    // 实时Validates a filename，错误就地标注在输入框下方
     val filenameError = key(name) { fmFilenameInvalid(name) }
     val isError = name.isEmpty() || filenameError != null
 

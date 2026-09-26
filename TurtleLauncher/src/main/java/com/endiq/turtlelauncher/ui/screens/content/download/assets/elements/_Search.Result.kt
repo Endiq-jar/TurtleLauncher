@@ -108,7 +108,7 @@ sealed interface SearchAssetsState {
 }
 
 /**
- * 资源搜索结果展示列表
+ * 资源Search results展示列表
  * @param swapToDownload 跳转到下载详情页
  * @param installedInfo 查询项目本地是否已安装，键为平台与平台项目ID
  * @param onNavigatePage 导航到指定页面

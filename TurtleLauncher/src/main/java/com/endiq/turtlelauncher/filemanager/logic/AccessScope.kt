@@ -25,7 +25,7 @@ import java.nio.file.Paths
 
 private const val TAG = "FileAccessScope"
 
-/** 访问范围控制器 */
+/** Access scope controller */
 class AccessScope(val root: Path) {
     init {
         require(Files.isDirectory(root)) {
@@ -34,8 +34,8 @@ class AccessScope(val root: Path) {
     }
 
     /**
-     * 归一化并校验 [target] 位于 [root] 之内（相对路径以 [root] 为基础解析），返回归一化后的绝对路径
-     * @throws OutOfScopeException 越界时抛出
+     * Normalizes [target] and verifies it lies within [root] (relative paths resolve against [root]); returns the normalized absolute path
+     * @throws OutOfScopeException when out of scope
      */
     fun guard(target: Path): Path {
         val resolved = resolveAgainstRoot(target)
@@ -45,8 +45,8 @@ class AccessScope(val root: Path) {
     }
 
     /**
-     * 校验绝对路径 [target] 位于 [root] 之内，返回归一化后的绝对路径
-     * @throws OutOfScopeException 越界时抛出
+     * Verifies absolute path [target] lies within [root]; returns the normalized absolute path
+     * @throws OutOfScopeException when out of scope
      */
     fun guardAbsolute(target: Path): Path {
         val normalized = target.normalize().toAbsolutePath()
@@ -54,7 +54,7 @@ class AccessScope(val root: Path) {
         return normalized
     }
 
-    /** 判断 [child] 是否是 [root] 的子项 */
+    /** Whether [child] is a descendant of [root] */
     fun isUnder(child: Path): Boolean {
         val normalized = child.normalize().toAbsolutePath()
         return normalized == rootAbs || normalized.startsWith(rootAbs)
@@ -79,8 +79,8 @@ class AccessScope(val root: Path) {
 
     companion object {
         /**
-         * 通过字符串路径构建 [AccessScope]
-         * @throws IllegalArgumentException 根目录不存在时抛出
+         * Builds an [AccessScope] from a string path
+         * @throws IllegalArgumentException when the root directory does not exist
          */
         fun ofRoot(rootPath: String): AccessScope {
             val root = Paths.get(rootPath).normalize().toAbsolutePath()
@@ -92,5 +92,5 @@ class AccessScope(val root: Path) {
     }
 }
 
-/** 超出可访问范围时抛出的异常，不携带越界路径细节 */
+/** Exception thrown when escaping the accessible scope; carries no path details */
 class OutOfScopeException(message: String) : SecurityException(message)

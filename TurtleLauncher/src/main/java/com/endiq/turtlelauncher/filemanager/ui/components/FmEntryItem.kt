@@ -59,7 +59,7 @@ import com.endiq.turtlelauncher.filemanager.ui.theme.fmSelectionColor
 import com.endiq.turtlelauncher.utils.file.formatFileSize
 import com.endiq.turtlelauncher.utils.formatDate
 
-/** 文件管理器条目行。 */
+/** File manager entry row. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FmEntryItem(
@@ -105,7 +105,7 @@ fun FmEntryItem(
             .fillMaxWidth()
             .fmSwipeTrigger(
                 state = swipeState,
-                // 任意条目均可作为选区边界
+                // Any entry can serve as a selection boundary
                 triggerable = true,
                 onTriggered = onSwipeTrigger
             ),
@@ -122,7 +122,7 @@ fun FmEntryItem(
                         if (multiSelect) {
                             onClick()
                         } else if (entry.isFile) {
-                            // 非多选模式下单击文件弹出条目菜单
+                            // Outside multi-select mode, tapping a file pops the entry menu
                             menuExpanded = true
                         } else {
                             onClick()
@@ -140,7 +140,7 @@ fun FmEntryItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            //图标
+            //Icon
             FmIcons.IconFor(
                 modifier = Modifier.alpha(contentAlpha),
                 name = entry.name,
@@ -150,7 +150,7 @@ fun FmEntryItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 下拉菜单锚点
+                // Dropdown menu anchor
                 if (!multiSelect) {
                     FmEntryMenu(
                         expanded = menuExpanded,

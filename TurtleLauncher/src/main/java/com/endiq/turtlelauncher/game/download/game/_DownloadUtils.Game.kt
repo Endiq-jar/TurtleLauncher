@@ -49,10 +49,10 @@ fun String?.getJsonOrNull(tag: String): JsonObject? {
 }
 
 /**
- * 复制jar、json文件到临时游戏目录，作为安装ModLoader的环境
- * @param sourceGameFolder 源游戏目录
+ * 复制jar、json文件到临时Game directories，作为安装ModLoader的环境
+ * @param sourceGameFolder 源Game directories
  * @param sourceVersion 源游戏版本名
- * @param destinationGameFolder 要复制到的游戏目录
+ * @param destinationGameFolder 要复制到的Game directories
  * @param targetVersion 要复制为的版本名称
  * @param filesToCopy 指定要复制的文件的后缀名
  */

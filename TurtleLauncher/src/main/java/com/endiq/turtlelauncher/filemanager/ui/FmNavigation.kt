@@ -22,7 +22,7 @@ import androidx.navigation3.runtime.NavBackStack
 import java.nio.file.Path
 
 /**
- * 进入回收站页
+ * Enters the trash page
  */
 fun NavBackStack<FmNavKey>.openTrash() {
     if (lastOrNull() == FmNavKey.Trash) return
@@ -30,7 +30,7 @@ fun NavBackStack<FmNavKey>.openTrash() {
 }
 
 /**
- * 退出回收站页返回主页面
+ * Exits the trash page back to the main page
  */
 fun NavBackStack<FmNavKey>.closeTrash() {
     if (lastOrNull() == FmNavKey.Trash) {
@@ -39,8 +39,8 @@ fun NavBackStack<FmNavKey>.closeTrash() {
 }
 
 /**
- * 进入文本编辑器页
- * @param path 待编辑文件的绝对路径
+ * Enters the text editor page
+ * @param path absolute path of the file to edit
  */
 fun NavBackStack<FmNavKey>.openEditor(path: Path) {
     if (lastOrNull() is FmNavKey.Editor) return
@@ -48,7 +48,7 @@ fun NavBackStack<FmNavKey>.openEditor(path: Path) {
 }
 
 /**
- * 退出文本编辑器页返回主页面
+ * Exits the text editor page back to the main page
  */
 fun NavBackStack<FmNavKey>.closeEditor() {
     if (lastOrNull() is FmNavKey.Editor) {

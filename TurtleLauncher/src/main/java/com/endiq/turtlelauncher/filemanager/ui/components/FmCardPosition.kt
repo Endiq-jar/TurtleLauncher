@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 卡片在列表组中的方位，记录四个角各自使用大圆角还是小圆角
+ * Position of a card within a list group, tracking which corners use the large or the small radius
  */
 @ConsistentCopyVisibility
 data class FmCardPosition private constructor(
@@ -37,7 +37,7 @@ data class FmCardPosition private constructor(
 ) {
     companion object {
         /**
-         * 四角均为大圆角，用于独立卡片
+         * All four corners use the large radius, for standalone cards
          */
         val Single = FmCardPosition(
             outerTopStart = true,
@@ -47,15 +47,15 @@ data class FmCardPosition private constructor(
         )
 
         /**
-         * 根据条目在列表组中的位置推导方位
-         * @param index 条目下标
-         * @param count 组内条目总数
-         * @param columns 列数，单列列表使用默认值
+         * Derives the position from the entry's place within the list group
+         * @param index entry index
+         * @param count total entry count in the group
+         * @param columns column count; single-column lists use the default
          */
         fun of(index: Int, count: Int, columns: Int = 1): FmCardPosition {
             if (count <= 1) return Single
             val cols = columns.coerceAtLeast(1)
-            // 网格只有一行时，条目的上下边缘与组端暴露，邻接边使用小圆角
+            // With a single grid row, entries' top/bottom edges sit at the group ends; adjacent edges use the small radius
             if (count <= cols) {
                 val start = index == 0
                 val end = index == count - 1
@@ -73,12 +73,12 @@ data class FmCardPosition private constructor(
 
             val top = row == 0
             val start = col == 0
-            // 末行未占满时，由组内最后一个条目收拢右边缘
+            // When the last row isn't full, the group's last entry pulls the right edge in
             val end = col == cols - 1 || (row == lastRow && col == lastCol)
-            // 末行未占满时，超出末行占有列的条目底部暴露在组边缘
+            // When the last row isn't full, entries beyond its occupied columns expose their bottoms on the group edge
             val bottom = row == lastRow || (row == lastRow - 1 && col > lastCol)
 
-            // 角只有在其相邻的两条边都暴露在组边缘时才使用大圆角
+            // A corner uses the large radius only when both adjacent edges sit on the group edge
             return FmCardPosition(
                 outerTopStart = top && start,
                 outerTopEnd = top && end,
@@ -90,7 +90,7 @@ data class FmCardPosition private constructor(
 }
 
 /**
- * 根据卡片方位组合四个角的圆角
+ * Composes the four corner radii from the card position
  */
 @Composable
 fun rememberFmCardShape(

@@ -70,7 +70,7 @@ public class InvalidFilenameException extends RuntimeException {
          */
         INVALID_LENGTH,
         /**
-         * 以空格开头或结尾
+         * Starts or ends with a space
          */
         LEADING_OR_TRAILING_SPACE
     }

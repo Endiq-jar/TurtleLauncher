@@ -43,14 +43,14 @@ import kotlin.io.path.exists
 private const val TAG = "GamePathManager"
 
 /**
- * 游戏目录管理，为支持将游戏文件保存至不同的路径
+ * Game directories管理，为支持将游戏文件保存至不同的路径
  */
 object GamePathManager {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val mutex = Mutex()
     private val defaultGamePath = File(PathManager.DIR_FILES_EXTERNAL, ".minecraft").absolutePath
     /**
-     * 默认游戏目录的ID
+     * 默认Game directories的ID
      */
     const val DEFAULT_ID = "default"
 
@@ -62,7 +62,7 @@ object GamePathManager {
     val currentPath = _currentPath.asStateFlow()
 
     /**
-     * 启动器默认游戏目录
+     * 启动器默认Game directories
      */
     fun getDefaultPath(): String = defaultGamePath
 
@@ -85,11 +85,11 @@ object GamePathManager {
                 _gamePathData.update { emptyList() }
 
                 val newValue = mutableListOf<GamePath>()
-                //添加默认游戏目录
+                //添加默认Game directories
                 newValue.add(0, GamePath(DEFAULT_ID, "", defaultGamePath))
 
                 run parseConfig@{
-                    //从数据库中加载游戏目录
+                    //从数据库中加载Game directories
                     val paths = gamePathDao.getAllPaths()
                     newValue.addAll(paths.sortedBy { it.title })
                 }
@@ -167,7 +167,7 @@ object GamePathManager {
     }
 
     /**
-     * 保存为默认的游戏目录
+     * 保存为默认的Game directories
      */
     fun saveDefaultPath(reloadVersions: Boolean = true) {
         saveCurrentPathUncheck(DEFAULT_ID, reloadVersions)

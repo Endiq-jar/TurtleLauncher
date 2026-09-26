@@ -23,8 +23,8 @@ import com.endiq.turtlelauncher.utils.file.checkFilenameValidity
 
 object FilenameValidator {
     /**
-     * 校验文件名合法性
-     * @throws FmFilenameException 非法时抛出，携带错误类别与细节
+     * Validates a filename
+     * @throws FmFilenameException when invalid, carrying the error category and details
      */
     @Throws(FmFilenameException::class)
     fun check(name: String) {
@@ -45,8 +45,8 @@ object FilenameValidator {
     }
 
     /**
-     * 验证文件名合法性
-     * @return 校验失败时的错误异常，合法时为 null
+     * Validates a filename
+     * @return the error exception on failure, or null when valid
      */
     fun verify(name: String): FmFilenameException? {
         return try {

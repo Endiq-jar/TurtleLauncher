@@ -210,22 +210,22 @@ object AllSettings : SettingsRegistry() {
     val crossHairMouseHotspot = parcelableSetting("crossHairMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标调整大小（上下）热点坐标
+     * 虚拟鼠标Resize (vertical)热点坐标
      */
     val resizeNSMouseHotspot = parcelableSetting("resizeNSMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标调整大小（左右）热点坐标
+     * 虚拟鼠标Resize (horizontal)热点坐标
      */
     val resizeEWMouseHotspot = parcelableSetting("resizeEWMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标调整大小（全部方向）热点坐标
+     * 虚拟鼠标Resize (all directions)热点坐标
      */
     val resizeAllMouseHotspot = parcelableSetting("resizeAllMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标禁止/无效操作热点坐标
+     * 虚拟鼠标Not allowed / invalid operation热点坐标
      */
     val notAllowedMouseHotspot = parcelableSetting("notAllowedMouseHotspot", CENTER_HOTSPOT)
 
@@ -486,7 +486,7 @@ object AllSettings : SettingsRegistry() {
     val currentAccount = stringSetting("currentAccount", "")
 
     /**
-     * 当前选择的游戏目录id
+     * 当前选择的Game directoriesid
      */
     val currentGamePathId = stringSetting("currentGamePathId", GamePathManager.DEFAULT_ID)
 

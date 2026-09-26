@@ -23,24 +23,24 @@ import com.endiq.turtlelauncher.game.path.GamePathManager
 import com.endiq.turtlelauncher.game.version.installed.Version
 
 /**
- * 卡片版本所在的游戏目录
+ * 卡片版本所在的Game directories
  */
 sealed interface VersionCardDir {
-    /** 解析为实际的游戏目录路径 */
+    /** 解析为实际的Game directories路径 */
     fun resolveGameHome(): String
 
-    /** 启动器默认游戏目录 */
+    /** 启动器默认Game directories */
     data object Default : VersionCardDir {
         override fun resolveGameHome(): String = GamePathManager.getDefaultPath()
     }
 
-    /** 用户自定义游戏目录 */
+    /** 用户自定义Game directories */
     data class Custom(val path: String) : VersionCardDir {
         override fun resolveGameHome(): String = path
     }
 
     companion object {
-        /** 依据实际游戏目录路径推导目录类型 */
+        /** 依据实际Game directories路径推导目录类型 */
         fun fromGameHome(gameHome: String): VersionCardDir =
             if (gameHome == GamePathManager.getDefaultPath()) Default else Custom(gameHome)
     }
@@ -64,9 +64,9 @@ sealed interface VersionCardStatus {
     data object Loading : VersionCardStatus
     /** 版本可用 */
     data class Available(val version: Version) : VersionCardStatus
-    /** 游戏目录可访问，但版本已不存在（被删除或文件夹损坏） */
+    /** Game directories可访问，但版本已不存在（被删除或文件夹损坏） */
     data object Deleted : VersionCardStatus
-    /** 路径不可访问：无存储权限，或游戏目录已不存在 */
+    /** 路径不可访问：无存储权限，或Game directories已不存在 */
     data object Inaccessible : VersionCardStatus
 }
 

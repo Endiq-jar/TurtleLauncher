@@ -20,42 +20,42 @@ package com.endiq.turtlelauncher.filemanager.logic.ops
 
 import java.nio.file.Path
 
-/** 顶层冲突处理选项 */
+/** Top-level conflict handling option */
 enum class ConflictResolution {
-    /** 跳过该项 */
+    /** Skips this entry */
     SKIP,
-    /** 若为文件则完全覆盖，为文件夹则合并内容 */
+    /** Files are fully overwritten; folders have their contents merged */
     OVERWRITE,
-    /** 为待写入条目追加后缀 */
+    /** Appends a suffix to the entry being written */
     KEEP_BOTH
 }
 
-/** 粘贴模式。 */
+/** Paste mode. */
 enum class PasteMode {
-    /** 复制 */
+    /** Copy */
     COPY,
-    /** 移动 */
+    /** Move */
     MOVE
 }
 
-/** 粘贴请求构建结果。 */
+/** Paste request build result. */
 sealed interface PasteRequest {
-    /** 不需要决策，可以直接执行 */
+    /** No decision needed; can run directly */
     data class Ready(val sources: List<Path>, val targetDir: Path, val mode: PasteMode) : PasteRequest
 
-    /** 存在顶层冲突，需决策后才能执行 */
+    /** Top-level conflicts exist; a decision is required before running */
     data class ResolveRequest(
         val sources: List<Path>,
         val targetDir: Path,
         val mode: PasteMode,
-        /** 与 [sources] 一一对应的冲突项，非空表示该项需要决策 */
+        /** Conflict entries aligned one-to-one with [sources]; non-empty means that entry needs a decision */
         val conflicts: List<ConflictItem?>
     ) : PasteRequest
 }
 
 data class ConflictItem(val source: Path, val existing: Path)
 
-/** 粘贴完成后的项级结果。 */
+/** Per-entry result after pasting. */
 data class ItemResult(
     val source: Path,
     val target: Path?,
@@ -63,7 +63,7 @@ data class ItemResult(
     val reason: String?
 )
 
-/** 整体粘贴结果。 */
+/** Overall paste result. */
 data class PasteSummary(
     val mode: PasteMode,
     val targetDir: Path,

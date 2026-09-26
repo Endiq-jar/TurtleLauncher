@@ -20,26 +20,26 @@ package com.endiq.turtlelauncher.context
 
 import com.endiq.turtlelauncher.BuildKeys
 
-/** 复制链接 */
+/** Copy link */
 val COPY_LABEL_LINK: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_LINKS"
 
-/** 复制用于微软登录的设备码 */
+/** Copy the device code for Microsoft login */
 val COPY_LABEL_DEVICE_CODE: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_DEVICE_CODE"
 
-/** 复制异常堆栈信息 */
+/** Copy the exception stack trace */
 val COPY_LABEL_THROWABLE_STACK: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_THROWABLE_STACK"
 
-/** 复制账号UUID */
+/** Copy the account UUID */
 val COPY_LABEL_ACCOUNT_UUID: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_ACCOUNT_UUID"
 
-/** 复制存档种子 */
+/** Copy the save seed */
 val COPY_LABEL_SAVE_SEED: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_SAVE_SEED"
 
-/** 复制服务器IP */
+/** Copy the server IP */
 val COPY_LABEL_SERVER_IP: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_SERVER_IP"
 
-/** 陶瓦联机邀请码 */
+/** Terracotta multiplayer invite code */
 val COPY_LABEL_TERRACOTTA_INVITE_CODE: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_TERRACOTTA_INVITE_CODE"
 
-/** 陶瓦联机备用服务器链接 */
+/** Terracotta multiplayer fallback server link */
 val COPY_LABEL_TERRACOTTA_SERVER_ADDRESS: String = "${BuildKeys.LAUNCHER_SHORT_NAME}_TERRACOTTA_SERVER_ADDRESS"

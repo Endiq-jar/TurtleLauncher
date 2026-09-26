@@ -74,7 +74,7 @@ import com.endiq.turtlelauncher.ui.components.imePanAnchor
 import com.endiq.turtlelauncher.ui.components.rememberDialogMaxHeight
 import com.endiq.turtlelauncher.ui.components.verticalScrollWithBar
 
-/** 文件管理器通用对话框容器 */
+/** Generic dialog container for the file manager */
 @Composable
 internal fun FmDialogSurface(
     onDismissRequest: () -> Unit,
@@ -144,7 +144,7 @@ internal fun FmDialogButtons(
 }
 
 
-/** 显示带确认与取消按钮的提示对话框 */
+/** Shows a message dialog with confirm and cancel buttons */
 @Composable
 fun FmAlertDialog(
     title: String,
@@ -171,7 +171,7 @@ fun FmAlertDialog(
     )
 }
 
-/** 显示仅带确认按钮的提示对话框 */
+/** Shows a message dialog with only a confirm button */
 @Composable
 fun FmAlertDialog(
     title: String,
@@ -194,7 +194,7 @@ fun FmAlertDialog(
     )
 }
 
-/** 显示带确认与取消按钮的提示对话框，内容为自定义组件 */
+/** Shows a confirm/cancel message dialog with custom composable content */
 @Composable
 fun FmAlertDialog(
     title: String,
@@ -234,7 +234,7 @@ fun FmAlertDialog(
     }
 }
 
-/** 显示仅带确认按钮的提示对话框，内容为自定义组件 */
+/** Shows a confirm-only message dialog with custom composable content */
 @Composable
 fun FmAlertDialog(
     title: String,
@@ -271,7 +271,7 @@ fun FmAlertDialog(
     }
 }
 
-/** 显示带文本输入框的编辑对话框 */
+/** Shows an edit dialog with a text input */
 @Composable
 fun FmEditDialog(
     title: String,
@@ -353,7 +353,7 @@ fun FmEditDialog(
     }
 }
 
-/** 显示带文本输入框的编辑对话框 */
+/** Shows an edit dialog with a text input */
 @Composable
 fun FmEditDialog(
     title: String,
@@ -442,7 +442,7 @@ fun FmEditDialog(
     }
 }
 
-/** 显示带文本输入框与复选框的编辑对话框 */
+/** Shows an edit dialog with a text input and a checkbox */
 @Composable
 fun FmCheckEditDialog(
     title: String,
@@ -513,7 +513,7 @@ fun FmCheckEditDialog(
 }
 
 
-/** 通用下拉选择框 */
+/** Generic dropdown selector */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> ExposedDropdown(

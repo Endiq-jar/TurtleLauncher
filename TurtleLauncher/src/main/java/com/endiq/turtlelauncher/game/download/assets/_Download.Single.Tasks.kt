@@ -49,8 +49,8 @@ private const val TAG = "DownloadSingle"
  * 为一些版本下载单独的资源文件
  * @param version 要下载单独资源版本信息
  * @param versions 为哪些游戏版本下载
- * @param folder 版本游戏目录下的相对路径
- * @param onFileCopied 文件已成功复制到版本游戏目录后 单独回调
+ * @param folder 版本Game directories下的相对路径
+ * @param onFileCopied 文件已成功复制到版本Game directories后 单独回调
  * @param onFileCancelled 文件安装已取消 单独回调
  */
 fun downloadSingleForVersions(

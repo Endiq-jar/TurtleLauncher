@@ -32,8 +32,8 @@ abstract class AbstractAPI(
     val root: String
 ) {
     /**
-     * 上传日志到目标服务器，并生成链接
-     * @return 返回生成的链接
+     * Uploads a log to the target server and generates a link
+     * @return the generated link
      */
     @Throws(Exception::class)
     suspend fun onUpload(content: String): MCLogsResponse {

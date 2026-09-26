@@ -26,12 +26,12 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 /**
- * 一个扩展型的状态容器，用于在状态更新时同时提供旧值与新值
- * @param initial 初始状态，允许为 `null`，以便在初始化阶段逐步构建状态
+ * An extended state container that provides both the old and new values on updates
+ * @param initial the initial state, allowed to be `null` so the state can be built gradually during initialization
  */
 class MutableTransitionStateFlow<T>(initial: T?) {
     /**
-     * 表示一次状态变化（旧值 → 新值）
+     * Represents one state change (old value → new value)
      */
     data class Transition<T>(
         val old: T?,
@@ -45,13 +45,13 @@ class MutableTransitionStateFlow<T>(initial: T?) {
         get () = internal.value
 
     /**
-     * 面向 UI 层暴露的状态流
+     * State flow exposed to the UI layer
      */
     val stateFlow: StateFlow<T?> = internal.asStateFlow()
 
     /**
-     * 状态变化流，包含旧值与新值，
-     * 每当调用 [set] 时，都会向该流发送一个 [Transition] 对象
+     * Change flow carrying old and new values;
+     * every [set] call emits a [Transition] into it
      */
     val changes: Flow<Transition<T>> = internal
         .filterNotNull()
@@ -62,8 +62,8 @@ class MutableTransitionStateFlow<T>(initial: T?) {
         }
 
     /**
-     * 设置新的状态值
-     * @param value 新的状态值
+     * Sets a new state value
+     * @param value the new state value
      */
     fun set(value: T) {
         internal.value = value

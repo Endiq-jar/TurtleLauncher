@@ -86,7 +86,7 @@ object TaskKeepAlive {
     }
 
     /**
-     * 立即停止保活并清空计数，用于停止所有任务、应用崩溃等场景
+     * 立即停止保活并清空计数，用于Stops all tasks、应用崩溃等场景
      */
     @JvmStatic
     @Synchronized

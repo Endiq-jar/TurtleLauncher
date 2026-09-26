@@ -131,7 +131,7 @@ abstract class Launcher(
     abstract fun exit()
 
     /**
-     * 游戏目录（.minecraft），默认为当前选择的游戏目录
+     * Game directories（.minecraft），默认为当前选择的Game directories
      */
     protected open fun getMinecraftPath(): String = getGameHome()
 
@@ -295,7 +295,7 @@ abstract class Launcher(
         Logger.info(TAG, "Using DNS servers for game: $servers")
         val configText = servers.joinToString(separator = "\n") { "nameserver $it" }
         runCatching {
-            // 配置文件不存在或内容不一致时覆写一次
+            // Configuration files不存在或内容不一致时覆写一次
             if (!resolvFile.exists() || resolvFile.readText().trim() != configText.trim()) {
                 resolvFile.writeText(configText)
             }

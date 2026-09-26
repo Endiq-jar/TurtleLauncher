@@ -107,7 +107,7 @@ class ImportController(
                 return
             }
 
-            // 构建粘贴请求，复用冲突决策与执行
+            // Builds a paste request，复用冲突决策与执行
             // 进入粘贴前先关闭导入意图，避免 SAF 选择器在导入期间被重复唤起
             store.dismissDialog()
             val target = store.history.currentPath
@@ -117,7 +117,7 @@ class ImportController(
                         req.sources.map { ConflictResolution.SKIP }, tempDir)
                 }
                 is PasteRequest.ResolveRequest -> {
-                    // 冲突流程延后执行粘贴
+                    // 冲突流程延后Executes a paste
                     // 暂存临时目录供完成后清理
                     val firstConflict = req.conflicts.indexOfFirst { it != null }
                     if (firstConflict < 0) {

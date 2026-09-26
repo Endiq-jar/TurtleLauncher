@@ -42,8 +42,8 @@ private const val CONTENT_DIR = "content"
 private const val META_FILE = "meta.json"
 
 /**
- * 回收站管理器
- * @param trashRoot 回收站根目录
+ * Trash manager
+ * @param trashRoot the trash root directory
  */
 class TrashManager(
     val trashRoot: Path,
@@ -55,9 +55,9 @@ class TrashManager(
     }
 
     /**
-     * 将一项移入回收站
-     * @param original 原始条目的绝对路径
-     * @return 成功时返回新生成的 UUID
+     * Moves an entry into the trash
+     * @param original absolute path of the original entry
+     * @return the newly generated UUID on success
      */
     suspend fun moveIn(
         original: Path,
@@ -76,7 +76,7 @@ class TrashManager(
             LinkOption.NOFOLLOW_LINKS
         ).isDirectory
 
-        // UUID 目录规避同名条目多次删除
+        // UUID directories avoid collisions when same-named entries are deleted repeatedly
         val uuid = generateSequence { UUID.randomUUID().toString() }
             .onEach { checkCancel() }
             .first { !Files.exists(trashRoot.resolve(it), LinkOption.NOFOLLOW_LINKS) }
@@ -91,7 +91,7 @@ class TrashManager(
             checkCancel = checkCancel
         )
 
-        // 写 meta.json
+        // Write meta.json
         writeMeta(entryDir, TrashMeta(
             originalPath = source.normalize().toAbsolutePath().toString(),
             deletedAt = System.currentTimeMillis(),
@@ -102,7 +102,7 @@ class TrashManager(
     }
 
     /**
-     * 列出回收站全部条目
+     * Lists all trash entries
      */
     suspend fun list(): List<TrashItem> = withContext(Dispatchers.IO) {
         Files.newDirectoryStream(trashRoot).use { stream ->
@@ -113,8 +113,8 @@ class TrashManager(
     }
 
     /**
-     * 恢复一项到原始位置
-     * @return 目标路径（成功时）或失败原因
+     * Restores an entry to its original location
+     * @return the target path on success, or the failure reason
      */
     suspend fun restore(
         item: TrashItem,
@@ -141,7 +141,7 @@ class TrashManager(
         }
         try {
             moveAcrossFs(item.contentDir.resolve(name), target, checkCancel)
-            // 清理 UUID 目录
+            // Clean up the UUID directory
             fileOps.deleteRecursive(item.contentDir.parent ?: trashRoot, checkCancel)
             RestoreResult.Ok(item, target)
         } catch (e: CancellationException) {
@@ -153,7 +153,7 @@ class TrashManager(
     }
 
     /**
-     * 彻底删除一项
+     * Permanently deletes an entry
      */
     suspend fun purge(
         item: TrashItem,
@@ -162,13 +162,13 @@ class TrashManager(
         val checkCancel = { coroutineContext.ensureActive() }
         onProgress(item.meta.name)
         val entryDir = item.contentDir.parent ?: return@withContext
-        // 先删 content 再删 UUID 目录
+        // Delete the content first, then the UUID directory
         fileOps.deleteRecursive(item.contentDir, checkCancel)
         fileOps.deleteRecursive(entryDir, checkCancel)
     }
 
     /**
-     * 清空整个回收站。
+     * Empties the entire trash.
      */
     suspend fun clear(
         onProgress: (current: Int, total: Int, name: String?) -> Unit
@@ -191,7 +191,7 @@ class TrashManager(
             return TrashItem(uuid, meta, contentDir, computeSize(contentDir))
         }
 
-        // 损坏条目
+        // Corrupted entries
         val fallback = meta ?: TrashMeta(
             originalPath = entryDir.toString(),
             deletedAt = runCatching { Files.getLastModifiedTime(entryDir).toMillis() }.getOrDefault(0L),
@@ -236,7 +236,7 @@ class TrashManager(
         target: Path,
         checkCancel: () -> Unit
     ) = withContext(Dispatchers.IO) {
-        // 同分区优先原子移动；失败回退为复制 + 删除
+        // Prefer an atomic move on the same partition; fall back to copy + delete on failure
         if (
             runCatching {
                 Files.move(source, target, StandardCopyOption.ATOMIC_MOVE)
@@ -249,7 +249,7 @@ class TrashManager(
     }
 }
 
-/** 恢复操作的执行结果 */
+/** Result of a restore operation */
 sealed interface RestoreResult {
     data class Ok(val item: TrashItem, val target: Path) : RestoreResult
     data class Skipped(val item: TrashItem, val target: Path) : RestoreResult

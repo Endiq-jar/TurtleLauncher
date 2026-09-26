@@ -27,24 +27,24 @@ import kotlin.math.max
 private const val CONTAIN_CHINESE_WEIGHT = 10
 
 /**
- * 平台的搜索结果实现
+ * 平台的Search results实现
  */
 interface PlatformSearchResult {
     /**
-     * 将平台项目搜索结果与 mcmod 信息打包在一起，作为一页
+     * 将平台项目Search results与 mcmod 信息打包在一起，作为一页
      */
     fun getAssetsPage(classes: PlatformClasses): AssetsPage
 
     /**
      * 参考源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/57018be/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteModRepository.java#L65-L103)
      * 原项目版权归原作者所有，遵循GPL v3协议
-     * @return 对于中文搜索结果的优先级排序
+     * @return 对于中文Search results的优先级排序
      */
     fun processChineseSearchResults(searchFilter: String, classes: PlatformClasses): PlatformSearchResult
 }
 
 /**
- * 对于中文搜索结果的优先级排序
+ * 对于中文Search results的优先级排序
  * 参考源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/57018be/HMCL/src/main/java/org/jackhuang/hmcl/game/LocalizedRemoteModRepository.java#L65-L103)
  * 原项目版权归原作者所有，遵循GPL v3协议
  */

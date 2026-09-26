@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.game.download.assets.platform
 
 /**
- * 平台的搜索结果单项数据实现
+ * 平台的Search results单项数据实现
  */
 interface PlatformSearchData {
     /**

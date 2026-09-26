@@ -268,7 +268,7 @@ class BrowseController(
         return true
     }
 
-    /** 选择某条搜索结果：跳转到其所在目录并定位该条目 */
+    /** 选择某条Search results：跳转到其所在目录并定位该条目 */
     fun navigateToSearchHit(hitPath: Path) {
         val target = hitPath.parent ?: store.history.currentPath
         val safe = logic.validateTarget(target) ?: return

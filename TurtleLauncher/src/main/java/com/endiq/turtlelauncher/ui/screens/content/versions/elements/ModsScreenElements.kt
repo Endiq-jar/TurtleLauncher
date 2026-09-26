@@ -268,7 +268,7 @@ fun ModsConfirmOperation(
 }
 
 /**
- * 模组更新：展示需要更新的模组的详细信息
+ * 模组更新：展示Needs an update的模组的详细信息
  */
 @Composable
 private fun ModsUpdateListDialog(

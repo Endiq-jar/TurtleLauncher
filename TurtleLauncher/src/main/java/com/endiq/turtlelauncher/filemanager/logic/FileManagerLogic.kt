@@ -57,7 +57,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.util.ArrayDeque
 
 /**
- * 文件管理器统一任务结果
+ * Unified file manager task result
  */
 sealed interface FmResult<out T> {
     data class Ok<T>(val value: T) : FmResult<T>
@@ -90,7 +90,7 @@ class FileManagerLogic(
     private val renameCreate = RenameCreateOps(scope)
 
     /**
-     * 浏览 [currentDir] 目录内容，返回 [FmListResult]
+     * Browses the contents of [currentDir], returning an [FmListResult]
      */
     suspend fun browse(currentDir: Path): FmResult<FmListResult> = taskManager.run(TaskKind.LIST) {
         doBrowse(currentDir)
@@ -134,8 +134,8 @@ class FileManagerLogic(
     }
 
     /**
-     * 校验 [candidate] 是否为可访问范围内的可读目录
-     * @return 归一化后的目录路径；不合法或越界时返回 null
+     * Verifies [candidate] is a readable directory inside the scope
+     * @return the normalized directory path, or null when invalid or out of scope
      */
     fun validateTarget(candidate: Path): Path? = runCatching {
         scope.guard(candidate).takeIf { Files.isDirectory(it) && Files.isReadable(it) }
@@ -149,8 +149,8 @@ class FileManagerLogic(
     }
 
     /**
-     * 解析初始访问目录
-     * 目录合法且在根目录内时返回，否则回退到根目录
+     * Resolves the initial directory
+     * Returned when valid and inside the root; otherwise falls back to the root
      */
     fun resolveInitialCurrent(hintPath: Path?): Path {
         val root = scope.rootAbs
@@ -161,7 +161,7 @@ class FileManagerLogic(
     }
 
     /**
-     * 构建粘贴请求
+     * Builds a paste request
      */
     fun buildPasteRequest(
         sources: List<Path>,
@@ -170,7 +170,7 @@ class FileManagerLogic(
     ): PasteRequest = fileOps.buildPasteRequest(sources, targetDir, mode)
 
     /**
-     * 执行粘贴
+     * Executes a paste
      */
     suspend fun executePaste(
         sources: List<Path>,
@@ -194,8 +194,8 @@ class FileManagerLogic(
         }.toFmResult()
 
     /**
-     * 删除一组条目
-     * @param toTrash 是否移入回收站
+     * Deletes a set of entries
+     * @param toTrash whether to move them into the trash
      */
     suspend fun delete(
         targets: List<Path>,
@@ -242,10 +242,10 @@ class FileManagerLogic(
     }.toFmResult()
 
     /**
-     * 执行压缩
-     * @param sources 待压缩条目
-     * @param output 输出压缩包路径
-     * @param options 压缩参数
+     * Executes compression
+     * @param sources entries to compress
+     * @param output the output archive path
+     * @param options compression parameters
      */
     suspend fun compress(
         sources: List<Path>,
@@ -254,8 +254,8 @@ class FileManagerLogic(
     ): FmResult<CompressSummary> = taskManager.run(TaskKind.COMPRESS) {
         val ctx = currentCoroutineContext()
         val tracker = ByteRateTracker().also { it.start() }
-        // 待压缩条目必须位于可访问范围内
-        // 输出允许范围内或文件管理器缓存临时区
+        // Entries to compress must lie within the accessible scope
+        // Output may land inside the scope or the file manager cache temp area
         val safeSources = sources.map { scope.guardAbsolute(it) }
         safeSources.firstOrNull { !Files.exists(it, LinkOption.NOFOLLOW_LINKS) }
             ?.let { throw NoSuchFileException(it.toString()) }
@@ -288,10 +288,10 @@ class FileManagerLogic(
     }.toFmResult()
 
     /**
-     * 执行解压
-     * @param archive 压缩包路径
-     * @param outputDir 目标目录
-     * @param options 解压选项
+     * Executes extraction
+     * @param archive the archive path
+     * @param outputDir the target directory
+     * @param options extraction options
      */
     suspend fun extract(
         archive: Path,
@@ -301,8 +301,8 @@ class FileManagerLogic(
         val result = taskManager.run(TaskKind.EXTRACT) {
             val ctx = currentCoroutineContext()
             val tracker = ByteRateTracker().also { it.start() }
-            // 压缩包必须位于可访问范围内
-            // 输出允许范围内或文件管理器缓存临时区
+            // The archive must lie within the accessible scope
+            // Output may land inside the scope or the file manager cache temp area
             val safeArchive = scope.guardAbsolute(archive)
             if (!Files.exists(safeArchive, LinkOption.NOFOLLOW_LINKS)) {
                 throw NoSuchFileException(safeArchive.toString())
@@ -330,7 +330,7 @@ class FileManagerLogic(
                 }
             )
         }.toFmResult()
-        // 密码缺失或错误时不包装进 FmResult.Failed，直接抛出
+        // Missing/wrong passwords are thrown directly instead of being wrapped into FmResult.Failed
         val error = (result as? FmResult.Failed)?.error
         if (error is ArchivePasswordException) throw error
         return result
@@ -340,8 +340,8 @@ class FileManagerLogic(
         taskManager.run(TaskKind.LIST) { trash.list() }.toFmResult()
 
     /**
-     * 预检回收站恢复冲突
-     * @return 冲突项列表，元素为 (item, 在 [items] 中的下标)
+     * Pre-checks trash-restore conflicts
+     * @return the conflicting entries as (item, index in [items]) pairs
      */
     suspend fun trashRestoreConflicts(items: List<TrashItem>): List<Pair<TrashItem, Int>> =
         withContext(Dispatchers.IO) {
@@ -423,11 +423,11 @@ class FileManagerLogic(
 
 
     /**
-     * 搜索匹配项
-     * @param startDir 起始目录
-     * @param keyword 匹配关键词
-     * @param caseSensitive 是否区分大小写
-     * @param onProgress 进度回调（当前搜索到的目录）
+     * Searches for matches
+     * @param startDir the starting directory
+     * @param keyword the match keyword
+     * @param caseSensitive whether matching is case sensitive
+     * @param onProgress progress callback (the directory currently being searched)
      */
     suspend fun search(
         startDir: Path,
@@ -493,7 +493,7 @@ class FileManagerLogic(
 }
 
 /**
- * 删除一项的结果
+ * Result of deleting one entry
  */
 data class SingleDeleteResult(
     val path: Path,
@@ -502,7 +502,7 @@ data class SingleDeleteResult(
 )
 
 /**
- * 删除结果汇总
+ * Summary of delete results
  */
 data class DeleteSummary(
     val toTrash: Boolean,
@@ -510,7 +510,7 @@ data class DeleteSummary(
 )
 
 /**
- * 搜索结果命中条目
+ * Search result hit entry
  */
 data class SearchHit(
     val path: Path,
@@ -522,7 +522,7 @@ data class SearchHit(
 )
 
 /**
- * 搜索结果
+ * Search results
  */
 sealed interface SearchResult {
     data class Ok(val hits: List<SearchHit>) : SearchResult

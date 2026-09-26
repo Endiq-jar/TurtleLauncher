@@ -123,7 +123,7 @@ class TrashController(
         }
     }
 
-    /** 执行回收站恢复 */
+    /** 执行Restored from trash */
     private suspend fun doTrashRestore(items: List<TrashItem>, resolutions: Map<String, ConflictResolution>) {
         when (val r = logic.trashRestore(items, resolutions)) {
             is FmResult.Ok -> {
@@ -165,7 +165,7 @@ class TrashController(
         }
     }
 
-    /** 回收站恢复冲突决策 */
+    /** Restored from trash冲突决策 */
     fun resolveTrashRestoreConflict(resolution: ConflictResolution) {
         val cur = store.stateValue().dialogIntent as? DialogIntent.TrashRestoreConflict ?: return
 

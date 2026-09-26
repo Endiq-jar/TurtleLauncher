@@ -68,14 +68,14 @@ class EntryController(
         }
     }
 
-    /** 提交新建文件/文件夹：校验文件名合法性与同目录重名后执行 */
+    /** 提交Created file/folder：Validates a filename与同目录重名后执行 */
     fun submitCreate(name: String, isFolder: Boolean, onDone: (Boolean) -> Unit) {
         if (name.isBlank()) {
             onDone(false)
             return
         }
 
-        // 校验文件名合法性
+        // Validates a filename
         val err = FilenameValidator.verify(name)
         if (err != null) {
             store.emitError(store.filenameErrorText(err))

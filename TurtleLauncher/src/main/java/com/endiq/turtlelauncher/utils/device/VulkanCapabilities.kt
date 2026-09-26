@@ -70,7 +70,7 @@ object VulkanChecker {
 
     /**
      * 查询系统 Vulkan 支持情况
-     * @return 如果不支持 Vulkan 或初始化失败，返回 null
+     * @return 如果不支持 Vulkan 或Initialization failed，返回 null
      */
     fun checkCapabilities(
         driverPath: String?,

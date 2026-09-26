@@ -26,10 +26,10 @@ import kotlinx.parcelize.Parcelize
 import java.util.UUID
 
 /**
- * 文件管理器文件变更事件
- * @param type 事件类型
- * @param changedDirs 发生变更的目录绝对路径列表
- * @param id 事件唯一 ID
+ * File change event of the file manager
+ * @param type the event type
+ * @param changedDirs absolute paths of the directories that changed
+ * @param id unique event ID
  */
 @Parcelize
 data class FileManagerEvent(
@@ -38,25 +38,25 @@ data class FileManagerEvent(
     val id: String = UUID.randomUUID().toString()
 ) : Parcelable {
     enum class Type {
-        /** 新建文件/文件夹 */
+        /** Created file/folder */
         CREATE,
-        /** 条目重命名 */
+        /** Entry renamed */
         RENAME,
-        /** 删除（移入回收站） */
+        /** Deleted (moved to trash) */
         DELETE,
-        /** 复制/粘贴 */
+        /** Copy/paste */
         COPY_PASTE,
-        /** 压缩 */
+        /** Compress */
         ARCHIVE,
-        /** 解压 */
+        /** Extract */
         EXTRACT,
-        /** 从 SAF 导入完成 */
+        /** SAF import finished */
         IMPORT,
-        /** 回收站恢复 */
+        /** Restored from trash */
         TRASH_RESTORE,
-        /** 回收站彻底删除 */
+        /** Permanently deleted from trash */
         TRASH_PURGE,
-        /** 回收站清空 */
+        /** Trash emptied */
         TRASH_CLEAR
     }
 
@@ -64,7 +64,7 @@ data class FileManagerEvent(
         const val KEY_EVENT = "fm_event"
 
         /**
-         * 将事件封装为可经 Messenger 发送的 [Message]
+         * Wraps the event into a [Message] sendable via Messenger
          */
         fun toMessage(event: FileManagerEvent): Message = Message.obtain().apply {
             what = MSG_EVENT
@@ -74,7 +74,7 @@ data class FileManagerEvent(
         }
 
         /**
-         * 从 [Message] 中解析事件；非法消息返回 null
+         * Parses an event from a [Message]; illegal messages return null
          */
         fun fromMessage(message: Message): FileManagerEvent? {
             if (message.what != MSG_EVENT) return null

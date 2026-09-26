@@ -268,7 +268,7 @@ class ExtractController(
         return name
     }
 
-    /** 校验目标冲突（无冲突则直接执行解压） */
+    /** 校验目标冲突（无冲突则直接Executes extraction） */
     private suspend fun stageExtractOrExecute(targetBase: OutputTarget, pending: PendingExtract) {
         val finalTarget = extractFinalDir(targetBase, pending)
         val conflictName = findExtractConflict(finalTarget, pending)

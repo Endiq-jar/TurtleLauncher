@@ -35,22 +35,22 @@ import com.endiq.turtlelauncher.game.path.GamePathDao
 @Database(
     entities = [Account::class, AuthServer::class, GamePath::class],
     version = 2,
-    exportSchema = false //默认不支持导出
+    exportSchema = false //exporting is not supported by default
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     /**
-     * 启动器账号
+     * Launcher accounts
      */
     abstract fun accountDao(): AccountDao
 
     /**
-     * 认证服务器
+     * Authentication servers
      */
     abstract fun authServerDao(): AuthServerDao
 
     /**
-     * 游戏目录
+     * Game directories
      */
     abstract fun gamePathDao(): GamePathDao
 
@@ -65,7 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /**
-         * 获取全局数据库实例
+         * Returns the global database instance
          */
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {

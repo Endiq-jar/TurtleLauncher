@@ -52,7 +52,7 @@ object TLNativeInvoker {
 
                     val file = File(newLink)
                     if (link.endsWith('/')) {
-                        //可能是一个目录，创建并发起浏览目录请求
+                        //Maybe a directory: create it and fire a browse-directory request
                         file.mkdirs()
                         staticLauncher?.openPath(file)
                     } else {
@@ -67,7 +67,7 @@ object TLNativeInvoker {
     }
 
     /**
-     * 格式化文件路径
+     * Formats a file path
      */
     private fun formatFilePath(input: String): String? {
         return try {

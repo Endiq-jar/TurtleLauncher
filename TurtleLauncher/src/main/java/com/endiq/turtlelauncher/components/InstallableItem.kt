@@ -28,7 +28,7 @@ class InstallableItem(
     val task: AbstractUnpackTask
 ) : Comparable<InstallableItem> {
     private val _state = MutableStateFlow(State.NOT_STARTED)
-    /** 当前项的安装状态 */
+    /** Install state of the current item */
     val state = _state.asStateFlow()
 
     fun updateState(state: State) {
@@ -40,15 +40,15 @@ class InstallableItem(
     }
 
     enum class State {
-        /** 未安装 */
+        /** Not installed */
         NOT_STARTED,
-        /** 需要更新 */
+        /** Needs an update */
         PENDING,
-        /** 安装中 */
+        /** Installing */
         RUNNING,
-        /** 已完成/已安装 */
+        /** Completed / installed */
         FINISHED,
-        /** 资源不存在，不可安装 */
+        /** Asset does not exist; not installable */
         NOT_EXISTS
     }
 }

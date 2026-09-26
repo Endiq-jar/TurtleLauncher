@@ -25,8 +25,8 @@ import com.endiq.turtlelauncher.utils.file.InvalidFilenameException
 import com.endiq.turtlelauncher.utils.file.checkFilenameValidity
 
 /**
- * 实时校验文件名合法性，返回本地化错误提示
- * @return 合法时返回 null，不合法时返回本地化错误字符串
+ * Validates a filename in real time, returning a localized error message
+ * @return null when valid, otherwise a localized error string
  */
 @Composable
 fun fmFilenameInvalid(str: String): String? {

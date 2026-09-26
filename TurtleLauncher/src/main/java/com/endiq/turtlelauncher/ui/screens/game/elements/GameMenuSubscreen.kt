@@ -116,6 +116,10 @@ fun GameMenuSubscreen(
     onSendKeycode: () -> Unit,
     onReplacementControl: () -> Unit,
     onEditLayout: () -> Unit,
+    isRecording: Boolean = false,
+    recorderEnabled: Boolean = false,
+    onToggleRecording: () -> Unit = {},
+    onOpenEmotes: () -> Unit = {},
     onShowToast: (AndroidStringText, Int) -> Unit
 ) {
     DualMenuSubscreen(
@@ -197,6 +201,10 @@ fun GameMenuSubscreen(
                 enableTerracotta = enableTerracotta,
                 onOpenTerracottaMenu = onOpenTerracottaMenu,
                 onRefreshWindowSize = onRefreshWindowSize,
+                isRecording = isRecording,
+                recorderEnabled = recorderEnabled,
+                onToggleRecording = onToggleRecording,
+                onOpenEmotes = onOpenEmotes,
                 onShowToast = onShowToast
             )
         }
@@ -211,6 +219,10 @@ private fun GameActionContent(
     onOpenTerracottaMenu: () -> Unit,
     onRefreshWindowSize: () -> Unit,
     onShowToast: (AndroidStringText, Int) -> Unit,
+    isRecording: Boolean = false,
+    recorderEnabled: Boolean = false,
+    onToggleRecording: () -> Unit = {},
+    onOpenEmotes: () -> Unit = {},
     modifier: Modifier = Modifier,
     color: Color = cardColor(false),
     contentColor: Color = onCardColor(),
@@ -239,6 +251,32 @@ private fun GameActionContent(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.game_menu_option_switch_log),
                 onClick = onSwitchLog,
+                color = color,
+                contentColor = contentColor,
+            )
+        }
+
+        //Built-in screen recorder start/stop
+        if (recorderEnabled) {
+            item {
+                MenuTextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(
+                        if (isRecording) R.string.recorder_stop else R.string.recorder_start
+                    ),
+                    onClick = onToggleRecording,
+                    color = color,
+                    contentColor = contentColor,
+                )
+            }
+        }
+
+        //Emotes (Emotecraft mod installer/selector)
+        item {
+            MenuTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.emotes_title),
+                onClick = onOpenEmotes,
                 color = color,
                 contentColor = contentColor,
             )

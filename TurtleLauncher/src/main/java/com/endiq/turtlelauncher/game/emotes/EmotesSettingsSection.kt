@@ -79,14 +79,14 @@ fun EmotesSettingsSection(
     }
 }
 
-private sealed interface EmotesState {
+sealed interface EmotesState {
     data object Loading : EmotesState
     data class Failed(val message: String) : EmotesState
     data class Ready(val versions: List<EmotecraftVersion>) : EmotesState
 }
 
 @Composable
-private fun EmotesDialog(
+fun EmotesDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current

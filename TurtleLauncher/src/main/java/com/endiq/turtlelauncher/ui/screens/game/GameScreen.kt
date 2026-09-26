@@ -25,6 +25,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -81,6 +85,7 @@ import com.endiq.turtlelauncher.bridge.CURSOR_DISABLED
 import com.endiq.turtlelauncher.bridge.TLBridgeStates
 import com.endiq.turtlelauncher.bridge.TLNativeInvoker
 import com.endiq.turtlelauncher.feature.recorder.ScreenRecorder
+import com.endiq.turtlelauncher.game.emotes.EmotesDialog
 import com.endiq.turtlelauncher.game.input.LWJGLCharSender
 import com.endiq.turtlelauncher.game.keycodes.mapToKeycode
 import com.endiq.turtlelauncher.game.launch.handler.GameHandler
@@ -122,6 +127,7 @@ import com.endiq.turtlelauncher.ui.screens.game.elements.SendKeycodeState
 import com.endiq.turtlelauncher.ui.screens.game.multiplayer.TerracottaOperation
 import com.endiq.turtlelauncher.ui.screens.game.multiplayer.rememberTerracottaViewModel
 import com.endiq.turtlelauncher.ui.screens.main.control_editor.ControlEditor
+import com.endiq.turtlelauncher.utils.animation.getAnimateTween
 import com.endiq.turtlelauncher.utils.currentGameDisplayLayout
 import com.endiq.turtlelauncher.utils.logging.Logger
 import com.endiq.turtlelauncher.viewmodel.EditorViewModel
@@ -203,6 +209,9 @@ private class GameViewModel(
 
     /** Whether the layout is currently being edited */
     var isEditingLayout by mutableStateOf(false)
+
+    /** Whether the Emotes (Emotecraft) selection dialog is open */
+    var showEmotesDialog by mutableStateOf(false)
         private set
 
     fun switchControlLayer(hideWhen: HideLayerWhen) {
@@ -719,13 +728,21 @@ fun GameScreen(
             onClose = onInfoBoxClose
         )
 
-        LogBox(
-            enableLog = !viewModel.isEditingLayout && logState.value,
-            onClose = {
-                onLogStateChange(LogState.CLOSE)
-            },
+        AnimatedVisibility(
+            visible = !viewModel.isEditingLayout && logState.value,
+            enter = fadeIn(getAnimateTween()) + slideInVertically(getAnimateTween()) { it / 8 },
+            exit = fadeOut(getAnimateTween()) + slideOutVertically(getAnimateTween()) { it / 8 },
             modifier = Modifier.fillMaxSize()
-        )
+        ) {
+            //Log display keeps its own enable flag so existing listeners stay intact
+            LogBox(
+                enableLog = !viewModel.isEditingLayout && logState.value,
+                onClose = {
+                    onLogStateChange(LogState.CLOSE)
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
 
         GameMenuSubscreen(
             state = viewModel.gameMenuState,
@@ -738,6 +755,22 @@ fun GameScreen(
             enableTerracotta = AllSettings.enableTerracotta.state,
             onOpenTerracottaMenu = { terracottaViewModel.openMenu() },
             onRefreshWindowSize = { eventViewModel.sendEvent(EventViewModel.Event.Game.RefreshSize) },
+            isRecording = isRecording,
+            recorderEnabled = recorderEnabled,
+            onToggleRecording = {
+                if (isRecording) {
+                    val saved = ScreenRecorder.stop(context)
+                    eventViewModel.sendToast(
+                        androidText(
+                            if (saved != null) R.string.recorder_saved else R.string.recorder_failed
+                        ),
+                        Toast.LENGTH_LONG
+                    )
+                } else {
+                    captureLauncher.launch(ScreenRecorder.createCaptureIntent(context))
+                }
+            },
+            onOpenEmotes = { viewModel.showEmotesDialog = true },
             onInputMethod = {
                 eventViewModel.sendEvent(EventViewModel.Event.Game.SwitchIme(null))
             },
@@ -753,8 +786,18 @@ fun GameScreen(
             }
         )
 
-        //Built-in screen recorder toggle button
-        if (recorderEnabled && !viewModel.isEditingLayout) {
+        //Emotes (Emotecraft) open/select dialog
+        if (viewModel.showEmotesDialog) {
+            EmotesDialog(onDismiss = { viewModel.showEmotesDialog = false })
+        }
+
+        //Built-in screen recorder toggle button (pops in/out with animation)
+        AnimatedVisibility(
+            visible = recorderEnabled && !viewModel.isEditingLayout,
+            enter = fadeIn(getAnimateTween()) + scaleIn(getAnimateTween()),
+            exit = fadeOut(getAnimateTween()) + scaleOut(getAnimateTween()),
+            modifier = Modifier.align(Alignment.BottomEnd)
+        ) {
             ScreenRecorderButton(
                 isRecording = isRecording,
                 onStart = { captureLauncher.launch(ScreenRecorder.createCaptureIntent(context)) },
@@ -767,7 +810,7 @@ fun GameScreen(
                         Toast.LENGTH_LONG
                     )
                 },
-                modifier = Modifier.align(Alignment.BottomEnd)
+                modifier = Modifier
             )
         }
 

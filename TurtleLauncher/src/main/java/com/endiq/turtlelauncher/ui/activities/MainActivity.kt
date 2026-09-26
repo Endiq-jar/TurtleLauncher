@@ -53,14 +53,12 @@ import com.endiq.turtlelauncher.game.version.installed.Version
 import com.endiq.turtlelauncher.game.version.installed.VersionsManager
 import com.endiq.turtlelauncher.notification.NotificationManager
 import com.endiq.turtlelauncher.path.PathManager
-import com.endiq.turtlelauncher.path.URL_SUPPORT
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.ui.AndroidStringText
 import com.endiq.turtlelauncher.ui.androidText
 import com.endiq.turtlelauncher.ui.base.BaseAppCompatActivity
 import com.endiq.turtlelauncher.ui.base.ObserveFullScreenSetting
 import com.endiq.turtlelauncher.ui.buildAppendedText
-import com.endiq.turtlelauncher.ui.components.SimpleAlertDialog
 import com.endiq.turtlelauncher.ui.screens.NestedNavKey
 import com.endiq.turtlelauncher.ui.screens.NormalNavKey
 import com.endiq.turtlelauncher.ui.screens.content.elements.Background
@@ -283,7 +281,6 @@ class MainActivity : BaseAppCompatActivity() {
         }
 
         val finishedGame = AllSettings.finishedGame
-        val showSponsorship = AllSettings.showSponsorship
 
         val festivals = getTodayFestivals(
             containsChinese = isChinese(this@MainActivity)
@@ -366,22 +363,7 @@ class MainActivity : BaseAppCompatActivity() {
                 }
 
                 //显示赞助支持的小弹窗
-                if (!isImporting && finishedGame.state >= 100 && showSponsorship.state) {
-                    SimpleAlertDialog(
-                        title = stringResource(R.string.about_sponsor),
-                        text = stringResource(R.string.game_saponsorship_finished_game, finishedGame.state),
-                        dismissText = stringResource(R.string.generic_close),
-                        onDismiss = {
-                            showSponsorship.save(false)
-                        },
-                        onConfirm = {
-                            showSponsorship.save(false)
-                            eventViewModel.sendEvent(
-                                EventViewModel.Event.OpenLink(URL_SUPPORT)
-                            )
-                        }
-                    )
-                }
+
 
                 ModpackImportOperation(
                     operation = modpackImportViewModel.importOperation,

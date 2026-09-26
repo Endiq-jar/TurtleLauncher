@@ -1498,4 +1498,9 @@
     <string name="emotes_installing">Downloading and installing…</string>
     <string name="emotes_install_done">Emotecraft %1$s installed into “%2$s”. An “emotes” folder was also created for custom emote packs.</string>
     <string name="emotes_install_failed">Installation failed: %1$s</string>
+    <string name="topbar_github">GitHub repository</string>
+    <string name="topbar_discord">Discord community</string>
+    <string name="topbar_cursor_editor">Cursor editor</string>
+    <string name="about_discord">Discord</string>
+    <string name="about_acknowledgements_discord_text">Join the Discord community to chat and get support</string>
 </resources>

@@ -165,61 +165,61 @@ import kotlin.math.roundToInt
 
 private const val TAG = "AccountElements"
 
-/** 账号登录菜单操作状态 */
+/** Account login menu operation state */
 sealed interface LoginMenuOperation {
     data object None : LoginMenuOperation
 
-    /** 呼出登陆账号菜单，将所有登录方式放到一个对话框中展示 */
+    /** Brings up the account login menu, showing all login methods in one dialog */
     data object Login : LoginMenuOperation
 }
 
 /**
- * 微软登录的操作状态
+ * Operation state of Microsoft login
  */
 sealed interface MicrosoftLoginOperation {
     data object None : MicrosoftLoginOperation
 
-    /** 微软账号相关提示Dialog流程 */
+    /** Dialog flow for Microsoft account related prompts */
     data object Tip : MicrosoftLoginOperation
 }
 
 /**
- * 离线登陆的操作状态
+ * Operation state of offline login
  */
 sealed interface LocalLoginOperation {
     data object None : LocalLoginOperation
 
-    /** 编辑用户名流程 */
+    /** Username editing flow */
     data object Edit : LocalLoginOperation
 
-    /** 创建账号流程 */
+    /** Account creation flow */
     data class Create(val userName: String, val userUUID: String?) : LocalLoginOperation
 
-    /** 警告非法用户名流程 */
+    /** Invalid username warning flow */
     data class Alert(val userName: String, val userUUID: String?) : LocalLoginOperation
 }
 
 /**
- * 添加认证服务器时的状态
+ * State while adding an authentication server
  */
 sealed interface ServerOperation {
     data object None : ServerOperation
-    /** 添加认证服务器对话框 */
+    /** Add authentication server dialog */
     data object AddNew : ServerOperation
-    /** 删除认证服务器对话框 */
+    /** Delete authentication server dialog */
     data class Delete(val server: AuthServer) : ServerOperation
     data class OnThrowable(val throwable: Throwable) : ServerOperation
 }
 
 /**
- * 账号操作的状态
+ * State of account operations
  */
 sealed interface AccountOperation {
     data object None : AccountOperation
     data class Delete(val account: Account) : AccountOperation
     data class OnFailed(val th: Throwable) : AccountOperation
 
-    /** 账号凭据已被服务端拒绝，需要重新登录 */
+    /** The account credentials were rejected by the server; a new login is required */
     data class OnRelogin(
         val account: Account,
         val logging: Boolean = false,
@@ -228,28 +228,28 @@ sealed interface AccountOperation {
 }
 
 /**
- * 更换账号皮肤的状态
+ * State while changing the account skin
  */
 sealed interface AccountSkinOperation {
     data object None : AccountSkinOperation
 
-    /** 修改皮肤主对话框 */
+    /** Main skin change dialog */
     data class ChangeSkin(val account: Account) : AccountSkinOperation
 }
 
 /**
- * 认证服务器登陆时的状态
+ * State while logging in to an authentication server
  */
 sealed interface OtherLoginOperation {
     data object None : OtherLoginOperation
 
-    /** 账号登陆（输入账号密码Dialog）流程 */
+    /** Account login flow (account/password input dialog) */
     data class OnLogin(val server: AuthServer) : OtherLoginOperation
 
-    /** 登陆失败流程 */
+    /** Login failure flow */
     data class OnFailed(val th: Throwable) : OtherLoginOperation
 
-    /** 账号存在多角色的情况，多角色处理流程 */
+    /** Multi-profile handling flow for accounts that own several profiles */
     data class SelectRole(
         val profiles: List<AuthResult.AvailableProfiles>,
         val selected: (AuthResult.AvailableProfiles) -> Unit
@@ -342,7 +342,7 @@ fun AccountItem(
                 )
             }
             Row {
-                //更换皮肤/披风
+                //Change skin/cape
                 Row {
                     IconButton(
                         onClick = { openChangeSkinDialog() },
@@ -356,7 +356,7 @@ fun AccountItem(
                     }
                 }
 
-                //刷新
+                //Refresh
                 IconButton(
                     onClick = onRefreshClick,
                     enabled = account.accountType != AccountType.LOCAL.tag
@@ -368,7 +368,7 @@ fun AccountItem(
                     )
                 }
 
-                //复制 UUID
+                //Copy UUID
                 IconButton(
                     onClick = onCopyUUID
                 ) {
@@ -379,7 +379,7 @@ fun AccountItem(
                     )
                 }
 
-                //删除
+                //Delete
                 IconButton(
                     onClick = onDeleteClick
                 ) {
@@ -442,7 +442,7 @@ fun LoginMenuDialog(
                                 .padding(start = 12.dp, end = 6.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            //微软登录
+                            //Microsoft login
                             LoginItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 title = stringResource(R.string.account_type_microsoft),
@@ -451,7 +451,7 @@ fun LoginMenuDialog(
                                     onDismissRequest()
                                 }
                             )
-                            //离线登录
+                            //Offline login
                             LoginItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 title = stringResource(R.string.account_type_local),

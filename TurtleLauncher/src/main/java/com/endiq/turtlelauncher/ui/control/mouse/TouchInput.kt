@@ -61,7 +61,7 @@ import org.libsdl.app.SDLActivity
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * 拖动状态数据类
+ * Data class holding the drag state
  */
 private data class DragState(
     var isDragging: Boolean = false,
@@ -70,11 +70,11 @@ private data class DragState(
 )
 
 /**
- * @return 当前是否处于文本输入状态
+ * @return whether text input is currently active
  */
 @Composable
 fun rememberTextInputActive(): Boolean {
-    // 输入会话的开启与关闭都会触发 composeFocus 变化，作为此处状态的刷新时机
+    // Opening and closing the input session both trigger composeFocus changes, which refresh the state here
     val composeFocusCount by SdlBridge.composeFocus.collectAsStateWithLifecycle()
     return remember(composeFocusCount) {
         TouchCharInput.isActive() || SDLActivity.isUsingSDLTextEdit()
@@ -82,35 +82,35 @@ fun rememberTextInputActive(): Boolean {
 }
 
 /**
- * 判定双指同时按下的最大时间间隔（ms）
+ * Maximum interval (ms) for considering two fingers pressed simultaneously
  */
 private const val SCROLL_GESTURE_DOWN_WINDOW_MILLIS = 200L
 /**
- * 双指滑动滚动时，滑动该距离对应滚动一次滚轮
+ * When scrolling with a two-finger slide, moving this distance equals one wheel step
  */
 private val SCROLL_GESTURE_SCROLL_DISTANCE = 6.dp
 
 /**
- * 原始触摸控制模拟层
- * @param controlMode               控制模式：SLIDE（滑动控制）、CLICK（点击控制）
- * @param enableMouseClick          是否开启虚拟鼠标点击操作（仅适用于滑动控制）
- * @param longPressTimeoutMillis    长按触发检测时长
- * @param requestPointerCapture     是否使用鼠标抓取方案
- * @param pointerIcon               实体指针图标
- * @param onTouch                   触摸到鼠标层
- * @param onMouse                   实体鼠标交互事件
- * @param onTap                     点击回调，参数是触摸点在控件内的绝对坐标
- * @param onLongPress               长按开始回调
- * @param onLongPressEnd            长按结束回调
- * @param onPointerMove             指针移动回调，参数在 SLIDE 模式下是指针位置，CLICK 模式下是手指当前位置
- * @param onMouseMove               实体鼠标指针移动回调
- * @param onMouseScroll             实体鼠标指针滚轮滑动
- * @param onMouseButton             实体鼠标指针按钮按下反馈
- * @param isMoveOnlyPointer         指针是否被父级标记为仅可滑动指针
- * @param onOccupiedPointer         占用指针回调
- * @param onReleasePointer          释放指针回调
- * @param enableScrollGesture       是否启用双指滑动滚动手势
- * @param onScrollGesture           双指滑动滚动回调，参数为滚轮滚动的偏移量
+ * Raw touch control emulation layer
+ * @param controlMode               control mode: SLIDE (slide control), CLICK (tap control)
+ * @param enableMouseClick          whether virtual mouse click actions are enabled (slide control only)
+ * @param longPressTimeoutMillis    long-press trigger detection timeout
+ * @param requestPointerCapture     whether to use pointer capture
+ * @param pointerIcon               physical pointer icon
+ * @param onTouch                   touch on the mouse layer
+ * @param onMouse                   physical mouse interaction event
+ * @param onTap                     tap callback; the argument is the absolute position of the touch point inside the widget
+ * @param onLongPress               long-press start callback
+ * @param onLongPressEnd            long-press end callback
+ * @param onPointerMove             pointer move callback; the argument is the pointer position in SLIDE mode and the current finger position in CLICK mode
+ * @param onMouseMove               physical mouse pointer move callback
+ * @param onMouseScroll             physical mouse wheel scroll
+ * @param onMouseButton             physical mouse button press feedback
+ * @param isMoveOnlyPointer         whether the pointer has been marked as move-only by the parent
+ * @param onOccupiedPointer         pointer occupation callback
+ * @param onReleasePointer          pointer release callback
+ * @param enableScrollGesture       whether the two-finger scroll gesture is enabled
+ * @param onScrollGesture           two-finger scroll callback; the argument is the wheel scroll offset
  * @param inputChange               重新启动内部的 pointerInput 块，让触摸逻辑能够实时拿到最新的外部参数
  */
 @Composable
@@ -471,9 +471,9 @@ fun TouchpadLayout(
  * 简单的实体鼠标捕获层
  * @param enabled                   是否使用鼠标抓取方案
  * @param onMouse                   实体鼠标开始响应事件的回调
- * @param onMouseMove               实体鼠标指针移动回调
- * @param onMouseScroll             实体鼠标指针滚轮滑动
- * @param onMouseButton             实体鼠标指针按钮按下反馈
+ * @param onMouseMove               physical mouse pointer move callback
+ * @param onMouseScroll             physical mouse wheel scroll
+ * @param onMouseButton             physical mouse button press feedback
  */
 @Composable
 private fun SimpleMouseCapture(

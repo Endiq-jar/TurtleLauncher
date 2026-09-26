@@ -48,129 +48,129 @@ import com.endiq.turtlelauncher.utils.animation.TransitionAnimationType
 object AllSettings : SettingsRegistry() {
     //Renderer
     /**
-     * 全局渲染器
+     * Global renderer
      */
     val renderer = stringSetting("renderer", "")
 
     /**
-     * Vulkan 驱动器
+     * Vulkan driver
      */
     val vulkanDriver = stringSetting("vulkanDriver", "default turnip")
 
     /**
-     * 图形 API（Minecraft 26.2+）
+     * Graphics API (Minecraft 26.2+)
      */
     val graphicsApi = enumSetting("graphicsApi", GraphicsApi.DEFAULT_OPENGL)
 
     /**
-     * 分辨率
+     * Resolution scale
      */
     val resolutionRatio = intSetting("resolutionRatio", 100, 25..300)
 
     /**
-     * 分辨率规则
+     * Resolution rule
      */
     val resolutionRule = enumSetting("resolutionRule", ResolutionRule.PERCENTAGE)
 
     /**
-     * 自定义分辨率宽度，0 表示尚未初始化
+     * Custom resolution width; 0 means not initialized yet
      */
     val customResolutionWidth = intSetting("customResolutionWidth", 0)
 
     /**
-     * 自定义分辨率高度，0 表示尚未初始化
+     * Custom resolution height; 0 means not initialized yet
      */
     val customResolutionHeight = intSetting("customResolutionHeight", 0)
 
     /**
-     * 游戏页面全屏化
+     * Fullscreen game surface
      */
     val gameFullScreen = boolSetting("gameFullScreen", true)
 
     /**
-     * 使用 SurfaceView 渲染
+     * Render using a SurfaceView
      */
     val useSurfaceView = boolSetting("useSurfaceView", false)
 
     /**
-     * 持续性能模式
+     * Sustained performance mode
      */
     val sustainedPerformance = boolSetting("sustainedPerformance", false)
 
     /**
-     * 使用系统的 Vulkan 驱动
+     * Use the system Vulkan driver
      */
     val zinkPreferSystemDriver = boolSetting("zinkPreferSystemDriver", false)
 
     /**
-     * Zink 垂直同步
+     * Zink VSync
      */
     val vsyncInZink = boolSetting("vsyncInZink", false)
 
     /**
-     * 启用着色器日志输出
+     * Enable shader log output
      */
     val dumpShaders = boolSetting("dumpShaders", false)
 
     //Game
     /**
-     * 版本隔离
+     * Version isolation
      */
     val versionIsolation = boolSetting("versionIsolation", true)
 
     /**
-     * 不检查游戏完整性
+     * Do not check game integrity
      */
     val skipGameIntegrityCheck = boolSetting("skipGameIntegrityCheck", false)
 
     /**
-     * 版本自定义信息
+     * Version custom information
      */
     val versionCustomInfo = stringSetting("versionCustomInfo", "${BuildKeys.LAUNCHER_IDENTIFIER}[zl_version]")
 
     /**
-     * 启动器的Java环境
+     * The launcher's Java runtime
      */
     val javaRuntime = stringSetting("javaRuntime", "")
 
     /**
-     * 自动选择Java环境
+     * Automatically select a Java runtime
      */
     val autoPickJavaRuntime = boolSetting("autoPickJavaRuntime", true)
 
     /**
-     * 游戏内存分配大小
+     * Memory allocation size for the game
      */
     val ramAllocation = intSetting("ramAllocation", null, min = 256)
 
     /**
-     * 自定义Jvm启动参数
+     * Custom JVM launch arguments
      */
     val jvmArgs = stringSetting("jvmArgs", "")
 
     /**
-     * 已禁用的原生库插件列表
+     * List of disabled native library plugins
      */
     val disableNativeLibPlugins = stringListSetting("nativeLibPlugins", emptyList())
 
     /**
-     * 启动游戏时自动展示日志，直到游戏开始渲染
+     * Automatically show the log when launching a game, until the game starts rendering
      */
     val showLogAutomatic = boolSetting("showLogAutomatic", false)
 
     /**
-     * 日志字体大小
+     * Log font size
      */
     val logTextSize = intSetting("logTextSize", 15, 5..20)
 
     /**
-     * 日志缓冲区刷新时间
+     * Log buffer flush interval
      */
     val logBufferFlushInterval = intSetting("logBufferFlushInterval", 200, 100..1000)
 
     //Control
     /**
-     * 实体鼠标控制
+     * Physical mouse control
      */
     val physicalMouseMode = boolSetting("physicalMouseMode", true)
 

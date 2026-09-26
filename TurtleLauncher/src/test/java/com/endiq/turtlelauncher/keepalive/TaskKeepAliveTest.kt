@@ -28,8 +28,8 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * 保活计数回归：acquire/release 必须严格配对。
- * 若计数下溢会出现"任务仍在运行但前台服务被停掉"，若计数泄漏则会出现"任务已结束但服务无法停止"。
+ * Keep-alive counting regression: acquire/release must be strictly paired.
+ * An underflow would stop the foreground service while a task is still running; a leak would make the service never stop after the task ended.
  */
 class TaskKeepAliveTest {
 
@@ -61,7 +61,7 @@ class TaskKeepAliveTest {
 
         TaskKeepAlive.acquire()
         TaskKeepAlive.release()
-        //多减一次也不能变成负数
+        //Releasing one time too many must not make the count negative
         TaskKeepAlive.release()
         assertEquals(0, TaskKeepAlive.count)
     }

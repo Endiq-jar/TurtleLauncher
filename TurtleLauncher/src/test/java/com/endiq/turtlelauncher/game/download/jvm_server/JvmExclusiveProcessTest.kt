@@ -23,9 +23,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * 互斥进程名单匹配回归：
- * :filemanager 被主界面以 BIND_AUTO_CREATE 常驻绑定、杀后必被系统重建，
- * 一旦误入"必须消失"名单，安装前的等待将永远无法满足（Forge 安装卡死的根因）。
+ * Exclusive-process list matching regression:
+ * :filemanager is persistently bound by the main UI with BIND_AUTO_CREATE and is always recreated by the system after being killed,
+ * so if it ever entered the "must be gone" list, the pre-install wait would never be satisfied (the root cause of the stuck Forge installation).
  */
 class JvmExclusiveProcessTest {
 
@@ -46,7 +46,7 @@ class JvmExclusiveProcessTest {
 
     @Test
     fun `foreign packages never match`() {
-        //精确匹配主进程名+后缀，不能是 startsWith 前缀匹配
+        //Exact match on main process name + suffix; startsWith prefix matching is not allowed
         assertFalse(isJvmExclusiveProcess("com.other.app:jvm", main))
         assertFalse(isJvmExclusiveProcess("${main}evil:jvm", main))
     }

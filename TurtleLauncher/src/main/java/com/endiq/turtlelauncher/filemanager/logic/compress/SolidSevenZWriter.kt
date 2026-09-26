@@ -50,8 +50,8 @@ import javax.crypto.spec.SecretKeySpec
 private const val TAG = "SolidSevenZ"
 
 /**
- * 以单 folder（solid）结构写入带密码的 7z，使读取时只需一次 AES 密钥派生
- * 密钥派生与容器布局兼容 commons-compress 读取器
+ * Writes password-protected 7z archives with a single-folder (solid) layout, so reading needs only one AES key derivation
+ * Key derivation and container layout are compatible with the commons-compress reader
  */
 object SolidSevenZWriter {
 
@@ -59,7 +59,7 @@ object SolidSevenZWriter {
     private const val NUM_CYCLES_POWER = 19
     private const val BUFFER_SIZE = 64 * 1024
 
-    // 7z NextHeader 的 NID（与 commons-compress NID 一致）
+    // NID of the 7z NextHeader (matches commons-compress NIDs)
     private const val N_END = 0x00
     private const val N_HEADER = 0x01
     private const val N_MAIN_STREAMS_INFO = 0x04
@@ -79,15 +79,15 @@ object SolidSevenZWriter {
     private val SEVEN_Z_SIGNATURE = byteArrayOf(0x37, 0x7A, 0xBC.toByte(), 0xAF.toByte(), 0x27, 0x1C)
 
     /**
-     * 将全部条目写入单个 folder，生成带密码的 solid 7z 归档。
-     * @param sources 待压缩条目
-     * @param output 输出压缩包路径（已含 .7z 后缀）
-     * @param options 压缩参数（[CompressOptions.password] 必须非空）
-     * @param total 总文件数（进度分母）
-     * @param bytesTotal 源文件总字节数（进度字节分母）
-     * @param onProgress 进度回调（completed, total, currentName），按文件粒度
-     * @param checkCancel 取消检查；返回 true 表示取消
-     * @param onBytes 字节进度回调（已处理字节, 总字节）
+     * Writes all entries into a single folder, producing a password-protected solid 7z archive.
+     * @param sources the entries to compress
+     * @param output the output archive path (already including the .7z suffix)
+     * @param options compression parameters ([CompressOptions.password] must be non-empty)
+     * @param total total file count (progress denominator)
+     * @param bytesTotal total source bytes (byte-progress denominator)
+     * @param onProgress progress callback (completed, total, currentName), per file
+     * @param checkCancel cancellation check; returning true cancels the operation
+     * @param onBytes byte progress callback (processed bytes, total bytes)
      */
     suspend fun write(
         sources: List<Path>,
@@ -118,12 +118,12 @@ object SolidSevenZWriter {
         val openOptions = arrayOf(StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)
         Files.newByteChannel(output, *openOptions).use { channel ->
             channel.position(SIGNATURE_HEADER_SIZE.toLong())
-            // 防止 CipherOutputStream.close() 把 channel 一起关掉（底层流 close 置为空操作）
+            // Prevents CipherOutputStream.close() from closing the channel too (the underlying stream close is replaced with a no-op)
             val channelOut = NoCloseOutputStream(Channels.newOutputStream(channel))
             val packedCounter = CountingCrcOutputStream(channelOut)
             val aesOut = AesCbcZeroPadOutputStream(packedCounter, cipher)
             val lzma2Counter = CountingOutputStream(aesOut)
-            // LZMA2OutputStream 为包私有，必须经 LZMA2Options 工厂创建
+            // LZMA2OutputStream is package-private and must be created via the LZMA2Options factory
             val lzma2Options = LZMA2Options().apply { setDictSize(dictSize) }
             val lzma2 = lzma2Options.getOutputStream(
                 FinishableWrapperOutputStream(lzma2Counter),
@@ -155,7 +155,7 @@ object SolidSevenZWriter {
             val packedCrc = packedCounter.crcValue
             val lzma2PackedLen = lzma2Counter.count
 
-            // 依次写 NextHeader 与 32 字节签名头
+            // Write the NextHeader followed by the 32-byte signature header
             val header = buildHeader(
                 entries = entries,
                 packedSize = packedSize,
@@ -296,8 +296,8 @@ object SolidSevenZWriter {
             out.write(0)            // external
             writeFolder(out, dictPropsByte, iv)       // coders: [AES256SHA256, LZMA2] + bindPair
             out.write(N_CODERS_UNPACK_SIZE)
-            writeUint64(out, lzma2PackedLen)    // coder0 (AES) 输出 = LZMA2 压缩流长度
-            writeUint64(out, totalUncompressed) // coder1 (LZMA2) 输出 = 解压总长
+            writeUint64(out, lzma2PackedLen)    // coder0 (AES) output = LZMA2 compressed stream length
+            writeUint64(out, totalUncompressed) // coder1 (LZMA2) output = total uncompressed length
             out.write(N_CRC)
             out.write(1)            // allDefined
             writeIntLE(out, folderCrc)
@@ -308,14 +308,14 @@ object SolidSevenZWriter {
             out.write(N_NUM_UNPACK_STREAM)
             writeUint64(out, nonEmpty.size.toLong())
             out.write(N_SIZE)
-            // 只写前 N-1 个解压大小，最后一个由读取器推导（folder.getUnpackSize() - sum）
+            // Only the first N-1 unpack sizes are written; the reader derives the last one (folder.getUnpackSize() - sum)
             for (i in 0 until nonEmpty.size - 1) {
                 writeUint64(out, nonEmpty[i].size)
             }
             out.write(N_END)
         }
 
-        out.write(N_END) // kMainStreamsInfo 结束
+        out.write(N_END) // end of kMainStreamsInfo
 
         // ---- kFilesInfo ----
         out.write(N_FILES_INFO)
@@ -323,12 +323,12 @@ object SolidSevenZWriter {
 
         if (entries.any { !it.hasStream }) {
             val emptyStreamIndices = entries.mapIndexedNotNull { i, e -> if (!e.hasStream) i else null }
-            // kEmptyStream：对全部条目，标记空流（目录 / 空文件）
+            // kEmptyStream: marks empty streams (directories / empty files) across all entries
             val emptyStreamBits = BitSet()
             emptyStreamIndices.forEach { emptyStreamBits.set(it) }
             writeBitsProperty(out, N_EMPTY_STREAM, emptyStreamBits, numFiles)
 
-            // kEmptyFile：仅对空流条目，标记"空文件"（区别于目录）
+            // kEmptyFile: marks "empty file" among the empty-stream entries (as opposed to directories)
             if (emptyStreamIndices.any { entries[it].emptyFile }) {
                 val emptyFileBits = BitSet()
                 emptyStreamIndices.forEachIndexed { j, i -> if (entries[i].emptyFile) emptyFileBits.set(j) }
@@ -336,7 +336,7 @@ object SolidSevenZWriter {
             }
         }
 
-        // kName：全部条目名，UTF-16LE，以 0x0000 结尾
+        // kName: all entry names, UTF-16LE, terminated by 0x0000
         out.write(N_NAME)
         val nameBytes = ByteArrayOutputStream()
         for (e in entries) {
@@ -345,12 +345,12 @@ object SolidSevenZWriter {
             nameBytes.write(0)
         }
         val names = nameBytes.toByteArray()
-        writeUint64(out, 1L + names.size)   // 含 external 字节
+        writeUint64(out, 1L + names.size)   // includes the external byte
         out.write(0)                        // external = 0
         out.write(names)
 
-        out.write(N_END) // kFilesInfo 结束
-        out.write(N_END) // kHeader 结束
+        out.write(N_END) // end of kFilesInfo
+        out.write(N_END) // end of kHeader
 
         out.flush()
         return bos.toByteArray()
@@ -365,18 +365,18 @@ object SolidSevenZWriter {
         out.write(0xF1)
         out.write(0x07)
         out.write(0x01)
-        writeUint64(out, (2 + iv.size).toLong()) // properties 长度
-        out.write(0x53)     // numCyclesPower=19 | iv 存在(0x40)
+        writeUint64(out, (2 + iv.size).toLong()) // properties length
+        out.write(0x53)     // numCyclesPower=19 | iv present (0x40)
         out.write(0x0F)     // saltSize=0 | ivSize-1=15
         out.write(iv)
 
         // coder1: LZMA2（methodId = 0x21）
         out.write(0x21)     // idSize=1 | hasAttributes=0x20
         out.write(0x21)
-        writeUint64(out, 1) // properties 长度
+        writeUint64(out, 1) // properties length
         out.write(dictPropsByte)
 
-        // bindPair（inIndex, outIndex）= (1, 0)：AES 输出 -> LZMA2 输入
+        // bindPair (inIndex, outIndex) = (1, 0): AES output -> LZMA2 input
         writeUint64(out, 1)
         writeUint64(out, 0)
     }
@@ -401,13 +401,13 @@ object SolidSevenZWriter {
     private fun buildSignatureHeader(nextHeaderOffset: Long, nextHeaderSize: Long, nextHeaderCrc: Int): ByteArray {
         val b = ByteBuffer.allocate(SIGNATURE_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN)
         b.put(SEVEN_Z_SIGNATURE)
-        b.put(0).put(2)                 // 版本 (major=0, minor=2)
-        b.putInt(0)                     // start header CRC 占位
+        b.put(0).put(2)                 // version (major=0, minor=2)
+        b.putInt(0)                     // start header CRC placeholder
         b.putLong(nextHeaderOffset)
         b.putLong(nextHeaderSize)
         b.putInt(nextHeaderCrc)
         val crc = CRC32()
-        crc.update(b.array(), 12, 20)   // 对 20 字节 start header 求 CRC
+        crc.update(b.array(), 12, 20)   // CRC over the 20-byte start header
         b.putInt(8, crc.value.toInt())
         return b.array()
     }

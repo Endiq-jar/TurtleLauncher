@@ -1,0 +1,13 @@
+{
+  "code": 32,
+  "version": "2.0.0",
+  "created_at": "2026-09-26",
+  "default_cloud_drive": null,
+  "cloud_drives": [],
+  "files": [],
+  "default_body": {
+    "language": "en",
+    "markdown": "## Turtle Launcher\n\nYou are running the latest Turtle Launcher build.\n\nDownloads and release notes: https://github.com/Endiq-jar/TurtleLauncher/releases\nCommunity: https://discord.gg/gf3YcV57j"
+  },
+  "bodies": []
+}

@@ -51,7 +51,7 @@ object ForgeVersions {
     private const val FORGE_FILE_URL = "https://files.minecraftforge.net/maven/net/minecraftforge/forge"
 
     /**
-     * 获取 Forge 版本列表
+     * Fetches the Forge version list
      */
     suspend fun fetchForgeList(mcVersion: String): List<ForgeVersion>? = withContext(Dispatchers.Default) {
         if (isChinaMainland()) {
@@ -66,7 +66,7 @@ object ForgeVersions {
     }
 
     /**
-     * 从官方源获取版本列表
+     * Fetches the version list from the official source
      */
     private fun officialSource(mcVersion: String): MirrorSource<List<ForgeVersion>?> = MirrorSource(
         type = SourceType.OFFICIAL
@@ -118,11 +118,11 @@ object ForgeVersions {
     }
 
     /**
-     * 从镜像源获取版本列表
+     * Fetches the version list from the mirror source
      * [Reference PCL2](https://github.com/Meloong-Git/PCL/blob/28ef67e/Plain%20Craft%20Launcher%202/Modules/Minecraft/ModDownload.vb#L702-L751)
      */
     private suspend fun fetchListWithBMCLAPI(mcVersion: String): List<ForgeVersion>? {
-        val url = "https://bmclapi2.bangbang93.com/forge/minecraft/${mcVersion.replace("-", "_")}" //兼容 Forge 1.7.10-pre4
+        val url = "https://bmclapi2.bangbang93.com/forge/minecraft/${mcVersion.replace("-", "_")}" //compatible with Forge 1.7.10-pre4
 
         return try {
             val tokens: List<ForgeVersionToken> = withContext(Dispatchers.IO) {
@@ -164,7 +164,7 @@ object ForgeVersions {
         }
     }
 
-    //选择首选文件
+    //Pick the preferred file
     private fun determinePreferredFile(files: List<ForgeVersionToken.ForgeFile>): Pair<String?, String> {
         var hash: String? = null
         var category = "unknown"
@@ -196,7 +196,7 @@ object ForgeVersions {
         return try {
             val name = Regex("""(?<=\D)\d+(\.\d+)+""").find(html)?.value ?: return null
             //                      <i class="promo-latest  fa" aria-hidden="true"></i>     <i class="promo-recommended  fa" aria-hidden="true"></i>
-            val isRecommended = html.contains("promo-latest  fa" /* 最新推荐标签 */) || html.contains("promo-recommended  fa" /* 推荐标签 */)
+            val isRecommended = html.contains("promo-latest  fa" /* latest badge marker */) || html.contains("promo-recommended  fa" /* recommended badge marker */)
             val branch = Regex("""(?<=-$name-)[^-"]+(?=-[a-z]+\.[a-z]{3})""").find(html)?.value
             val timeStr = Regex("""(?<="download-time" title=")[^"]+""").find(html)?.value ?: return null
             
@@ -227,21 +227,21 @@ object ForgeVersions {
         }
     }
 
-    //类型为 installer.jar，支持范围 ~753 (~ 1.6.1 部分), 738~684 (1.5.2 全部)
+    //Type installer.jar, supported range ~753 (part of 1.6.1), 738~684 (all of 1.5.2)
     private fun parseInstaller(html: String): Pair<String, String>? {
         val section = html.substringAfter("installer.jar")
         val hash = Regex("""(?<=MD5:</strong> )[^<]+""").find(section)?.value?.trim()
         return hash?.let { "installer" to it }
     }
 
-    //类型为 universal.zip，支持范围 751~449 (1.6.1 部分), 682~183 (1.5.1 ~ 1.3.2 部分)
+    //Type universal.zip, supported range 751~449 (part of 1.6.1), 682~183 (1.5.1 ~ part of 1.3.2)
     private fun parseUniversal(html: String): Pair<String, String>? {
         val section = html.substringAfter("universal.zip")
         val hash = Regex("""(?<=MD5:</strong> )[^<]+""").find(section)?.value?.trim()
         return hash?.let { "universal" to it }
     }
 
-    //类型为 client.zip，支持范围 182~ (1.3.2 部分 ~)
+    //Type client.zip, supported range 182~ (part of 1.3.2 onwards)
     private fun parseClient(html: String): Pair<String, String>? {
         val section = html.substringAfter("client.zip")
         val hash = Regex("""(?<=MD5:</strong> )[^<]+""").find(section)?.value?.trim()

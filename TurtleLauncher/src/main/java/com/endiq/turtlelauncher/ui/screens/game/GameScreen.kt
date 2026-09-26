@@ -142,28 +142,28 @@ private class GameViewModel(
     private val version: Version,
     private val onChangeTextInputMode: (TextInputMode?) -> Unit
 ) : ViewModel() {
-    /** 游戏菜单操作状态 */
+    /** Game menu operation state */
     var gameMenuState by mutableStateOf(MenuState.NONE)
-    /** 游戏菜单-控制设置区域Tab选择的索引 */
+    /** Selected tab index in the game menu control settings area */
     var controlMenuTabIndex by mutableIntStateOf(0)
-    /** 强制关闭弹窗操作状态 */
+    /** Force-close dialog operation state */
     var forceCloseState by mutableStateOf<ForceCloseOperation>(ForceCloseOperation.None)
-    /** 发送键值操作状态 */
+    /** Send-keycode operation state */
     var sendKeycodeState by mutableStateOf<SendKeycodeState>(SendKeycodeState.None)
-    /** 更换控制布局操作状态 */
+    /** Switch control layout operation state */
     var replacementControlState by mutableStateOf<ReplacementControlState>(ReplacementControlState.None)
-    /** 被控制布局层标记为仅滑动的指针列表 */
+    /** Pointers marked as move-only by the control layout layer */
     var moveOnlyPointers = mutableSetOf<PointerId>()
-    /** 鼠标触摸指针处理层占用指针列表 */
+    /** Pointers occupied by the mouse touch handler layer */
     var occupiedPointers = mutableSetOf<PointerId>()
 
-    /** 游戏内帧率状态 */
+    /** In-game frame rate state */
     var gameFps by mutableIntStateOf(0)
         private set
     private var fpsJob: Job? = null
-    /** 开始帧率捕获 */
+    /** Starts frame rate capture */
     fun startFpsCapture() {
-        //开启一个新的协程，每秒更新一次帧率数据
+        //Starts a new coroutine that updates the frame rate data once per second
         fpsJob = viewModelScope.launch(Dispatchers.Default) {
             while (true) {
                 runCatching {
@@ -176,7 +176,7 @@ private class GameViewModel(
             }
         }
     }
-    /** 停止帧率捕获 */
+    /** Stops frame rate capture */
     fun stopFpsCapture() {
         fpsJob?.cancel()
         fpsJob = null
@@ -184,17 +184,17 @@ private class GameViewModel(
 
     var editorRefresh by mutableIntStateOf(0)
         private set
-    /** 可观察的控制布局 */
+    /** Observable control layout */
     var observableLayout by mutableStateOf<ObservableControlLayout?>(null)
         private set
-    /** 当前控制布局文件 */
+    /** Current control layout file */
     var currentControlFile by mutableStateOf<File?>(null)
         private set
-    /** 控制布局：控件层隐藏状态 */
+    /** Control layout: widget layer visibility state */
     var controlLayerHideState by mutableStateOf(HideLayerWhen.None)
         private set
 
-    /** 是否正在编辑布局 */
+    /** Whether the layout is currently being edited */
     var isEditingLayout by mutableStateOf(false)
         private set
 
@@ -202,19 +202,19 @@ private class GameViewModel(
         if (controlLayerHideState != hideWhen) controlLayerHideState = hideWhen
     }
 
-    /** 虚拟鼠标滚动事件处理 */
+    /** Virtual mouse scroll event handler */
     val mouseScrollUpEvent = MouseScrollEvent(viewModelScope, 1.0)
     val mouseScrollDownEvent = MouseScrollEvent(viewModelScope, -1.0)
 
-    /** 游戏内消息发送器 */
+    /** In-game message sender */
     val gameTextSender = GameTextSender(viewModelScope)
 
-    /** 控制布局控件点击事件处理器 */
+    /** Control layout widget click event handler */
     val eventHandler = EventHandler { event, pressed ->
         onKeyEvent(event, pressed)
     }
 
-    /** 处理控制布局类点击事件 */
+    /** Handles control layout click events */
     fun onKeyEvent(event: ClickEvent, pressed: Boolean) {
         val key = event.key
         when (event.type) {
@@ -240,7 +240,7 @@ private class GameViewModel(
                 )
             }
             ClickEvent.Type.SendText -> {
-                //游戏内文本发送事件
+                //In-game text sending event
                 if (pressed) {
                     val text = event.key
                     val inGame = TLBridgeStates.cursorMode.value == CURSOR_DISABLED
@@ -264,11 +264,11 @@ private class GameViewModel(
             withContext(Dispatchers.Main) {
                 observableLayout = null
                 val layout = withContext(Dispatchers.IO) {
-                    delay(10L.milliseconds) //刻意等待一会再加载
+                    delay(10L.milliseconds) //deliberately wait a moment before loading
                     currentControlFile = layoutFile
                     getLayout(layoutFile)
                 }
-                //将控制布局加载为可供Compose加载的形式
+                //Load the control layout into a form Compose can consume
                 observableLayout = ObservableControlLayout(layout)
             }
         }
@@ -286,7 +286,7 @@ private class GameViewModel(
     }
 
     /**
-     * 开始编辑控制布局模式
+     * Enters control layout editing mode
      */
     fun startControlEditor(editorVM: EditorViewModel) {
         if (!isEditingLayout) {
@@ -297,7 +297,7 @@ private class GameViewModel(
     }
 
     /**
-     * 退出编辑控制布局模式（如果当前确实正在编辑控制布局）
+     * Exits control layout editing mode (if actually editing right now)
      */
     fun exitControlEditor() {
         viewModelScope.launch(Dispatchers.Main) {
@@ -310,7 +310,7 @@ private class GameViewModel(
     }
 
     /**
-     * 切换游戏菜单
+     * Toggles the game menu
      */
     fun switchMenu() {
         this.gameMenuState = this.gameMenuState.next()

@@ -145,13 +145,13 @@ data class LaunchSession(
 )
 
 /**
- * 一些关键状态须在此存放
+ * Some critical states must be kept here
  */
 class VMViewModel : ViewModel() {
     var isRunning = false
 
     /**
-     * 是否允许VMActivity处理按键
+     * Whether VMActivity is allowed to handle key events
      */
     var keyHandle = true
 
@@ -169,10 +169,10 @@ class VMViewModel : ViewModel() {
         private set
 
     private val _openFolderOperation = MutableStateFlow<OpenFolderOperation>(OpenFolderOperation.None)
-    /** 启动器内浏览目录（将文件导入该目录） */
+    /** Directory browsing inside the launcher (imports files into that directory) */
     val openFolderOperation = _openFolderOperation.asStateFlow()
 
-    /** 关闭浏览目录 */
+    /** Close directory browsing */
     fun clearFolder() {
         _openFolderOperation.update {
             OpenFolderOperation.None
@@ -270,7 +270,7 @@ class VMViewModel : ViewModel() {
     }
 
     /**
-     * 当前输入法开启状态
+     * Current input method enabled state
      */
     var textInputMode by mutableStateOf(TextInputMode.DISABLE)
 
@@ -280,7 +280,7 @@ class VMViewModel : ViewModel() {
 
 
     /**
-     * 直接发送文本到游戏
+     * Sends text directly to the game
      */
     private fun String.sendText() {
         forEach { char ->
@@ -301,12 +301,12 @@ class VMViewModel : ViewModel() {
     }
 
     /**
-     * 仅处理特殊按键
+     * Handles special keys only
      */
     fun handleSpecialKey(keyEvent: KeyEvent) {
         when (keyEvent.keyCode) {
             KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_ENTER -> {
-                //忽略掉删除事件，避免状态不同步
+                //Ignore delete events to avoid state desynchronization
             }
 
             KeyEvent.KEYCODE_DPAD_LEFT -> sender.sendLeft()
@@ -321,15 +321,15 @@ class VMViewModel : ViewModel() {
     }
 
     /**
-     * 返回这个按键事件是否允许被处理
+     * Returns whether this key event is allowed to be handled
      */
     fun keyCanHandle(keyEvent: KeyEvent): Boolean {
         val keyCode = keyEvent.keyCode
-        //因为输入法选区时会发出Shift键的事件，但同步为游戏内的文本进行选区会比较复杂
-        //比如选区时没法拿到当前输入框选择了哪些文本，极容易导致输入框与游戏内的文本出现状态差异
-        //这类比较打破预期的情况应该尽量避免，所以应该忽略Shift
+        //Because the IME emits Shift key events when selecting text, while synchronizing selection into the in-game text would be complicated,
+        //for example there is no way to know which text the input box has selected, which easily causes state differences between the input box and the in-game text,
+        //so such expectation-breaking situations should be avoided; Shift should be ignored
         val isShift = keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT
-        //避免处理Ctrl，大部分输入法不支持处理这个，而在游戏内可能会影响到指针位置
+        //Avoid handling Ctrl: most IMEs cannot handle it, and in-game it could affect the pointer position
         val isCtrl = keyCode == KeyEvent.KEYCODE_CTRL_LEFT || keyCode == KeyEvent.KEYCODE_CTRL_RIGHT
         return !isShift && !isCtrl
     }
@@ -342,7 +342,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 
     private val eventViewModel: EventViewModel by viewModels()
     /**
-     * 手柄状态存储 ViewModel
+     * ViewModel that stores gamepad state
      */
     private val gamepadViewModel: GamepadViewModel by viewModels()
 
@@ -363,18 +363,18 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //加载渲染器
+        //Load the renderer
         Renderers.init()
-        //加载插件
+        //Load plugins
         PluginLoader.loadAllPlugins(this, false)
         refreshData()
 
-        //初始化物理鼠标连接检查器
+        //Initialize the physical mouse connection checker
         PhysicalMouseChecker.initChecker(this)
 
-        //启动前台服务，防止后台网络中断
+        //Start the foreground service to prevent the network from being cut in the background
         runCatching {
-            //应用处于后台等受限状态时系统会拒绝启动，此时无需保活，忽略即可
+            //The system refuses to start it while the app is in a restricted state like the background; keep-alive is unnecessary then, ignore it
             startService(Intent(this, GameService::class.java))
         }
 
@@ -394,13 +394,13 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                     }
                     showExitMessage(this@VMActivity, exitCode, isSignal, logPath)
                 } else {
-                    //重启启动器
+                    //Restart the launcher
                     ProcessPhoenix.triggerRebirth(this@VMActivity)
                 }
             }
         )
 
-        //设置画面渲染输出回调
+        //Set the frame render output callback
         CallbackBridge.setGraphicOutputListener {
             withHandler { onGraphicOutput() }
         }
@@ -410,15 +410,15 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             if (AllSettings.sustainedPerformance.getValue()) {
                 setSustainedPerformanceMode(true)
             }
-            addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) // 防止系统息屏
+            addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) // prevent the system from sleeping
         }
 
         val logFile = withLauncher { getLogFile() }
-        logFile.parentFile?.mkdirs() // 换过一次日志文件路径，此处创建父目录是必要的
+        logFile.parentFile?.mkdirs() // the log file path changed once, so creating the parent directory here is necessary
         if (!logFile.exists() && !logFile.createNewFile()) throw IOException("Failed to create a new log file")
         LoggerBridge.start(logFile.absolutePath)
 
-        //错误信息展示
+        //Show error information
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 errorViewModel.errorEvents.collect { tm ->
@@ -431,7 +431,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         }
 
         lifecycleScope.launch {
-            //开始接收事件
+            //Start receiving events
             eventViewModel.events.collect { event ->
                 when (event) {
                     is EventViewModel.Event.Game.RefreshSize -> {
@@ -967,7 +967,7 @@ fun runJar(
 
 private fun startGameService(context: Context) {
     runCatching {
-        //应用处于后台等受限状态时系统会拒绝启动，此时无需保活，忽略即可
+        //The system refuses to start it while the app is in a restricted state like the background; keep-alive is unnecessary then, ignore it
         context.startService(Intent(context, GameService::class.java))
     }
 }

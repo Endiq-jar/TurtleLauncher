@@ -11,7 +11,7 @@ const skinViewer = new skinview3d.SkinViewer({
 
 container.appendChild(skinViewer.canvas);
 
-//参考 Modrinth 启动器默认的 idle 动画
+//Reference: the Modrinth launcher default idle animation
 //https://github.com/modrinth/code/blob/e71a8c10fac3eda05ff9bc34381178f3d11c41de/packages/assets/models/slim-player.gltf#L1653-L1755
 class IdleAnimation extends skinview3d.PlayerAnimation {
     constructor() {
@@ -125,7 +125,7 @@ skinViewer.controls.enableRotate = true;
 skinViewer.controls.enableZoom = false;
 skinViewer.controls.enablePan = false;
 
-//记录默认的相机位置和控制器目标点
+//Record the default camera position and controller target
 const defaultCameraPos = skinViewer.camera.position.clone();
 const defaultControlsTarget = skinViewer.controls.target.clone();
 
@@ -153,7 +153,7 @@ function setAzimuthAndPitch(azimuthDeg, pitchDeg, distance = 60) {
 
 setAzimuthAndPitch(0, 10);
 
-// 确保 OrbitControls 也有相同的目标点，覆盖默认的 lookAt
+// Ensure OrbitControls uses the same target, overriding the default lookAt
 if (skinViewer.controls) {
     skinViewer.controls.update();
 } else if (skinViewer.camera.lookAt) {
@@ -162,36 +162,36 @@ if (skinViewer.controls) {
 
 let resetAnimationId = null;
 
-// 监听容器的双击事件
+// Listen for double-click events on the container
 container.addEventListener("dblclick", () => {
-    // 如果已经在回正动画中，先取消之前的动画
+    // If a recenter animation is already running, cancel it first
     if (resetAnimationId) {
         cancelAnimationFrame(resetAnimationId);
     }
 
-    // 指数衰减速率（与帧率无关）
-    // 物理含义：每秒缩短至剩余距离的 e^(-DECAY)，DECAY=8 时约 0.03%
+    // Exponential decay rate (frame-rate independent)
+    // Physical meaning: the remaining distance shrinks to e^(-DECAY) per second; DECAY=8 is about 0.03%
     const DECAY = 6;
 
     let lastTime = performance.now();
 
     const animateReset = (now) => {
-        // 计算真实帧间隔（秒），并钳制防止页面切换后跳帧
+        // Compute the real frame interval (seconds), clamped to prevent jumps after page switches
         const rawDt = (now - lastTime) / 1000;
         const dt = Math.min(rawDt, 0.1);
         lastTime = now;
 
-        // 时间驱动的指数衰减系数，与帧率无关
+        // Time-driven exponential decay factor, frame-rate independent
         const alpha = 1 - Math.exp(-DECAY * dt);
 
-        // Target lerp（直接操作 xyz）
+        // Target lerp (manipulates xyz directly)
         const t = skinViewer.controls.target;
         const dst = defaultControlsTarget;
         t.x += (dst.x - t.x) * alpha;
         t.y += (dst.y - t.y) * alpha;
         t.z += (dst.z - t.z) * alpha;
 
-        // 当前相机相对 target 的偏移
+        // Current camera offset relative to the target
         const cam = skinViewer.camera.position;
         const ox = cam.x - t.x;
         const oy = cam.y - t.y;
@@ -201,7 +201,7 @@ container.addEventListener("dblclick", () => {
         const dy = defaultCameraPos.y - dst.y;
         const dz = defaultCameraPos.z - dst.z;
 
-        // 转球坐标
+        // Convert to spherical coordinates
         const curR   = Math.sqrt(ox*ox + oy*oy + oz*oz);
         const defR   = Math.sqrt(dx*dx + dy*dy + dz*dz);
         const curPhi = Math.asin(Math.max(-1, Math.min(1, oy / curR)));
@@ -209,17 +209,17 @@ container.addEventListener("dblclick", () => {
         const curTheta = Math.atan2(oz, ox);
         const defTheta = Math.atan2(dz, dx);
 
-        // 方位角走最短路径
+        // Take the shortest path for the azimuth angle
         let dTheta = defTheta - curTheta;
         if (dTheta >  Math.PI) dTheta -= 2 * Math.PI;
         if (dTheta < -Math.PI) dTheta += 2 * Math.PI;
 
-        // 插值
+        // Interpolate
         const nextR     = curR   + (defR   - curR)   * alpha;
         const nextPhi   = curPhi + (defPhi - curPhi)  * alpha;
         const nextTheta = curTheta + dTheta * alpha;
 
-        // 转回笛卡尔坐标
+        // Convert back to Cartesian coordinates
         const cosPhi = Math.cos(nextPhi);
         cam.x = t.x + nextR * cosPhi * Math.cos(nextTheta);
         cam.y = t.y + nextR * Math.sin(nextPhi);
@@ -227,7 +227,7 @@ container.addEventListener("dblclick", () => {
 
         skinViewer.controls.update();
 
-        // 终止判断
+        // Termination check
         const dpx = cam.x - defaultCameraPos.x;
         const dpy = cam.y - defaultCameraPos.y;
         const dpz = cam.z - defaultCameraPos.z;
@@ -250,11 +250,11 @@ container.addEventListener("dblclick", () => {
         }
     };
 
-    // 启动动画（rAF 传入的时间戳与 performance.now() 同源）
+    // Start the animation (the rAF timestamp shares the same clock as performance.now())
     resetAnimationId = requestAnimationFrame(animateReset);
 });
 
-// 如果用户在回正动画播放时主动拖拽了模型，打断回正动画
+// If the user drags the model while the recenter animation is playing, interrupt it
 if (skinViewer.controls) {
     skinViewer.controls.addEventListener("start", () => {
         if (resetAnimationId) {

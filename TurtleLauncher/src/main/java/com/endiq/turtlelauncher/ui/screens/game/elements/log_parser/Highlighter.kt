@@ -34,9 +34,9 @@ class LogHighlighter(
 ) {
     fun highlight(logText: String): AnnotatedString {
         return runCatching {
-            highlightInternal(logText)
+            applyLevelLineHighlights(logText, highlightInternal(logText))
         }.getOrElse {
-            //一旦出现错误，需要使用默认颜色
+            //Fall back to the default color if anything goes wrong
             AnnotatedString(
                 text = logText,
                 spanStyles = listOf(
@@ -50,13 +50,57 @@ class LogHighlighter(
         }
     }
 
+    /**
+     * Tints the background of every line that carries a highlighted log level:
+     * errors get a pastel red highlight, warnings a pastel yellow one, and
+     * normal lines keep their default background.
+     */
+    private fun applyLevelLineHighlights(logText: String, base: AnnotatedString): AnnotatedString {
+        val lineSpans = mutableListOf<AnnotatedString.Range<SpanStyle>>()
+        var lineStart = 0
+        val n = logText.length
+        while (lineStart < n) {
+            var lineEnd = logText.indexOf('\n', lineStart)
+            if (lineEnd == -1) lineEnd = n
+
+            var rule: LogLevelRule? = null
+            var i = lineStart
+            while (i < lineEnd) {
+                if (LogParseCore.isLogLevel(logText, i)) {
+                    val level = LogParseCore.matchLogLevel(logText, i)
+                    if (level != null) {
+                        rule = LogParseCore.findLevelRule(level)
+                        break
+                    }
+                }
+                i++
+            }
+
+            val background = rule?.lineBackgroundColor
+            if (background != null && lineEnd > lineStart) {
+                lineSpans.add(
+                    AnnotatedString.Range(
+                        SpanStyle(background = background),
+                        lineStart,
+                        lineEnd
+                    )
+                )
+            }
+
+            lineStart = lineEnd + 1
+        }
+        if (lineSpans.isEmpty()) return base
+        //Line backgrounds are placed first so token styling still wins on overlap
+        return AnnotatedString(logText, lineSpans + base.spanStyles, base.paragraphStyles)
+    }
+
     fun highlightInternal(logText: String): AnnotatedString = buildAnnotatedString {
         var i = 0
         val n = logText.length
         var inStackTrace = false
 
         while (i < n) {
-            //Java 异常堆栈
+            //Java exception stack trace
             if (LogParseCore.isLineStart(logText, i) && LogParseCore.isStackTraceStart(logText, i)) {
                 inStackTrace = true
             }
@@ -67,7 +111,7 @@ class LogHighlighter(
                     append(logText.substring(i, lineEnd))
                 }
 
-                //判断是否退出堆栈
+                //Decide whether the stack trace ends here
                 if (lineEnd < n && !LogParseCore.isStackTraceLine(logText, lineEnd)) {
                     inStackTrace = false
                 }
@@ -76,7 +120,7 @@ class LogHighlighter(
                 continue
             }
 
-            //字符串
+            //String literal
             if (logText[i] == '"' || logText[i] == '\'') {
                 fun styleString(): Boolean {
                     val quote = logText[i]
@@ -93,7 +137,7 @@ class LogHighlighter(
                 }
 
                 if (logText[i] == '\'') {
-                    //单引号字符串开始前要求必须为空格
+                    //A single-quoted string must be preceded by a space
                     logText.getOrNull(i - 1)?.let { before ->
                         if (before == ' ' && styleString()) {
                             continue
@@ -104,7 +148,7 @@ class LogHighlighter(
                 }
             }
 
-            //网站链接
+            //Web link
             val linkMatch = LogParseCore.matchWebLink(logText, i)
             if (linkMatch != null) {
                 withStyle(SpanStyle(color = linkColor)) {
@@ -114,7 +158,7 @@ class LogHighlighter(
                 continue
             }
 
-            //时间
+            //Timestamp
             val timeMatch = LogParseCore.matchTime(logText, i)
             if (timeMatch != null) {
                 withStyle(SpanStyle(color = timeColor)) {
@@ -124,7 +168,7 @@ class LogHighlighter(
                 continue
             }
 
-            //日志等级
+            //Log level
             if (LogParseCore.isLogLevel(logText, i)) {
                 val level = LogParseCore.matchLogLevel(logText, i)
                 if (level != null) {
@@ -142,7 +186,7 @@ class LogHighlighter(
                 }
             }
 
-            //数字
+            //Number
             if (logText[i].isDigit()) {
                 val segment = LogParseCore.scanNumericSegment(logText, i)
                 if (segment != null) {
@@ -158,7 +202,7 @@ class LogHighlighter(
                 }
             }
 
-            //包名
+            //Package name
             val packageName = LogParseCore.scanPackageName(logText, i)
             if (packageName != null) {
                 withStyle(SpanStyle(color = packageColor)) {

@@ -20,16 +20,15 @@ package com.endiq.turtlelauncher.ui.screens.game.elements.log_parser
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * 日志等级识别规则
- * @param identifiers 所有可识别的标识符
- * @param color 文本颜色
- * @param backgroundColor 背景颜色，可不设置
- */
 data class LogLevelRule(
     val identifiers: List<String>,
     val textColor: Color,
-    val backgroundColor: Color? = null
+    val backgroundColor: Color? = null,
+    /**
+     * Pastel tint applied as the background of the whole log line carrying this
+     * level token. Null means the line stays unhighlighted (normal logs).
+     */
+    val lineBackgroundColor: Color? = null
 )
 
 val INFO = LogLevelRule(
@@ -39,9 +38,10 @@ val INFO = LogLevelRule(
 )
 
 val ERROR = LogLevelRule(
-    identifiers = listOf("ERROR", "Error"),
-    textColor = Color(0xFF6AAB73),
-    backgroundColor = null
+    identifiers = listOf("ERROR", "Error", "FATAL", "Fatal"),
+    textColor = Color(0xFF7B241C),
+    backgroundColor = Color(0xFFF1948A),
+    lineBackgroundColor = Color(0x4DF1948A)
 )
 
 val DEBUG = LogLevelRule(
@@ -51,7 +51,8 @@ val DEBUG = LogLevelRule(
 )
 
 val WARN = LogLevelRule(
-    identifiers = listOf("WARN", "Warn"),
-    textColor = Color.White,
-    backgroundColor = Color(0xFF656E76)
+    identifiers = listOf("WARN", "Warn", "WARNING", "Warning"),
+    textColor = Color(0xFF7D6608),
+    backgroundColor = Color(0xFFF7DC6F),
+    lineBackgroundColor = Color(0x40F7DC6F)
 )

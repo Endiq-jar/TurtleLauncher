@@ -88,15 +88,15 @@ import com.endiq.turtlelauncher.viewmodel.GamepadViewModel
 private data class IconTab(val iconRes: Int, val iconSize: Dp = 18.dp)
 
 private val controlTabs = listOf(
-    //概览
+    //Overview
     IconTab(R.drawable.ic_dashboard_filled),
-    //虚拟鼠标设置
+    //Virtual mouse settings
     IconTab(R.drawable.ic_mouse_filled, iconSize = 16.dp),
-    //手柄设置
+    //Gamepad settings
     IconTab(R.drawable.ic_sports_esports_filled),
-    //手势控制设置
+    //Gesture control settings
     IconTab(R.drawable.ic_touch_app_filled),
-    //陀螺仪设置
+    //Gyroscope settings
     IconTab(R.drawable.ic_mobile_rotate_filled)
 )
 
@@ -129,7 +129,7 @@ fun GameMenuSubscreen(
             }
 
             Column {
-                //顶贴标签栏
+                //Top tab bar
                 SecondaryScrollableTabRow(
                     selectedTabIndex = controlMenuTabIndex,
                     edgePadding = 0.dp,
@@ -223,7 +223,7 @@ private fun GameActionContent(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //强制关闭
+        //Force close
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -233,7 +233,7 @@ private fun GameActionContent(
                 contentColor = contentColor,
             )
         }
-        //日志输出
+        //Log output
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -244,13 +244,13 @@ private fun GameActionContent(
             )
         }
 
-        //如果开启多人联机，则展示这个按钮
+        //Show this button when multiplayer is enabled
         if (enableTerracotta) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            //打开联机菜单
+            //Open the multiplayer menu
             item {
                 MenuTextButton(
                     modifier = Modifier.fillMaxWidth(),
@@ -266,7 +266,7 @@ private fun GameActionContent(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //开启菜单悬浮窗
+        //Enable the menu floating window
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -285,7 +285,7 @@ private fun GameActionContent(
                 contentColor = contentColor,
             )
         }
-        //菜单悬浮窗不透明度
+        //Menu floating window opacity
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -304,7 +304,7 @@ private fun GameActionContent(
                 enabled = AllSettings.showMenuBall.state
             )
         }
-        //帧率显示
+        //Frame rate display
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -316,7 +316,7 @@ private fun GameActionContent(
                 enabled = AllSettings.showMenuBall.state
             )
         }
-        //内存显示
+        //Memory display
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -329,12 +329,12 @@ private fun GameActionContent(
             )
         }
 
-        // 分辨率规则与游戏窗口分辨率
+        // Resolution rule and game window resolution
         item {
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // 分辨率规则
+                // Resolution rule
                 MenuListLayout(
                     modifier = Modifier.fillMaxWidth(),
                     title = stringResource(R.string.settings_renderer_resolution_rule_title),
@@ -342,7 +342,7 @@ private fun GameActionContent(
                     currentItem = AllSettings.resolutionRule.state,
                     onItemChange = { rule ->
                         AllSettings.resolutionRule.save(rule)
-                        // 自定义分辨率尚未初始化时，以屏幕真实宽高填充
+                        // When the custom resolution is not initialized yet, fill it with the real screen size
                         if (rule == ResolutionRule.CUSTOM) {
                             ensureCustomResolutionInitialized(context)
                         }
@@ -353,7 +353,7 @@ private fun GameActionContent(
                     contentColor = contentColor,
                 )
 
-                // 百分比分辨率
+                // Percentage resolution
                 AnimatedVisibility(
                     visible = AllSettings.resolutionRule.state == ResolutionRule.PERCENTAGE,
                     enter = fadeIn(animationSpec = getAnimateTween()) +
@@ -385,7 +385,7 @@ private fun GameActionContent(
                     }
                 }
 
-                // 自定义分辨率
+                // Custom resolution
                 AnimatedVisibility(
                     visible = AllSettings.resolutionRule.state == ResolutionRule.CUSTOM,
                     enter = fadeIn(animationSpec = getAnimateTween()) +
@@ -407,7 +407,7 @@ private fun GameActionContent(
 }
 
 /**
- * 自定义分辨率的宽高输入卡片
+ * Width/height input card for the custom resolution
  */
 @Composable
 private fun CustomResolutionContent(
@@ -481,7 +481,7 @@ private fun ControlOverview(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //切换输入法
+        //Switch input method
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -494,7 +494,7 @@ private fun ControlOverview(
                 contentColor = contentColor,
             )
         }
-        //自动唤起输入法（SDL）
+        //Automatically show the input method (SDL)
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -511,7 +511,7 @@ private fun ControlOverview(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //发送键值
+        //Send keycode
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -524,7 +524,7 @@ private fun ControlOverview(
                 contentColor = contentColor,
             )
         }
-        //更换控制布局
+        //Switch control layout
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -537,7 +537,7 @@ private fun ControlOverview(
                 contentColor = contentColor,
             )
         }
-        //编辑布局
+        //Edit layout
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),

@@ -21,7 +21,7 @@ package com.endiq.turtlelauncher.game.download.engine
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-/** 一份批量下载的只读进度快照，供 UI 层消费 */
+/** Read-only progress snapshot of a download batch, consumed by the UI layer */
 data class BatchProgress(
     val downloadedBytes: Long,
     val totalBytes: Long,
@@ -31,11 +31,11 @@ data class BatchProgress(
 )
 
 /**
- * 跨线程的字节/文件计数器，内嵌"逐秒分块"测速：
- * 每个报表值就是刚刚完整过去的一秒里真实落盘的字节数，每秒更新一次，
- * 不做任何跨窗口平滑或外推——报出来的数字永远有对应的实际流量。
- * 热路径只有原子加法。
- * 文件/字节维度全部使用原子量，最多与并发连接数同量级的线程同时完成也不会丢计数。
+ * Cross-thread byte/file counter with embedded per-second block speed sampling:
+ * each reported value is the real number of bytes written to disk during the last complete second, updated once per second,
+ * with no cross-window smoothing or extrapolation; reported numbers always correspond to actual traffic.
+ * The hot path is a single atomic addition.
+ * All file/byte counters are atomic, so no counts are lost even when as many threads as concurrent connections finish at once.
  */
 class DownloadStats {
     private val downloaded = AtomicLong(0L)
@@ -66,7 +66,7 @@ class DownloadStats {
     }
 
     /**
-     * 把"本地已复用文件"的字节并入已下载量
+     * Fold the bytes of locally reused files into the downloaded amount
      */
     fun resetSpeedBaseline() {
         synchronized(this) {
@@ -78,7 +78,7 @@ class DownloadStats {
     val downloadedBytes: Long get() = downloaded.get()
 
     /**
-     * 返回上一个完整采样秒的真实平均吞吐
+     * Returns the real average throughput of the last complete sampling second
      */
     fun refreshSpeed(): Long {
         val now = System.nanoTime()
@@ -95,7 +95,7 @@ class DownloadStats {
         }
     }
 
-    /** 先刷新测速再产出快照，调用方无需单独触发采样 */
+    /** Refreshes speed sampling before producing a snapshot, so callers need no separate sampling trigger */
     fun snapshotProgress(): BatchProgress = BatchProgress(
         downloadedBytes = downloaded.get(),
         totalBytes = expectedTotalBytes,
@@ -110,7 +110,7 @@ class DownloadStats {
     private var currentSpeed: Long = 0L
 
     companion object {
-        /** 速率采样周期 */
+        /** Speed sampling period */
         private const val SAMPLE_INTERVAL_NANOS = 1_000_000_000L
         private const val NANOS_PER_SEC = 1_000_000_000L
     }

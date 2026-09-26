@@ -21,19 +21,19 @@ package com.endiq.turtlelauncher.ui.control.event
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 处理启动器按键事件标识
+ * Handles the launcher key event identifiers
  */
-@Deprecated("怀疑 KeyEventHandler 会导致按键事件混乱，导致游戏乱操作，暂时移除 #894")
+@Deprecated("Suspected of scrambling key events and causing erratic in-game input; temporarily removed, see #894")
 class KeyEventHandler(
     private val handle: (key: String, pressed: Boolean) -> Unit
 ) {
     /**
-     * 当前按键总共按住的数量（也许有同一个按键同时按下的情况）
+     * Total number of keys currently held down (the same key may be pressed multiple times simultaneously)
      */
     private val keyEvents = ConcurrentHashMap<String, Int>()
 
     /**
-     * 按下按键
+     * Key pressed
      */
     fun pressKey(key: String) {
         var shouldPress = false

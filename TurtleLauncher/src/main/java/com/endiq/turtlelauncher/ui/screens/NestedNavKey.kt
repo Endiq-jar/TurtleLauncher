@@ -27,28 +27,28 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 /**
- * 嵌套NavDisplay的屏幕
+ * Screens that nest a NavDisplay
  */
 sealed interface NestedNavKey {
-    /** 启动屏幕 */
+    /** Splash screen */
     @Serializable class Splash : BackStackNavKey<TitledNavKey>() {
         init {
             backStack.addIfEmpty(NormalNavKey.UnpackDeps)
         }
     }
-    /** 主屏幕 */
+    /** Main screen */
     @Serializable class Main : BackStackNavKey<TitledNavKey>() {
         init {
             backStack.addIfEmpty(NormalNavKey.LauncherMain)
         }
     }
-    /** 设置屏幕 */
+    /** Settings screen */
     @Serializable class Settings : BackStackNavKey<TitledNavKey>(androidText(R.string.generic_setting)) {
         init {
             backStack.addIfEmpty(NormalNavKey.Settings.Renderer)
         }
     }
-    /** 版本详细设置屏幕 */
+    /** Version detailed settings screen */
     @Serializable
     class VersionSettings(@Contextual val version: Version) : BackStackNavKey<TitledNavKey>(
         androidText(R.string.page_title_version_manage)
@@ -57,7 +57,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.Versions.OverView)
         }
     }
-    /** 导出整合包屏幕 */
+    /** Export modpack screen */
     @Serializable
     class VersionExport(@Contextual val version: Version) : BackStackNavKey<TitledNavKey>(
         androidText(R.string.versions_export)
@@ -66,13 +66,13 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.VersionExports.SelectType)
         }
     }
-    /** 下载屏幕 */
+    /** Download screen */
     @Serializable class Download : BackStackNavKey<TitledNavKey>(
         androidText(R.string.generic_download)
     )
 
-    //下载嵌套子屏幕
-    /** 下载游戏屏幕 */
+    //Nested sub-screens of the download screen
+    /** Download game screen */
     @Serializable class DownloadGame : BackStackNavKey<TitledNavKey>(
         androidText(R.string.download_category_game)
     ) {
@@ -80,7 +80,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.DownloadGame.SelectGameVersion)
         }
     }
-    /** 下载整合包屏幕 */
+    /** Download modpack screen */
     @Serializable class DownloadModPack : BackStackNavKey<TitledNavKey>(
         androidText(R.string.download_category_modpack)
     ) {
@@ -88,7 +88,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.SearchModPack)
         }
     }
-    /** 下载模组屏幕 */
+    /** Download mods screen */
     @Serializable class DownloadMod : BackStackNavKey<TitledNavKey>(
         androidText(R.string.download_category_mod)
     ) {
@@ -96,7 +96,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.SearchMod)
         }
     }
-    /** 下载资源包屏幕 */
+    /** Download resource packs screen */
     @Serializable class DownloadResourcePack : BackStackNavKey<TitledNavKey>(
         androidText(R.string.download_category_resource_pack)
     ) {
@@ -104,7 +104,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.SearchResourcePack)
         }
     }
-    /** 下载存档屏幕 */
+    /** Download saves screen */
     @Serializable class DownloadSaves : BackStackNavKey<TitledNavKey>(
         androidText(R.string.download_category_saves)
     ) {
@@ -112,7 +112,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.SearchSaves)
         }
     }
-    /** 下载光影包屏幕 */
+    /** Download shaders screen */
     @Serializable class DownloadShaders : BackStackNavKey<TitledNavKey>(
         androidText(R.string.download_category_shaders)
     ) {
@@ -120,7 +120,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.SearchShaders)
         }
     }
-    /** 下载收藏屏幕 */
+    /** Download favorites screen */
     @Serializable class DownloadFavorites : BackStackNavKey<TitledNavKey>(
         androidText(R.string.download_category_favorites)
     ) {
@@ -128,7 +128,7 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.Favorites)
         }
     }
-    /** 查看Addons资源信息屏幕 */
+    /** Screen for viewing Addons asset info */
     @Serializable
     class AssetInfo(
         val platform: Platform,

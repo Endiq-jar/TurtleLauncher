@@ -77,16 +77,16 @@ import java.io.File
 private const val TAG = "GameInstaller"
 
 /**
- * 在安装游戏前发现存在冲突的已安装版本，抛出这个异常
+ * Thrown when a conflicting installed version is found before installing a game
  */
 private class GameAlreadyInstalledException : RuntimeException()
 
 /**
- * 游戏安装器
- * @param context 用于获取任务描述信息
- * @param info 安装游戏所需要的信息，包括 Minecraft id、自定义版本名称、Addon 列表
- * @param scope 在有生命周期管理的scope中执行安装任务
- * @param logOutputHolder 安装 JVM 日志输出的容器
+ * Game installer
+ * @param context used to obtain task description information
+ * @param info information required to install the game, including the Minecraft id, custom version name, and Addon list
+ * @param scope runs the installation task in a lifecycle-managed scope
+ * @param logOutputHolder container for the installation JVM log output
  */
 class GameInstaller(
     private val context: Context,
@@ -99,17 +99,17 @@ class GameInstaller(
     val tasksFlow: StateFlow<List<TitledTask>> = taskExecutor.tasksFlow
 
     /**
-     * 安装 JVM 实时日志输出，仅在执行前台安装任务期间存在
+     * Real-time installation JVM log output; only exists while a foreground installation task runs
      */
     val logOutput: StateFlow<TaskLogOutput?> = logOutputHolder.asStateFlow()
 
     /**
-     * 基础下载器
+     * Base downloader
      */
     private val downloader = BaseMinecraftDownloader(targetGameFolder.absolutePath)
 
     /**
-     * 目标游戏客户端目录（缓存）
+     * Target game client directory (cache)
      * versions/<client-name>/...
      */
     private var targetClientDir: File? = null
@@ -117,11 +117,11 @@ class GameInstaller(
     private val overrideClientJson: File get() = File(PathManager.DIR_CACHE, "override_${info.customVersionName}_json")
 
     /**
-     * 安装 Minecraft 游戏
-     * @param isRunning 正在运行中，阻止此次安装时
-     * @param onInstalled 游戏已完成安装
-     * @param onError 游戏安装失败
-     * @param onGameAlreadyInstalled 在安装游戏前发现存在冲突的已安装版本
+     * Installs the Minecraft game
+     * @param isRunning called when already running, blocking this installation
+     * @param onInstalled the game has been installed
+     * @param onError the game installation failed
+     * @param onGameAlreadyInstalled a conflicting installed version was found before installing the game
      */
     fun installGame(
         isRunning: () -> Unit = {},
@@ -130,7 +130,7 @@ class GameInstaller(
         onGameAlreadyInstalled: () -> Unit
     ) {
         if (taskExecutor.isRunning()) {
-            //正在安装中，阻止这次安装请求
+            //An installation is already running, blocking this request
             isRunning()
             return
         }
@@ -161,10 +161,10 @@ class GameInstaller(
     }
 
     /**
-     * 更新加载器
-     * @param isRunning 正在运行中，阻止此次安装时
-     * @param onInstalled 加载器已完成安装
-     * @param onError 加载器安装失败
+     * Updates the loaders
+     * @param isRunning called when already running, blocking this installation
+     * @param onInstalled the loaders have been installed
+     * @param onError the loader installation failed
      */
     fun updateLoader(
         isRunning: () -> Unit = {},
@@ -172,7 +172,7 @@ class GameInstaller(
         onError: (th: Throwable) -> Unit
     ) {
         if (taskExecutor.isRunning()) {
-            //正在安装中，阻止这次安装请求
+            //An installation is already running, blocking this request
             isRunning()
             return
         }
@@ -198,7 +198,7 @@ class GameInstaller(
     }
 
     /**
-     * 安装过程中所需的所有文件路径配置
+     * All file path configurations required during installation
      */
     private class InstallationPathConfig(
         val targetClientDir: File,
@@ -217,22 +217,22 @@ class GameInstaller(
     )
 
     /**
-     * 构建安装过程中使用的所有路径配置
+     * Builds all path configurations used during installation
      */
     private fun createPathConfig(checkTargetVersion: Boolean): InstallationPathConfig {
-        //目标版本目录
+        //Target version directory
         val targetClientDir1 = File(getVersionsHome(targetGameFolder.absolutePath), info.customVersionName)
         targetClientDir = targetClientDir1
         val targetVersionJson = File(targetClientDir1, "${info.customVersionName}.json")
         val targetVersionJar = File(targetClientDir1, "${info.customVersionName}.jar")
 
-        //目标版本已经安装的情况，非覆盖模式将退出
+        //If the target version is already installed, exit unless overwrite mode is on
         if (!info.overwrite && checkTargetVersion && targetVersionJson.exists()) {
             Logger.debug(TAG, "The game has already been installed!")
             throw GameAlreadyInstalledException()
         }
 
-        //如果是覆盖安装，将清除目标版本Json和Jar
+        //In overwrite mode, the target version Json and Jar are cleared first
         if (info.overwrite) {
             runCatching {
                 targetVersionJson.takeIf { it.exists() }?.let {
@@ -288,8 +288,8 @@ class GameInstaller(
     }
 
     /**
-     * 获取安装 Minecraft 游戏的任务流阶段
-     * @param onInstalled 游戏已完成安装
+     * 获取Installs the Minecraft game的任务流阶段
+     * @param onInstalled the game has been installed
      */
     suspend fun getTaskPhase(
         createIsolation: Boolean = true,

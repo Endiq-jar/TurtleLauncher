@@ -22,6 +22,7 @@ import com.endiq.turtlelauncher.game.renderer.renderers.FreedrenoRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.GL4ESRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.KopperZinkRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.NGGL4ESRenderer
+import com.endiq.turtlelauncher.game.renderer.renderers.NWRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.PanfrostRenderer
 import com.endiq.turtlelauncher.game.renderer.renderers.VirGLRenderer
 import com.endiq.turtlelauncher.utils.logging.Logger
@@ -29,7 +30,7 @@ import com.endiq.turtlelauncher.utils.logging.Logger
 private const val TAG = "Renderers"
 
 /**
- * 启动器所有渲染器总管理者，启动器内置的渲染器与渲染器插件加载的渲染器，都会加载到这里
+ * Central manager of all launchers renderers: both built-in renderers and those loaded via renderer plugins end up here
  */
 object Renderers {
     private val renderers: MutableList<RendererInterface> = mutableListOf()
@@ -50,6 +51,7 @@ object Renderers {
         addRenderers(
             NGGL4ESRenderer,
             GL4ESRenderer,
+            NWRenderer,
             KopperZinkRenderer,
             VirGLRenderer,
             FreedrenoRenderer,
@@ -58,12 +60,12 @@ object Renderers {
     }
 
     /**
-     * 获取当前的渲染器列表
+     * Returns the current renderer list
      */
     fun getRenderers(): List<RendererInterface> = renderers
 
     /**
-     * 加入一些渲染器
+     * Registers several renderers
      */
     fun addRenderers(vararg renderers: RendererInterface) {
         renderers.forEach { renderer ->
@@ -72,7 +74,7 @@ object Renderers {
     }
 
     /**
-     * 加入单个渲染器
+     * Registers a single renderer
      */
     fun addRenderer(renderer: RendererInterface): Boolean {
         return if (renderers.any { it.getUniqueIdentifier() == renderer.getUniqueIdentifier() }) {
@@ -87,9 +89,9 @@ object Renderers {
     }
 
     /**
-     * 设置当前的渲染器
-     * @param uniqueIdentifier 渲染器的唯一标识符，用于找到当前想要设置的渲染器
-     * @param retryToFirstOnFailure 如果未找到匹配的渲染器，是否跳回渲染器列表的首个渲染器
+     * Sets the current renderer
+     * @param uniqueIdentifier the unique identifier of the renderer, used to find the one to set
+     * @param retryToFirstOnFailure whether to fall back to the first renderer in the list when no match is found
      */
     fun setCurrentRenderer(uniqueIdentifier: String, retryToFirstOnFailure: Boolean = true) {
         if (!isInitialized) throw IllegalStateException("Uninitialized renderer!")
@@ -103,7 +105,7 @@ object Renderers {
     }
 
     /**
-     * 获取当前的渲染器
+     * Returns the current renderer
      */
     fun getCurrentRenderer(): RendererInterface {
         if (!isInitialized) throw IllegalStateException("Uninitialized renderer!")
@@ -111,7 +113,7 @@ object Renderers {
     }
 
     /**
-     * 当前是否设置了渲染器
+     * Whether a renderer is currently set
      */
     fun isCurrentRendererValid(): Boolean = isInitialized && currentRenderer != null
 }

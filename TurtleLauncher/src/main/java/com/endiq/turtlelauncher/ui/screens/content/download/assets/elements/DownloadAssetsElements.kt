@@ -103,14 +103,14 @@ sealed interface DownloadAssetsState<T> {
 
 sealed interface DownloadAssetsVersionLoading {
     data object None: DownloadAssetsVersionLoading
-    /** 开始加载分页数据 */
+    /** Starts loading paged data */
     data object StartLoadPage: DownloadAssetsVersionLoading
-    /** 加载分页数据 */
+    /** Loads paged data */
     data class LoadingPage(val chunk: Int, val page: Int): DownloadAssetsVersionLoading
 }
 
 /**
- * 版本、模组加载器 版本信息分组
+ * Grouping of version / mod-loader version information
  */
 class VersionInfoMap(
     val gameVersion: String,
@@ -129,13 +129,13 @@ suspend fun <E: PlatformVersion> List<E>.initAllGeneric(
             also(it)
         }
     }.sortedByDescending {
-        //排序：最新的版本在前
+        //Sort: newest versions first
         it.platformDatePublished()
     }
 }
 
 /**
- * 初始化全部版本数据，并筛选出成功初始化的所有版本
+ * Initializes all version data and filters out the versions that initialized successfully
  */
 suspend fun List<PlatformVersion>.initAll(
     currentProjectId: String,
@@ -164,7 +164,7 @@ fun List<PlatformVersion>.mapWithVersions(classes: PlatformClasses): List<Versio
             loader = key.second,
             versions = versions,
             isAdapt = when (classes) {
-                PlatformClasses.MOD_PACK -> false //整合包将作为单独的版本下载，不再需要与现有版本进行匹配
+                PlatformClasses.MOD_PACK -> false //modpacks are downloaded as standalone versions, no longer matched against existing versions
                 else -> isVersionAdapt(currentVersion, key.first, key.second)
             }
         )
@@ -173,7 +173,7 @@ fun List<PlatformVersion>.mapWithVersions(classes: PlatformClasses): List<Versio
 
 private fun List<VersionInfoMap>.sortedByVersionAndLoader(): List<VersionInfoMap> {
     return sortedWith { a, b ->
-        // 比较版本号
+        // Compare version numbers
         val versionCompare = -GameVersionNumber.compare(a.gameVersion, b.gameVersion)
         if (versionCompare != 0) {
             versionCompare
@@ -189,7 +189,7 @@ private fun List<VersionInfoMap>.sortedByVersionAndLoader(): List<VersionInfoMap
 }
 
 /**
- * 当前资源版本是否与当前选择的游戏版本匹配
+ * Whether the current asset version matches the currently selected game version
  */
 private fun isVersionAdapt(
     currentVersion: Version?,
@@ -197,16 +197,16 @@ private fun isVersionAdapt(
     loader: PlatformDisplayLabel?
 ): Boolean {
     return if (currentVersion == null) {
-        false //没安装版本，无法判断
+        false //no version installed, cannot determine
     } else {
         if (currentVersion.getVersionInfo()?.minecraftVersion != gameVersion) {
-            false //游戏版本不匹配
+            false //game version mismatch
         } else {
-            //判断模组加载器匹配情况
+            //Check mod-loader compatibility
             val loaderInfo = currentVersion.getVersionInfo()?.loaderInfo
             when {
-                loader == null -> true //资源没有模组加载器信息，直接判定适配
-                loaderInfo == null -> false //资源有模组加载器，但当前版本没有模组加载器信息，不适配
+                loader == null -> true //asset carries no loader info, treat as compatible
+                loaderInfo == null -> false //asset requires a loader, but the current version has no loader info: incompatible
                 else -> loaderInfo.loader.displayName.equals(loader.getDisplayName(), true)
             }
         }
@@ -214,9 +214,9 @@ private fun isVersionAdapt(
 }
 
 /**
- * 资源版本分组可折叠列表
- * @param defaultExpanded 是否默认展开，默认为是否适配当前版本
- * @param installedChecker 查询版本本地是否已安装，null 则不进行已安装标注
+ * Collapsible list of asset version groups
+ * @param defaultExpanded whether expanded by default; defaults to whether it matches the current version
+ * @param installedChecker checks whether a version is installed locally; null disables the installed marker
  */
 @Composable
 fun AssetsVersionItemLayout(
@@ -380,7 +380,7 @@ private fun AssetsVersionListItem(
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        //直观的版本状态
+        //Visual version status
         val releaseType = remember { version.platformReleaseType() }
         val displayName = remember { version.platformDisplayName() }
         val downloadCount = remember { version.platformDownloadCount() }
@@ -401,7 +401,7 @@ private fun AssetsVersionListItem(
             )
         }
 
-        //版本简要信息
+        //Brief version info
         Column(
             modifier = Modifier.padding(all = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -417,7 +417,7 @@ private fun AssetsVersionListItem(
                 modifier = Modifier.alpha(0.7f),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                //下载量
+                //Download count
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -432,7 +432,7 @@ private fun AssetsVersionListItem(
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
-                //更新时间
+                //Update time
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -450,7 +450,7 @@ private fun AssetsVersionListItem(
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
-                //版本状态
+                //Version status
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -471,7 +471,7 @@ private fun AssetsVersionListItem(
 }
 
 /**
- * 项目相关链接UI
+ * Project related links UI
  */
 @Composable
 fun ProjectUrlsContent(
@@ -528,13 +528,13 @@ fun ProjectUrlsContent(
             onClick = { openLink(url) },
             iconSize = 18.dp,
             painter = painterResource(R.drawable.ic_link),
-            text = "MC 百科" //品牌名不需要翻译，硬编码
+            text = "MC Wiki" //link to the mcmod.cn encyclopedia
         )
     }
 }
 
 /**
- * 屏幕截图与描述UI
+ * Screenshots and description UI
  */
 @Composable
 fun ScreenshotItemLayout(
@@ -592,10 +592,10 @@ fun ScreenshotItemLayout(
             }
         }
 
-        //标题与简介部分
+        //Title and summary section
         if (screenshot.title != null && screenshot.title == screenshot.description) {
-            //标题与简介内容相同，则不需要两个都显示
-            //会有作者喜欢把标题与简介设置成一样的内容
+            //If title and summary hold the same content, there is no need to show both
+            //Some authors set the title and summary to the same content
             Text(
                 text = screenshot.title,
                 style = MaterialTheme.typography.labelLarge,

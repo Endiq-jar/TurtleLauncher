@@ -27,8 +27,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * 计数守恒回归：此前 markFileFinished/registerFile 对 volatile 字段做非原子自增，
- * 64 并发完成时会丢更新（2000 全部成功只计到 1992，触发"完成数守恒告警"）。
+ * Count conservation regression: markFileFinished/registerFile used to do non-atomic increments on volatile fields,
+ * so 64 concurrent completions lost updates (2000 successes counted as 1992, triggering the "finished-count conservation" alert).
  */
 class DownloadStatsTest {
 
@@ -60,7 +60,7 @@ class DownloadStatsTest {
         stats.registerFile(1_000L)
         stats.markFileFinished()
 
-        //复用文件的字节一次性并入进度，随后重置测速基线
+        //Reused-file bytes are folded into progress at once, then the speed baseline is reset
         stats.addBytes(1_000L)
         stats.resetSpeedBaseline()
 

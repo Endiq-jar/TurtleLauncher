@@ -52,12 +52,12 @@ import kotlin.math.min
 import kotlin.text.forEach
 
 /**
- * 一个用于处理 UI 元素文本输入的可组合修饰符
+ * A composable modifier for handling text input on UI elements
  *
- * @param mode 控制文本输入启用或禁用的 [TextInputMode]
- * @param sender 用于将字符发送到游戏的 [CharacterSenderStrategy]
+ * @param mode the [TextInputMode] that enables or disables text input
+ * @param sender the [CharacterSenderStrategy] used to send characters to the game
  */
-@Deprecated("因兼容性问题，现已改用输入栏UI代理输入法输入，此处代码已不再使用，仅作参考")
+@Deprecated("Deprecated for compatibility reasons; input now goes through the input-bar UI proxying the IME. This code is no longer used and is kept for reference only")
 @Composable
 fun Modifier.textInputHandler(
     mode: TextInputMode,
@@ -89,13 +89,13 @@ private data class TextInputModifier(
 }
 
 /**
- * 使用 Android 的输入法引擎（IME）来捕获文本输入
+ * Captures text input using the Android Input Method Engine (IME)
  *
- * 该类作为 Compose UI 框架与底层 Android 文本输入系统之间的桥梁
- * 它建立文本输入会话，配置编辑器信息（例如，输入类型、IME 操作），
- * 并提供 [InputConnection] 来处理文本提交、按键事件以及其他 IME 交互
+ * This class bridges the Compose UI framework and the underlying Android text input system
+ * It establishes the text input session, configures editor info (for example input type and IME action),
+ * and provides an [InputConnection] to handle text commits, key events and other IME interactions
  *
- * @param sender 用于发送处理后字符的 [CharacterSenderStrategy]
+ * @param sender the [CharacterSenderStrategy] used to send the processed characters
  */
 private class TextInputNode(
     private var sender: CharacterSenderStrategy,
@@ -139,9 +139,9 @@ private class TextInputNode(
                                     InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
                                     InputType.TYPE_TEXT_VARIATION_NORMAL
                             info.imeOptions = EditorInfo.IME_ACTION_DONE or
-                                    //尽量不要进入全屏模式
+                                    //Try not to enter fullscreen mode
                                     EditorInfo.IME_FLAG_NO_FULLSCREEN or
-                                    //尽量不要显示额外的辅助UI
+                                    //Try not to show extra auxiliary UI
                                     EditorInfo.IME_FLAG_NO_EXTRACT_UI
 
                             info.packageName = view.context.packageName
@@ -165,7 +165,7 @@ private class TextInputNode(
     }
 
     /**
-     * 更新 [sender] 和 [textInputMode] 的值，并重新启动
+     * Updates the [sender] and [textInputMode] values and restarts
      */
     fun update(
         sender: CharacterSenderStrategy,
@@ -178,7 +178,7 @@ private class TextInputNode(
             this.textInputMode = textInputMode
             stopInput()
             if (textInputMode == TextInputMode.ENABLE) {
-                onAttach() //重新启动
+                onAttach() //restart
             }
         } else {
             this.textInputMode = textInputMode
@@ -186,11 +186,11 @@ private class TextInputNode(
     }
 
     /**
-     * 处理来自 IME 的文本输入和按键事件
-     * 它将收到的字符和关键操作转换为通过提供的 [CharacterSenderStrategy] 发送的相应操作
+     * Handles text input and key events coming from the IME
+     * It converts the received characters and key operations into the corresponding actions sent through the provided [CharacterSenderStrategy]
      *
-     * 该类重写 [InputConnection] 中的各种方法来处理文本提交、按键事件、撰写文本等
-     * 大多数未实现的方法都返回默认值或执行无操作操作，因为它们对于此特定用例而言不是必需的
+     * This class overrides various [InputConnection] methods to handle text commits, key events, composing text, etc.
+     * Most unimplemented methods return default values or no-op, because they are not required for this particular use case
      */
     private inner class InputConnectionImpl(
         private val view: View,
@@ -212,19 +212,19 @@ private class TextInputNode(
                     inputMethodIdentifier.contains("swiftkey")
 
         /**
-         * 向游戏发送文本输入
+         * Sends text input to the game
          */
         private fun sendText(text: String) {
             text.forEach { char -> sender.sendChar(char) }
             if (isMicrosoftSwiftKey) {
-                //发送文本之后，针对 Microsoft SwiftKey，应该完全清除缓冲区
+                //After sending text, the buffer should be fully cleared for Microsoft SwiftKey
                 cursorPosition = 0
                 textBuffer.clear()
             }
         }
 
         /**
-         * 批量编辑结束时，发送待处理的文本
+         * Sends the pending text when the batch edit finishes
          */
         private fun flushPendingText() {
             repeat(pendingBackspaceCount) { sender.sendBackspace() }
@@ -238,7 +238,7 @@ private class TextInputNode(
 
         override fun commitText(text: CharSequence, newCursorPosition: Int): Boolean {
             var composingLength = 0
-            //如果当前有组合文本，先删除组合区
+            //If composing text currently exists, delete the composing region first
             if (composingStart in 0..<composingEnd) {
                 val safeStart = composingStart.coerceIn(0, textBuffer.length)
                 val safeEnd = composingEnd.coerceIn(0, textBuffer.length)
@@ -251,7 +251,7 @@ private class TextInputNode(
                 composingEnd = -1
             }
 
-            //插入提交的文本
+            //Insert the committed text
             textBuffer.insert(cursorPosition, text)
             cursorPosition += text.length
 
@@ -339,7 +339,7 @@ private class TextInputNode(
         override fun getSelectedText(p0: Int): CharSequence? = null
 
         override fun setComposingText(text: CharSequence, newCursorPosition: Int): Boolean {
-            //删除当前组合区
+            //Delete the current composing region
             if (composingStart in 0..<composingEnd) {
                 val safeStart = composingStart.coerceIn(0, textBuffer.length)
                 val safeEnd = composingEnd.coerceIn(0, textBuffer.length)
@@ -348,14 +348,14 @@ private class TextInputNode(
                     cursorPosition = safeStart
                 }
             } else {
-                //如果没有明确的组合区，但输入法重新开始组合，删除可能的末尾重复
+                //If there is no explicit composing region but the IME restarts composing, delete a possible trailing duplicate
                 if (cursorPosition < textBuffer.length) {
                     textBuffer.delete(cursorPosition, textBuffer.length)
                 }
                 composingStart = cursorPosition
             }
 
-            //插入新的组合文本
+            //Insert the new composing text
             textBuffer.insert(cursorPosition, text)
             composingStart = cursorPosition
             composingEnd = composingStart + text.length
@@ -367,7 +367,7 @@ private class TextInputNode(
 
         override fun finishComposingText(): Boolean {
             if (composingStart in 0..<composingEnd) {
-                //提交组合文本
+                //Commit the composing text
                 val safeStart = composingStart.coerceIn(0, textBuffer.length)
                 val safeEnd = composingEnd.coerceIn(0, textBuffer.length)
                 if (safeStart < safeEnd) {
@@ -393,7 +393,7 @@ private class TextInputNode(
 
         override fun setSelection(start: Int, end: Int): Boolean {
             if (start in 0..textBuffer.length && end in 0..textBuffer.length) {
-                cursorPosition = end //只关心光标位置
+                cursorPosition = end //only the cursor position matters here
                 updateInputMethodState()
                 return true
             }
@@ -433,7 +433,7 @@ private class TextInputNode(
         override fun beginBatchEdit(): Boolean {
             if (!isMicrosoftSwiftKey) {
                 inBatchEdit = true
-                //重置待处理状态
+                //Reset the pending state
                 pendingBackspaceCount = 0
                 pendingTextToSend.clear()
             }
@@ -443,7 +443,7 @@ private class TextInputNode(
         override fun endBatchEdit(): Boolean {
             if (!isMicrosoftSwiftKey) {
                 inBatchEdit = false
-                //批量编辑结束，发送积累的操作
+                //Batch edit finished; send the accumulated operations
                 flushPendingText()
             }
             return true
@@ -456,7 +456,7 @@ private class TextInputNode(
         override fun commitCorrection(p0: CorrectionInfo?): Boolean = false
 
         override fun performEditorAction(editorAction: Int): Boolean {
-            //用户点击了编辑器的操作按钮（可以视为用户按下回车）
+            //The user tapped the editor's action button (treated as pressing Enter)
             sender.sendEnter()
             onCloseInputMethod()
             return true
@@ -494,7 +494,7 @@ private class TextInputNode(
                 view,
                 CursorAnchorInfo.Builder().apply {
                     setSelectionRange(cursorPosition, cursorPosition)
-                    //设置组合文本范围
+                    //Set the composing text range
                     if (composingStart in 0..<composingEnd) {
                         val safeStart = composingStart.coerceIn(0, textBuffer.length)
                         val safeEnd = composingEnd.coerceIn(0, textBuffer.length)

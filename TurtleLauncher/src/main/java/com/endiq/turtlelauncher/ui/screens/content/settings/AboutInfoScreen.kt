@@ -65,7 +65,7 @@ import com.endiq.turtlelauncher.library.libraryData
 import com.endiq.turtlelauncher.path.URL_COMMUNITY
 import com.endiq.turtlelauncher.path.URL_MCMOD
 import com.endiq.turtlelauncher.path.URL_PROJECT
-import com.endiq.turtlelauncher.path.URL_SUPPORT
+import com.endiq.turtlelauncher.path.URL_DISCORD
 import com.endiq.turtlelauncher.path.URL_WEBLATE
 import com.endiq.turtlelauncher.ui.base.BaseScreen
 import com.endiq.turtlelauncher.ui.components.AnimatedLazyColumn
@@ -126,9 +126,9 @@ fun AboutInfoScreen(
                             text = stringResource(R.string.about_launcher_author_endiq_text, BuildKeys.LAUNCHER_NAME),
                             button = {
                                 Button(
-                                    onClick = { openLink(URL_SUPPORT) }
+                                    onClick = { openLink(URL_DISCORD) }
                                 ) {
-                                    Text(text = stringResource(R.string.about_sponsor))
+                                    Text(text = stringResource(R.string.about_discord))
                                 }
                             }
                         )
@@ -146,13 +146,8 @@ fun AboutInfoScreen(
                             icon = painterResource(R.drawable.img_avatar_bangbang93),
                             title = "bangbang93",
                             text = stringResource(R.string.about_acknowledgements_bangbang93_text, BuildKeys.LAUNCHER_SHORT_NAME),
-                            button = {
-                                Button(
-                                    onClick = { openLink("https://ifdian.net/a/bangbang93") }
-                                ) {
-                                    Text(text = stringResource(R.string.about_sponsor))
-                                }
-                            }
+                            //Temporarily disabled: afdian donation link (rebranding period)
+                            button = {}
                         )
                         LinkIconItem(
                             icon = painterResource(R.drawable.img_launcher_fcl),
@@ -204,6 +199,13 @@ fun AboutInfoScreen(
                             title = stringResource(R.string.about_acknowledgements_github_community),
                             text = stringResource(R.string.about_acknowledgements_github_community_text),
                             openLink = { openLink(URL_COMMUNITY) },
+                            useImage = false
+                        )
+                        LinkIconItem(
+                            icon = painterResource(R.drawable.ic_discord),
+                            title = "Discord",
+                            text = stringResource(R.string.about_acknowledgements_discord_text),
+                            openLink = { openLink(URL_DISCORD) },
                             useImage = false
                         )
                         LinkIconItem(

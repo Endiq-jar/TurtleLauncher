@@ -78,6 +78,8 @@ import com.endiq.turtlelauncher.coroutine.Task
 import com.endiq.turtlelauncher.coroutine.TaskSystem
 import com.endiq.turtlelauncher.game.version.installed.Version
 import com.endiq.turtlelauncher.path.PathManager
+import com.endiq.turtlelauncher.path.URL_DISCORD
+import com.endiq.turtlelauncher.path.URL_PROJECT
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.ui.AndroidStringText
 import com.endiq.turtlelauncher.ui.androidText
@@ -188,6 +190,19 @@ fun MainScreen(
                         screenKey = screenBackStackModel.settingsScreen
                     )
                 },
+                toCursorSettings = {
+                    screenBackStackModel.mainScreen.removeAndNavigateTo(
+                        removes = screenBackStackModel.clearBeforeNavKeys,
+                        screenKey = screenBackStackModel.settingsScreen
+                    )
+                    screenBackStackModel.settingsScreen.navigateTo(
+                        NormalNavKey.Settings.Control,
+                        useClassEquality = true
+                    )
+                },
+                openLink = { link: String ->
+                    eventViewModel.sendEvent(EventViewModel.Event.OpenLink(link))
+                },
                 toDownloadScreen = {
                     screenBackStackModel.navigateToDownload()
                 },
@@ -250,6 +265,8 @@ private fun <E: TitledNavKey> TopBar(
     onScreenBack: () -> Unit,
     toMainScreen: () -> Unit,
     toSettingsScreen: () -> Unit,
+    toCursorSettings: () -> Unit,
+    openLink: (String) -> Unit,
     toDownloadScreen: () -> Unit,
     toMultiplayerScreen: () -> Unit,
     openFileManager: () -> Unit,
@@ -399,6 +416,33 @@ private fun <E: TitledNavKey> TopBar(
                             contentDescription = stringResource(R.string.main_task_menu)
                         )
                     }
+                }
+
+                IconButton(
+                    onClick = { openLink(URL_DISCORD) }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_discord),
+                        contentDescription = stringResource(R.string.topbar_discord)
+                    )
+                }
+
+                IconButton(
+                    onClick = { openLink(URL_PROJECT) }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_github),
+                        contentDescription = stringResource(R.string.topbar_github)
+                    )
+                }
+
+                IconButton(
+                    onClick = toCursorSettings
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_highlight_mouse_cursor),
+                        contentDescription = stringResource(R.string.topbar_cursor_editor)
+                    )
                 }
 
                 IconButton(

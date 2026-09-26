@@ -31,16 +31,16 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "TaskBatch"
 
-/** 本地已存在文件校验的并发度 */
+/** Concurrency for verifying locally existing files */
 private const val LOCAL_VERIFY_PARALLELISM = 4
 
 /**
- * 把一批 [DownloadTask] 交给下载引擎执行的统一入口：
- * 先挑出本地已可复用的文件（直接计入完成并执行挂后任务），
- * 剩余的交给引擎分块并发下载；仍有失败时抛出 [DownloadFailedException]，
- * message 内含失败文件路径。
+ * Unified entry point that hands a batch of [DownloadTask]s to the download engine:
+ * files that can be reused locally are picked first (counted as completed immediately, with their follow-up tasks run),
+ * the rest are downloaded concurrently by the engine in chunks; if any still fail, a [DownloadFailedException] is thrown
+ * whose message contains the failed file path.
  *
- * @param onSnapshot 每 100ms 收到一次引擎统计快照
+ * @param onSnapshot receives an engine statistics snapshot every 100 ms
  */
 suspend fun Task.runBatchDownloads(
     tasks: List<DownloadTask>,
@@ -53,7 +53,7 @@ suspend fun Task.runBatchDownloads(
     val (reusable, pending) = verifyExistingFilesConcurrently(tasks)
     Logger.info(TAG, "Local file check done: reusable=${reusable.size} pending=${pending.size}, took=${System.currentTimeMillis() - verifyStarted}ms")
 
-    //清单里只要有未声明大小的文件，字节数就不能构成可靠的进度分母
+    //If any file in the manifest has an undeclared size, bytes cannot form a reliable progress denominator
     val sizesFullyKnown = tasks.all { it.size > 0 }
 
     val batch = BatchDownloader(
@@ -68,10 +68,10 @@ suspend fun Task.runBatchDownloads(
         it.runFileDownloadedTask()
     }
 
-    //已复用文件的字节并入"已下载"口径，进度条才能从已完成部分起步
+    //Reused-file bytes are folded into the "downloaded" figure so the progress bar starts from the completed portion
     if (reusable.isNotEmpty()) {
         batch.stats.addBytes(reusable.sumOf { maxOf(it.size, 0L) })
-        //随后重置测速基线，避免一次性并入的字节被当作瞬时速率报出
+        //Then reset the speed baseline so the one-off folded bytes are not reported as instantaneous rate
         batch.stats.resetSpeedBaseline()
     }
 
@@ -102,7 +102,7 @@ suspend fun Task.runBatchDownloads(
 }
 
 /**
- * 并行校验本地已存在的文件是否可复用
+ * Verifies in parallel whether locally existing files can be reused
  */
 private suspend fun verifyExistingFilesConcurrently(
     tasks: List<DownloadTask>
@@ -117,10 +117,10 @@ private suspend fun verifyExistingFilesConcurrently(
     }
 
 /**
- * 进度条的显示策略：
- * - 清单内所有文件都声明了大小时，按字节数计算最平滑的进度；
- * - 存在未知大小但文件总数确定时，退化为按完成文件数计算；
- * - 连文件总数都无法确定时，显示为不确定进度。
+ * Progress bar display strategy:
+ * - when all files in the manifest declare sizes, byte-based progress is the smoothest;
+ * - when sizes are unknown but the file count is known, fall back to counting finished files;
+ * - when even the file count is unknown, show indeterminate progress.
  */
 private fun progressFor(snapshot: BatchProgress, sizesFullyKnown: Boolean, hasFileCount: Boolean): Float = when {
     sizesFullyKnown && snapshot.totalBytes > 0 ->

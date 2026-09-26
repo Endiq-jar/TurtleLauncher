@@ -50,10 +50,9 @@ const val URL_MINECRAFT_VERSION_REPOS: String = "https://piston-meta.mojang.com/
 const val URL_MINECRAFT_ASSETS_INDEX: String = "https://launchermeta.mojang.com/v1/packages"
 const val URL_MINECRAFT_PURCHASE = "https://www.xbox.com/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj"
 const val URL_PROJECT: String = "https://github.com/Endiq-jar/TurtleLauncher"
-const val URL_PROJECT_INFO: String = "https://api.github.com/repos/ZalithLauncher/Zalith-Info/contents/v2"
 const val URL_COMMUNITY: String = "https://github.com/Endiq-jar/TurtleLauncher/graphs/contributors"
+const val URL_DISCORD: String = "https://discord.gg/gf3YcV57j"
 const val URL_WEBLATE: String = "https://hosted.weblate.org/projects/zalithlauncher2"
-const val URL_SUPPORT: String = "https://ifdian.net/a/MovTery"
 const val URL_EASYTIER: String = "https://easytier.cn/"
 
 const val URL_GITHUB_RENDERER_PLUGINS = "https://github.com/ShirosakiMio/FCLRendererPlugin/releases/tag/Renderer"
@@ -126,7 +125,7 @@ val GLOBAL_CLIENT = HttpClient(OkHttp) {
         header(HttpHeaders.UserAgent, URL_USER_AGENT)
     }
     engine {
-        // 使用内置的 OkHttp 客户端
+        // Uses the built-in OkHttp client
         preconfigured = createOkHttpClientBuilder().build()
     }
 }.apply {
@@ -151,11 +150,11 @@ fun createRequestBuilder(url: String, body: RequestBody?): Request.Builder {
 }
 
 /**
- * 创建一个OkHttpClient，可自定义一些内容
+ * Creates an OkHttpClient with customizable extras
  */
 fun createOkHttpClientBuilder(action: (OkHttpClient.Builder) -> Unit = { }): OkHttpClient.Builder {
     return OkHttpClient.Builder()
-        .dns(ResilientDns) //系统 DNS 解析失败时，自动回退到 DoH 解析
+        .dns(ResilientDns) //falls back to DoH resolution when system DNS fails
         .protocols(listOf(Protocol.HTTP_1_1))
         .callTimeout(TIME_OUT, TimeUnit.MILLISECONDS)
         .addInterceptor(CURSEFORGE_INTERCEPTOR)
@@ -164,13 +163,14 @@ fun createOkHttpClientBuilder(action: (OkHttpClient.Builder) -> Unit = { }): OkH
 }
 
 /**
- * 创建用于网络请求的 OkHttpClient。
- * 与普通 API 调用不同，该客户端不设 callTimeout
- * （因为请求目标的大小差异很大，不能用一个固定值限制整体时间）。
+ * Creates the OkHttpClient used for network requests.
+ * Unlike normal API calls, this client does not set a callTimeout
+ * (requested targets vary wildly in size, so a single fixed limit cannot bound the whole call).
  *
- * 使用 OkHttp 替代 HttpURLConnection 的主要原因是：
- * OkHttp 使用自实现的 AsyncTimeout 机制，比依赖操作系统 socket 超时的
- * HttpURLConnection 在 Android 上更加可靠，能有效避免"卡 0b/s"问题。
+ * The main reasons for using OkHttp instead of HttpURLConnection are:
+ * OkHttp implements its own AsyncTimeout mechanism, which is more reliable on
+ * Android than HttpURLConnection (which relies on OS socket timeouts) and
+ * effectively avoids the "stuck at 0 b/s" problem.
  */
 val DOWNLOAD_OKHTTP_CLIENT: OkHttpClient by lazy {
     buildDownloadClient(listOf(Protocol.HTTP_1_1))
@@ -181,8 +181,8 @@ private fun buildDownloadClient(
     readTimeoutMillis: Long = 15_000L
 ): OkHttpClient {
     return OkHttpClient.Builder()
-        .dns(ResilientDns) //系统 DNS 解析失败时，自动回退到 DoH 解析
-        .apply { allowedProtocols?.let { protocols(it) } } //不指定时默认协商 h2：单条多路复用连接承载海量小请求
+        .dns(ResilientDns) //falls back to DoH resolution when system DNS fails
+        .apply { allowedProtocols?.let { protocols(it) } } //when unspecified, h2 is negotiated by default: one multiplexed connection carries many small requests
         .connectionPool(ConnectionPool(64, 5, TimeUnit.MINUTES))
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(readTimeoutMillis, TimeUnit.MILLISECONDS)
@@ -191,6 +191,6 @@ private fun buildDownloadClient(
         .addInterceptor(CURSEFORGE_INTERCEPTOR)
         .addInterceptor(USER_AGENT_INTERCEPTOR)
         .build()
-        // 注意：不设置 callTimeout，因为文件大小差异极大
-        // 协程层的 withTimeout 提供整体兜底保护
+        // Note: no callTimeout is set, because file sizes vary enormously
+        // The coroutine-level withTimeout provides the overall safety net
 }

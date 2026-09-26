@@ -31,7 +31,7 @@ fun shiftString(input: String, direction: ShiftDirection, shiftCount: Int): Stri
         return input
     }
 
-    //确保位移个数在字符串长度范围内
+    //Ensure the shift count stays within the string length
     val length = input.length
     val shiftCount1 = shiftCount % length
     if (shiftCount1 == 0) {
@@ -81,7 +81,7 @@ fun String.toUuidStr(charset: Charset = Charsets.UTF_8): String {
 }
 
 /**
- * @return 检查字符串是否为null，如果是那么则返回""，如果不是，则返回字符串本身
+ * @return Checks whether the string is null; returns "" if so, otherwise the string itself
  */
 fun getStringNotNull(string: String?): String = string ?: ""
 
@@ -98,7 +98,7 @@ fun String.extractUntilCharacter(whatFor: String, terminator: Char): String? {
 }
 
 /**
- * 获取字符串指定行的内容
+ * Returns the content of the given line of the string
  */
 fun String.getLine(line: Int): String? {
     val lines = this.trimIndent().split("\n")
@@ -122,24 +122,24 @@ fun String.splitPreservingQuotes(delimiter: Char = ' '): List<String> {
     for ((index, c) in withIndex()) {
         when {
             c == '"' && (index == 0 || this[index - 1] != '\\') -> {
-                // 切换引号状态（忽略转义引号）
+                // Toggle the quote state (ignoring escaped quotes)
                 inQuotes = !inQuotes
             }
             (if (delimiter == ' ') c.isWhitespace() else c == delimiter) && !inQuotes -> {
-                // 如果不在引号内且遇到分隔符（默认是任意空白字符），则结束当前部分并添加到结果中
+                // If not inside quotes and a delimiter (any whitespace by default) is met, finish the current part and add it to the result
                 if (currentPart.isNotEmpty()) {
                     result.add(currentPart.toString())
-                    currentPart.clear() // 清空当前部分
+                    currentPart.clear() // clear the current part
                 }
             }
             else -> {
-                // 将字符添加到当前部分
+                // Append the character to the current part
                 currentPart.append(c)
             }
         }
     }
 
-    // 添加最后一部分（如果有的话）
+    // Add the final part (if any)
     if (currentPart.isNotEmpty()) {
         result.add(currentPart.toString())
     }
@@ -165,7 +165,7 @@ fun String.toUnicodeEscaped(): String {
 }
 
 /**
- * 过滤掉颜色占位符
+ * Filters out color placeholders
  */
 fun String.stripColorCodes(): String {
     return replace(Regex("§[0-9a-fk-orA-FK-OR]"), "")
@@ -176,22 +176,22 @@ fun String.isEmptyOrBlank(): Boolean = this.isEmpty() || this.isBlank()
 fun String.isNotEmptyOrBlank(): Boolean = !this.isEmptyOrBlank()
 
 /**
- * 检查一段字符串内是否含有中文字符（中文标点）
- * @return 是否带有中文
+ * Checks whether a string contains Chinese characters (Chinese punctuation)
+ * @return whether it contains Chinese
  */
 fun String?.containsChinese(): Boolean {
     if (this == null || this.isEmpty()) {
         return false
     }
 
-    val pattern = Pattern.compile("[一-龥|！，。（）《》“”？：；【】]")
+    val pattern = Pattern.compile("[\u4e00-\u9fa5|\uff01\uff0c\u3002\uff08\uff09\u300a\u300b\u201c\u201d\uff1f\uff1a\uff1b\u3010\u3011]")
     val matcher = pattern.matcher(this)
     return matcher.find()
 }
 
 /**
- * 修改自源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/942f7b7/HMCLCore/src/main/java/org/jackhuang/hmcl/util/StringUtils.java#L291-L393)
- * 原项目版权归原作者所有，遵循GPL v3协议
+ * Adapted from the source: [HMCL Github](https://github.com/HMCL-dev/HMCL/blob/942f7b7/HMCLCore/src/main/java/org/jackhuang/hmcl/util/StringUtils.java#L291-L393)
+ * Copyright of the original project belongs to its author; licensed under GPL v3
  */
 fun tokenize(str: String, vars: Map<String, String>? = null): List<String> {
     if (str.isBlank()) return emptyList()
@@ -263,7 +263,7 @@ private fun handleVariable(
     current: StringBuilder
 ): Int {
     val varEnd = findVarEnd(str, start)
-    if (varEnd < 0) { //无效变量格式
+    if (varEnd < 0) { //invalid variable format
         current.append('$')
         return start
     }
@@ -285,8 +285,8 @@ private fun findVarEnd(str: String, start: Int): Int {
 }
 
 /**
-     * 修改自源代码：[HMCL Github](https://github.com/HMCL-dev/HMCL/blob/942f7b7/HMCLCore/src/main/java/org/jackhuang/hmcl/util/StringUtils.java#L462-L516)
-     * 原项目版权归原作者所有，遵循GPL v3协议
+     * Adapted from the source: [HMCL Github](https://github.com/HMCL-dev/HMCL/blob/942f7b7/HMCLCore/src/main/java/org/jackhuang/hmcl/util/StringUtils.java#L462-L516)
+     * Copyright of the original project belongs to its author; licensed under GPL v3
      */
     class LevCalculator {
         private var lev: Array<IntArray> = emptyArray()

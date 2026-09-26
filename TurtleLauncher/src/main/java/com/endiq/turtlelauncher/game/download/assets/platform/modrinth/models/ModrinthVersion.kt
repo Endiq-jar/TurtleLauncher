@@ -31,43 +31,43 @@ import java.time.Instant
 
 @Serializable
 class ModrinthVersion(
-    /** 版本的显示名称 */
+    /** Display name of the version */
     @SerialName("name")
     val name: String,
 
-    /** 版本号 */
+    /** Version number */
     @SerialName("version_number")
     val versionNumber: String,
 
     /**
-     * 版本的变更日志
+     * Changelog of the version
      *
-     * **完全不使用**，但防止有的作者会把这个东西整的老大了，
-     * 导致启动器OOM异常，比如模组 [Crash Assistant](https://modrinth.com/mod/crash-assistant)，
-     * 所以此字段用不序列化也不应该被代码使用
+     * **Completely unused**, but some authors make this thing enormous,
+     * which could throw the launcher into an OOM, e.g. the mod [Crash Assistant](https://modrinth.com/mod/crash-assistant),
+     * so this field is neither deserialized nor ever to be used by code
      */
     @Transient
     @SerialName("changelog")
-    @Deprecated("不应该被代码使用！")
+    @Deprecated("Must not be used by code!")
     val changelog: String? = null,
 
-    /** 此版本所依赖的特定项目版本的列表 */
+    /** List of the specific project versions this version depends on */
     @SerialName("dependencies")
     val dependencies: Array<Dependency>,
 
-    /** 支持的游戏版本 */
+    /** Supported game versions */
     @SerialName("game_versions")
     val gameVersions: Array<String>,
 
-    /** 该版本的发布渠道 */
+    /** Release channel of this version */
     @SerialName("version_type")
     val versionType: PlatformReleaseType,
 
-    /** 该版本支持的模组加载器。对于资源包，使用“minecraft” */
+    /** Mod loaders supported by this version. For resource packs, "minecraft" is used */
     @SerialName("loaders")
     val loaders: Array<String>,
 
-    /** 该版本是否为推荐版本 */
+    /** Whether this version is the recommended one */
     @SerialName("featured")
     val featured: Boolean,
 
@@ -77,54 +77,54 @@ class ModrinthVersion(
     @SerialName("requested_status")
     val requestedStatus: String? = null,
 
-    /** 版本的ID，以 base62 字符串编码 */
+    /** Version ID, encoded as a base62 string */
     @SerialName("id")
     val id: String,
 
-    /** 该版本所属项目的ID */
+    /** ID of the project this version belongs to */
     @SerialName("project_id")
     val projectId: String,
 
-    /** 发布该版本的作者ID */
+    /** ID of the author who published this version */
     @SerialName("author_id")
     val authorId: String,
 
     @SerialName("date_published")
     val datePublished: String,
 
-    /** 该版本的下载次数 */
+    /** Download count of this version */
     @SerialName("downloads")
     val downloads: Long,
 
-    /** 该版本更新日志的链接。始终为 null，仅为兼容旧版本而保留 */
+    /** Link to the changelog of this version. Always null; kept only for legacy compatibility */
     @SerialName("changelog_url")
     val changelogUrl: String? = null,
 
-    /** 该版本可下载文件的列表 */
+    /** List of downloadable files of this version */
     @SerialName("files")
     val files: Array<ModrinthFile>
 ) : PlatformVersion {
     @Serializable
     class Dependency(
-        /** 这个版本所依赖的版本的ID */
+        /** ID of the version this version depends on */
         @SerialName("version_id")
         val versionId: String? = null,
 
-        /** 这个版本所依赖的项目的ID */
+        /** ID of the project this version depends on */
         @SerialName("project_id")
         val projectId: String? = null,
 
-        /** 依赖项的文件名，主要用于在模组包中显示外部依赖项 */
+        /** File name of the dependency, mainly used to show external dependencies in modpacks */
         @SerialName("file_name")
         val fileName: String? = null,
 
-        /** 该版本的依赖类型 */
+        /** Dependency type of this version */
         @SerialName("dependency_type")
         val dependencyType: PlatformDependencyType
     )
 
     /**
-     * 该版本的主要文件
+     * The primary file of this version
      */
     @Transient
     private lateinit var thisPrimaryFile: ModrinthFile

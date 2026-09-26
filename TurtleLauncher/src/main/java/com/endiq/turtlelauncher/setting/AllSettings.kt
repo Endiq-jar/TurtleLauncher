@@ -383,12 +383,22 @@ object AllSettings : SettingsRegistry() {
     /**
      * 启动器语言
      */
-    val launcherLanguage = enumSetting("launcherLanguage", AppLanguage.FOLLOW_SYSTEM)
+    val launcherLanguage = enumSetting("launcherLanguage", AppLanguage.ENGLISH)
 
     /**
      * 启动器部分屏幕全屏
      */
     val launcherFullScreen = boolSetting("launcherFullScreen", true)
+
+    /**
+     * 通过 Shizuku 以 ADB 权限访问 Android/data 等受限目录
+     */
+    val shizukuEnabled = boolSetting("shizukuEnabled", false)
+
+    /**
+     * 访问 Android/data 时优先使用 Shizuku，而不是 SAF 目录授权
+     */
+    val shizukuPreferOverSaf = boolSetting("shizukuPreferOverSaf", true)
 
     /**
      * 持续型节日彩蛋效果

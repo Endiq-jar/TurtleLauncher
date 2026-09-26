@@ -265,6 +265,8 @@ dependencies {
     implementation(project(":Terracotta"))
     implementation(project(":InputMap"))
     //Utils
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
     implementation(libs.bytehook)
     implementation(libs.gson)
     implementation(libs.commons.io)

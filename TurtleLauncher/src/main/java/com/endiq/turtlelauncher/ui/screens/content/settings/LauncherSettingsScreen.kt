@@ -365,6 +365,15 @@ fun LauncherSettingsScreen(
                 }
             }
 
+            //Shizuku 集成（ADB 级文件访问）
+            AnimatedItem(scope) { yOffset ->
+                com.endiq.turtlelauncher.shizuku.ShizukuSettingsSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                )
+            }
+
             AnimatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier

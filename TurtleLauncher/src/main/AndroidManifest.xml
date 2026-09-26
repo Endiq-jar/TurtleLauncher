@@ -224,6 +224,7 @@
     </application>
     <queries>
         <package android:name="net.kdt.pojavlaunch.ffmpeg"/>
+        <package android:name="moe.shizuku.privileged.api"/>
         <intent>
             <action android:name="android.intent.action.MAIN" />
         </intent>

@@ -38,6 +38,7 @@ import com.endiq.turtlelauncher.coroutine.TaskSystem
 import com.endiq.turtlelauncher.game.account.AccountsManager
 import com.endiq.turtlelauncher.game.path.GamePathManager
 import com.endiq.turtlelauncher.keepalive.TaskKeepAlive
+import com.endiq.turtlelauncher.shizuku.ShizukuManager
 import com.endiq.turtlelauncher.path.PathManager
 import com.endiq.turtlelauncher.setting.loadAllSettings
 import com.endiq.turtlelauncher.ui.activities.showFatalError
@@ -62,6 +63,9 @@ class TLApplication : Application(), SingletonImageLoader.Factory {
         refreshContext(this)
         //初始化任务保活控制器，需在任何任务开始前完成初始化
         TaskKeepAlive.initialize(this)
+
+        //注册 Shizuku 状态监听器（安装/权限/服务状态跟踪）
+        ShizukuManager.init(this)
 
         Thread.setDefaultUncaughtExceptionHandler { _, th ->
             //停止所有任务

@@ -244,6 +244,15 @@ fun GameSettingsScreen(
                 }
             }
 
+            //Emotes（Emotecraft 模组集成）
+            AnimatedItem(scope) { yOffset ->
+                com.endiq.turtlelauncher.game.emotes.EmotesSettingsSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                )
+            }
+
             AnimatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier

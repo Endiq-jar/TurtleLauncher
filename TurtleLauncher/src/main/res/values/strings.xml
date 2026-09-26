@@ -1464,4 +1464,38 @@
     <string name="fm_property_folders">Folders</string>
     <string name="fm_calculating">Calculating…</string>
     <string name="fm_name_conflict">Name conflicts with an existing entry</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_status_title">Shizuku</string>
+    <string name="shizuku_status_not_installed">Shizuku is not installed on this device</string>
+    <string name="shizuku_status_not_running">Shizuku is installed but not running</string>
+    <string name="shizuku_status_no_permission">Permission to use Shizuku has not been granted</string>
+    <string name="shizuku_status_ready">Connected — ADB-level access via Shizuku is ready</string>
+    <string name="shizuku_get_title">Get Shizuku</string>
+    <string name="shizuku_get_summary">Shizuku lets apps use ADB-level privileges. Open its website to download and start it.</string>
+    <string name="shizuku_request_permission_title">Grant Shizuku permission</string>
+    <string name="shizuku_request_permission_summary">Allow Turtle Launcher to use Shizuku</string>
+    <string name="shizuku_enabled_title">Use Shizuku for restricted files</string>
+    <string name="shizuku_enabled_summary">Access Android/data and other restricted directories through Shizuku</string>
+    <string name="shizuku_prefer_over_saf_title">Prefer Shizuku over SAF grants</string>
+    <string name="shizuku_prefer_over_saf_summary">Use Shizuku instead of the slow Android/data folder authorization flow</string>
+    <string name="shizuku_grant_all_files_title">Grant All Files Access via Shizuku</string>
+    <string name="shizuku_grant_all_files_summary">Allow Turtle Launcher to manage all files without the system permission screens (uses appops)</string>
+    <string name="shizuku_grant_all_files_done">All Files Access is now active</string>
+    <string name="shizuku_grant_all_files_failed">Grant failed — make sure Shizuku permission was allowed</string>
+
+    <!-- Emotes -->
+    <string name="emotes_title">Emotes (Emotecraft)</string>
+    <string name="emotes_summary">Install the Emotecraft mod into a game instance so you can play emotes in-game</string>
+    <string name="emotes_pick_instance">Select an instance</string>
+    <string name="emotes_no_instances">No installed instances found — install a game version first</string>
+    <string name="emotes_no_loader_hint">This instance has no mod loader detected. Emotecraft needs Fabric, Quilt, Forge or NeoForge.</string>
+    <string name="emotes_loading">Loading Emotecraft versions…</string>
+    <string name="emotes_load_failed">Failed to load Emotecraft versions: %1$s</string>
+    <string name="emotes_no_match">No Emotecraft build matches this instance (%1$s, %2$s)</string>
+    <string name="emotes_match">Will install: %1$s (Minecraft %2$s)</string>
+    <string name="emotes_install">Install Emotecraft</string>
+    <string name="emotes_installing">Downloading and installing…</string>
+    <string name="emotes_install_done">Emotecraft %1$s installed into “%2$s”. An “emotes” folder was also created for custom emote packs.</string>
+    <string name="emotes_install_failed">Installation failed: %1$s</string>
 </resources>

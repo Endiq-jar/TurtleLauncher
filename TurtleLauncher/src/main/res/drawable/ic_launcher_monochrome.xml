@@ -1,19 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Turtle silhouette used for Android 13+ themed (monochrome) launcher icons -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="1558.9"
-    android:viewportHeight="1800.1">
-  <group android:scaleX="0.41568357"
-      android:scaleY="0.48"
-      android:translateX="455.44543"
-      android:translateY="468.026">
+    android:width="36dp"
+    android:height="24dp"
+    android:viewportWidth="36"
+    android:viewportHeight="24">
     <path
-        android:pathData="M390,674.9l0,450.3l390,225.2l390,-225.2l0,-450.3l-390,-225.2l-390,225.2z"
-        android:strokeWidth="0"
-        android:fillColor="#fff"/>
-    <path
-        android:pathData="m779.5,0l779.5,450v900l-779.5,450L0,1350.1L0,450L779.5,0ZM289,675.6v448.9c0,36.2 19.3,69.6 50.6,87.7l388.8,224.4c31.3,18.1 69.9,18.1 101.2,0l388.8,-224.4c31.3,-18.1 50.6,-51.5 50.6,-87.7v-448.9c0,-36.2 -19.3,-69.6 -50.6,-87.7l-388.8,-224.4c-31.3,-18.1 -69.9,-18.1 -101.2,0l-388.8,224.4c-31.3,18.1 -50.6,51.5 -50.6,87.7Z"
-        android:strokeWidth="0"
-        android:fillColor="#fff"/>
-  </group>
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M10 3h8v1h-8zM8 4h11v1h-11zM7 5h14v1h-14zM6 6h15v1h-15zM6 7h16v1h-16zM5 8h17v1h-17zM5 9h18v1h-18zM25 9h6v1h-6zM5 10h27v1h-27zM5 11h27v1h-27zM3 12h29v1h-29zM2 13h30v1h-30zM1 14h31v1h-31zM2 15h3v1h-3zM6 15h25v1h-25zM9 16h6v1h-6zM20 16h6v1h-6zM9 17h6v1h-6zM20 17h6v1h-6zM9 18h6v1h-6zM20 18h6v1h-6zM9 19h6v1h-6zM20 19h6v1h-6zM10 20h4v1h-4zM21 20h4v1h-4z" />
 </vector>

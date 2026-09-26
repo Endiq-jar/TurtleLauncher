@@ -67,7 +67,7 @@ class PlayerSkin(
 
     private val defaultSkin = AssetsUrlBuilder()
         .append("assets")
-        .append("steve.png")
+        .append("steve.webp")
         .toString()
 
     fun loadWebView(

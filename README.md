@@ -12,7 +12,7 @@
 
 Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher built for Android by **Endiq**. Based on the open-source **Turtle Launcher** project, it combines a modern Material 3 interface with powerful customization, performance optimizations, and extensive modding support.
 
-![Minecraft](1.jpg)
+![Minecraft](1.webp)
 ---
 
 ## ✨ Features

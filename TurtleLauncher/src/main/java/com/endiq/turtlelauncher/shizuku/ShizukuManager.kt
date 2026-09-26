@@ -148,7 +148,7 @@ object ShizukuManager {
     fun ensureService() {
         val context = appContext ?: return
         if (!permissionGranted || fileService != null) return
-        val args = Shizuku.newUserServiceArgs(
+        val args = Shizuku.UserServiceArgs(
             ComponentName(context.packageName, ShizukuFileService::class.java.name)
         )
             .daemon(false)

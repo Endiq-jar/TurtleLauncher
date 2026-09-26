@@ -47,3 +47,20 @@ Legend: ✅ already present · ➕ added in this round · ❌ missing (candidate
 - Temporarily disabled: the bangbang93 afdian donation button (card kept, `button = {}` + comment) – re-enable by restoring the `Button` in `AboutInfoScreen.kt`.
 - All BMCL mirror endpoints (`bmclapi2.bangbang93.com`) intentionally kept: they are download mirrors for Chinese users, not donation links.
 - English-sweep: **complete** — every CJK line is now translated across the whole repo (app main + tests, all library modules, and LWJGL patches): verified programmatically at 0 remaining CJK code/comment lines. CJK-in-resources is limited to intentional items: `values/chinese_festivals.xml` is translated, only `translatable="false"` language display names keep native script by design, and mod/modpack locale data assets plus `default_layout.json` locale match-keys stay bilingual on purpose.
+
+## Turtle-Launcher imports (this round)
+| Import | Status | Notes |
+|---|---|---|
+| LTW renderer | ➕ | `LTWRenderer` (id `e7dcb6d0-bf40-44f0-9703-791c7b24c69e`) with bundled `libltw.so` x4 ABIs from Turtle-Launcher's Toast/MojoLauncher integration; exempt from MESA env block. |
+| MobileGlues renderer | ➕ | `MobileGluesRenderer` + `libmobileglues.so` x4 ABIs (official release V2.0.0, 2026-08-09 — the binary is unreachable for direct download, so the Turtle-Launcher bundled copy is used); sets `MG_DIR_PATH`, uses itself as EGL, exempt from MESA env block. |
+| lwjgl-nanovg natives | ➕ | `liblwjgl_nanovg.so` x4 ABIs in jniLibs (the Java jar was already in `assets/app_runtime/lwjgl/3.3.3` & `3.4.1`); plus `NanoVGNativesFix` copying `assets/compat_mods/lwjgl-nanovg-natives-1.0.2.jar` into `mods/` before launch for Fabric/Quilt instances. |
+| Default + Survival control presets | ➕ | Converted from Turtle-Launcher's legacy ZL1 layouts into LayerController v12 JSON (expressions evaluated at 1280x720 reference); seeded alongside the existing default via `unpackDefaultControl`. |
+| Modern options.txt seed | ➕ | The 190-line modern defaults file replaces the stale 1.16-era 31-line `assets/game/options.txt`. |
+
+## Image optimization
+- All launcher raster resources now prefer WebP: 79 res images + `assets/steve.png` + root `1.jpg` converted (lossless first; only when WebP wins). Five pixel-art textures (`img_chicken_old`, `img_diamond_block`, `img_minecraft`, `img_old_cobblestone`, `img_old_grass_block`) stay PNG because WebP lossless performs worse on them.
+- `ic_launcher-playstore.png` intentionally untouched (Play Store upload asset).
+
+## Build fix notes
+- `ShizukuManager`: `Shizuku.newUserServiceArgs(...)` → `Shizuku.UserServiceArgs(...)` constructor (the factory method does not exist in shizuku-api 13.x; CI `compileDebugKotlin` failed on it).
+- CI failure annotations now print `::error::` lines via the patched Build workflow for readable logs.

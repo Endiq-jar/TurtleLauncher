@@ -21,8 +21,8 @@ package com.endiq.turtlelauncher.game.download.modpack.install
 import java.io.File
 
 /**
- * 整合包可下载模组文件
- * @param getFile 如果无法临时构建模组下载链接，或者构建模组下载链接过于耗时，则可以在这里进行构建
+ * Downloadable mod file of a modpack
+ * @param getFile when building the mod download URL on the spot is impossible or too slow, it can be built here
  */
 data class ModFile(
     val outputFile: File? = null,

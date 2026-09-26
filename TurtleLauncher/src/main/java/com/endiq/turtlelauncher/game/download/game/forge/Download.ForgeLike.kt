@@ -34,7 +34,7 @@ const val FORGE_LIKE_DOWNLOAD_ID = "Download.ForgeLike"
 fun targetTempForgeLikeInstaller(tempGameDir: File): File = File(tempGameDir, ".temp/forge_like_installer.jar")
 
 /**
- * 判断是否为 NeoForge 版本
+ * Checks whether it's a NeoForge version
  */
 val ForgeLikeVersion.isNeoForge: Boolean
     get() = this is NeoForgeVersion
@@ -46,7 +46,7 @@ fun getForgeLikeDownloadTask(
     return Task.runTask(
         id = FORGE_LIKE_DOWNLOAD_ID,
         task = { task ->
-            //获取安装器下载链接
+            //Get the installer download URL
             val url = if (forgeLikeVersion.isNeoForge) {
                 NeoForgeVersions.getDownloadUrl(forgeLikeVersion as NeoForgeVersion)
             } else {

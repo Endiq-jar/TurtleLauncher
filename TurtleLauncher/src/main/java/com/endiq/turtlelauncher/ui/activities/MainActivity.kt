@@ -274,7 +274,7 @@ class MainActivity : BaseAppCompatActivity() {
                         )
                     }
                     else -> {
-                        //忽略
+                        //Ignored
                     }
                 }
             }

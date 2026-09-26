@@ -24,7 +24,7 @@ import com.endiq.turtlelauncher.game.addons.modloader.forgelike.ForgeLikeVersion
 import com.endiq.turtlelauncher.game.addons.modloader.optifine.OptiFineVersion
 
 /**
- * 将 OptiFine 版本转换为 LaunchFor Info
+ * Converts an OptiFine version into LaunchFor Info
  */
 fun OptiFineVersion.toLaunchForInfo(): LaunchFor.Info {
     return LaunchFor.Info(
@@ -34,7 +34,7 @@ fun OptiFineVersion.toLaunchForInfo(): LaunchFor.Info {
 }
 
 /**
- * 将 Forge Like 版本转换为 LaunchFor Info
+ * Converts a Forge-like version into LaunchFor Info
  */
 fun ForgeLikeVersion.toLaunchForInfo(): LaunchFor.Info {
     return LaunchFor.Info(
@@ -44,7 +44,7 @@ fun ForgeLikeVersion.toLaunchForInfo(): LaunchFor.Info {
 }
 
 /**
- * 将 Fabric Like 版本转换为 LaunchFor Info
+ * Converts a Fabric-like version into LaunchFor Info
  */
 fun FabricLikeVersion.toLaunchForInfo(): LaunchFor.Info {
     return LaunchFor.Info(

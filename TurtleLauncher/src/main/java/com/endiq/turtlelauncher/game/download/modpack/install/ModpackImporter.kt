@@ -53,11 +53,11 @@ import java.util.zip.ZipFile as JDKZipFile
 private const val TAG = "ModpackImporter"
 
 /**
- * 本地整合包导入器
- * @param uri 本地选择的文件链接
- * @param scope 在有生命周期管理的scope中执行安装任务
- * @param waitForVersionName 等待用户输入预期的版本名
- * @param waitForConfirmMobileData 等待用户确认使用移动网络
+ * Local modpack importer
+ * @param uri locally picked file URI
+ * @param scope the lifecycle-managed scope the install task runs in
+ * @param waitForVersionName waits for the user to enter the target version name
+ * @param waitForConfirmMobileData waits for the user to confirm mobile-data use
  */
 class ModpackImporter(
     private val context: Context,
@@ -70,20 +70,20 @@ class ModpackImporter(
     val taskFlow: StateFlow<List<TitledTask>> = taskExecutor.tasksFlow
 
     private val _logOutput = MutableStateFlow<TaskLogOutput?>(null)
-    /** 安装 JVM 实时日志输出 */
+    /** Live log output of the install JVM */
     val logOutput: StateFlow<TaskLogOutput?> = _logOutput.asStateFlow()
 
     /**
-     * 当前导入的整合包的任务构建器
+     * Task builder of the modpack currently being imported
      */
     private lateinit var modpack: AbstractPack
 
     /**
-     * 开始导入整合包
-     * @param isRunning 正在运行中，被拒绝导入时
-     * @param onFinished 导入完成时
-     * @param onCancelled 内部取消时
-     * @param onError 导入过程中出现异常
+     * Starts importing a modpack
+     * @param isRunning called when an import is refused because one is running
+     * @param onFinished when the import finishes
+     * @param onCancelled on internal cancellation
+     * @param onError when the import throws
      */
     fun startImport(
         isRunning: () -> Unit = {},
@@ -93,7 +93,7 @@ class ModpackImporter(
     ) {
         if (taskExecutor.isRunning()) {
             isRunning()
-            return //正在运行中，拒绝导入
+            return //already running; refuse the import
         }
 
         taskExecutor.executePhasesAsync(
@@ -106,7 +106,7 @@ class ModpackImporter(
             },
             onError = { e ->
                 if (e is UsingMobileDataException) {
-                    //用户不希望使用移动网络
+                    //User declined mobile data
                     onCancelled()
                     return@executePhasesAsync
                 }
@@ -116,18 +116,18 @@ class ModpackImporter(
     }
 
     private suspend fun getTaskPhases() = withContext(Dispatchers.IO) {
-        //临时游戏环境目录
+        //Temporary game environment directory
         val tempModPackDir = PathManager.DIR_CACHE_MODPACK_DOWNLOADER
         val tempVersionsDir = File(tempModPackDir, "fkVersion")
-        //整合包安装包文件
+        //Modpack installer package file
         val installerDir = File(tempModPackDir, "installer")
         val installerFile = File(installerDir, ".temp_installer.zip")
-        //已解压的整合包缓存目录
+        //Unpacked modpack cache directory
         val packDir = File(installerDir, ".temp_pack")
 
         listOf(
             buildPhase {
-                //清除上一次安装的缓存（如果有的话，可能会影响这次的安装结果）
+                //Clear the previous install's cache (leftovers could skew this install's result)
                 addTask(
                     id = "ImportModpack.Cleanup",
                     title = androidText(R.string.download_install_clear_temp),
@@ -141,10 +141,10 @@ class ModpackImporter(
                     tempVersionsDir.createDirAndLog()
                     installerDir.createDirAndLog()
                     packDir.createDirAndLog()
-                    VersionFolders.MOD.getDir(tempVersionsDir).createDirAndLog() //创建临时模组目录
+                    VersionFolders.MOD.getDir(tempVersionsDir).createDirAndLog() //create the temp mods directory
                 }
 
-                //先导入文件
+                //Import the files first
                 addTask(
                     id = "ImportModpack.ImportFile",
                     title = androidText(R.string.import_modpack_task_unpack),
@@ -153,7 +153,7 @@ class ModpackImporter(
                 ) { task ->
                     task.updateProgress(-1f)
                     context.copyLocalFile(uri, installerFile)
-                    //尝试解压压缩包
+                    //Try to unpack the archive
                     try {
                         JDKZipFile(installerFile).use { zip ->
                             zip.extractFromZip("", packDir)
@@ -167,8 +167,8 @@ class ModpackImporter(
                             }
                         } catch (e: Exception) {
                             if (e is CancellationException) throw e
-                            //如果兜底解压也失败了，则说明这可能不是一个压缩包
-                            //或者压缩包已损坏，抛出不支持的异常终止任务流
+                            //If the fallback unpacking also fails, this probably isn't an archive
+                            //or the archive is corrupted; throw the unsupported exception and end the flow
                             Logger.error(TAG, "Unable to extract the installer file. Is it really a compressed archive?", e)
                             throw PackNotSupportedException(
                                 reason = UnsupportedPackReason.CorruptedArchive
@@ -176,17 +176,17 @@ class ModpackImporter(
                         }
                     }
 
-                    //在这个阶段开始检查是否使用移动网络
+                    //From this phase on, check whether mobile data may be used
                     if (isUsingMobileData(context)) {
                         val use = waitForConfirmMobileData()
                         if (!use) {
-                            //用户不决定使用移动网络安装，取消导入
+                            //User declined installing over mobile data; cancel the import
                             throw UsingMobileDataException()
                         }
                     }
                 }
 
-                //解析整合包
+                //Parse the modpack
                 addTask(
                     id = "ImportModpack.ParsePack",
                     title = androidText(R.string.import_modpack_task_parse),
@@ -195,7 +195,7 @@ class ModpackImporter(
                     task.updateProgress(-1f)
 
                     modpack = run {
-                        //尝试所有整合包格式 进行解析
+                        //Try parsing with every modpack format
                         for (parser in ALL_PACK_PARSER) {
                             ensureActive()
 
@@ -206,18 +206,18 @@ class ModpackImporter(
                             }.getOrNull()
 
                             if (result != null) {
-                                //成功识别到这个整合包格式
+                                //The modpack format was recognized
                                 Logger.info(TAG, "Successfully detected the modpack format: ${result.platform.identifier}")
                                 return@run result
                             } else {
                                 Logger.debug(TAG, "Skipped the ${parser.getIdentifier()} parser")
                             }
                         }
-                        //整合包不受支持，或格式有误未能匹配
+                        //The modpack is unsupported, or its format matched nothing
                         null
                     } ?: throw PackNotSupportedException(UnsupportedPackReason.UnsupportedFormat)
 
-                    //添加下一导入阶段的任务流
+                    //Add the task flow for the next import phase
                     taskExecutor.addPhases(
                         modpack.buildTaskPhases(
                             context = context,
@@ -239,7 +239,7 @@ class ModpackImporter(
     }
 
     /**
-     * 清理临时整合包版本目录
+     * Cleans up the temporary modpack version directory
      */
     private suspend fun clearTempModPackDir() = withContext(Dispatchers.IO) {
         PathManager.DIR_CACHE_MODPACK_DOWNLOADER.takeIf { it.exists() }?.let { folder ->
@@ -249,7 +249,7 @@ class ModpackImporter(
     }
 
     /**
-     * 取消整合包导入
+     * Cancels the modpack import
      */
     fun cancel() {
         taskExecutor.cancel()

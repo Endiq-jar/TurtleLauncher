@@ -39,11 +39,11 @@ import java.util.zip.ZipFile as JdkZipFile
 private const val TAG = "ParserModPack"
 
 /**
- * 用于统一解析流程的整合包解析配置
- * @param manifestPath 清单文件在压缩包内的位置
- * @param manifestType 清单文件类型（用于反序列化的类）
- * @param createPack 通过清单创建通用整合包格式
- * @param readPack 使用创建的通用整合包格式生成 [ModPackInfo]
+ * Modpack parsing config unifying the parse flow
+ * @param manifestPath the manifest file's location inside the archive
+ * @param manifestType the manifest's type (class for deserialization)
+ * @param createPack builds the generic modpack format from the manifest
+ * @param readPack builds [ModPackInfo] from the created generic format
  */
 private data class PackParserConfig<M, P : AbstractPack>(
     val manifestPath: String,
@@ -53,8 +53,8 @@ private data class PackParserConfig<M, P : AbstractPack>(
 )
 
 /**
- * 仅适用于内置在线下载，通过 [Platform] 解析不同类型的整合包
- * @return 整合包在线下载模组信息
+ * Only for built-in online downloads; parses different modpack types via [Platform]
+ * @return the modpack's online-download mod info
  */
 suspend fun parserModPack(
     file: File,
@@ -62,8 +62,8 @@ suspend fun parserModPack(
     targetFolder: File,
     task: Task
 ): ModPackInfo = withContext(Dispatchers.IO) {
-    //此处不需要使用root，因为仅仅只是获取ModPackInfo对象
-    //所以使用emptyFile填充，创建对象而已
+    //root isn't needed here, since we're only fetching the ModPackInfo object
+    //an emptyFile placeholder is enough; it's just about creating the object
     val emptyFile = File("")
 
     when (platform) {
@@ -93,7 +93,7 @@ suspend fun parserModPack(
 }
 
 /**
- * 使用 [JdkZipFile] 工具尝试解析，如果出现问题，将使用 [ApacheZipFile] 工具兜底解析
+ * Tries parsing with [JdkZipFile], falling back to [ApacheZipFile] on trouble
  */
 suspend fun <T> withZipFile(
     file: File,
@@ -111,7 +111,7 @@ suspend fun <T> withZipFile(
 }
 
 /**
- * 通用整合包解析逻辑
+ * Generic modpack parsing logic
  */
 private suspend fun <M, P : AbstractPack> parseModPackGeneric(
     file: File,

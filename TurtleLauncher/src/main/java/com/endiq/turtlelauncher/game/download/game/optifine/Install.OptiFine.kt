@@ -77,10 +77,10 @@ fun getOptiFineInstallTask(
                         OPTIFINE_INSTALL_ID,
                         jvmArgs =
                             "-javaagent:" +
-                                    //使用 AWTBlockerAgent 禁用 AWT GUI 类调用
+                                    //Use AWTBlockerAgent to disable AWT GUI class calls
                                     LibPath.AWT_BLOCKER_AGENT.absolutePath + " " +
                                     "-cp" + " " +
-                                    //使用 JarExceptionCatcher 捕获异常并退出
+                                    //Use JarExceptionCatcher to catch exceptions and exit
                                     LibPath.JAR_EXCEPTION_CATCHER.absolutePath + ":" +
                                     tempInstallerJar.absolutePath + " " +
                                     "endiq.JarExceptionCatcher" + " " +
@@ -98,7 +98,7 @@ fun getOptiFineInstallTask(
                     )
                 }
 
-                //检查 launchwrapper 是否正常安装
+                //Check launchwrapper is installed properly
                 ZipFile(tempInstallerJar).use { zip ->
                     zip.getEntry("launchwrapper-of.txt")
                         ?.readText(zip)
@@ -116,10 +116,10 @@ fun getOptiFineInstallTask(
                 val tempOfJar = File(tempOfFolder, "${optifineVersion.version}.jar")
                 val tempOfJson = File(tempOfFolder, "${optifineVersion.version}.json")
 
-                //复制原版Jar文件
+                //Copy the vanilla Jar file
                 tempMcJar.copyTo(tempOfJar, overwrite = true)
 
-                //建立Json
+                //Write the Json
                 val jsonString = createOldOptiFineJson(
                     vanillaJson = tempMcJson,
                     optifineVersion = optifineVersion
@@ -131,7 +131,7 @@ fun getOptiFineInstallTask(
 }
 
 /**
- * 确保 launchwrapper-of 库被正常安装，如果未正常安装，则自行尝试解压
+ * Ensures the launchwrapper-of library is properly installed, extracting it manually when not
  */
 private fun checkOFLaunchWrapper(version: String, installer: ZipFile, libFolder: File) {
     val fileName = "launchwrapper-of-$version.jar"
@@ -139,7 +139,7 @@ private fun checkOFLaunchWrapper(version: String, installer: ZipFile, libFolder:
     val lwTargetFile = File(lwTargetFolder, fileName)
 
     if (!lwTargetFile.exists()) {
-        //安装出现神秘问题导致该文件未解压，自行尝试解压
+        //A mysterious install issue left this file unextracted; extract it manually
         Logger.info(TAG, "$fileName is not exists! try extract it by self.")
         installer.extractEntryToFile(fileName, lwTargetFile)
     }

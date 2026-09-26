@@ -310,7 +310,7 @@ private fun TabMenu(
         Spacer(modifier = Modifier.height(12.dp))
         settingItems.forEach { item ->
             if (item.key == NormalNavKey.Versions.UpdateLoader && !canUpdateLoader) {
-                //不支持自动更新安装，不放置“更新加载器/安装加载器”入口
+                //Unsupported自动更新安装，不放置“更新加载器/安装加载器”入口
                 return@forEach
             }
 

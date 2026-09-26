@@ -53,7 +53,7 @@ class JvmService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        //立即尝试启动前台服务，防止启动超时
+        //Try starting the foreground service immediately, to avoid start timeouts
         postNotification()
 
         if (intent == null) {
@@ -84,9 +84,9 @@ class JvmService : Service() {
                 userHome = userHome,
                 onExit = { code, _ ->
                     Logger.info(TAG, "Process exit with code $code")
-                    //移除前台通知再停止服务，让系统知道这是正常关闭
+                    //Remove the foreground notification before stopping the service, telling the system this is a clean shutdown
                     stopForeground(STOP_FOREGROUND_REMOVE)
-                    //必须同步发送退出码
+                    //The exit code must be sent synchronously
                     sendCode(code)
                     stopSelf()
                 }
@@ -120,7 +120,7 @@ class JvmService : Service() {
         postSummary: String? = null,
         postProgress: NoticeProgress? = null
     ) {
-        //Jvm服务渠道
+        //JVM service channel
         val data = NotificationChannelData.JVM_SERVICE_CHANNEL
 
         val notification: Notification = NotificationCompat.Builder(this, data.channelId)
@@ -135,7 +135,7 @@ class JvmService : Service() {
                     )
                 }
             }
-            .setOngoing(true) //持续通知
+            .setOngoing(true) //persistent notification
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setSmallIcon(R.mipmap.ic_launcher)
             .build()
@@ -168,7 +168,7 @@ class JvmService : Service() {
             context = applicationContext,
             jvmLaunchInfo = jvmLaunchInfo,
             onExit = onExit,
-            openPath = { /* 忽略 */ }
+            openPath = { /* ignored */ }
         )
 
         runJvm(launcher, onExit)
@@ -180,11 +180,11 @@ class JvmService : Service() {
     ): Unit = withContext(Dispatchers.IO) {
         val code = runCatching {
             withContext(Dispatchers.Main) {
-                //在主线程加载 exec
+                //Load exec on the main thread
                 NativeLibraryLoader.loadPojavLib()
             }
 
-            //开始记录日志
+            //Start logging
             val logFile = LATEST_PROCESS_LOG_FILE
             if (!logFile.exists() && !logFile.createNewFile()) throw IOException("Failed to create a new log file")
             LoggerBridge.start(logFile.absolutePath)

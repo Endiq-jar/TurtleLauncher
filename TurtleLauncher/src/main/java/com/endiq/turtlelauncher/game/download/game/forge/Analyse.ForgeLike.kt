@@ -52,7 +52,7 @@ private const val TAG = "Analyse.ForgeLike"
 const val FORGE_LIKE_ANALYSE_ID = "Analyse.ForgeLike"
 
 /**
- * Forge Like 分析与安装支持库 (仅支持处理新版本 Forge、NeoForge)
+ * Forge-like analysis & library install (only new Forge/NeoForge are supported)
  */
 fun getForgeLikeAnalyseTask(
     downloader: BaseMinecraftDownloader,
@@ -67,8 +67,8 @@ fun getForgeLikeAnalyseTask(
         dispatcher = Dispatchers.IO,
         task = { task ->
             if (sourceInherit != processedInherit) {
-                //准备安装环境
-                //复制原版文件
+                //Prepare the install environment
+                //Copy vanilla files
                 copyVanillaFiles(
                     sourceGameFolder = tempMinecraftFolder,
                     sourceVersion = sourceInherit,
@@ -91,7 +91,7 @@ fun getForgeLikeAnalyseTask(
 
 /**
  * [Reference PCL2](https://github.com/Hex-Dragon/PCL2/blob/bf6fa718c89e8615b947d1c639ed16a72ce125e0/Plain%20Craft%20Launcher%202/Pages/PageDownload/ModDownloadLib.vb#L1324-L1411)
- * 处理新版 Forge、NeoForge
+ * Handles new Forge/NeoForge
  */
 private suspend fun analyseNewForge(
     task: Task,
@@ -103,7 +103,7 @@ private suspend fun analyseNewForge(
 ) {
     task.updateProgress(-1f)
 
-    //解析 NeoForge 的支持库列表，并统一进行下载
+    //Parse NeoForge's library list and download them together
     val (installProfile, versionString) = withContext(Dispatchers.IO) {
         ZipFile(installer).use { zip ->
             task.updateProgress(0.2f)
@@ -137,17 +137,17 @@ private suspend fun analyseNewForge(
         }
     }
 
-    //合并为一个Json
+    //Merge into one Json
     installProfile.merge(versionString.parseToJson())
 
-    //计划下载 install_profile.json 内的所有支持库
+    //Schedule downloading all libraries inside install_profile.json
     val libDownloader = GameLibDownloader(
         downloader = downloader,
         gameJson = installProfile.toString()
     )
     libDownloader.schedule(task, File(tempMinecraftFolder, "libraries").ensureDirectory(), false)
 
-    //添加 Mojang Mappings 下载信息
+    //Add Mojang Mappings download info
     task.updateProgress(0.4f)
     scheduleMojangMappings(
         mergedJson = installProfile,
@@ -180,14 +180,14 @@ private suspend fun analyseNewForge(
         }
     }
 
-    //Start downloading NeoForge 支持库
+    //Start downloading NeoForge libraries
     libDownloader.download(task)
 
     task.updateProgress(1f)
 }
 
 /**
- * 解析并提交下载Mojang映射
+ * Parses and submits the Mojang mappings download
  */
 private suspend fun scheduleMojangMappings(
     mergedJson: JsonObject,

@@ -47,7 +47,7 @@ private const val TAG = "PackExporter"
 /**
  * 整合包导出器
  * @param exportInfo 要导出的整合包的必要信息
- * @param scope 在有生命周期管理的scope中执行安装任务
+ * @param scope the lifecycle-managed scope the install task runs in
  */
 class PackExporter(
     val context: Context,
@@ -162,7 +162,7 @@ class PackExporter(
     }
 
     /**
-     * 取消整合包导入
+     * Cancels the modpack import
      */
     fun cancel() {
         taskExecutor.cancel()

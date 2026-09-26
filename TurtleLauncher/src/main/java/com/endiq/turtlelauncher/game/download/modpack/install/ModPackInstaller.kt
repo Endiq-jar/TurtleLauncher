@@ -53,12 +53,12 @@ import java.io.File
 private const val TAG = "ModPackInstaller"
 
 /**
- * 在线下载的整合包安装器，仅支持 CurseForge、Modrinth
- * @param version 选中的整合包的版本信息
- * @param iconUrl 整合包的Icon URL
- * @param scope 在有生命周期管理的scope中执行安装任务
+ * Online modpack installer; supports only CurseForge and Modrinth
+ * @param version version info of the selected modpack
+ * @param iconUrl the modpack's icon URL
+ * @param scope the lifecycle-managed scope the install task runs in
  * @param waitForVersionName 等待用户输入Version name
- * @param waitForConfirmMobileData 等待用户确认使用移动网络
+ * @param waitForConfirmMobileData waits for the user to confirm mobile-data use
  */
 class ModPackInstaller(
     private val context: Context,
@@ -72,7 +72,7 @@ class ModPackInstaller(
     val tasksFlow: StateFlow<List<TitledTask>> = taskExecutor.tasksFlow
 
     private val _logOutput = MutableStateFlow<TaskLogOutput?>(null)
-    /** 安装 JVM 实时日志输出 */
+    /** Live log output of the install JVM */
     val logOutput: StateFlow<TaskLogOutput?> = _logOutput.asStateFlow()
 
     /**
@@ -81,12 +81,12 @@ class ModPackInstaller(
     private lateinit var modpackInfo: ModPackInfo
 
     /**
-     * 用户指定的预安装Version name
+     * User-specified target version name
      */
     private lateinit var targetVersionName: String
 
     /**
-     * 即将下载的游戏版本的信息
+     * Info of the game version about to be downloaded
      */
     private lateinit var gameDownloadInfo: GameDownloadInfo
 
@@ -94,7 +94,7 @@ class ModPackInstaller(
      * 开始安装整合包
      * @param isRunning 正在运行中，拒绝这次安装时
      * @param onInstalled 完成安装时
-     * @param onCancelled 内部取消时
+     * @param onCancelled on internal cancellation
      * @param onError 安装时遇到异常
      */
     fun installModPack(
@@ -119,7 +119,7 @@ class ModPackInstaller(
             },
             onError = { e ->
                 if (e is UsingMobileDataException) {
-                    //用户不希望使用移动网络
+                    //User declined mobile data
                     onCancelled()
                     return@executePhasesAsync
                 }
@@ -129,17 +129,17 @@ class ModPackInstaller(
     }
 
     private suspend fun getTaskPhase() = withContext(Dispatchers.IO) {
-        //临时游戏环境目录
+        //Temporary game environment directory
         val tempModPackDir = PathManager.DIR_CACHE_MODPACK_DOWNLOADER
         val tempVersionsDir = File(tempModPackDir, "fkVersion")
-        //整合包安装包文件
+        //Modpack installer package file
         val installerFile = File(tempModPackDir, "installer.zip")
-        //icon临时文件
+        //Icon temp file
         val tempIconFile = File(tempModPackDir, "icon.png")
 
         listOf(
             buildPhase {
-                //清除上一次安装的缓存（如果有的话，可能会影响这次的安装结果）
+                //Clear the previous install's cache (leftovers could skew this install's result)
                 addTask(
                     id = "Download.ModPack.ClearTemp",
                     title = androidText(R.string.download_install_clear_temp),
@@ -149,19 +149,19 @@ class ModPackInstaller(
                     //After cleaning the cache directory, create a fresh one
                     tempModPackDir.createDirAndLog()
                     tempVersionsDir.createDirAndLog()
-                    VersionFolders.MOD.getDir(tempVersionsDir).createDirAndLog() //创建临时模组目录
+                    VersionFolders.MOD.getDir(tempVersionsDir).createDirAndLog() //create the temp mods directory
 
-                    //在这个阶段开始检查是否使用移动网络
+                    //From this phase on, check whether mobile data may be used
                     if (isUsingMobileData(context)) {
                         val use = waitForConfirmMobileData()
                         if (!use) {
-                            //用户不决定使用移动网络安装，取消导入
+                            //User declined installing over mobile data; cancel the import
                             throw UsingMobileDataException()
                         }
                     }
                 }
 
-                //下载整合包安装包
+                //Download the modpack installer package
                 addTask(
                     id = "Download.ModPack.Installer",
                     title = androidText(R.string.download_game_install_base_download_file2, version.platformDisplayName())
@@ -192,7 +192,7 @@ class ModPackInstaller(
                             }
                         )
                     }
-                    //下载icon图片
+                    //Download the icon image
                     task.updateProgress(-1f)
                     task.updateMessage(null)
                     iconUrl?.let { iconUrl ->
@@ -203,7 +203,7 @@ class ModPackInstaller(
                     }
                 }
 
-                //解析整合包、解压整合包
+                //Parse the modpack and unpack it
                 addTask(
                     id = "Parse.ModPack",
                     title = androidText(R.string.download_modpack_install_parse),
@@ -217,7 +217,7 @@ class ModPackInstaller(
                     )
                 }
 
-                //等待用户输入预安装Version name
+                //Wait for the user to enter the target version name
                 addTask(
                     id = "Download.ModPack.WaitUserForVersionName",
                     title = androidText(R.string.download_install_input_version_name),
@@ -227,7 +227,7 @@ class ModPackInstaller(
                     targetVersionName = waitForVersionName(modpackInfo)
                 }
 
-                //下载整合包模组文件
+                //Download the modpack's mod files
                 addTask(
                     id = "Download.ModPack.Mods",
                     dispatcher = Dispatchers.IO,
@@ -237,18 +237,18 @@ class ModPackInstaller(
                     downloadTask.startDownload(task)
                 }
 
-                //分析并匹配模组加载器信息，并构造出游戏安装信息
+                //Analyze and match mod loader info, building the game install info
                 addTask(
                     id = "ModPack.Retrieve.Loader",
                     title = androidText(R.string.download_modpack_get_loaders),
                     icon = R.drawable.ic_build_outlined
                 ) { _ ->
-                    //构建游戏安装信息
+                    //Build the game install info
                     gameDownloadInfo = modpackInfo.retrieveLoaderTask(
                         targetVersionName = targetVersionName
                     )
 
-                    //开始安装游戏！切换到下一阶段！
+                    //Start installing the game! On to the next phase!
                     val gameInstaller = GameInstaller(
                         context = context,
                         info = gameDownloadInfo,
@@ -259,8 +259,8 @@ class ModPackInstaller(
                         phases = gameInstaller.getTaskPhase(
                             createIsolation = false,
                             onInstalled = { targetClientDir ->
-                                //已经完成游戏安装，开始最终任务
-                                //整合包临时文件安装任务
+                                //Game install finished; start the final task
+                                //Modpack temp file install task
                                 val finalTask = TitledTask(
                                     title = androidText(R.string.download_modpack_final_move),
                                     runningIcon = R.drawable.ic_build_outlined,
@@ -270,7 +270,7 @@ class ModPackInstaller(
                                         tempIconFile = tempIconFile
                                     )
                                 )
-                                //切换到安装阶段
+                                //Switch to the install phase
                                 taskExecutor.addPhase(
                                     buildPhase { add(finalTask) }
                                 )
@@ -283,14 +283,14 @@ class ModPackInstaller(
     }
 
     /**
-     * 取消安装
+     * Cancels the install
      */
     fun cancelInstall() {
         taskExecutor.cancel()
     }
 
     /**
-     * 清理临时整合包版本目录
+     * Cleans up the temporary modpack version directory
      */
     private suspend fun clearTempModPackDir() = withContext(Dispatchers.IO) {
         PathManager.DIR_CACHE_MODPACK_DOWNLOADER.takeIf { it.exists() }?.let { folder ->
@@ -300,7 +300,7 @@ class ModPackInstaller(
     }
 
     /**
-     * 创建最终安装任务
+     * Creates the final install task
      */
     private fun createFinalInstallTask(
         targetClientDir: File,
@@ -311,7 +311,7 @@ class ModPackInstaller(
         dispatcher = Dispatchers.IO,
         task = { task ->
             task.updateProgress(-1f)
-            //复制文件
+            //Copy files
             copyDirectoryContents(
                 tempVersionsDir,
                 targetClientDir
@@ -326,13 +326,13 @@ class ModPackInstaller(
                 tempIconFile.copyTo(iconFile)
             }
 
-            //创建版本信息
+            //Create version info
             VersionConfig.createIsolation(targetClientDir).apply {
-                this.versionSummary = modpackInfo.summary ?: "" //整合包描述
+                this.versionSummary = modpackInfo.summary ?: "" //modpack description
                 this.ramAllocation = modpackInfo.ram ?: -1
             }.save()
 
-            //清理临时整合包目录
+            //Clean up the temp modpack directory
             task.updateProgress(-1f)
             task.updateMessage(androidText(R.string.download_install_clear_temp))
             clearTempModPackDir()

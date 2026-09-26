@@ -21,7 +21,7 @@ package com.endiq.turtlelauncher.game.download.game.models
 import com.google.gson.annotations.SerializedName
 
 /**
- * 当前版本的版本信息，在安装过程中写入，为启动器提供更好的版本识别
+ * Version info of the current version, written during install so the launcher recognizes versions better
  */
 class LaunchFor(
     @SerializedName("infos")
@@ -29,15 +29,15 @@ class LaunchFor(
 ) {
     class Info(
         /**
-         * 版本
-         * Minecraft 版本如：1.21.4
-         * NeoForge 版本如：21.4.136
+         * Version
+         * e.g. a Minecraft version: 1.21.4
+         * e.g. a NeoForge version: 21.4.136
          */
         @SerializedName("version")
         val version: String,
         /**
-         * 名称
-         * 如 Minecraft、NeoForge
+         * Name
+         * e.g. Minecraft, NeoForge
          */
         @SerializedName("name")
         val name: String

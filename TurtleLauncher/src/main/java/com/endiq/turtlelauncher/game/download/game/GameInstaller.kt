@@ -717,13 +717,13 @@ class GameInstaller(
      * On install failure or cancellation, the target client version folder must be cleared
      */
     private fun clearTargetClient() {
-        val dirToDelete = targetClientDir //临时变量
+        val dirToDelete = targetClientDir //temp variable
         targetClientDir = null
 
         CoroutineScope(Dispatchers.IO).launch {
-//            clearTempGameDir() 考虑到用户可能操作快，双线程清理同一个文件夹可能导致一些问题
+//            clearTempGameDir() — users may act fast; two threads cleaning the same folder can cause issues
             dirToDelete?.let {
-                //直接清除上一次安装的目标目录
+                //Clear the previous install's target directory directly
                 FileUtils.deleteQuietly(it)
                 Logger.info(TAG, "Successfully deleted version directory: ${it.name} at path: ${it.absolutePath}")
             }
@@ -760,7 +760,7 @@ class GameInstaller(
     }
 
     /**
-     * 获取下载原版 Task
+     * Gets the vanilla download task
      */
     private fun createMinecraftDownloadTask(
         tempClientName: String,
@@ -778,7 +778,7 @@ class GameInstaller(
     }
 
     /**
-     * @param tempFolderName 临时ModLoader版本文件夹名称
+     * @param tempFolderName name of the temporary ModLoader version folder
      */
     private fun createForgeLikeTask(
         forgeLikeVersion: ForgeLikeVersion,
@@ -788,7 +788,7 @@ class GameInstaller(
         tempFolderName: String,
         addTask: (title: AndroidStringText, icon: Int?, task: Task) -> Unit
     ) {
-        //类似 1.19.3-41.2.8 格式，优先使用 Version 中要求的版本而非 Inherit（例如 1.19.3 却使用了 1.19 的 Forge）
+        //Formats like 1.19.3-41.2.8: prefer the version required by Version over Inherit (e.g. 1.19.3 actually using 1.19's Forge)
         val (processedInherit, processedLoaderVersion) =
             if (
                 !forgeLikeVersion.isNeoForge && loaderVersion.startsWith("1.") && loaderVersion.contains("-")
@@ -799,7 +799,7 @@ class GameInstaller(
             }
 
         val tempInstaller = targetTempForgeLikeInstaller(tempGameDir)
-        //下载安装器
+        //Download the installer
         addTask(
             androidText(
                 R.string.download_game_install_base_download_file,
@@ -809,7 +809,7 @@ class GameInstaller(
             null,
             getForgeLikeDownloadTask(tempInstaller, forgeLikeVersion)
         )
-        //分析与安装
+        //Analyze and install
         val isNew = forgeLikeVersion is NeoForgeVersion || !forgeLikeVersion.isLegacy
 
         if (isNew) {
@@ -858,7 +858,7 @@ class GameInstaller(
     ) {
         val tempVersionJson = File(tempMinecraftDir, "versions/$tempFolderName/$tempFolderName.json")
 
-        //下载 Json
+        //Download the Json
         addTask(
             androidText(
                 R.string.download_game_install_base_download_file,
@@ -872,7 +872,7 @@ class GameInstaller(
             )
         )
 
-        //补全游戏库
+        //Complete the game libraries
         addTask(
             androidText(
                 R.string.download_game_install_forgelike_analyse,
@@ -895,7 +895,7 @@ class GameInstaller(
         addTask: (title: AndroidStringText, icon: Int?, task: Task) -> Unit
     ) {
         val tempInstaller = targetTempCleanroomInstaller(tempGameDir)
-        //下载安装器
+        //Download the installer
         addTask(
             androidText(
                 R.string.download_game_install_base_download_file,
@@ -906,7 +906,7 @@ class GameInstaller(
             getCleanroomDownloadTask(tempInstaller, cleanroomVersion)
         )
 
-        //以新Forge安装器的方式进行安装
+        //Install the way the new Forge installer does
         addTask(
             androidText(
                 R.string.download_game_install_forgelike_analyse,
@@ -968,8 +968,8 @@ class GameInstaller(
     )
 
     /**
-     * 游戏带附加内容安装完成，合并版本Json、迁移游戏文件
-     * @param createIsolation 是否新创建启用版本隔离的版本配置
+     * Game with add-ons installed: merge the version Json and migrate game files
+     * @param createIsolation whether to create a new version config with version isolation enabled
      */
     private fun createGameInstalledTask(
         tempMinecraftDir: File,
@@ -990,7 +990,7 @@ class GameInstaller(
         id = GAME_JSON_MERGER_ID,
         dispatcher = Dispatchers.IO,
         task = { task ->
-            //合并版本 Json
+            //Merge version Json
             task.updateProgress(0.1f)
             mergeGameJson(
                 info = info,
@@ -1005,7 +1005,7 @@ class GameInstaller(
                 cleanroomFolder = cleanroomFolder
             )
 
-            //迁移游戏文件
+            //Migrate game files
             copyDirectoryContents(
                 File(tempMinecraftDir, "libraries"),
                 File(targetMinecraftDir, "libraries"),
@@ -1014,7 +1014,7 @@ class GameInstaller(
                 }
             )
 
-            //复制客户端文件
+            //Copy client files
             copyVanillaFiles(
                 sourceGameFolder = tempMinecraftDir,
                 sourceVersion = info.gameVersion,
@@ -1022,19 +1022,19 @@ class GameInstaller(
                 targetVersion = info.customVersionName
             )
 
-            //复制Mods
+            //Copy Mods
             tempModsDir.listFiles()?.let {
                 val targetModsDir = VersionFolders.MOD.getDir(targetClientDir)
                 it.forEach { modFile ->
                     val targetMod = File(targetModsDir, modFile.name)
                     if (!targetMod.exists()) {
-                        //如果已经安装了，那就不覆盖
-                        //用户可能是覆盖安装，所以检查这个很有必要
+                        //If already installed, don't overwrite
+                        //The user may be installing over an existing install, so this check really matters
                         modFile.copyTo(targetMod)
                     }
                 }
                 if (createIsolation) {
-                    //开启版本隔离
+                    //Enable version isolation
                     VersionConfig.createIsolation(targetClientDir).save()
                 }
             }
@@ -1049,7 +1049,7 @@ class GameInstaller(
     )
 
     /**
-     * 仅原本客户端文件复制任务 json、jar
+     * Task that copies only the original client files: json, jar
      */
     private fun createVanillaFilesCopyTask(
         tempMinecraftDir: File,
@@ -1058,7 +1058,7 @@ class GameInstaller(
         return Task.runTask(
             id = "VanillaFilesCopy",
             task = { task ->
-                //复制客户端文件
+                //Copy client files
                 copyVanillaFiles(
                     sourceGameFolder = tempMinecraftDir,
                     sourceVersion = info.gameVersion,

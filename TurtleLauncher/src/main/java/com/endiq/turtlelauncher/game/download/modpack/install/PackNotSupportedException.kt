@@ -18,8 +18,8 @@
 package com.endiq.turtlelauncher.game.download.modpack.install
 
 /**
- * 整合包不受支持，无法导入时，抛出这个异常
- * @param reason 不受支持的原因
+ * Thrown when a modpack is unsupported and cannot be imported
+ * @param reason why it's unsupported
  */
 class PackNotSupportedException(
     val reason: UnsupportedPackReason
@@ -28,18 +28,18 @@ class PackNotSupportedException(
 )
 
 /**
- * 导致启动器判断整合包不受支持的原因
+ * Reasons for the launcher to judge a modpack unsupported
  */
 enum class UnsupportedPackReason(
     val reasonText: String
 ) {
     /**
-     * 压缩包损坏或解压失败
+     * The archive is corrupted or unpacking failed
      */
     CorruptedArchive("The archive is corrupted or failed to extract."),
 
     /**
-     * 不支持的整合包格式
+     * Unsupported modpack format
      */
     UnsupportedFormat("The modpack format is not supported.")
 }

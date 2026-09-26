@@ -341,7 +341,7 @@ private suspend fun <T : ZipEntryBase> extractZipEntries(
             val entry = entriesIter.next()
             val name = entry.name
 
-            //忽略非目标目录
+            //Ignored非目标目录
             if (!name.startsWith(prefix)) continue
 
             val relative = name.removePrefix(prefix)

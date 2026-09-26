@@ -29,11 +29,11 @@ import java.io.File
 const val PROCESS_SERVICE_PORT = 53151 //random
 
 /**
- * 安装 JVM 进程的运行日志文件
+ * Log file of the install JVM process
  */
 val LATEST_PROCESS_LOG_FILE: File get() = File(PathManager.DIR_FILES_EXTERNAL, "latest_process.log")
 
-//构造变量
+//Construction variables
 const val SERVICE_JVM_ARGS = "service.jvm.args"
 const val SERVICE_JRE_NAME = "service.jre.name"
 const val SERVICE_USER_HOME = "service.user.home"
@@ -62,23 +62,23 @@ fun startJvmService(
 }
 
 /**
- * 判定是否为系统拒绝创建安装进程（:jvm）导致的启动失败
+ * Checks whether the failure came from the system refusing to create the install process (:jvm)
  */
 fun Throwable.isProcessStartRefused(): Boolean =
     this is SecurityException && message?.contains("process is bad") == true
 
 /**
- * 与 JVM 安装运行互斥、开跑前必须清场的子进程名后缀
+ * Suffixes of sub-process names that are mutex with the JVM install and must be cleared before running
  */
 private val JVM_EXCLUSIVE_SUFFIXES = listOf(":jvm", ":game")
 
-/** 判定进程名是否属于运行安装 JVM 前必须消失的互斥进程 */
+/** Checks whether a process name belongs to a mutex process that must vanish before the install JVM runs */
 internal fun isJvmExclusiveProcess(processName: String, mainProcessName: String): Boolean =
     JVM_EXCLUSIVE_SUFFIXES.any { processName == mainProcessName + it }
 
 /**
- * 列出仍在运行的互斥子进程
- * @return 空列表代表可以开跑
+ * Lists still-running mutex sub-processes
+ * @return an empty list means it's safe to run
  */
 fun listBlockingProcesses(context: Context): List<String> {
     val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -91,7 +91,7 @@ fun listBlockingProcesses(context: Context): List<String> {
 }
 
 /**
- * 停止所有与 JVM 安装互斥的子进程（:jvm、:game）
+ * Stops all sub-processes mutex with the JVM install (:jvm, :game)
  */
 fun stopAllNonMainProcesses(context: Context) {
     val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -104,7 +104,7 @@ fun stopAllNonMainProcesses(context: Context) {
             try {
                 android.os.Process.killProcess(it.pid)
             } catch (_: Exception) {
-                //忽略
+                //Ignored
             }
         }
 }

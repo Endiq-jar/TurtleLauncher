@@ -26,13 +26,13 @@ import com.endiq.turtlelauncher.game.addons.modloader.forgelike.neoforge.NeoForg
 import com.endiq.turtlelauncher.game.download.game.GameDownloadInfo
 
 /**
- * 整合包信息
- * @param name 整合包名称
- * @param summary 整合包的简介（可用到版本描述上）
- * @param ram 整合包推荐分配的内存
- * @param files 整合包所有需要下载的模组
- * @param loaders 整合包需要安装的模组加载器
- * @param gameVersion 整合包需要的游戏版本
+ * Modpack info
+ * @param name modpack name
+ * @param summary modpack summary (usable as the version description)
+ * @param ram memory allocation recommended by the modpack
+ * @param files all mods the modpack needs downloaded
+ * @param loaders mod loaders the modpack needs installed
+ * @param gameVersion game version the modpack needs
  */
 data class ModPackInfo(
     val name: String,
@@ -44,8 +44,8 @@ data class ModPackInfo(
 )
 
 /**
- * 模组加载器解析匹配任务
- * @return 构建好的游戏下载安装信息
+ * Mod loader resolution/matching task
+ * @return the built game download/install info
  */
 suspend fun ModPackInfo.retrieveLoaderTask(
     targetVersionName: String
@@ -55,7 +55,7 @@ suspend fun ModPackInfo.retrieveLoaderTask(
         customVersionName = targetVersionName
     )
 
-    //匹配目标Loader version，获取详细版本信息
+    //Match the target loader version and fetch its details
     loaders.forEach { pair ->
         pair.retrieveLoader(
             gameVersion = gameVersion,
@@ -70,9 +70,9 @@ suspend fun ModPackInfo.retrieveLoaderTask(
 }
 
 /**
- * 模组加载器解析匹配，并粘贴游戏下载信息
- * @param gameVersion 当前游戏版本
- * @param pasteGameInfo 将识别到的模组Loader version贴回信息类
+ * Resolves and matches mod loaders, pasting them into the game download info
+ * @param gameVersion the current game version
+ * @param pasteGameInfo pastes the matched mod loader version back into the info class
  */
 suspend fun Pair<ModLoader, String>.retrieveLoader(
     gameVersion: String,
@@ -110,7 +110,7 @@ suspend fun Pair<ModLoader, String>.retrieveLoader(
             }
         }
         else -> {
-            //不支持
+            //Unsupported
         }
     }
 }

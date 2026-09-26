@@ -106,7 +106,7 @@ class MinecraftDownloader(
                         }
                     )
                 }
-                //清除任务信息
+                //Clear task info
                 task.updateProgress(1f)
                 task.updateMessage(null)
 
@@ -207,7 +207,7 @@ class MinecraftDownloader(
     }
 
     /**
-     * 提交计划下载
+     * Submits the scheduled download
      */
     private fun scheduleDownload(urls: List<String>, sha1: String?, targetFile: File, size: Long, isDownloadable: Boolean = true) {
         allDownloadTasks.add(

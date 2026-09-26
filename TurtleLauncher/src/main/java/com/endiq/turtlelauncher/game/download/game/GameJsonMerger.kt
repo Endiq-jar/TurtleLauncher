@@ -50,13 +50,13 @@ fun mergeGameJson(
 ) {
     Logger.info(TAG,
         "Start merge version json, output: $outputFolder, Minecraft: $clientFolder\n" +
-                (if (optiFineFolder != null) "，${ModLoader.OPTIFINE.displayName}: $optiFineFolder" else "") +
-                (if (forgeFolder != null) "，${ModLoader.FORGE.displayName}: $forgeFolder" else "") +
-                (if (neoForgeFolder != null) "，${ModLoader.NEOFORGE.displayName}: $neoForgeFolder" else "") +
-                (if (fabricFolder != null) "，${ModLoader.FABRIC.displayName}: $fabricFolder" else "") +
-                (if (legacyFabricFolder != null) "，${ModLoader.LEGACY_FABRIC.displayName}: $legacyFabricFolder" else "") +
-                (if (quiltFolder != null) "，${ModLoader.QUILT.displayName}: $quiltFolder" else "") +
-                (if (cleanroomFolder != null) "，${ModLoader.CLEANROOM.displayName}: $cleanroomFolder" else "")
+                (if (optiFineFolder != null) ", ${ModLoader.OPTIFINE.displayName}: $optiFineFolder" else "") +
+                (if (forgeFolder != null) ", ${ModLoader.FORGE.displayName}: $forgeFolder" else "") +
+                (if (neoForgeFolder != null) ", ${ModLoader.NEOFORGE.displayName}: $neoForgeFolder" else "") +
+                (if (fabricFolder != null) ", ${ModLoader.FABRIC.displayName}: $fabricFolder" else "") +
+                (if (legacyFabricFolder != null) ", ${ModLoader.LEGACY_FABRIC.displayName}: $legacyFabricFolder" else "") +
+                (if (quiltFolder != null) ", ${ModLoader.QUILT.displayName}: $quiltFolder" else "") +
+                (if (cleanroomFolder != null) ", ${ModLoader.CLEANROOM.displayName}: $cleanroomFolder" else "")
     )
 
     outputFolder.mkdirs()
@@ -75,7 +75,7 @@ fun mergeGameJson(
     val quiltJsonPath = quiltFolder.gameFileOrNull("json")
     val cleanroomJsonPath = cleanroomFolder.gameFileOrNull("json")
 
-    //读取和验证 Json
+    //Read and validate the Json
     val minecraftJson = minecraftJsonPath.getJsonOrNull("Minecraft")!!
     //Addon
     val optiFineJson = optiFineJsonPath.getJsonOrNull(ModLoader.OPTIFINE.displayName)
@@ -86,21 +86,21 @@ fun mergeGameJson(
     val quiltJson = quiltJsonPath.getJsonOrNull(ModLoader.FABRIC.displayName)
     val cleanroomJson = cleanroomJsonPath.getJsonOrNull(ModLoader.CLEANROOM.displayName)
 
-    //处理 minecraftArguments
+    //Handle minecraftArguments
     val allArgs = listOfNotNull(
         minecraftJson.safeGetMinecraftArguments(),
         optiFineJson?.safeGetMinecraftArguments(),
         forgeJson?.safeGetMinecraftArguments(),
         neoForgeJson?.safeGetMinecraftArguments(),
         cleanroomJson?.safeGetMinecraftArguments()
-        //Fabric、Quilt没有这样的参数
+        //Fabric/Quilt have no such parameters
     ).joinToString(" ")
 
     val splitArgs = splitMinecraftArguments(allArgs)
     val realArgs = deduplicateMinecraftArguments(splitArgs).joinToString(" ")
 
     // ----------------------------------------------------------
-    //                      开始合并 版本 Json
+    //                      Start merging the version Json
     // ----------------------------------------------------------
 
     val outputJson = minecraftJson.deepCopy()
@@ -124,16 +124,16 @@ fun mergeGameJson(
     outputJson.remove("jar")
     outputJson.addProperty("id", outputFolder.name)
 
-    //针对 libraries 进行去重
+    //Deduplicate libraries
     deduplicateLibraries(outputJson)
 
-    //存入 LaunchFor 信息
+    //Store LaunchFor info
     addLaunchForInfo(
         info = info,
         jsonObject = outputJson
     )
 
-    //保存已合并的新版本 Json         输出更美观的Json
+    //Save the merged new version Json, pretty-printed
     File(outputJsonPath).writeText(GSON.toJson(outputJson))
     if (minecraftJar != outputJar) {
         val outputJarFile = File(outputJar)
@@ -147,14 +147,14 @@ fun mergeGameJson(
 }
 
 /**
- * 添加 LaunchFor 信息，让启动器更好的识别版本
+ * Adds LaunchFor info, letting the launcher recognize versions better
  */
 private fun addLaunchForInfo(
     info: GameDownloadInfo,
     jsonObject: JsonObject
 ) {
     val infos = mutableListOf(
-        //默认 Minecraft 信息
+        //Default Minecraft info
         LaunchFor.Info(
             version = info.gameVersion,
             name = "Minecraft"
@@ -175,8 +175,8 @@ private fun addLaunchForInfo(
 }
 
 /**
- * 快速获取游戏文件的绝对路径
- * @param suffix 文件后缀
+ * Quickly resolves a game file's absolute path
+ * @param suffix file suffix
  * path/to/game -> path/to/game/game.suffix
  */
 private fun File?.gameFileOrNull(suffix: String): String? {
@@ -184,14 +184,14 @@ private fun File?.gameFileOrNull(suffix: String): String? {
 }
 
 /**
- * 确保目标 Json 的 minecraftArguments 不为 null 且部位空字符串
+ * Ensures the target Json's minecraftArguments is neither null nor an empty string
  */
 fun JsonObject.safeGetMinecraftArguments(): String? {
     return this.safeGetMember("minecraftArguments").takeIf { it.isNotBlank() }
 }
 
 /**
- * 兼容性更好的 Minecraft 参数分割
+ * More compatible Minecraft argument splitting
  */
 private fun splitMinecraftArguments(args: String): List<String> {
     val rawArgs = args.split(" ").map { it.trim() }.filter { it.isNotEmpty() }
@@ -200,7 +200,7 @@ private fun splitMinecraftArguments(args: String): List<String> {
 
     for (segment in rawArgs) {
         when {
-            //新参数以 - 开头
+            //New arguments start with -
             segment.startsWith("-") -> {
                 currentArg?.let { splitArgs.add(it.toString()) }
                 currentArg = StringBuilder(segment)
@@ -208,7 +208,7 @@ private fun splitMinecraftArguments(args: String): List<String> {
             currentArg != null -> {
                 currentArg.append(" ").append(segment)
             }
-            //无前缀的独立参数（比如 legacy 格式）
+            //Standalone arguments without a prefix (e.g. legacy format)
             else -> splitArgs.add(segment)
         }
     }
@@ -217,13 +217,13 @@ private fun splitMinecraftArguments(args: String): List<String> {
 }
 
 /**
- * 对于 Minecraft 参数的去重
+ * Deduplication for Minecraft arguments
  */
 fun deduplicateMinecraftArguments(args: List<String>): List<String> {
     val seenKeys = mutableSetOf<String>()
     val result = mutableListOf<String>()
 
-    //反向遍历，保留首次出现的参数（相当于正向的最后一次出现）
+    //Walk backwards, keeping the first occurrence seen (i.e. the last one in forward order)
     args.asReversed().forEach { arg ->
         val key = arg.split(" ").firstOrNull() ?: arg
         if (seenKeys.add(key)) {
@@ -235,8 +235,8 @@ fun deduplicateMinecraftArguments(args: List<String>): List<String> {
 }
 
 /**
- * 去重 libraries，基于 groupId, artifactId, classifier 三元组去重
- * 如果存在多个版本的同一库，则保留版本号更高的库
+ * Dedupes libraries on the groupId, artifactId, classifier triple
+ * When several versions of one library exist, keep the higher version
  */
 private fun deduplicateLibraries(jsonObject: JsonObject, baseFolder: String = ".minecraft") {
     if (!jsonObject.has("libraries")) return
@@ -249,7 +249,7 @@ private fun deduplicateLibraries(jsonObject: JsonObject, baseFolder: String = ".
         val lib = element.asJsonObject
         val name = lib.get("name")?.asString ?: continue
 
-        //解析库名称的组件（包含显式分类器）
+        //Parse the library name components (including an explicit classifier)
         val (groupId, artifactId, version, explicitClassifier) = parseLibraryComponents(name)
 
         val path = getLibraryPath(name, baseFolder = baseFolder)
@@ -261,7 +261,7 @@ private fun deduplicateLibraries(jsonObject: JsonObject, baseFolder: String = ".
         val key = Triple(groupId, artifactId, finalClassifier)
         val existing = libMap[key]
 
-        //检查库的版本，仅保留高版本的库
+        //Check library versions; keep only the higher one
         if (existing == null || isCurrentVersionHigher(version, existing)) {
             libMap[key] = lib
         }
@@ -272,7 +272,7 @@ private fun deduplicateLibraries(jsonObject: JsonObject, baseFolder: String = ".
 }
 
 /**
- * 提取文件名中的分类器
+ * Extracts the classifier from a file name
  */
 private fun extractClassifier(artifactId: String, version: String, filename: String): String {
     val expectedBase = "$artifactId-$version"
@@ -285,8 +285,8 @@ private fun extractClassifier(artifactId: String, version: String, filename: Str
 }
 
 /**
- * 比较当前库版本是否高于已存在的库
- * 使用 [org.apache.maven.artifact.versioning.ComparableVersion] 比较版本
+ * Checks whether the current library version beats the already existing one
+ * Compares versions via [org.apache.maven.artifact.versioning.ComparableVersion]
  */
 private fun isCurrentVersionHigher(currentVersion: String, existingLib: JsonObject): Boolean {
     val existingName = existingLib.get("name").asString

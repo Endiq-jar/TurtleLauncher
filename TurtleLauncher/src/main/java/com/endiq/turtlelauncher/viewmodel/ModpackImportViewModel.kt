@@ -72,7 +72,7 @@ private const val TAG = "ModpackImportVM"
 /** 导入整合包相关操作 */
 sealed interface ModpackImportOperation {
     data object None : ModpackImportOperation
-    /** 开始导入整合包 */
+    /** Starts importing a modpack */
     data object Import : ModpackImportOperation
     /** 不支持的整合包或格式无效 */
     data class NotSupport(val reason: UnsupportedPackReason) : ModpackImportOperation
@@ -148,7 +148,7 @@ class ModpackImportViewModel : ViewModel() {
     var importer by mutableStateOf<ModpackImporter?>(null)
 
     /**
-     * 开始导入整合包
+     * Starts importing a modpack
      */
     fun import(
         context: Context,

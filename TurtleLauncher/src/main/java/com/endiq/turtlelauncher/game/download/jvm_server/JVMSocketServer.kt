@@ -47,7 +47,7 @@ object JVMSocketServer {
     private var socket: DatagramSocket? = null
 
     /**
-     * 上一次接收的消息
+     * The last received message
      */
     var receiveMsg: String? = null
         private set
@@ -59,7 +59,7 @@ object JVMSocketServer {
     ) {
         this.ip = ip
         this.port = port
-        //清空上一轮的接收结果，防止陈旧退出码被当作本轮结果消费
+        //Clear last round's received result, so a stale exit code isn't consumed as this round's
         receiveMsg = null
 
         scope?.let {

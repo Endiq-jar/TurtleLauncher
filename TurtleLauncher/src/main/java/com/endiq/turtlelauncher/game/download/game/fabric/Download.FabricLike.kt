@@ -36,7 +36,7 @@ fun getFabricLikeDownloadTask(
         id = FABRIC_LIKE_DOWNLOAD_ID,
         dispatcher = Dispatchers.IO,
         task = {
-            //下载版本 Json
+            //Download the version Json
             val loaderJson = fetchStringFromUrls(fabricLikeVersion.loaderJsonUrl.mapBMCLMirrorUrls())
             tempVersionJson
                 .ensureParentDirectory()

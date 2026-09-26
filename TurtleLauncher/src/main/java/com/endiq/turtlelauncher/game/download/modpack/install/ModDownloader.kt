@@ -42,8 +42,8 @@ import java.util.concurrent.atomic.AtomicInteger
 private const val TAG = "ModDownloader"
 
 /**
- * 整合包模组下载器
- * 先并发把延迟解析的模组链接解析出来，再交给批量下载引擎执行
+ * Modpack mod downloader
+ * Resolves deferred mod links concurrently first, then hands them to the batch download engine
  */
 class ModDownloader(
     val mods: List<ModFile>,
@@ -93,7 +93,7 @@ class ModDownloader(
         task.updateMessage(null)
     }
 
-    /** 并发解析全部模组的下载信息，解析失败的记入失败计数 */
+    /** Concurrently resolves download info of all mods; failures add to the failure count */
     private suspend fun prepareAll(resolvedFailures: AtomicInteger, missingMods: AtomicInteger): List<DownloadTask> =
         coroutineScope {
             val semaphore = Semaphore(maxDownloadThreads)
@@ -105,11 +105,11 @@ class ModDownloader(
                         } catch (_: CancellationException) {
                             throw CancellationException("mod link resolving cancelled")
                         } catch (_: FileNotFoundException) {
-                            //已在源端下架（404）的模组会被跳过而不是终止安装
+                            //Mods delisted at the source (404) are skipped instead of aborting the install
                             missingMods.incrementAndGet()
                             null
                         } catch (_: NotFoundException) {
-                            //已在源端下架（404）的模组会被跳过而不是终止安装
+                            //Mods delisted at the source (404) are skipped instead of aborting the install
                             missingMods.incrementAndGet()
                             null
                         } catch (e: Exception) {
@@ -124,8 +124,8 @@ class ModDownloader(
         }
 
     /**
-     * 解析单个模组的下载信息（CurseForge 包常只有 projectID/fileID，必须现场请求）
-     * 只有已经拿到直链的 ModFile 的 getFile 才是 null。
+     * Resolves one mod's download info (CurseForge packs often carry only projectID/fileID, needing a live request)
+     * getFile is null only for ModFiles that already have a direct link.
      */
     private suspend fun prepare(mod: ModFile): DownloadTask {
         val file = mod.getFile?.invoke() ?: mod

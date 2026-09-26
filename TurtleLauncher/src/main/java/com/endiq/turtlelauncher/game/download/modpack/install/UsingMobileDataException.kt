@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.game.download.modpack.install
 
 /**
- * 用户拒绝使用移动网络安装整合包
+ * The user declined installing the modpack over mobile data
  */
 class UsingMobileDataException: RuntimeException(
     "Users do not want to install the modpack using mobile data."

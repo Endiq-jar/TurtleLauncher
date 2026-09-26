@@ -49,7 +49,7 @@ class VersionFacet(val version: String) : ModrinthFacet {
 }
 
 /**
- * 项目类型
+ * Project type
  */
 enum class ProjectTypeFacet : ModrinthFacet {
     MOD {

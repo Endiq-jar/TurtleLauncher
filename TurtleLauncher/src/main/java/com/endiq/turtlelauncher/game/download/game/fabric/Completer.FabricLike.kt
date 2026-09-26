@@ -37,9 +37,9 @@ fun getFabricLikeCompleterTask(
                 downloader = downloader,
                 gameJson = tempVersionJson.readText()
             )
-            //提交下载计划
+            //Submit the download schedule
             libDownloader.schedule(task, File(tempMinecraftDir, "libraries"))
-            //补全游戏库
+            //Complete the game libraries
             libDownloader.download(task)
         }
     )

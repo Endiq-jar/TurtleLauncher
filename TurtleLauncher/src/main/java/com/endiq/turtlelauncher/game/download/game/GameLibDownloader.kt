@@ -32,8 +32,8 @@ import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
- * 游戏支持库下载器
- * 装配版本 JSON 中的支持库任务并交给批量下载引擎执行
+ * Game library downloader
+ * Assembles library tasks from the version JSON and hands them to the batch download engine
  */
 class GameLibDownloader(
     private val downloader: BaseMinecraftDownloader,
@@ -42,11 +42,11 @@ class GameLibDownloader(
 ) {
     private val allDownloadTasks = ConcurrentLinkedQueue<DownloadTask>()
 
-    //判断是否已经开始下载
+    //Check whether downloading has begun
     private var isDownloadStarted: Boolean = false
 
     /**
-     * 计划下载所有支持库
+     * Schedules downloading all libraries
      */
     suspend fun schedule(
         task: Task,
@@ -60,14 +60,14 @@ class GameLibDownloader(
             task.updateMessage(androidText(R.string.minecraft_download_stat_download_task))
         }
 
-        //仅加载处理支持库
+        //Only load and process the libraries
         downloader.loadLibraryDownloads(gameManifest, targetDir) { urls, hash, targetFile, size, isDownloadable ->
             scheduleDownload(urls, hash, targetFile, size, isDownloadable)
         }
     }
 
     /**
-     * 交给下载引擎执行全部支持库任务
+     * Hands all library tasks to the download engine
      */
     suspend fun download(task: Task) {
         isDownloadStarted = true
@@ -88,13 +88,13 @@ class GameLibDownloader(
             )
         }
 
-        //清除任务信息
+        //Clear task info
         task.updateProgress(1f)
         task.updateMessage(null)
     }
 
     /**
-     * 提交计划下载
+     * Submits the scheduled download
      */
     fun scheduleDownload(urls: List<String>, sha1: String?, targetFile: File, size: Long, isDownloadable: Boolean = true) {
         if (isDownloadStarted) throw IllegalStateException("The download has already started; adding more download tasks is no longer meaningful.")
@@ -114,8 +114,8 @@ class GameLibDownloader(
     }
 
     /**
-     * 删除某一项下载任务
-     * 在下载前可以使用
+     * Removes one download task
+     * Usable before downloading
      */
     fun removeDownload(predicate: (DownloadTask) -> Boolean) {
         if (isDownloadStarted) throw IllegalStateException("The download has already started; removing download tasks is no longer meaningful.")

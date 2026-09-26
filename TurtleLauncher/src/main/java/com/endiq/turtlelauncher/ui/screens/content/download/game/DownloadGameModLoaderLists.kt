@@ -285,7 +285,7 @@ suspend fun <T> ViewModel.runWithState(
     }.onFailure { e ->
         val state = when (e) {
             is ResponseTooShortException -> {
-                //忽略，判定为不可用
+                //Ignored，判定为不可用
                 AddonState.None
             }
             is HttpRequestTimeoutException -> AddonState.Error(androidText(R.string.error_timeout))

@@ -31,8 +31,8 @@ private const val TAG = "DownloadGame"
 fun GameManifest.isOldVersion(): Boolean = !minecraftArguments.isNullOrEmpty()
 
 /**
- * 尝试读取指定路径的文件为一个JsonObject对象
- * 若格式不正确则抛出异常
+ * Tries to read the file at the given path as a JsonObject
+ * Throws when the format is invalid
  */
 fun String?.getJsonOrNull(tag: String): JsonObject? {
     return this?.let { path ->
@@ -49,12 +49,12 @@ fun String?.getJsonOrNull(tag: String): JsonObject? {
 }
 
 /**
- * 复制jar、json文件到临时Game directories，作为安装ModLoader的环境
- * @param sourceGameFolder 源Game directories
- * @param sourceVersion 源游戏版本名
- * @param destinationGameFolder 要复制到的Game directories
- * @param targetVersion 要复制为的Version name
- * @param filesToCopy 指定要复制的文件的后缀名
+ * Copies jar/json files into the temporary game directory as the ModLoader install environment
+ * @param sourceGameFolder source game directory
+ * @param sourceVersion source game version name
+ * @param destinationGameFolder destination game directory
+ * @param targetVersion target version name to copy as
+ * @param filesToCopy suffixes of the files to copy
  */
 fun copyVanillaFiles(
     sourceGameFolder: File,
@@ -77,9 +77,9 @@ fun copyVanillaFiles(
 }
 
 /**
- * 根据提供的原始库名称生成对应的本地路径。
- * @param original 库的原始名称，例如 `groupId:artifactId:version`
- * @param baseFolder 基础文件夹路径，作为文件路径前缀，为 null 则不连接
+ * Generates the local path for the given raw library name.
+ * @param original the raw library name, e.g. `groupId:artifactId:version`
+ * @param baseFolder base folder path used as the path prefix; no joining when null
  */
 fun getLibraryPath(
     original: String,
@@ -87,7 +87,7 @@ fun getLibraryPath(
 ): String {
     val components = parseLibraryComponents(original)
 
-    // 处理 OptiFine 特殊情况
+    // Handle the OptiFine special case
     if (isOptiFineLibrary(components.groupId, components.artifactId, components.version)) {
         val specialPath = handleOptiFineSpecialCase(
             baseFolder = baseFolder,
@@ -112,7 +112,7 @@ fun getLibraryPath(
 }
 
 /**
- * 解析原始库名称字符串为组件（groupId、artifactId、version）
+ * Parses a raw library name string into components (groupId, artifactId, version)
  */
 fun parseLibraryComponents(original: String): LibraryComponents {
     val components = original.split(":")

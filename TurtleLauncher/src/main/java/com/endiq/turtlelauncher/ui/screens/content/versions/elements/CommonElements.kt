@@ -299,7 +299,7 @@ private fun parseSegments(input: String): List<Pair<String, TextStyleState>> {
                 'o' -> currentStyle.copy(italic = true)
                 'n' -> currentStyle.copy(underline = true)
                 'm' -> currentStyle.copy(strikethrough = true)
-                else -> currentStyle //忽略未知或不支持的格式代码（如k）
+                else -> currentStyle //Ignored未知或不支持的格式代码（如k）
             }
 
             index += 2

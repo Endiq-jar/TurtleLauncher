@@ -83,23 +83,23 @@ import kotlin.time.Duration.Companion.milliseconds
 
 enum class HotbarRule(val nameRes: Int) {
     /**
-     * 自动计算(一些情况下并不精准)
+     * Auto-computed (not always precise)
      */
     Auto(R.string.game_menu_option_hotbar_rule_auto),
 
     /**
-     * 完全自定义大小
+     * Fully custom size
      */
     Custom(R.string.game_menu_option_hotbar_rule_custom)
 }
 
 /**
- * 自定义大小：0~1000比例下，计算百分比值
+ * Custom size: computes the percentage on a 0~1000 scale
  */
 fun Int.hotbarPercentage() = this / 1000f
 
 /**
- * 快捷栏按键绑定键
+ * Hotbar key bindings
  */
 private val hotbarList = listOf(
     HOTBAR_1 to HOTBAR_1_VALUE,
@@ -126,12 +126,12 @@ private val keyList = listOf(
 )
 
 /**
- * Minecraft 快捷栏判定箱
- * 根据屏幕分辨率定位 MC 的快捷栏位置
- * 点击、滑动快捷栏，会计算指针处于哪个槽位中，并触发 [sendKeycode] 回调
+ * Minecraft hotbar hitbox
+ * Locates the MC hotbar from the screen resolution
+ * Tapping/swiping the hotbar computes which slot the pointer sits in, firing the [sendKeycode] callback
  *
- * @param isGrabbing 处于鼠标抓获模式下，才会开启判定箱
- * @param displayOffset 游戏画面的黑边偏移，用于对齐自定义分辨率下的快捷栏位置
+ * @param isGrabbing the hitbox activates only in mouse-captured mode
+ * @param displayOffset black-bar offset of the game surface, aligning the hotbar under custom resolutions
  */
 @Composable
 fun BoxScope.MinecraftHotbar(
@@ -196,7 +196,7 @@ fun BoxScope.MinecraftHotbar(
             .size(hotbarSize)
             .align(Alignment.BottomCenter)
             .offset {
-                //跟随游戏画面的显示区域，对齐黑边偏移
+                //Follow the game surface area and align its black-bar offset
                 IntOffset(x = 0, y = -displayOffset.y)
             }
             .then(
@@ -219,7 +219,7 @@ fun BoxScope.MinecraftHotbar(
                         },
                         enableDoubleClick = AllSettings.hotbarDoubleClick.state,
                         onDoubleClick = {
-                            //发送切换副手按键键值
+                            //Send the swap-offhand key
                             val swapKeycode = getKeycode(
                                 optionKey = SWAP_OFFHAND,
                                 optionValue = SWAP_OFFHAND_VALUE,
@@ -229,7 +229,7 @@ fun BoxScope.MinecraftHotbar(
                         },
                         enableLongClick = AllSettings.hotbarLongClick.state,
                         onLongClick = {
-                            //发送丢弃按键键值
+                            //Send the drop key
                             val dropKeycode = getKeycode(
                                 optionKey = DROP,
                                 optionValue = DROP_VALUE,
@@ -293,7 +293,7 @@ private fun Modifier.mainTouchLogic(
                     val currentTime = change.uptimeMillis
 
                     when {
-                        //手指刚按下
+                        //Finger just pressed
                         change.pressed && !change.previousPressed -> {
                             if (pointerId !in occupiedPointers) {
                                 onOccupiedPointer(pointerId)
@@ -302,7 +302,7 @@ private fun Modifier.mainTouchLogic(
 
                             val x = change.position.x
                             val slotIndex = calculateSlotIndex(x, hotbarSize, slotCount, density)
-                            //碰到就视为点击，避免后续逻辑临时切物品栏导致游戏状态不同步
+                            //Touch counts as a click, preventing later logic from briefly swapping slots out of sync with the game
                             onClick(slotIndex)
 
                             val state = PointerState(
@@ -312,13 +312,13 @@ private fun Modifier.mainTouchLogic(
                                 isPressed = true
                             )
 
-                            //仅启用长按时启动检测
+                            //Only start detection when long-press is enabled
                             if (enableLongClick) {
                                 state.longPressJob = launch {
                                     delay(longClickDelay.milliseconds)
                                     if (state.isPressed && !state.isMovedBeyondSlop && !state.isLongPressedTriggered) {
                                         state.isLongPressedTriggered = true
-                                        //触发长按，使用当前所在的栏位进行回调
+                                        //Long-press fired: callback with the current slot
                                         onLongClick()
                                         if (enableDoubleClick) {
                                             lastSlot = null
@@ -331,10 +331,10 @@ private fun Modifier.mainTouchLogic(
                             change.consume()
                         }
 
-                        //按下、滑动
+                        //Press and move
                         change.pressed && change.previousPressed -> {
                             val state = states[pointerId] ?: return@forEach
-                            //滑动时实时计算并更新当前槽位
+                            //Recompute the current slot live while sliding
                             state.currentSlotIndex = calculateSlotIndex(change.position.x, hotbarSize, slotCount, density)
 
                             if (enableLongClick) {
@@ -349,7 +349,7 @@ private fun Modifier.mainTouchLogic(
                             change.consume()
                         }
 
-                        //松开手指
+                        //Finger released
                         !change.pressed && change.previousPressed -> {
                             val state = states.remove(pointerId) ?: return@forEach
                             state.isPressed = false
@@ -361,7 +361,7 @@ private fun Modifier.mainTouchLogic(
                                 onReleasePointer(pointerId)
                             }
 
-                            //长按已触发，不再处理点击
+                            //Long-press fired: stop handling clicks
                             if (state.isLongPressedTriggered) {
                                 change.consume()
                                 return@forEach
@@ -370,12 +370,12 @@ private fun Modifier.mainTouchLogic(
                             val finalSlotIndex = state.currentSlotIndex
                             if (enableDoubleClick) {
                                 val isDoubleTap = lastSlot?.let { last ->
-                                    //检查是当前点击的栏位
+                                    //Check it's the same slot as the press
                                     val isSlot = last.slot == finalSlotIndex
-                                    //检查双击时间间隔
+                                    //Check the double-tap interval
                                     val inTime = currentTime - last.downTime < doubleTapTimeout
                                     (isSlot && inTime).also { result ->
-                                        //都不满足条件时，清除上一次点击，避免误判
+                                        //Neither met: clear the last click to avoid misdetection
                                         if (!result) lastSlot = null
                                     }
                                 } ?: false
@@ -384,7 +384,7 @@ private fun Modifier.mainTouchLogic(
                                     onDoubleClick()
                                     lastSlot = null
                                 } else {
-                                    //完成单击后，记录上一次点击的槽位
+                                    //After the single click, record its slot
                                     lastSlot = DownSlot(
                                         slot = finalSlotIndex,
                                         downTime = currentTime,

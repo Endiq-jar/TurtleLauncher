@@ -41,7 +41,7 @@ fun Modifier.infiniteShimmer(
 ): Modifier {
     val infiniteTransition = rememberInfiniteTransition()
 
-    //循环动画
+    //Looping animation
     val animatedAlpha by infiniteTransition.animateFloat(
         initialValue = initialValue,
         targetValue = targetValue,
@@ -57,7 +57,7 @@ fun Modifier.infiniteShimmer(
 }
 
 /**
- * 无限循环闪烁Box，可用于制作加载时骨架
+ * Infinitely looping shimmer Box, usable for loading skeletons
  */
 @Composable
 fun ShimmerBox(

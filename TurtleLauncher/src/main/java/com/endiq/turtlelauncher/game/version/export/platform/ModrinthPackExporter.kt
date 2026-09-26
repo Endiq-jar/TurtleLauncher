@@ -49,7 +49,7 @@ import java.nio.file.Files
 private const val TAG = "ModrinthPackExporter"
 
 /**
- * Modrinth 整合包导出工具
+ * Modrinth modpack export utility
  */
 class ModrinthPackExporter: AbstractExporter(
     type = PackType.Modrinth
@@ -69,7 +69,7 @@ class ModrinthPackExporter: AbstractExporter(
                 title = androidText(R.string.versions_export_task_fetch_remote),
                 icon = R.drawable.ic_search
             ) { task ->
-                //获取远端数据
+                //Fetch remote data
                 packRemote(
                     packCurseForge = info.packCurseForge,
                     gamePath = info.gamePath,
@@ -135,7 +135,7 @@ class ModrinthPackExporter: AbstractExporter(
 
             val index = File(tempPath, "modrinth.index.json")
             val jsonString = GSON.toJson(manifest)
-            //写入整合包清单信息
+            //Write the modpack manifest
             index.writeText(jsonString)
         }
     }

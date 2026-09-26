@@ -28,27 +28,27 @@ import com.endiq.turtlelauncher.game.plugin.renderer_v2.RendererV2PluginManager
 import com.endiq.turtlelauncher.game.renderer.Renderers
 
 /**
- * FCL、TurtleLauncher 渲染器插件，同时支持使用本地渲染器插件
+ * FCL and TurtleLauncher renderer plugins; local renderer plugins are also supported
  * [FCL Renderer Plugin](https://github.com/FCL-Team/FCLRendererPlugin)
  */
 object RendererPluginManager: ApkPluginManager() {
     private val rendererPluginList: MutableList<RendererPlugin> = mutableListOf()
 
     /**
-     * 获取当前渲染器插件加载的所有渲染器
+     * Returns all renderers loaded by the current renderer plugin
      */
     fun getRendererList(): List<RendererPlugin> = rendererPluginList
 
     /**
-     * 移除某些已加载的渲染器
+     * Removes specific loaded renderers
      */
     fun removeRenderer(rendererPlugins: Collection<RendererPlugin>) {
         rendererPluginList.removeAll(rendererPlugins)
     }
 
     /**
-     * 当前选择的渲染器插件所加载的渲染器
-     * 根据总渲染器管理者选择的渲染器的渲染器唯一标识符进行判断
+     * Renderers loaded by the currently selected renderer plugin
+     * Decided by the unique identifier of the renderer picked in the main renderer manager
      */
     val selectedRendererPlugin: RendererPlugin?
         get() {
@@ -59,14 +59,14 @@ object RendererPluginManager: ApkPluginManager() {
         }
 
     /**
-     * 清除渲染器插件
+     * Clears renderer plugins
      */
     fun clearPlugin() {
         rendererPluginList.clear()
     }
 
     /**
-     * 当前渲染器插件是否带有配置项（软件式插件、白名单包名）
+     * Whether the current renderer plugin carries config entries (software-style plugins, whitelisted package names)
      */
     @JvmStatic
     fun isConfigurablePlugin(rendererUniqueIdentifier: String): Boolean {
@@ -75,7 +75,7 @@ object RendererPluginManager: ApkPluginManager() {
     }
 
     /**
-     * 解析 TurtleLauncher、FCL 渲染器插件
+     * Parses TurtleLauncher and FCL renderer plugins
      */
     override fun parseApkPlugin(
         context: Context,
@@ -92,7 +92,7 @@ object RendererPluginManager: ApkPluginManager() {
                 val packageName = info.packageName
                 val appName = info.loadLabel(packageManager).toString()
 
-                // 如果已加载新架构渲染器插件，此处不再继续加载其提供的旧架构
+                // If a new-architecture renderer plugin was loaded, don't keep loading the old-architecture one it also provides
                 if (
                     RendererV2PluginManager.getRendererList().any { v2Plugin ->
                         v2Plugin.packageName == packageName

@@ -356,11 +356,11 @@ private fun formatChineseNumber(number: Long): String {
         number < 10_000 -> number.toString()
         number < 100_000_000 -> {
             val value = number / 10_000.0
-            formatWithUnit(value, "万")
+            formatWithUnit(value, "10k")
         }
         else -> {
             val value = number / 100_000_000.0
-            formatWithUnit(value, "亿")
+            formatWithUnit(value, "100M")
         }
     }
 }

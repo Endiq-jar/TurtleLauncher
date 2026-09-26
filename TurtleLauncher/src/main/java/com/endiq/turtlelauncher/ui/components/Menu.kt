@@ -92,25 +92,25 @@ import com.endiq.turtlelauncher.utils.animation.getAnimateTweenJellyBounce
 import java.text.DecimalFormat
 
 /**
- * 菜单状态
+ * Menu state
  */
 enum class MenuState {
     /**
-     * 初始化 (刚加载时)
+     * Initializing (just loaded)
      */
     NONE {
         override fun next() = SHOW
     },
 
     /**
-     * 展示中
+     * Showing
      */
     SHOW {
         override fun next() = HIDE
     },
 
     /**
-     * 隐藏中
+     * Hidden
      */
     HIDE {
         override fun next() = SHOW
@@ -136,13 +136,13 @@ fun MenuSubscreen(
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            //背景阴影层
+            //Backdrop shadow layer
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = backgroundColor)
                     .clickable(
-                        indication = null, //禁用水波纹点击效果
+                        indication = null, //disable the ripple click effect
                         interactionSource = remember { MutableInteractionSource() },
                         onClick = closeScreen
                     )
@@ -200,7 +200,7 @@ fun DualMenuSubscreen(
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            //背景阴影层
+            //Backdrop shadow layer
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -213,7 +213,7 @@ fun DualMenuSubscreen(
             )
         }
 
-        //左侧菜单
+        //Left menu
         Box(
             modifier = Modifier
                 .align(Alignment.CenterStart)
@@ -250,7 +250,7 @@ fun DualMenuSubscreen(
             }
         }
 
-        //右侧菜单
+        //Right menu
         Box(
             modifier = Modifier
                 .align(Alignment.CenterEnd)

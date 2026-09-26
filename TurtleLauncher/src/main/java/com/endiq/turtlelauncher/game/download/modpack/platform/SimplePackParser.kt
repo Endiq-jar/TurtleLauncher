@@ -28,9 +28,9 @@ import java.io.File
 private const val TAG = "SimplePackParser"
 
 /**
- * 较为简单的整合包解析器，适合结构较为简单的，以索引/清单文件为特征的整合包，
- * 可以统一代码，共用此解析逻辑
- * @param extraProcess 如果识别成功，则开始额外的逻辑处理，用于更加严谨的判断，`true` 则代表确认为该格式
+ * Simple modpack parser, fitting structurally simple packs characterized by an index/manifest file,
+ * letting implementations share this parsing logic
+ * @param extraProcess runs after recognition for stricter checking; `true` confirms the format
  */
 abstract class SimplePackParser<E: PackManifest>(
     val indexFilePath: String,
@@ -42,7 +42,7 @@ abstract class SimplePackParser<E: PackManifest>(
     override suspend fun parse(packFolder: File): AbstractPack? {
         val root = locateRealRoot(packFolder)
 
-        //整合包索引文件
+        //Modpack index file
         val indexFile = File(root, indexFilePath)
         return withContext(Dispatchers.IO) {
             if (!indexFile.exists()) {
@@ -50,13 +50,13 @@ abstract class SimplePackParser<E: PackManifest>(
                 return@withContext null
             }
 
-            //尝试读取并识别，如果识别成功，则判断其为该格式的整合包
+            //Try reading and recognizing; success means the pack has this format
             val rawString = indexFile.readText()
             val manifest = GSON.fromJson(rawString, manifestClass)
 
-            //识别成功，开始额外的逻辑处理
+            //Recognized: run the extra logic processing
             if (extraProcess?.invoke(root) == false) {
-                //判断失败了，排除这个格式
+                //Check failed: rule out this format
                 return@withContext null
             }
 

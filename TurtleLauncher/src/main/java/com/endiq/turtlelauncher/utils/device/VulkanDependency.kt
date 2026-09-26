@@ -22,17 +22,17 @@ import com.endiq.turtlelauncher.game.version.installed.utils.isBiggerVer
 import com.endiq.turtlelauncher.game.version.installed.utils.isLowerVer
 import org.jackhuang.hmcl.util.versioning.GameVersionNumber
 
-/** 匹配版本号末尾的数字段 */
+/** Matches the trailing numeric segment of a version */
 private val NUMBER_SUFFIX = Regex("^(.*?)(\\d+)$")
 
-/** 版本号的数字尾段自增 */
+/** Increments the version's numeric tail */
 private fun String.nextNumberVersion(): String? {
     val match = NUMBER_SUFFIX.find(this) ?: return null
     val number = match.groupValues[2].toIntOrNull() ?: return null
     return match.groupValues[1] + (number + 1)
 }
 
-/** 版本号的数字尾段自减 */
+/** Decrements the version's numeric tail */
 private fun String.prevNumberVersion(): String? {
     val match = NUMBER_SUFFIX.find(this) ?: return null
     val number = match.groupValues[2].toIntOrNull() ?: return null
@@ -40,44 +40,44 @@ private fun String.prevNumberVersion(): String? {
     return match.groupValues[1] + (number - 1)
 }
 
-/** 快照、pre、rc 版本的编号后缀 */
+/** The numeric suffix of snapshot/pre/rc versions */
 private val PRERELEASE_SUFFIX = Regex("^(.+)-(?:snapshot|pre|rc)-\\d+$")
 
 /**
- * 将快照、pre、rc 版本归一化为对应的目标正式版本
+ * Normalizes snapshot/pre/rc versions onto their target stable release
  */
 fun normalizeMcVersion(mcVersion: String): String {
     return PRERELEASE_SUFFIX.find(mcVersion)?.groupValues?.get(1) ?: mcVersion
 }
 
 /**
- * Minecraft 版本对 Vulkan 功能/扩展的依赖级别
+ * Minecraft version dependency level on a Vulkan feature/extension
  */
 enum class VulkanDependencyLevel {
-    /** 依赖此条目，缺失时无法以 Vulkan 启动 */
+    /** Depends on this item; missing means Vulkan cannot launch */
     REQUIRED,
-    /** 可选使用此条目，缺失时仍可以 Vulkan 启动 */
+    /** Optionally uses this item; Vulkan still launches without it */
     OPTIONAL,
-    /** 不使用此条目 */
+    /** Not used */
     UNUSED
 }
 
 /**
- * Minecraft 版本范围
+ * Minecraft version range
  */
 sealed interface McVersionSpan {
-    /** 范围的起始版本 */
+    /** The range's starting version */
     val since: String
-    /** 范围的展示文本 */
+    /** The range's display text */
     val displayText: String
-    /** 范围的排他上界（不含），null 表示无上界，用于切分评估版本段 */
+    /** The range's exclusive upper bound; no fit unless set, used to segment evaluation ranges */
     val exclusiveEnd: String?
 
     operator fun contains(mcVersion: String): Boolean
 }
 
 /**
- * 单个 Minecraft 版本，仅匹配该 release 版本号本身（其快照、pre、rc 归一化后匹配）
+ * A single Minecraft version: matches only this release number (incl. its normalized snapshot/pre/rc)
  */
 data class McSingleVersion(val version: String) : McVersionSpan {
     override val since: String
@@ -93,7 +93,7 @@ data class McSingleVersion(val version: String) : McVersionSpan {
 }
 
 /**
- * Minecraft 版本区间，两端均包含且按版本号精确匹配
+ * A Minecraft version interval, both ends inclusive, exact-version matching
  */
 data class McVersionRange(
     val from: String,
@@ -113,7 +113,7 @@ data class McVersionRange(
 }
 
 /**
- * 不封顶的 Minecraft 版本范围，自起始版本起（含）直至最新
+ * An open-ended Minecraft version range, from the start version (inclusive) through the latest
  */
 data class McVersionOnward(override val since: String) : McVersionSpan {
     override val displayText: String
@@ -127,18 +127,18 @@ data class McVersionOnward(override val since: String) : McVersionSpan {
 }
 
 /**
- * 对单个 Vulkan 功能/扩展的包装
+ * A wrapper over a single Vulkan feature/extension
  */
 data class VulkanDependency(
     val name: String,
-    /** 依赖此条目的 Minecraft 版本区间 */
+    /** Minecraft version intervals depending on this item */
     val requiredIn: List<McVersionSpan> = emptyList(),
-    /** 可选使用此条目的 Minecraft 版本区间 */
+    /** Minecraft version intervals optionally using this item */
     val optionalIn: List<McVersionSpan> = emptyList(),
-    /** 不使用此条目的 Minecraft 版本区间 */
+    /** Minecraft version intervals not using this item */
     val unusedIn: List<McVersionSpan> = emptyList()
 ) {
-    /** 查询指定 Minecraft 版本对此条目的依赖级别 */
+    /** Query a given Minecraft version's dependency level on this item */
     fun levelAt(mcVersion: String): VulkanDependencyLevel {
         return when {
             requiredIn.any { mcVersion in it } -> VulkanDependencyLevel.REQUIRED
@@ -153,47 +153,47 @@ class VulkanDependencyBuilder(private val name: String) {
     private val optionalIn = mutableListOf<McVersionSpan>()
     private val unusedIn = mutableListOf<McVersionSpan>()
 
-    /** 标注单个版本依赖此条目 */
+    /** Mark a single version as depending on this item */
     fun requiredAt(version: String) {
         requiredIn += McSingleVersion(version)
     }
 
-    /** 标注 [from] 至 [to] 版本（含两端）依赖此条目 */
+    /** Mark versions [from] to [to] (inclusive) as depending on this item */
     fun requiredBetween(from: String, to: String) {
         requiredIn += McVersionRange(from, to)
     }
 
-    /** 标注自 [since] 版本起（含）依赖此条目 */
+    /** Mark versions from [since] (inclusive) as depending on this item */
     fun requiredFrom(since: String) {
         requiredIn += McVersionOnward(since)
     }
 
-    /** 标注单个版本可选使用此条目 */
+    /** Mark a single version as optionally using this item */
     fun optionalAt(version: String) {
         optionalIn += McSingleVersion(version)
     }
 
-    /** 标注 [from] 至 [to] 版本（含两端）可选使用此条目 */
+    /** Mark versions [from] to [to] (inclusive) as optionally using this item */
     fun optionalBetween(from: String, to: String) {
         optionalIn += McVersionRange(from, to)
     }
 
-    /** 标注自 [since] 版本起（含）可选使用此条目 */
+    /** Mark versions from [since] (inclusive) as optionally using this item */
     fun optionalFrom(since: String) {
         optionalIn += McVersionOnward(since)
     }
 
-    /** 标注单个版本不使用此条目 */
+    /** Mark a single version as not using this item */
     fun unusedAt(version: String) {
         unusedIn += McSingleVersion(version)
     }
 
-    /** 标注 [from] 至 [to] 版本（含两端）不使用此条目 */
+    /** Mark versions [from] to [to] (inclusive) as not using this item */
     fun unusedBetween(from: String, to: String) {
         unusedIn += McVersionRange(from, to)
     }
 
-    /** 标注自 [since] 版本起（含）不使用此条目 */
+    /** Mark versions from [since] (inclusive) as not using this item */
     fun unusedFrom(since: String) {
         unusedIn += McVersionOnward(since)
     }
@@ -206,15 +206,15 @@ private fun vulkanDependency(name: String, block: VulkanDependencyBuilder.() -> 
 }
 
 /**
- * 各 Minecraft 版本运行 Vulkan 后端所依赖的扩展与功能
+ * Extensions and features the Vulkan backend depends on per Minecraft version
  */
 object VulkanRequirements {
-    /** 当前 Vulkan 检测器版本 */
+    /** Current Vulkan checker version */
     const val VULKAN_REQUIREMENTS_VERSION = 1
-    /** 首个提供 Vulkan 后端的 Minecraft 版本 */
+    /** First Minecraft version providing the Vulkan backend */
     const val MIN_MC_VERSION = "26.2"
 
-    /** 各版本依赖的 Vulkan 扩展 */
+    /** Vulkan extensions per version */
     val EXTENSIONS: List<VulkanDependency> = listOf(
         vulkanDependency("VK_KHR_dynamic_rendering") {
             requiredBetween(MIN_MC_VERSION, "26.3")
@@ -227,7 +227,7 @@ object VulkanRequirements {
         vulkanDependency("VK_KHR_swapchain") { requiredFrom(MIN_MC_VERSION) }
     )
 
-    /** 各版本依赖的 Vulkan 功能 */
+    /** Vulkan features per version */
     val FEATURES: List<VulkanDependency> = listOf(
         vulkanDependency("multiDrawIndirect") { requiredFrom(MIN_MC_VERSION) },
         vulkanDependency("fillModeNonSolid") {
@@ -249,7 +249,7 @@ object VulkanRequirements {
         vulkanDependency("vertexAttributeInstanceRateDivisor") { requiredFrom(MIN_MC_VERSION) }
     )
 
-    /** 依赖需求发生变化的 Minecraft 版本分界点（升序），由各标注范围的起点与终点共同构成 */
+    /** Minecraft version breakpoints where dependency requirements change (ascending), formed by the starts and ends of all marked ranges */
     val PROFILE_VERSIONS: List<String> = (EXTENSIONS + FEATURES)
         .flatMap { it.requiredIn + it.optionalIn + it.unusedIn }
         .flatMap { listOfNotNull(it.since, it.exclusiveEnd) }
@@ -258,17 +258,17 @@ object VulkanRequirements {
 }
 
 /**
- * 设备对单个功能/扩展的支持情况（针对特定 Minecraft 版本）
+ * Device support of a single feature/extension (for a given Minecraft version)
  */
 data class VulkanDependencyStatus(
     val dependency: VulkanDependency,
     val level: VulkanDependencyLevel,
-    /** 设备是否支持此条目 */
+    /** Whether the device supports this item */
     val supported: Boolean
 )
 
 /**
- * 设备针对特定 Minecraft 版本的 Vulkan 支持情况
+ * Device Vulkan support for a given Minecraft version
  */
 data class VulkanSupport(
     val mcVersion: String,
@@ -278,29 +278,29 @@ data class VulkanSupport(
     private val allStatuses: List<VulkanDependencyStatus>
         get() = extensionStatuses + featureStatuses
 
-    /** 该版本依赖但设备缺失的功能/扩展 */
+    /** Features/extensions the version depends on but the device lacks */
     val missingRequired: List<VulkanDependencyStatus>
         get() = allStatuses.filter { it.level == VulkanDependencyLevel.REQUIRED && !it.supported }
 
-    /** 该版本可选使用但设备缺失的功能/扩展 */
+    /** Features/extensions the version optionally uses but the device lacks */
     val missingOptional: List<VulkanDependencyStatus>
         get() = allStatuses.filter { it.level == VulkanDependencyLevel.OPTIONAL && !it.supported }
 
-    /** 设备能否以 Vulkan 启动该版本 */
+    /** Whether the device can launch this version with Vulkan */
     val isSupported: Boolean
         get() = missingRequired.isEmpty()
 }
 
 /**
- * 一类依赖需求相同的 Minecraft 版本范围的 Vulkan 支持情况
+ * Vulkan support across Minecraft version ranges with identical dependency needs
  */
 data class VulkanProfileSupport(
     val since: String,
-    /** 排他上界（不含），null 表示无上界 */
+    /** Exclusive upper bound; null = none */
     val until: String?,
     val supported: Boolean
 ) {
-    /** 版本范围的展示文本 */
+    /** The version range's display text */
     val versionRangeText: String
         get() = when (until) {
             null -> "$since+"
@@ -310,7 +310,7 @@ data class VulkanProfileSupport(
 }
 
 /**
- * 设备是否支持指定功能/扩展，与 Minecraft 版本无关
+ * Whether the device supports the given feature/extension, Minecraft-version agnostic
  */
 fun VulkanCapabilities.supports(dependency: VulkanDependency): Boolean {
     val isExtension = VulkanRequirements.EXTENSIONS.any { it.name == dependency.name }
@@ -322,7 +322,7 @@ fun VulkanCapabilities.supports(dependency: VulkanDependency): Boolean {
 }
 
 /**
- * 评估设备对指定 Minecraft 版本的 Vulkan 支持情况
+ * Evaluates the device's Vulkan support for the given Minecraft version
  */
 fun VulkanCapabilities.supportFor(mcVersion: String): VulkanSupport {
     fun statusOf(dependency: VulkanDependency): VulkanDependencyStatus {
@@ -337,8 +337,8 @@ fun VulkanCapabilities.supportFor(mcVersion: String): VulkanSupport {
 }
 
 /**
- * 评估设备对各 Minecraft 版本范围的 Vulkan 支持情况，相邻且支持情况一致的区间会被合并；
- * Vulkan 1.2 以下不满足运行基线，所有版本范围均视为不支持
+ * Evaluates the device's Vulkan support per Minecraft version range; adjacent intervals with identical support are merged;
+ * Below Vulkan 1.2, the runtime baseline is not met, and every version range counts as unsupported
  */
 fun VulkanCapabilities.profileSupport(): List<VulkanProfileSupport> {
     val versions = VulkanRequirements.PROFILE_VERSIONS

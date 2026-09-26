@@ -25,7 +25,7 @@ import com.endiq.turtlelauncher.ui.components.SimpleAlertDialog
 
 sealed interface ForceCloseOperation {
     data object None : ForceCloseOperation
-    /** 显示强制关闭对话框 */
+    /** Show the force-close dialog */
     data object Show : ForceCloseOperation
 }
 

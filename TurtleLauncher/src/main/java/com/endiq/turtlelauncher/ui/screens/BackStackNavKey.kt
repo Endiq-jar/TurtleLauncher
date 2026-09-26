@@ -34,10 +34,10 @@ abstract class BackStackNavKey<E: TitledNavKey>(
 ) : TitledNavKey {
     override var title by mutableStateOf(initTitle)
 
-    /** 当前屏幕正在使用的堆栈 */
+    /** The stack the current screen uses */
     @Contextual
     val backStack: NavBackStack<E> = NavBackStack()
-    /** 当前屏幕的Key */
+    /** The current screen's key */
     var currentKey by mutableStateOf<E?>(null)
 
     @Suppress("unused")

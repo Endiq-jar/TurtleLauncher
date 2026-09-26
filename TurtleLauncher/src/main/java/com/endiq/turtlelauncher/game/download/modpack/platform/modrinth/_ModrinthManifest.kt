@@ -19,6 +19,6 @@
 package com.endiq.turtlelauncher.game.download.modpack.platform.modrinth
 
 /**
- * 获取 Minecraft 游戏版本
+ * Returns the Minecraft game version
  */
 fun ModrinthManifest.getGameVersion(): String = this.dependencies["minecraft"]!!

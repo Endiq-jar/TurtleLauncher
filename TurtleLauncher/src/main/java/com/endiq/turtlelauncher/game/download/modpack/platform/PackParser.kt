@@ -25,23 +25,23 @@ import com.endiq.turtlelauncher.game.download.modpack.platform.multimc.MultiMCPa
 import java.io.File
 
 /**
- * 整合包解析通用接口，用于尝试解析已解压的整合包的格式
+ * Generic modpack parser interface, trying to parse an unpacked modpack's format
  */
 interface PackParser {
     /**
-     * 尝试解析已经解压的整合包的格式
-     * @param packFolder 解压后的整合包文件夹
+     * Tries to parse the format of an unpacked modpack
+     * @param packFolder the unpacked modpack folder
      */
     suspend fun parse(packFolder: File): AbstractPack?
 
     /**
-     * 获取该解析器的标识
+     * Returns this parser's identifier
      */
     fun getIdentifier(): String
 }
 
 /**
- * 启动器所有支持的整合包格式解析器
+ * All modpack format parsers supported by the launcher
  */
 val ALL_PACK_PARSER = listOf(
     CurseForgePackParser,

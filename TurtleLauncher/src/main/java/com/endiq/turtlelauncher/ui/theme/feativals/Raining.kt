@@ -112,7 +112,7 @@ fun RainEffect(
         width = size.width
         height = size.height
 
-        //读取 tick 以建立重绘依赖
+        //Read the tick to build a redraw dependency
         tick
 
         rainDrops.forEach { drop ->

@@ -19,6 +19,6 @@
 package com.endiq.turtlelauncher.game.download.modpack.platform
 
 /**
- * 整合包通用清单接口
+ * Generic modpack manifest interface
  */
 interface PackManifest

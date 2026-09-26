@@ -28,7 +28,7 @@ class GamepadMappingList(
     val list: MutableList<GamepadMapping>
 ) : Parcelable {
     /**
-     * 手柄与键盘按键映射绑定
+     * Gamepad-to-keyboard mapping bindings
      */
     @IgnoredOnParcel
     private val allKeyMappings = mutableMapOf<Int, TargetKeys>()
@@ -36,7 +36,7 @@ class GamepadMappingList(
     private val allDpadMappings = mutableMapOf<DpadDirection, TargetKeys>()
 
     /**
-     * 便于记录目标键盘映射的数据类
+     * A data class for recording target keyboard mappings
      */
     data class TargetKeys(
         val inGame: Set<String>,
@@ -64,22 +64,22 @@ class GamepadMappingList(
     }
 
     /**
-     * 重置手柄与键盘按键映射绑定
+     * Resets the gamepad-to-keyboard mapping bindings
      */
     fun resetMapping(gamepadMap: GamepadMap, inGame: Boolean) =
         applyMapping(gamepadMap, inGame)
 
     /**
-     * 为指定手柄映射设置目标键盘映射
+     * Sets the target keyboard mapping for a given gamepad mapping
      */
     fun saveMapping(gamepadMap: GamepadMap, targets: Set<String>, inGame: Boolean) =
         applyMapping(gamepadMap, inGame, customTargets = targets)
 
     /**
-     * 保存或重置手柄与键盘按键映射绑定
-     * @param gamepadMap 手柄映射对象
-     * @param inGame 是否为游戏内映射（true 为游戏内，false 为菜单内）
-     * @param customTargets 自定义目标键，为空则重置
+     * Saves or resets gamepad-to-keyboard mapping bindings
+     * @param gamepadMap the gamepad mapping object
+     * @param inGame whether it's the in-game mapping (true = in-game, false = in-menu)
+     * @param customTargets custom target keys; empty resets to defaults
      */
     private fun applyMapping(
         gamepadMap: GamepadMap,
@@ -117,22 +117,22 @@ class GamepadMappingList(
     }
 
     /**
-     * 根据手柄按键键值获取对应的键盘映射代码
-     * @return 若未找到，则返回null
+     * Resolves the keyboard mapping for a gamepad key code
+     * @return null when not found
      */
     fun findByCode(key: Int, inGame: Boolean) =
         allKeyMappings[key]?.getKeys(inGame)
 
     /**
-     * 根据手柄方向键获取对应的键盘映射代码
-     * @return 若未找到，则返回null
+     * Resolves the keyboard mapping for a gamepad d-pad key
+     * @return null when not found
      */
     fun findByDpad(dir: DpadDirection, inGame: Boolean) =
         allDpadMappings[dir]?.getKeys(inGame)
 
     /**
-     * 根据手柄映射获取对应的键盘映射代码
-     * @return 若未找到，则返回null
+     * Resolves the keyboard mapping for a gamepad axis
+     * @return null when not found
      */
     fun findByMap(map: GamepadMap, inGame: Boolean) =
         (map.dpadDirection?.let { allDpadMappings[it] } ?: allKeyMappings[map.gamepad])

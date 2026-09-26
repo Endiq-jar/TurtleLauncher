@@ -29,14 +29,14 @@ import androidx.compose.ui.unit.dp
 import com.endiq.turtlelauncher.ui.screens.content.elements.DisabledAlpha
 
 /**
- * 根据按钮在UI组中的位置，选择不同的圆角形状
+ * Picks different corner shapes per the button's position in the UI group
  */
 enum class ButtonPosition {
     Top, Middle, Bottom, Single
 }
 
 /**
- * 根据 UI 组件在组中的位置决定的按钮的形状
+ * Button shape decided by the component's position in the group
  */
 @Composable
 fun rememberButtonPosShape(

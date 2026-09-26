@@ -319,7 +319,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.hideMouse,
                         title = stringResource(R.string.settings_control_mouse_hide_title),
                         summary = stringResource(R.string.settings_control_mouse_hide_summary),
-                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.CLICK //仅点击模式下可更改设置
+                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.CLICK //only changeable in click mode
                     )
 
                     SwitchSettingsCard(
@@ -327,7 +327,7 @@ fun ControlSettingsScreen(
                         position = CardPosition.Middle,
                         title = stringResource(R.string.settings_control_mouse_enable_click_title),
                         summary = stringResource(R.string.settings_control_mouse_enable_click_summary),
-                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.SLIDE //仅滑动模式下可更改设置
+                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.SLIDE //only changeable in slide mode
                     )
 
                     ListSettingsCard(
@@ -431,7 +431,7 @@ fun ControlSettingsScreen(
                         .fillMaxWidth()
                         .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
                 ) {
-                    //检查陀螺仪是否可用
+                    //Check gyroscope availability
                     val context = LocalContext.current
                     val isGyroscopeAvailable = remember(context) {
                         isGyroscopeAvailable(context = context)
@@ -558,7 +558,7 @@ private fun PhysicalKeyImeTrigger(
                 PhysicalKeyOperation.Bind -> {
                     LaunchedEffect(Unit) {
                         eventViewModel.sendEvent(EventViewModel.Event.Key.StartKeyCapture)
-                        //接收Activity发送的按键事件
+                        //Receive key events dispatched by the Activity
                         eventViewModel.events
                             .filterIsInstance<EventViewModel.Event.Key.OnKeyDown>()
                             .collect { event ->
@@ -623,11 +623,11 @@ private fun PhysicalKeyImeTrigger(
 
 private sealed interface MousePointerOperation {
     data object None: MousePointerOperation
-    /** 重置鼠标指针前的提醒 */
+    /** Reminder before resetting the mouse pointer */
     data object PreReset: MousePointerOperation
-    /** 重置鼠标指针 */
+    /** Reset the mouse pointer */
     data object Reset: MousePointerOperation
-    /** 变更鼠标热点 */
+    /** Change mouse hotspots */
     data object Hotspot: MousePointerOperation
 }
 
@@ -774,7 +774,7 @@ private fun MousePointerOperation(
                 title = stringResource(R.string.generic_reset),
                 text = stringResource(R.string.settings_control_mouse_pointer_reset_message),
                 onConfirm = {
-                    //正式开始重置鼠标指针
+                    //Begin the actual pointer reset
                     changeOperation(MousePointerOperation.Reset)
                 },
                 onDismiss = {

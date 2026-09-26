@@ -171,7 +171,7 @@ private class SavesManageViewModel(
                     try {
                         dirs.forEach { dir ->
                             ensureActive()
-                            //解析存档 level.dat，读取必要数据
+                            //Parse level.dat for the data we need
                             val data = parseLevelDatFile(
                                 saveFile = dir,
                                 levelDatFile = File(dir, "level.dat"),
@@ -514,7 +514,7 @@ private fun SavesActionsHeader(
 }
 
 /**
- * @param minecraftVersion 当前版本的 Minecraft 版本
+ * @param minecraftVersion the current Minecraft version
  */
 @Composable
 private fun SavesList(
@@ -547,8 +547,8 @@ private fun SavesList(
                 }
             }
         } else {
-            //如果列表是空的，则是由搜索导致的
-            //展示“无匹配项”文本
+            //An empty list here comes from searching
+            //Show the "no matches" text
             Box(modifier = Modifier.fillMaxSize()) {
                 ScalingLabel(
                     modifier = Modifier.align(Alignment.Center),
@@ -557,7 +557,7 @@ private fun SavesList(
             }
         }
     } ?: run {
-        //如果为null，则代表本身就没有存档可以展示
+        //null means there are simply no saves to show
         Box(modifier = Modifier.fillMaxSize()) {
             ScalingLabel(
                 modifier = Modifier.align(Alignment.Center),
@@ -568,8 +568,8 @@ private fun SavesList(
 }
 
 /**
- * @param saveData 存档信息
- * @param minecraftVersion 当前版本的 Minecraft 版本
+ * @param saveData the save info
+ * @param minecraftVersion the current Minecraft version
  */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -584,7 +584,7 @@ private fun SaveItemLayout(
     itemColor: Color = itemColor(),
     itemContentColor: Color = onItemColor(),
 ) {
-    //存档是否与当前 MC 版本兼容
+    //Is the save compatible with the current MC version?
     val isCompatible = saveData.isCompatible(minecraftVersion)
 
     val context = LocalContext.current
@@ -605,7 +605,7 @@ private fun SaveItemLayout(
             modifier = Modifier.padding(all = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            //存档的封面图标
+            //The save's cover icon
             SaveIcon(
                 modifier = Modifier
                     .size(42.dp)
@@ -645,8 +645,8 @@ private fun SaveItemLayout(
                             }
                         }
 
-                        //虽然极限模式与 gameMode 是分离开的
-                        //不过它可以算作是一种游戏模式，毕竟创建世界时，极限模式就是在游戏模式里面选择的
+                        //Although hardcore and gameMode are stored separately,
+                        //it still counts as a game mode - world creation picks hardcore right in the game-mode selector
                         if (saveData.hardcoreMode == true) {
                             LittleTextLabel(text = stringResource(R.string.saves_manage_hardcore))
                         } else {
@@ -680,7 +680,7 @@ private fun SaveItemLayout(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (saveData.isValid) {
-                    //详细信息展示
+                    //Detailed info display
                     TooltipIconButton(
                         modifier = Modifier.size(38.dp),
                         tooltip = {
@@ -708,7 +708,7 @@ private fun SaveItemLayout(
                     )
                 }
 
-                //更多存档操作
+                //More save operations
                 SaveOperationMenu(
                     saveValid = saveData.isValid,
                     buttonSize = 38.dp,
@@ -733,8 +733,8 @@ private fun SaveItemLayout(
 }
 
 /**
- * 存档的封面图标
- * @param triggerRefresh 强制刷新
+ * The save's cover icon
+ * @param triggerRefresh forces a refresh
  */
 @Composable
 private fun SaveIcon(
@@ -765,17 +765,17 @@ private fun SaveInfoTooltip(
     copySeed: (String) -> Unit = {}
 ) {
     Column {
-        //文件名
+        //File name
         Text(text = stringResource(R.string.generic_file_name, saveData.saveFile.name))
-//        //存档大小
+//        //Save size
 //        Text(text = stringResource(R.string.generic_file_size, formatFileSize(saveData.saveSize)))
-        //游戏模式，不存在则展示为未知
+        //Game mode; unknown when absent
         Text(
             text = stringResource(
                 R.string.saves_manage_gamemode,
                 stringResource(
                     if (saveData.hardcoreMode == true) {
-                        //极限模式
+                        //Hardcore mode
                         R.string.saves_manage_hardcore
                     } else {
                         saveData.gameMode?.nameRes ?: R.string.generic_unknown
@@ -783,9 +783,9 @@ private fun SaveInfoTooltip(
                 )
             )
         )
-        //游戏难度
+        //Game difficulty
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            //游戏难度，不存在则展示为未知
+            //Game difficulty; unknown when absent
             Text(
                 text = stringResource(
                     R.string.saves_manage_difficulty,
@@ -796,11 +796,11 @@ private fun SaveInfoTooltip(
                 Text(text = stringResource(R.string.saves_manage_difficulty_locked))
             }
         }
-        //是否使用指令
+        //Whether commands are used
         if (saveData.allowCommands == true) {
             Text(text = stringResource(R.string.saves_manage_allow_commands))
         }
-        //游戏时长
+        //Play time
         if (saveData.playTime != null) {
             val duration = (saveData.playTime / 20).toDuration(DurationUnit.SECONDS)
             val playtime = duration.toComponents { days, hours, minutes, _, _ ->
@@ -808,7 +808,7 @@ private fun SaveInfoTooltip(
             }
             Text(text = stringResource(R.string.saves_manage_playtime, playtime))
         }
-        //世界种子
+        //World seed
         val worldSeed = saveData.worldSeed?.toString()
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -820,7 +820,7 @@ private fun SaveInfoTooltip(
                     worldSeed ?: stringResource(R.string.generic_unknown)
                 )
             )
-            //不为未知时，允许复制种子码
+            //The seed may be copied unless unknown
             worldSeed?.let { seed ->
                 IconButton(
                     modifier = Modifier.size(24.dp),

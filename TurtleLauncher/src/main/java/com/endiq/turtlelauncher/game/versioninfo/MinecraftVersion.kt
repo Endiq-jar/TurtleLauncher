@@ -38,27 +38,27 @@ class MinecraftVersion(
 
     enum class Type {
         /**
-         * 正式版
+         * Release
          */
         Release,
 
         /**
-         * 快照版
+         * Snapshot
          */
         Snapshot,
 
         /**
-         * 远古Beta版
+         * Ancient Beta
          */
         OldBeta,
 
         /**
-         * 远古Alpha版
+         * Ancient Alpha
          */
         OldAlpha,
 
         /**
-         * 愚人节版
+         * April Fools
          */
         AprilFools,
 

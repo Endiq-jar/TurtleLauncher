@@ -22,23 +22,23 @@ import com.endiq.turtlelauncher.R
 
 enum class MirrorSourceType(val textRes: Int) {
     /**
-     * 自动选择下载源
-     * 依据当前网络环境判定初始偏好，后续由下载引擎按失败情况自适应换源
+     * Automatically chooses a download source
+     * The current network decides the initial preference; the download engine adapts sources on failures
      */
     AUTO(R.string.settings_launcher_mirror_auto),
 
     /**
-     * 尽量使用Official source
+     * Prefer the official source
      */
     OFFICIAL(R.string.settings_launcher_mirror_official),
 
     /**
-     * 尽量使用镜像源
+     * Prefer the mirror source
      */
     MIRROR(R.string.settings_launcher_mirror_mirror);
 
     companion object {
-        /** 旧版枚举名到现名的映射，读取历史存档设置时兜底 */
+        /** Mapping from legacy enum names to current ones; fallback when reading historic saved settings */
         val LEGACY_NAMES: Map<String, MirrorSourceType> = mapOf(
             "OFFICIAL_FIRST" to OFFICIAL,
             "MIRROR_FIRST" to MIRROR

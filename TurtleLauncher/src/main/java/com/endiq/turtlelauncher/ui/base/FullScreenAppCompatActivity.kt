@@ -33,11 +33,11 @@ import androidx.compose.runtime.LaunchedEffect
 import kotlin.math.abs
 
 abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
-    /** 当前手势的 raw 坐标与局部坐标是否分属不同坐标系，需要重建事件 */
+    /** Whether the current gesture's raw and local coordinates use different spaces, requiring event reconstruction */
     private var correctTouchCoordinates = false
 
     /**
-     * @return 决定是否忽略前置摄像头区域
+     * @return whether to ignore the front-camera region
      */
     protected open fun isIgnoreNotch(): Boolean = true
 
@@ -63,7 +63,7 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
             correctTouchCoordinates = hasCoordinateSpaceMismatch(event)
         } else if (!correctTouchCoordinates &&
             action == MotionEvent.ACTION_POINTER_DOWN && hasCoordinateSpaceMismatch(event)) {
-            // 窗口位置可能在首指按下后才稳定，此时再次判断。
+            // The window position may stabilize only after the first touch-down: re-check then.
             correctTouchCoordinates = true
         }
 
@@ -85,8 +85,8 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
     }
 
     /**
-     * 检测事件中各指针的 raw 坐标是否偏离“窗口局部坐标 + 窗口在屏幕上的起点”。
-     * 正常情况下两者相等；厂商缩放窗口却未同步 raw 坐标时会不相等。
+     * Detects whether each pointer's raw coordinates depart from "window-local + window screen origin".
+     * They are normally equal; OEMs scaling the window without syncing raw coordinates break that.
      */
     private fun hasCoordinateSpaceMismatch(event: MotionEvent): Boolean {
         val origin = IntArray(2)
@@ -94,7 +94,7 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
         if (abs(event.rawX - (event.x + origin[0])) > 1f) return true
         if (abs(event.rawY - (event.y + origin[1])) > 1f) return true
         if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
-            // getRawX(index)/getRawY(index) 需要 Q 以上，首指已用无参版本检查过
+            // getRawX(index)/getRawY(index) requires Q+; the first pointer already used the no-arg check
             for (index in 1 until event.pointerCount) {
                 if (abs(event.getRawX(index) - (event.getX(index) + origin[0])) > 1f) return true
                 if (abs(event.getRawY(index) - (event.getY(index) + origin[1])) > 1f) return true
@@ -104,7 +104,7 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
     }
 
     /**
-     * 以“窗口局部坐标 + 窗口在屏幕上的起点”重建触摸事件，统一 raw 坐标与局部坐标的坐标系。
+     * Rebuilds touch events from "window-local + window screen origin", unifying raw and local spaces.
      */
     private fun MotionEvent.copyWithConsistentCoordinates(): MotionEvent {
         val origin = IntArray(2)
@@ -114,8 +114,8 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
         for (index in 0 until pointerCount) {
             getPointerProperties(index, properties[index])
             getPointerCoords(index, coordinates[index])
-            // obtain 创建的事件 raw 坐标恒等于局部坐标；
-            // offsetLocation 只平移局部坐标、不影响 raw 坐标，因此必须预先移位
+            // obtain-created events always have raw == local;
+            // offsetLocation translates local only, leaving raw untouched: pre-shift first
             coordinates[index].x += origin[0]
             coordinates[index].y += origin[1]
         }
@@ -138,9 +138,9 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
     }
 
     /**
-     * 全屏/忽略前置摄像头区域的代码实现参考了 [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android/blob/9c83fc6/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/BaseActivity.java)
+     * Fullscreen / ignore-camera-region code adapted from [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android/blob/9c83fc6/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/BaseActivity.java)
      *
-     * 注：targetSdk 需要设置为 34，从 35 开始，Activity 会被强行加入 enableEdgeToEdge，该实现就会彻底失效
+     * Note: targetSdk must stay 34; from 35 on, Activities are force-enrolled into enableEdgeToEdge, breaking this
      */
     private fun applyFullscreen() {
         val decorView = window.decorView
@@ -189,7 +189,7 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
 }
 
 /**
- * 实时监听全屏设置变化并更新刘海屏模式
+ * Watches fullscreen setting changes and updates the notch mode in real time
  */
 @Composable
 fun ObserveFullScreenSetting(fullScreen: Boolean) {

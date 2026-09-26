@@ -78,7 +78,7 @@ import com.endiq.turtlelauncher.viewmodel.ModpackImportViewModel
 import com.endiq.turtlelauncher.viewmodel.ScreenBackStackViewModel
 
 /**
- * 导航至DownloadScreen
+ * Navigates to DownloadScreen
  */
 fun ScreenBackStackViewModel.navigateToDownload(targetScreen: TitledNavKey? = null) {
     downloadScreen.clearWith(targetScreen ?: downloadGameScreen)
@@ -90,7 +90,7 @@ fun ScreenBackStackViewModel.navigateToDownload(targetScreen: TitledNavKey? = nu
 }
 
 /**
- * 跳转到资源类型对应的下载分类屏幕，并进入项目详情页
+ * Jumps to the download category screen of the resource type, into the project details
  */
 private fun ScreenBackStackViewModel.swapToCategoryAssets(
     platform: Platform,
@@ -127,7 +127,7 @@ fun DownloadScreen(
     eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
-    //进入下载屏幕时确保收藏仓库完成初始化
+    //Ensure the favorite repository is initialized when entering the download screen
     LaunchedEffect(Unit) {
         FavoriteProjectsRepository.ensureLoaded()
     }

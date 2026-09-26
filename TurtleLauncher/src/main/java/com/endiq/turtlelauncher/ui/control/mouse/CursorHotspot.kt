@@ -22,7 +22,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 /**
- * 鼠标指针热点存储类型，保存热点的X、Y的百分比坐标
+ * Cursor hotspot storage; keeps the hotspot's X/Y as percentage coordinates
  */
 @Parcelize
 data class CursorHotspot(
@@ -31,11 +31,11 @@ data class CursorHotspot(
 ): Parcelable
 
 /**
- * 默认：居中的指针热点
+ * Default: centered pointer hotspot
  */
 val CENTER_HOTSPOT = CursorHotspot(xPercent = 50, yPercent = 50)
 
 /**
- * 默认：左上角的指针热点
+ * Default: top-left pointer hotspot
  */
 val LEFT_TOP_HOTSPOT = CursorHotspot(xPercent = 0, yPercent = 0)

@@ -40,8 +40,8 @@ const val DOWNLOADER_TAG = "MinecraftDownloader"
 const val MINECRAFT_RES: String = "https://resources.download.minecraft.net/"
 
 /**
- * 设计为通用化 Minecraft 原版完整下载
- * @param gameHome 下载目标所在的Game directories
+ * Designed as a generic full vanilla Minecraft download
+ * @param gameHome the game directory the download targets
  */
 class BaseMinecraftDownloader(
     gameHome: String = getGameHome()
@@ -65,15 +65,15 @@ class BaseMinecraftDownloader(
         File(mcFolder, "$version/$version.jar".replace("/", File.separator)).ensureParentDirectory()
 
     /**
-     * 创建版本 Json
+     * Creates the version Json
      */
     suspend fun createVersionJson(version: Version): GameManifest {
         return createVersionJson(version, version.id)
     }
 
     /**
-     * 创建版本 Json
-     * @param targetVersion 目标Version name
+     * Creates the version Json
+     * @param targetVersion the target version name
      */
     suspend fun createVersionJson(
         version: Version,
@@ -89,7 +89,7 @@ class BaseMinecraftDownloader(
     }
 
     /**
-     * 创建 assets 索引 Json
+     * Creates the assets index Json
      */
     suspend fun createAssetIndex(
         assetIndexTarget: File,
@@ -106,7 +106,7 @@ class BaseMinecraftDownloader(
         }
     }
 
-    /** 计划客户端jar下载 */
+    /** Schedules the client jar download */
     fun loadClientJarDownload(
         gameManifest: GameManifest,
         clientName: String,
@@ -123,7 +123,7 @@ class BaseMinecraftDownloader(
         }
     }
 
-    /** 计划assets资产下载 */
+    /** Schedules the assets download */
     suspend fun loadAssetsDownload(
         assetIndex: AssetIndexJson?,
         resourcesTargetDir: File = resourcesTarget,
@@ -144,7 +144,7 @@ class BaseMinecraftDownloader(
         }
     }
 
-    /** 计划库文件下载 */
+    /** Schedules the library download */
     suspend fun loadLibraryDownloads(
         gameManifest: GameManifest,
         targetDir: File = librariesTarget,
@@ -166,13 +166,13 @@ class BaseMinecraftDownloader(
                     var isDownloadable = true
                     val u1 = library.url
                         ?.takeIf {
-                            // fix(#53): Forge 明明可以不写，但还是给留了个空的值 >:(
+                            // fix(#53): Forge could've omitted it but still left an empty value >:(
                             it.isNotEmptyOrBlank()
                         }
                         ?.replace("http://", "https://")
                         ?: run {
-                            //对于没有提供下载链接的，可能是需要文件已经安装，而不是临时获取
-                            //不过尝试使用Official source下载，若下载失败则表明这个版本 文件有缺失的情况
+                            //Missing download URLs may mean the file should already be installed, not fetched ad hoc
+                            //Still try the official source; a failed download proves this version's file is missing
                             isDownloadable = false
                             "https://libraries.minecraft.net/"
                         }
@@ -185,7 +185,7 @@ class BaseMinecraftDownloader(
         }
     }
 
-//    /** 计划日志格式化配置下载 */
+//    /** Schedule the logging config download */
 //    fun loadLog4jXMLDownload(
 //        gameManifest: GameManifest,
 //        version: String,

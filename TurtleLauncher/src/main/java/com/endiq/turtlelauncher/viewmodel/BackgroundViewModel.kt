@@ -40,28 +40,28 @@ import org.apache.commons.io.FileUtils
 import java.io.File
 
 /**
- * 启动器背景管理
+ * Launcher background management
  */
 class BackgroundViewModel: ViewModel() {
-    // HazeState 默认使用 Auto 位置策略
+    // HazeState uses the Auto position strategy by default
     val hazeState = HazeState()
 
     val backgroundFile: File = PathManager.FILE_LAUNCHER_BACKGROUND
 
     /**
-     * 背景文件是否有效（存在，且是有效的视频或图片）
+     * Whether the background file is valid (exists and is a valid video or image)
      */
     var isValid by mutableStateOf(false)
         private set
 
     /**
-     * 背景文件是一个视频
+     * The background file is a video
      */
     var isVideo by mutableStateOf(false)
         private set
 
     /**
-     * 背景文件是一个图片
+     * The background file is an image
      */
     var isImage by mutableStateOf(false)
         private set
@@ -72,11 +72,11 @@ class BackgroundViewModel: ViewModel() {
     private suspend fun updateState() {
         val (isImage0, isVideo0) = withContext(Dispatchers.IO) {
             val isImage = backgroundFile.isImageFile()
-            //如果文件是图片，则不检查是否为视频
+            //Skip the video check for image files
             val isVideo = if (!isImage) backgroundFile.isVideoFile() else false
             isImage to isVideo
         }
-        //更新状态
+        //Update the state
         withContext(Dispatchers.Main) {
             isImage = isImage0
             isVideo = isVideo0
@@ -103,7 +103,7 @@ class BackgroundViewModel: ViewModel() {
             FileUtils.deleteQuietly(backgroundFile)
             context.copyLocalFile(result, backgroundFile)
             if (!backgroundFile.isImageFile() && !backgroundFile.isVideoFile()) {
-                //不是媒体类文件
+                //Not a media file
                 FileUtils.deleteQuietly(backgroundFile)
                 error("The selected file is not an image or a video!")
             }
@@ -113,8 +113,8 @@ class BackgroundViewModel: ViewModel() {
 }
 
 /**
- * 本地随时可以使用的背景图片管理 ViewModel
- * 由 MainActivity 的主题提供
+ * Locally available background image management ViewModel
+ * Provided by MainActivity's theme
  */
 val LocalBackgroundViewModel = compositionLocalOf<BackgroundViewModel?> {
     error("No BackgroundViewModel provided")

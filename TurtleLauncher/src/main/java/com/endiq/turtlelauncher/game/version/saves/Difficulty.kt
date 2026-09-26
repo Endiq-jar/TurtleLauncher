@@ -21,15 +21,15 @@ package com.endiq.turtlelauncher.game.version.saves
 import com.endiq.turtlelauncher.R
 
 /**
- * @param levelCode 在 level.dat 中存储的值
+ * @param levelCode the value stored in level.dat
  */
 enum class Difficulty(val levelCode: Int, val nameRes: Int) {
-    /** 和平 */
+    /** Peaceful */
     PEACEFUL(0, R.string.saves_manage_difficulty_peaceful),
-    /** 简单 */
+    /** Easy */
     EASY(1, R.string.saves_manage_difficulty_easy),
-    /** 普通 */
+    /** Normal */
     NORMAL(2, R.string.saves_manage_difficulty_normal),
-    /** 困难 */
+    /** Hard */
     HARD(3, R.string.saves_manage_difficulty_hard)
 }

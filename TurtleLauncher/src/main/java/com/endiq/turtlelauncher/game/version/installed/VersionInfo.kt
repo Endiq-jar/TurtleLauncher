@@ -31,8 +31,8 @@ class VersionInfo(
     val loaderInfo: LoaderInfo?
 ): Parcelable {
     /**
-     * 拼接Minecraft的版本信息，包括ModLoader信息
-     * @return 用", "分割的信息字符串
+     * Assembles the Minecraft version info string, including ModLoader info
+     * @return the info string joined with ", "
      */
     fun getInfoString(): String {
         val infoList = mutableListOf<String>().apply {
@@ -51,7 +51,7 @@ class VersionInfo(
         val version: String
     ): Parcelable {
         /**
-         * 通过Loader name，获得对应的环境变量键名
+         * Returns the loader's env-var key name from its name
          */
         fun getLoaderEnvKey(): String? {
             return when(loader) {

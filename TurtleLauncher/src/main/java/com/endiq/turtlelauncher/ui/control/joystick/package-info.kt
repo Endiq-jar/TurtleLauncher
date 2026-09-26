@@ -19,8 +19,8 @@
 @file:Suppress("unused")
 
 /**
- * 高于控制布局操控层的移动控制组件
- * 由于集成困难，摇杆、方向键等移动控制组件都有启动器直接提供
+ * Movement controls layer above the control layout
+ * As they're hard to integrate, joysticks and d-pads are provided straight by the launcher
  */
 
 package com.endiq.turtlelauncher.ui.control.joystick

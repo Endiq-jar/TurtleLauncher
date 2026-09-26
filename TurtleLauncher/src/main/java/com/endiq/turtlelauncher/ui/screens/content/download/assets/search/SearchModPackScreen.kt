@@ -66,7 +66,7 @@ import com.endiq.turtlelauncher.viewmodel.sendKeepScreen
 
 private sealed interface SelectUriOperation {
     data object None : SelectUriOperation
-    /** 警告用户整合包兼容性问题 */
+    /** Warn the user about pack compatibility */
     data object Warning : SelectUriOperation
 }
 
@@ -121,7 +121,7 @@ fun SearchModPackScreen(
         operation = modpackViewModel.selectOperation,
         onChanged = { modpackViewModel.selectOperation = it },
         selectedUri = {
-            //允许导入任意文件，在导入整合包的流程中会对文件进行判断
+            //Any file may be picked; the pack import flow validates it
             filePicker.launch("*/*")
         }
     )
@@ -163,7 +163,7 @@ fun SearchModPackScreen(
         },
         swapToDownload = swapToDownload,
         extraFilter = {
-            //新增导入整合包按钮
+            //New pack-import button
             item {
                 BaseFilterLayout(
                     modifier = Modifier
@@ -171,7 +171,7 @@ fun SearchModPackScreen(
                         .semantics { role = Role.Button },
                     onClick = {
                         if (viewModel.importOperation == ModpackImportOperation.None) {
-                            //先警告用户关于整合包的兼容性问题
+                            //Warn the user about pack compatibility first
                             modpackViewModel.selectOperation = SelectUriOperation.Warning
                         }
                     }
@@ -203,7 +203,7 @@ private fun SelectUriOperation(
     when (operation) {
         is SelectUriOperation.None -> {}
         is SelectUriOperation.Warning -> {
-            //警告整合包的兼容性（免责声明）
+            //Warn about pack compatibility (disclaimer)
             SimpleAlertDialog(
                 title = stringResource(R.string.generic_tip),
                 text = {

@@ -53,7 +53,7 @@ private const val KEY_VULKAN_CHECK_RECORD = "vulkanCheckRecord"
 data class VulkanCheckRecord(
     val useTurnip: Boolean,
     val driverPath: String,
-    /** 设备可支持的 Minecraft 版本范围，[Range.until] 为排他上界，null 表示无上界 */
+    /** Device-supported Minecraft version range: [Range.until] as exclusive upper bound, null = no upper bound */
     val supportedRanges: List<Range> = emptyList(),
     val version: Int = 0,
 ) {
@@ -63,7 +63,7 @@ data class VulkanCheckRecord(
         val until: String?
     )
 
-    /** 判断指定 Minecraft 版本是否落在已支持的版本范围内 */
+    /** Checks whether a given Minecraft version falls inside the supported range */
     fun isSupported(mcVersion: String): Boolean {
         return supportedRanges.any { range ->
             !mcVersion.isLowerVer(range.since) &&
@@ -128,16 +128,16 @@ class VulkanCheckerViewModel: ViewModel() {
         val path = driverPath(useTurnip, driver)
 
         loadRecord()?.takeIf { last ->
-            //判断是否使用当前版本的检查器进行检测，版本不一致则数据失效重新检查
+            //Check with the current version detector; mismatch invalidates cached data
             last.version == VulkanRequirements.VULKAN_REQUIREMENTS_VERSION &&
-            //判断Turnip环境是否不一致，不一致则数据失效重新检查
+            //Check Turnip environment consistency; mismatch invalidates cached data
             last.useTurnip == useTurnip && last.driverPath == path
         }?.let {
-            //同一驱动状态下设备能力不变，直接按已支持的版本范围判定
+            //Same driver state: device capability unchanged; judge by cached supported range
             return mcVersion != null && it.isSupported(mcVersion)
         }
 
-        //记录不存在或驱动状态不一致时走完整的检测流程，检测完成后结果已保存
+        //No record or driver mismatch: run the full detection and persist the result
         waitForVulkanChecker(version)
         val record = loadRecord() ?: return false
         return mcVersion != null && record.isSupported(mcVersion)

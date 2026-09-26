@@ -22,32 +22,32 @@ import java.util.Optional
 import java.util.Properties
 
 /**
- * MultiMC 整合包的实例配置
- * 数据结构参考：[HMCL](https://github.com/HMCL-dev/HMCL/blob/bb3d03f/HMCLCore/src/main/java/org/jackhuang/hmcl/mod/multimc/MultiMCInstanceConfiguration.java)
- * @param name 实例名称
- * @param gameVersion 实例的游戏版本
- * @param permGen JVM 永久代内存大小
- * @param wrapperCommand 用于启动 JVM 的命令
- * @param preLaunchCommand 游戏启动前执行的命令
- * @param postExitCommand 游戏退出后执行的命令
- * @param notes 实例描述信息
- * @param javaPath JVM 安装路径
- * @param jvmArgs JVM 启动参数
- * @param isFullscreen 是否以全屏模式启动 Minecraft
- * @param width 游戏窗口的初始宽度
- * @param height 游戏窗口的初始高度
- * @param maxMemory JVM 可分配的最大内存
- * @param minMemory JVM 可分配的最小内存
- * @param joinServerOnLaunch 在启动游戏时自动加入服务器
- * @param isShowConsole 游戏启动时是否显示控制台窗口
- * @param isShowConsoleOnError 游戏崩溃时是否显示控制台窗口
- * @param isAutoCloseConsole 游戏停止时是否自动关闭控制台窗口
- * @param isOverrideMemory 是否强制应用 [maxMemory]、[minMemory]、[permGen] 的内存设置
- * @param isOverrideJavaLocation 是否强制应用 [javaPath] 的 Java 路径设置
- * @param isOverrideJavaArgs 是否强制应用 [jvmArgs] 的 JVM 参数设置
- * @param isOverrideConsole 是否强制应用 [isShowConsole]、[isShowConsoleOnError]、[isAutoCloseConsole] 的控制台设置
- * @param isOverrideCommands 是否强制应用 [preLaunchCommand]、[postExitCommand]、[wrapperCommand] 的命令设置
- * @param isOverrideWindow 是否强制应用 [height]、[width]、[isFullscreen] 的窗口设置
+ * Instance configuration of a MultiMC modpack
+ * Data structure reference: [HMCL](https://github.com/HMCL-dev/HMCL/blob/bb3d03f/HMCLCore/src/main/java/org/jackhuang/hmcl/mod/multimc/MultiMCInstanceConfiguration.java)
+ * @param name instance name
+ * @param gameVersion the instance's game version
+ * @param permGen JVM PermGen memory size
+ * @param wrapperCommand command used to launch the JVM
+ * @param preLaunchCommand command run before the game starts
+ * @param postExitCommand command run after the game exits
+ * @param notes instance description
+ * @param javaPath JVM install path
+ * @param jvmArgs JVM launch arguments
+ * @param isFullscreen whether to launch Minecraft fullscreen
+ * @param width the game window's initial width
+ * @param height the game window's initial height
+ * @param maxMemory maximum allocatable JVM memory
+ * @param minMemory minimum allocatable JVM memory
+ * @param joinServerOnLaunch automatically joins a server when the game launches
+ * @param isShowConsole whether to show the console window at launch
+ * @param isShowConsoleOnError whether to show the console window on crash
+ * @param isAutoCloseConsole whether to auto-close the console window when the game stops
+ * @param isOverrideMemory whether to force-apply the [maxMemory], [minMemory], [permGen] memory settings
+ * @param isOverrideJavaLocation whether to force-apply the [javaPath] Java path setting
+ * @param isOverrideJavaArgs whether to force-apply the [jvmArgs] JVM argument setting
+ * @param isOverrideConsole whether to force-apply the [isShowConsole], [isShowConsoleOnError], [isAutoCloseConsole] console settings
+ * @param isOverrideCommands whether to force-apply the [preLaunchCommand], [postExitCommand], [wrapperCommand] settings
+ * @param isOverrideWindow whether to force-apply the [height], [width], [isFullscreen] window settings
  */
 data class MultiMCConfiguration(
     val instanceType: String?, // InstanceType
@@ -78,8 +78,8 @@ data class MultiMCConfiguration(
     val iconKey: String?
 ) {
     /**
-     * @param instanceName 实例的名称
-     * @param gameVersion Minecraft 游戏本体版本
+     * @param instanceName the instance's name
+     * @param gameVersion Minecraft game version
      */
     constructor(
         properties: Properties,
@@ -156,10 +156,10 @@ private fun readValue(properties: Properties, key: String?): String? {
 }
 
 /**
- * 在整合包中寻找实例配置文件，并尝试解析
+ * Finds the instance config file in the modpack and tries parsing it
  */
 fun loadMMCConfigFromPack(root: File): MultiMCConfiguration? {
-    //配置文件
+    //Configuration file
     val configuration = File(root, "instance.cfg")
     return if (configuration.exists() && configuration.isFile) {
         val properties = Properties()

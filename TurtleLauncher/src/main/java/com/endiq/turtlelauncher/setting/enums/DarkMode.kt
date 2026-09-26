@@ -25,21 +25,21 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.setting.AllSettings
 
 /**
- * 启动器UI深色主题
+ * Launcher UI dark theme
  */
 enum class DarkMode(val textRes: Int) {
     Enable(R.string.generic_enable),
     Disable(R.string.generic_disable),
 
     /**
-     * 跟随系统变化
+     * Follows the system
      */
     FollowSystem(R.string.generic_follow_system)
 }
 
 /**
- * 当前启动器是否处于深色主题模式中，和 [isSystemInDarkTheme] 函数使用方法一致，
- * 但引入了启动器的设置系统的干预
+ * Whether the launcher is in dark theme; behaves like [isSystemInDarkTheme],
+ * but with the launcher settings system intervening
  */
 @Composable
 fun isLauncherInDarkTheme(): Boolean {

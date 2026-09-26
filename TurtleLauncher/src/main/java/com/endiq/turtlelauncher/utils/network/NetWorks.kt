@@ -122,11 +122,11 @@ suspend fun <T> withRetry(
         try {
             return block()
         } catch (e: CancellationException) {
-            //协程被取消时不重试，直接抛出
+            //Coroutine cancellation is not retried: rethrow
             Logger.debug(TAG, "$logTag: Cancelled: ${e.message}")
             throw e
         } catch (e: Exception) {
-            // 部分异常（如 UnresolvedAddressException）message 为 null，需要输出异常类型以便诊断
+            // Some exceptions (like UnresolvedAddressException) have null messages: log the type for diagnostics
             Logger.debug(TAG, "$logTag: Attempt ${retryCount + 1} failed: ${e::class.simpleName}: ${e.message}")
             lastError = e
             if (canRetry(e)) {
@@ -134,7 +134,7 @@ suspend fun <T> withRetry(
                 currentDelay = (currentDelay * 2).coerceAtMost(maxDelay)
                 retryCount++
             } else {
-                throw e //不可重试
+                throw e //not retryable
             }
         }
     }
@@ -143,9 +143,9 @@ suspend fun <T> withRetry(
 
 private fun canRetry(e: Exception): Boolean {
     return when (e) {
-        is ClientRequestException -> e.response.status.value in 500..599 //5xx错误可重试
-        is UnresolvedAddressException -> true // DNS解析失败，可能是临时性故障
-        is IOException -> true //网络错误
+        is ClientRequestException -> e.response.status.value in 500..599 //5xx errors are retryable
+        is UnresolvedAddressException -> true // DNS failure, possibly transient
+        is IOException -> true //network error
         else -> false
     }
 }

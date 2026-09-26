@@ -38,7 +38,7 @@ class SchemeIDEALight: EditorColorScheme(false) {
         setColor(SCROLL_BAR_THUMB_PRESSED, 0xFF565656.toInt())
         setColor(COMPLETION_WND_BACKGROUND, 0xFFFFFFFF.toInt())
 
-        //语法高亮
+        //Syntax highlighting
         setColor(KEYWORD, 0xFF000033.toInt())
         setColor(COMMENT, 0xFF8C8C8C.toInt())
         setColor(LITERAL, 0xFF006700.toInt())
@@ -51,12 +51,12 @@ class SchemeIDEALight: EditorColorScheme(false) {
         setColor(ATTRIBUTE_NAME, 0xFF174AD4.toInt())
         setColor(ATTRIBUTE_VALUE, 0xFF006700.toInt())
 
-        //问题诊断
+        //Problem diagnostics
         setColor(PROBLEM_ERROR, 0xFFFF6666.toInt())
         setColor(PROBLEM_WARNING, 0xFFF2BF57.toInt())
         setColor(PROBLEM_TYPO, 0xFF7EC482.toInt())
 
-        //其他
+        //Others
         setColor(MATCHED_TEXT_BACKGROUND, 0xFFFCD47E.toInt())
         setColor(HIGHLIGHTED_DELIMITERS_BACKGROUND, 0xFF93D9D9.toInt())
     }

@@ -19,10 +19,10 @@
 package com.endiq.turtlelauncher.game.plugin
 
 /**
- * 启用其已识别到的软件插件
- * @param packageName 包名
- * @param appName 软件名称
- * @param appVersion 应用版本
+ * Enables recognized software plugins
+ * @param packageName package name
+ * @param appName app name
+ * @param appVersion app version
  */
 open class ApkPlugin(
     val packageName: String,

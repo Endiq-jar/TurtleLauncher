@@ -37,7 +37,7 @@ import com.endiq.turtlelauncher.ui.screens.onBack
 import com.endiq.turtlelauncher.ui.screens.rememberTransitionSpec
 
 /**
- * @param swapToDownload 跳转到资源类型对应的下载分类屏幕详情页
+ * @param swapToDownload jumps to the download category screen for the resource type, into its detail page
  */
 @Composable
 fun DownloadFavoritesScreen(

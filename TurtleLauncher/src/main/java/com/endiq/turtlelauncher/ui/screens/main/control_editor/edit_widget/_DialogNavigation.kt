@@ -25,24 +25,24 @@ import com.endiq.turtlelauncher.ui.screens.content.elements.CategoryItem
 import kotlinx.serialization.Serializable
 
 sealed interface EditWidgetCategory : TitledNavKey {
-    /** 基本信息 */
+    /** Basic info */
     @Serializable data object Info : EditWidgetCategory
-    /** 文本样式 */
+    /** Text style */
     @Serializable data object TextStyle : EditWidgetCategory
-    /** 点击事件 */
+    /** Click events */
     @Serializable data object ClickEvent : EditWidgetCategory
-    /** 控件样式 */
+    /** Widget style */
     @Serializable data object Style : EditWidgetCategory
-    /** 摇杆配置 */
+    /** Joystick config */
     @Serializable data object JoystickConfig : EditWidgetCategory
-    /** 方向事件 */
+    /** Direction events */
     @Serializable data object DirectionEvents : EditWidgetCategory
-    /** 摇杆样式 */
+    /** Joystick style */
     @Serializable data object JoystickStyle : EditWidgetCategory
 }
 
 /**
- * 编辑普通控件标签页
+ * Tabs editing a normal widget
  */
 val editWidgetCategories = listOf(
     CategoryItem(EditWidgetCategory.Info, { CategoryIcon(R.drawable.ic_info_outlined, R.string.control_editor_edit_category_info) }, R.string.control_editor_edit_category_info),
@@ -52,7 +52,7 @@ val editWidgetCategories = listOf(
 )
 
 /**
- * 编辑摇杆控件标签页
+ * Tabs editing a joystick widget
  */
 val editJoystickCategories = listOf(
     CategoryItem(EditWidgetCategory.Info, { CategoryIcon(R.drawable.ic_info_outlined, R.string.control_editor_edit_category_info) }, R.string.control_editor_edit_category_info),

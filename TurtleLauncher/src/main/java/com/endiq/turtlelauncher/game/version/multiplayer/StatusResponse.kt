@@ -62,10 +62,10 @@ data class StatusResponse(
 }
 
 /**
- * 服务器的玩家信息
- * @param max 最多可允许多少玩家加入
- * @param online 当前有多少玩家在线
- * @param sample 简要描述当前在线的玩家
+ * Server player info
+ * @param max the maximum player count
+ * @param online how many players are online now
+ * @param sample briefly describes the players online now
  */
 @Serializable
 data class Players(
@@ -105,7 +105,7 @@ class Favicon(
 
         override fun deserialize(decoder: Decoder): Favicon {
             val string = decoder.decodeString()
-            //Minecraft 要求必须以这个格式进行解析
+            //Minecraft requires parsing in this exact format
             require(string.startsWith(ICON_BYTE_PREFIX))
             val base64 = string.substring(ICON_BYTE_PREFIX.length).replace("\n", "")
             val icon = Base64.getDecoder().decode(base64.toByteArray())
@@ -216,8 +216,8 @@ private fun parseComponentRecursive(
 private fun JsonObject.tryParseText(
     parent: ComponentDescription?
 ): ComponentDescription? {
-    //判断类型，如果类型不是text，则忽略
-    //如果未填类型，则默认为text
+    //Check the type; ignore anything that isn't text
+    //An unset type defaults to text
     val type = get("type")?.jsonPrimitive?.contentOrNull ?: "text"
     val isText = type == "text"
     if (isText) {
@@ -227,12 +227,12 @@ private fun JsonObject.tryParseText(
             if (content.startsWith('#')) {
                 runCatching {
                     val color = Color(content.toColorInt())
-                    //动态生成阴影色
+                    //Dynamically derive the shadow color
                     val background = shadowColor(color)
                     TextColor(color, background)
                 }.getOrNull()
             } else {
-                //用颜色代码表示的颜色
+                //The color given by a color code
                 parseColorFromIdentifier(content)
             }
         } ?: parent?.color

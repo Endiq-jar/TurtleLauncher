@@ -47,45 +47,45 @@ class GameAssetCleaner(
     val tasksFlow: StateFlow<List<TitledTask>> = taskExecutor.tasksFlow
 
     /**
-     * 基础下载器
+     * Base downloader
      */
     private val downloader = BaseMinecraftDownloader()
 
     /**
-     * 已安装的全部的文件
+     * All installed files
      */
     private val allFiles = mutableListOf<File>()
 
     /**
-     * 所有游戏所需的文件
+     * All files the game needs
      */
     private val allGameFiles = mutableListOf<File>()
 
     /**
-     * 所有冗余文件
+     * All redundant files
      */
     private lateinit var allRedundantFiles: List<File>
 
     /**
-     * 已被清理的文件数量
+     * Number of cleaned files
      */
     private var cleanedFileCount = 0
 
     /**
-     * 已清理的文件总大小
+     * Total size of cleaned files
      */
     private var cleanedSize: Long = 0L
 
     /**
-     * 清理失败的文件
+     * Files that failed to clean
      */
     private val failedFiles = mutableListOf<File>()
 
     /**
-     * 开始清理
-     * @param isRunning 正在运行中，阻止此次清理任务时
-     * @param onEnd 清理结束时
-     * @param onThrowable 清理过程中遇到错误时
+     * Starts cleaning
+     * @param isRunning called when cleaning is refused because one is running
+     * @param onEnd when cleaning ends
+     * @param onThrowable when cleaning hits an error
      */
     fun start(
         isRunning: () -> Unit = {},
@@ -93,7 +93,7 @@ class GameAssetCleaner(
         onThrowable: (Throwable) -> Unit
     ) {
         if (taskExecutor.isRunning()) {
-            //正在清理中，阻止这次清理请求
+            //A cleanup is running; block this request
             isRunning()
             return
         }
@@ -111,7 +111,7 @@ class GameAssetCleaner(
     }
 
     private suspend fun getTaskPhases() = withContext(Dispatchers.IO) {
-        //不再清理依赖库，文件并不会太大，也有可能导致其他问题：#617
+        //Libraries are no longer cleaned: they're small and cleaning could cause other issues: #617
 //        val libraryFolder = File(getLibrariesHome())
         val assetsFolder = File(getAssetsHome())
 
@@ -123,7 +123,7 @@ class GameAssetCleaner(
 
         listOf(
             buildPhase {
-                //获取全部文件
+                //Collect all files
                 addTask(
                     id = "GameAssetCleaner.CollectFiles",
                     title = androidText(R.string.versions_manage_cleanup_collect_files),
@@ -135,7 +135,7 @@ class GameAssetCleaner(
                     collectFiles(assetsFolder) { allFiles.add(it.alsoProgress(task)) }
                 }
 
-                //收集所有版本所需的游戏文件
+                //Collect the game files needed by all versions
                 addTask(
                     id = "GameAssetCleaner.CollectGameFiles",
                     title = androidText(R.string.versions_manage_cleanup_collect_game_files),
@@ -151,7 +151,7 @@ class GameAssetCleaner(
                             R.string.versions_manage_cleanup_progress_next_version, version.getVersionName()
                         ))
 
-                        //已启动游戏时所需的依赖为准
+                        //Judge by the dependencies needed at game-launch time
                         val gameManifest = VersionInfoParser(version)
                             .setInheriting(skipIfNotExists = true)
                             .build()
@@ -175,7 +175,7 @@ class GameAssetCleaner(
                     }
                 }
 
-                //对比出无用的文件
+                //Diff out the useless files
                 addTask(
                     id = "GameAssetCleaner.CompareFiles",
                     title = androidText(R.string.versions_manage_cleanup_compare_files),
@@ -189,7 +189,7 @@ class GameAssetCleaner(
                     ).filter { it.exists() }
                 }
 
-                //清理文件
+                //Clean the files
                 addTask(
                     id = "GameAssetsCleaner.Cleanup",
                     title = androidText(R.string.versions_manage_cleanup_cleanup),
@@ -238,8 +238,8 @@ class GameAssetCleaner(
     }
 
     /**
-     * 如果集合内不存在该路径的文件，则添加
-     * @return 是否添加
+     * Adds the file when the set holds no file with that path
+     * @return whether it was added
      */
     private fun MutableList<File>.addIfNotContains(file: File): Boolean {
         return if (!any { it.absolutePath == file.absolutePath }) {

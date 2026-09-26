@@ -46,8 +46,8 @@ object MinecraftVersions {
     val allVersions = _allVersions.asStateFlow()
 
     /**
-     * 刷新Minecraft版本的版本号列表
-     * @param force 强制下载更新版本列表
+     * Refreshes the Minecraft version list
+     * @param force forces downloading a fresh version list
      */
     @Throws(IllegalStateException::class)
     suspend fun refreshVersions(force: Boolean = false) {
@@ -63,8 +63,8 @@ object MinecraftVersions {
     }
 
     /**
-     * 获取Minecraft版本信息列表
-     * @param force 强制下载更新版本列表
+     * Returns the Minecraft version info list
+     * @param force forces downloading a fresh version list
      */
     @Throws(IllegalStateException::class)
     suspend fun getVersionManifest(force: Boolean = false): VersionManifest {
@@ -73,7 +73,7 @@ object MinecraftVersions {
         return withContext(Dispatchers.IO) {
             val localManifestFile = PathManager.FILE_MINECRAFT_VERSIONS
             val isOutdated = !localManifestFile.exists() || !localManifestFile.isFile ||
-                    //一天更新一次版本信息列表
+                    //Refresh the version info list once a day
                     localManifestFile.lastModified() + TimeUnit.DAYS.toMillis(1) < System.currentTimeMillis()
 
             val newManifest = if (force || isOutdated) {
@@ -83,7 +83,7 @@ object MinecraftVersions {
                     GSON.fromJson(localManifestFile.readText(), VersionManifest::class.java)
                 } catch (e: Exception) {
                     Logger.warning(TAG, "Failed to parse version manifest, will redownload", e)
-                    //读取失败则删除当前的版本信息文件
+                    //On read failure, delete the current version info file
                     FileUtils.deleteQuietly(localManifestFile)
                     downloadVersionManifest()
                 }
@@ -97,7 +97,7 @@ object MinecraftVersions {
     }
 
     /**
-     * 从官方版本仓库获取版本信息
+     * Fetches version info from the official version repository
      */
     private suspend fun downloadVersionManifest(): VersionManifest {
         return withContext(Dispatchers.IO) {
@@ -111,7 +111,7 @@ object MinecraftVersions {
     }
 
     /**
-     * 尝试从本地合并官方隐藏的版本
+     * Tries to merge locally the versions the officials have hidden
      */
     private suspend fun mergeUnlistVersions(
         currentManifest: VersionManifest

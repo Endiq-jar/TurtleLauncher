@@ -67,7 +67,7 @@ class ModVersionUpdater(
                 acceptFailure = { modTask, error ->
                     val skipped = error is FileNotFoundException || error.findHttpCode() == 404
                     if (skipped) {
-                        //已上架又下架的资源，直接删除本地旧版并视为完成
+                        //A resource delisted after release: delete the local old copy and treat it as done
                         modTask.targetFile.delete()
                     }
                     skipped

@@ -39,31 +39,31 @@ import java.io.File
 import java.io.IOException
 
 /**
- * 游戏日志上传逻辑 ViewModel
+ * Game log upload logic ViewModel
  */
 class LogsUploadViewModel: ViewModel() {
     private var uploadJob: Job? = null
     private var checkJob: Job? = null
 
     /**
-     * 日志上传操作流程
+     * Log upload operation flow
      */
     var operation by mutableStateOf<ShareLinkOperation>(ShareLinkOperation.None)
 
     /**
-     * 日志文件是否适合上传分享
+     * Whether the log file is suitable for upload and share
      */
     var canUpload by mutableStateOf(false)
         private set
     
     /**
-     * 检查日志文件是否适合上传
+     * Checks whether the log file is suitable for upload
      */
     fun check(logFile: File) {
         checkJob?.cancel()
         checkJob = viewModelScope.launch(Dispatchers.IO) {
-            //2MB 已经不适合上传，容易超时
-            //这种日志可能是缺某种库，狂刷 Y/N 类提醒导致的
+            //2MB already risks upload timeouts
+            //Such logs often mean a missing evaluation library
             val canUpload0 = !logFile.exceeds2MB()
             withContext(Dispatchers.Main) {
                 canUpload = canUpload0
@@ -72,7 +72,7 @@ class LogsUploadViewModel: ViewModel() {
     }
 
     /**
-     * 检查文件是否超过 2MB
+     * Checks whether the file exceeds 2MB
      */
     private fun File.exceeds2MB(): Boolean {
         return !exists() && !isFile && length() > 2 * 1024 * 1024
@@ -113,7 +113,7 @@ class LogsUploadViewModel: ViewModel() {
     }
 
     /**
-     * 开始上传日志
+     * Starts uploading the log
      */
     fun upload(
         logFile: File,
@@ -123,7 +123,7 @@ class LogsUploadViewModel: ViewModel() {
         uploadJob = viewModelScope.launch(Dispatchers.IO) {
             if (logFile.exceeds2MB()) return@launch
 
-            //读取内容并尝试上传
+            //Read the content and try uploading
             val content = logFile.readText()
 
             val apiList = if (isChinaMainland()) {
@@ -140,7 +140,7 @@ class LogsUploadViewModel: ViewModel() {
                 withContext(Dispatchers.Main) {
                     val link = response.url
                     if (link == null) {
-                        //远端数据没有可用的链接
+                        //The remote data carries no usable link
                         operation = ShareLinkOperation.Error(
                             LinkNotFoundException()
                         )
@@ -162,7 +162,7 @@ class LogsUploadViewModel: ViewModel() {
     }
 
     /**
-     * 取消上传日志
+     * Cancels the log upload
      */
     fun cancel() {
         uploadJob?.cancel()

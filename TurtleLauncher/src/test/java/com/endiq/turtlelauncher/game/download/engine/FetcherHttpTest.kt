@@ -43,7 +43,7 @@ import java.util.Random
 import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPOutputStream
 
-/** 按请求序号回放的假源，并记录全部请求供断言使用 */
+/** Fake source replaying by request index, recording all requests for assertions */
 private class ScriptedSource(
     private val handler: (index: Int, request: RecordedRequest) -> MockResponse
 ) : Dispatcher() {
@@ -121,7 +121,7 @@ class FetcherHttpTest {
         val candidate = failure!!.cause
         assertTrue(candidate is DownloadException)
         assertTrue(candidate!!.cause is ChecksumMismatchException)
-        //重试了 retry 次，临时文件全部清理
+        //Retried `retry` times, temp files fully cleaned
         assertEquals(2, source.requests.size)
         assertTrue(dir.listFiles().isEmpty())
         assertFalse(target.exists())
@@ -137,7 +137,7 @@ class FetcherHttpTest {
 
         Fetcher.downloadFile(listOf(server1.url("/f").toString(), server2.url("/f").toString()), target)
 
-        //404 不消耗重试次数，该源仅请求一次
+        //404 doesn't consume retries; the source gets requested only once
         assertEquals(1, missing.requests.size)
         assertArrayEquals(payload, target.readBytes())
     }
@@ -242,7 +242,7 @@ class FetcherHttpTest {
         assertTrue(failure is AllSourcesFailedException)
         assertTrue(failure!!.message!!.contains(url1))
         assertTrue(failure.message!!.contains(url2))
-        //因果链上是最后一个源的失败；404 源的失败记录在 suppressed 里
+        //Tail-of-chain failure of the last source; the 404's failure stays in suppressed
         assertEquals(503, failure.findHttpCode())
         val suppressed = failure.cause!!.suppressed.single()
         assertEquals(404, (suppressed.cause as HttpResultException).code)
@@ -264,7 +264,7 @@ class FetcherHttpTest {
         val job = launch(Dispatchers.IO) {
             Fetcher.downloadFile(listOf(server.url("/file").toString()), target)
         }
-        //等临时文件开始增长再取消
+        //Wait until the temp file starts growing, then cancel
         val startedAt = System.currentTimeMillis()
         while ((dir.listFiles().orEmpty()).none { it.length() > 0 }) {
             if (System.currentTimeMillis() - startedAt > 15_000) break

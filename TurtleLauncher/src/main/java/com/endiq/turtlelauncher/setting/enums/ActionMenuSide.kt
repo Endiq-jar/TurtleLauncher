@@ -19,11 +19,11 @@
 package com.endiq.turtlelauncher.setting.enums
 
 /**
- * 主界面操作菜单的停泊侧
+ * Which side the home action menu docks to
  */
 enum class ActionMenuSide {
-    /** 停泊于阅读方向起始侧 */
+    /** Docked at the reading-direction start side */
     START,
-    /** 停泊于阅读方向末尾侧 */
+    /** Docked at the reading-direction end side */
     END
 }

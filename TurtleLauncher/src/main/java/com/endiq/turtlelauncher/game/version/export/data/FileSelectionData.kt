@@ -27,10 +27,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * 可选择的文件树
- * @param alias 当前节点的别称，安卓字符串资源
- * @param child 如果有子节点（不为null），则当前节点为文件夹目录
- *              如果没有子节点（null），则当前节点为文件
+ * Selectable file tree
+ * @param alias the node's alias, an Android string resource
+ * @param child with children (non-null) this node is a folder directory;
+ *              without children (null), this node is a file
  */
 class FileSelectionData(
     val file: File,
@@ -38,18 +38,18 @@ class FileSelectionData(
     val child: List<FileSelectionData>? = null
 ): Comparable<FileSelectionData> {
     private val _selected = MutableStateFlow(Selected.Unselected)
-    /** 当前节点的选中状态 */
+    /** The node's selected state */
     val selected = _selected.asStateFlow()
 
     private val _expand = MutableStateFlow(false)
-    /** 当前节点的展开状态（文件夹节点） */
+    /** The node's expanded state (folder nodes) */
     val expand = _expand.asStateFlow()
 
     private var _cachedSelected: Int = 0
     private var _cachedTotal: Int = 0
 
     /**
-     * 更新这个节点的选中状态
+     * Updates this node's selected state
      */
     fun updateSelectState(new: Selected) {
         if (new == Selected.Indeterminate) {
@@ -57,7 +57,7 @@ class FileSelectionData(
         }
 
         if (child != null && child.isEmpty()) {
-            //子节点为空时，不允许选择
+            //No children: selection isn't allowed
             iterativeSelect(Selected.Unselected)
         } else {
             iterativeSelect(new)
@@ -73,10 +73,10 @@ class FileSelectionData(
             node._selected.update { new }
 
             val children = node.child ?: continue
-            //更新子节点的选中状态
+            //Update child nodes' selected states
             for (childNode in children) {
                 if (childNode.child != null && childNode.child.isEmpty()) {
-                    //子节点为空时，不允许选择
+                    //No children: selection isn't allowed
                     childNode._selected.update { Selected.Unselected }
                 } else {
                     stack.add(childNode)
@@ -86,10 +86,10 @@ class FileSelectionData(
     }
 
     /**
-     * 展开/收起当前节点，收起时同时应用到子节点
+     * Expands/collapses the current node; collapsing applies to children too
      */
     fun expandDirs(state: Boolean) {
-        //更新当前节点
+        //Update the current node
         _expand.update { state }
 
         if (!state && child != null) {
@@ -120,7 +120,7 @@ class FileSelectionData(
                 if (nameCompare != 0) {
                     nameCompare
                 } else {
-                    //如果文件名相同，用绝对路径作为最终依据
+                    //On equal file names, use the absolute path as the final tiebreak
                     file.absolutePath.compareTo(other.file.absolutePath)
                 }
             }
@@ -129,8 +129,8 @@ class FileSelectionData(
 
     companion object {
         /**
-         * 刷新文件夹根节点的选中状态
-         * @return 选中了多少个文件
+         * Refreshes a folder root's selected state
+         * @return how many files are selected
          */
         suspend fun refreshTreeSelect(
             list: List<FileSelectionData>
@@ -156,7 +156,7 @@ class FileSelectionData(
                         val children = node.child
 
                         if (children == null) {
-                            //文件节点
+                            //File node
                             if (node._selected.value == Selected.Selected) {
                                 selectedFiles++
                                 node._cachedSelected = 1
@@ -199,7 +199,7 @@ class FileSelectionData(
 fun FileSelectionData.isFile(): Boolean = child == null
 
 /**
- * 以递归的方式，获取所有节点所有选中的文件
+ * Recursively collects all selected files from all nodes
  */
 fun List<FileSelectionData>.getSelectedFiles(): List<File> {
     return asSequence()

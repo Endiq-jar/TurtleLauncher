@@ -22,24 +22,24 @@ import com.endiq.turtlelauncher.game.addons.modloader.ModLoader
 import java.io.File
 
 /**
- * 导出整合包时需要的所有信息
- * @param name 用户指定要导出的整合包名称
- * @param summary 用户指定的整合包描述
- * @param author 整合包作者名称
- * @param version 用户指定的整合包版本
- * @param mcVersion Minecraft 版本
- * @param loader 该版本所加载的模组加载器
- * @param selectedFiles 用户选定的要导出的文件
- * @param minMemory 用户指定的整合包最小内存大小
- * @param maxMemory 用户指定的整合包最大内存大小
- * @param gameArgs 游戏参数
- * @param javaArgs Java虚拟机参数
- * @param fileApi 整合包下载链接前缀
- * @param url 整合包官方网站
- * @param forceUpdate 强制更新整合包
- * @param packType 导出整合包的类型
- * @param packModrinth 是否打包Modrinth的远程资源
- * @param packCurseForge 是否打包CurseForge的远程资源
+ * All info needed to export a modpack
+ * @param name user-chosen name of the modpack to export
+ * @param summary user-chosen modpack description
+ * @param author modpack author name
+ * @param version user-chosen modpack version
+ * @param mcVersion Minecraft version
+ * @param loader mod loaders carried by the version
+ * @param selectedFiles user-picked files to export
+ * @param minMemory user-chosen minimum memory for the modpack
+ * @param maxMemory user-chosen maximum memory for the modpack
+ * @param gameArgs game arguments
+ * @param javaArgs JVM arguments
+ * @param fileApi modpack download URL prefix
+ * @param url modpack official website
+ * @param forceUpdate forces modpack updates
+ * @param packType the modpack export type
+ * @param packModrinth whether to pack Modrinth remote resources
+ * @param packCurseForge whether to pack CurseForge remote resources
  */
 data class ExportInfo(
     val gamePath: File,
@@ -62,7 +62,7 @@ data class ExportInfo(
     val packCurseForge: Boolean = false
 ) {
     /**
-     * 模组加载器信息
+     * Mod loader info
      * @param version Loader version
      */
     data class LoaderVersion(

@@ -317,7 +317,7 @@ private class GameViewModel(
     }
 
     /**
-     * 清除所有游戏状态
+     * Clears all game state
      */
     fun clearState() {
         mouseScrollUpEvent.cancel()
@@ -340,8 +340,8 @@ private class GameViewModel(
 }
 
 /**
- * 鼠标滚轮事件管理
- * @param offset 滚轮滚动距离
+ * Mouse wheel event management
+ * @param offset the wheel scroll distance
  */
 private class MouseScrollEvent(
     private val scope: CoroutineScope,
@@ -350,7 +350,7 @@ private class MouseScrollEvent(
     private var mouseScrollJob: Job? = null
 
     /**
-     * 取消滚动事件，并Resets the state
+     * Cancels scroll events and resets state
      */
     fun cancel() {
         mouseScrollJob?.cancel()
@@ -358,14 +358,14 @@ private class MouseScrollEvent(
     }
 
     /**
-     * 单击响应一次滚轮滚动事件
+     * A tap fires one wheel scroll event
      */
     fun scrollSingle() {
         CallbackBridge.sendScroll(0.0, offset)
     }
 
     /**
-     * 长按不间断触发滚轮滚动事件
+     * Long-press keeps firing wheel scroll events
      */
     fun scrollLongPress() {
         mouseScrollJob?.cancel()
@@ -385,12 +385,12 @@ private class MouseScrollEvent(
 }
 
 /**
- * 游戏内消息发送器
+ * In-game message sender
  */
 private class GameTextSender(private val scope: CoroutineScope) {
     /**
-     * @param text 要发送的文本
-     * @param inGame 当前是否处于游戏内，如果在游戏中，则会尝试打开聊天栏
+     * @param text the text to send
+     * @param inGame whether we're in-game; if so, the game chat bar gets opened first
      */
     data class Data(
         val text: String,
@@ -408,7 +408,7 @@ private class GameTextSender(private val scope: CoroutineScope) {
     }
 
     /**
-     * 尝试向游戏发送文本（排队发送）
+     * Tries sending text into the game (queued)
      */
     fun send(data: Data) {
         if (job?.isActive != true || messageChannel == null) {
@@ -441,8 +441,8 @@ private class GameTextSender(private val scope: CoroutineScope) {
             }
 
             if (inGame) {
-                //根据options.txt中的配置，找到打开聊天栏的键
-                //如果找不到，则忽略这次事件
+                //Find the chat-bar key from options.txt
+                //Not found: ignore this event
                 mapToKeycode(OPEN_CHAT, OPEN_CHAT_VALUE)?.let { openChat ->
                     if (SdlBridge.sdlEnabled) {
                         SdlTextSender.sendKey(openChat)
@@ -459,7 +459,7 @@ private class GameTextSender(private val scope: CoroutineScope) {
                     }
                 }
             } else {
-                //如果当前不在游戏内，则直接发送文本
+                //Outside the game: send the text directly
                 sendText()
             }
         }
@@ -517,7 +517,7 @@ fun GameScreen(
     )
 
     LaunchedEffect(viewModel.isEditingLayout, viewModel.gameMenuState) {
-        //向VMActivity同步状态，编辑控制布局或打开游戏菜单时，不会继续处理按键事件
+        //Sync state to VMActivity; editing controls or opening the game menu stops key handling
         val allowKeyHandle = !viewModel.isEditingLayout && viewModel.gameMenuState != MenuState.SHOW
         eventViewModel.sendEvent(EventViewModel.Event.Game.KeyHandle(allowKeyHandle))
     }
@@ -568,7 +568,7 @@ fun GameScreen(
             }
 
             if (AllSettings.gamepadControl.state && gamepadViewModel.gamepadEngaged) {
-                //手柄事件监听
+                //Gamepad event listener
                 GamepadKeyListener(
                     gamepadViewModel = gamepadViewModel,
                     isGrabbing = isGrabbing,
@@ -579,7 +579,7 @@ fun GameScreen(
                     }
                 )
 
-                //手柄摇杆控制移动事件监听
+                //Gamepad stick movement listener
                 GamepadStickMovementListener(
                     gamepadViewModel = gamepadViewModel,
                     isGrabbing = isGrabbing,
@@ -589,7 +589,7 @@ fun GameScreen(
                 )
             }
 
-            //控制布局层
+            //Control layout layer
             ControlBoxLayout(
                 modifier = Modifier.fillMaxSize(),
                 observedLayout = viewModel.observableLayout,
@@ -603,7 +603,7 @@ fun GameScreen(
                 hideLayerWhen = viewModel.controlLayerHideState,
                 isDark = isLauncherInDarkTheme()
             ) {
-                //虚拟鼠标控制层
+                //Virtual mouse control layer
                 MouseControlLayout(
                     isTouchProxyEnabled = isTouchProxyEnabled,
                     modifier = Modifier.fillMaxSize(),
@@ -623,7 +623,7 @@ fun GameScreen(
                 )
             }
 
-            //物品栏触发层
+            //Hotbar trigger layer
             val gameDisplayLayout = currentGameDisplayLayout(screenSize)
             MinecraftHotbar(
                 screenSize = screenSize,
@@ -640,7 +640,7 @@ fun GameScreen(
             )
         }
 
-        //陀螺仪控制
+        //Gyroscope control
         val isGyroscopeAvailable = remember(context) {
             isGyroscopeAvailable(context = context)
         }
@@ -704,13 +704,13 @@ fun GameScreen(
         )
 
         if (AllSettings.gamepadControl.state) {
-            //手柄事件捕获层
+            //Gamepad event capture layer
             SimpleGamepadCapture(
                 gamepadViewModel = gamepadViewModel
             )
         }
 
-        //手柄输入模式选择询问
+        //Gamepad input mode prompt
         GamepadModePromptDialog(
             visible = gamepadViewModel.modePromptVisible,
             onConfirm = { mode ->
@@ -738,7 +738,7 @@ fun GameScreen(
             }
         } else {
             if (AllSettings.showMenuBall.state) {
-                //在这里根据设置决定是否启用帧率捕获协程
+                //Settings decide here whether the FPS capture coroutine starts
                 val showFps = AllSettings.showFPS.state
                 DisposableEffect(showFps) {
                     if (showFps) viewModel.startFpsCapture()
@@ -780,7 +780,7 @@ fun GameScreen(
                 when (event) {
                     is EventViewModel.Event.Game.OnBack -> {
                         if (viewModel.isEditingLayout) {
-                            //处于控制布局编辑模式
+                            //In control layout edit mode
                             editorViewModel.onBackPressed(
                                 context = context,
                                 onExit = {
@@ -790,7 +790,7 @@ fun GameScreen(
                         } else if (!AllSettings.showMenuBall.getValue()) {
                             viewModel.switchMenu()
                         } else {
-                            //按下返回键
+                            //Back key pressed
                             val event = ClickEvent(
                                 type = ClickEvent.Type.Key,
                                 key = ControlEventKeycode.GLFW_KEY_ESCAPE
@@ -803,7 +803,7 @@ fun GameScreen(
                     is EventViewModel.Event.Game.OnResume -> {
                         viewModel.clearState()
                     }
-                    else -> { /*忽略*/ }
+                    else -> { /*ignore*/ }
                 }
             }
     }
@@ -841,7 +841,7 @@ private fun GameInfoBox(
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
 
-                    //提示信息
+                    //Hint info
                     Column(
                         modifier = Modifier.weight(1f, fill = false),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -892,15 +892,15 @@ private fun PreviewGameInfoBox() {
 }
 
 /**
- * 鼠标控制层
- * @param isTouchProxyEnabled 是否启用控制代理（TouchController模组支持）
- * @param cursorMode 当前鼠标模式
- * @param textInputMode 输入法状态
- * @param isMoveOnlyPointer 检查指针是否被标记为仅处理滑动事件
- * @param onOccupiedPointer 标记指针已被占用
- * @param onReleasePointer 标记指针已被释放
- * @param onMouseMoved While a physical mouse is in use回调
- * @param onTouch 手指触摸操作鼠标层时回调
+ * Mouse control layer
+ * @param isTouchProxyEnabled whether the control proxy is enabled (TouchController mod support)
+ * @param cursorMode the current mouse mode
+ * @param textInputMode the IME state
+ * @param isMoveOnlyPointer checks whether the pointer is marked move-only
+ * @param onOccupiedPointer mark-pointer-occupied callback
+ * @param onReleasePointer mark-pointer-released callback
+ * @param onMouseMoved callback while a physical mouse is in use
+ * @param onTouch callback when fingers touch the mouse layer
  */
 @Composable
 private fun MouseControlLayout(

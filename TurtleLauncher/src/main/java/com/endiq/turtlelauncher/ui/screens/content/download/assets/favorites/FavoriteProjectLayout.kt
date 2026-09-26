@@ -63,9 +63,9 @@ import com.endiq.turtlelauncher.utils.animation.getAnimateTween
 import com.endiq.turtlelauncher.utils.formatNumberByLocale
 
 /**
- * 收藏项目条目
+ * Favorite project entry
  *
- * 远端项目不可用时整卡减淡并展示失效标识，点击不再生效，仍可取消收藏
+ * The whole card dims with an invalid badge when the remote project vanished; clicks no-op but unfavoriting still works
  */
 @Composable
 fun FavoriteProjectLayout(
@@ -136,7 +136,7 @@ fun FavoriteProjectLayout(
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    //描述，固定两行占位
+                    //Description, fixed two-line placeholder
                     Text(
                         modifier = Modifier.weight(1f),
                         text = description,
@@ -146,7 +146,7 @@ fun FavoriteProjectLayout(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    //下载量
+                    //Downloads
                     Row(
                         modifier = Modifier.alpha(0.7f),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -169,7 +169,7 @@ fun FavoriteProjectLayout(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    //标签栏
+                    //Tag bar
                     Row(
                         modifier = Modifier
                             .weight(1f)
@@ -191,12 +191,12 @@ fun FavoriteProjectLayout(
                         }
                     }
 
-                    //失效标识
+                    //Invalid badge
                     if (invalid) {
                         UnavailableIdentifier()
                     }
 
-                    //取消收藏
+                    //Unfavorite
                     FavoriteToggleLabel(
                         isFavorite = true,
                         onClick = onUnfavorite
@@ -208,7 +208,7 @@ fun FavoriteProjectLayout(
 }
 
 /**
- * 失效标识元素，远端项目已不可用时展示
+ * Invalid badge, shown when the remote project is unavailable
  */
 @Composable
 private fun UnavailableIdentifier(

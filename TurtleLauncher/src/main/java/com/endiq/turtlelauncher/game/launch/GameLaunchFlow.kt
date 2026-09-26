@@ -50,12 +50,12 @@ import kotlinx.coroutines.flow.StateFlow
 
 private const val TAG = "GameLaunchFlow"
 
-/** 账号凭据已被服务端拒绝 */
+/** The account credential was rejected by the server */
 private class LaunchReloginRequired(
     val account: Account
 ) : RuntimeException()
 
-/** 账号校验或刷新失败时抛出 */
+/** Thrown when account validation or refresh fails */
 private class LaunchCheckFailed(
     val account: Account,
     cause: Throwable
@@ -63,16 +63,16 @@ private class LaunchCheckFailed(
 
 
 /**
- * 游戏启动器
+ * Game launcher
  */
 class GameLaunchFlow(scope: CoroutineScope) {
     private val taskExecutor = TaskFlowExecutor(scope)
     val tasksFlow: StateFlow<List<TitledTask>> = taskExecutor.tasksFlow
 
     /**
-     * 启动游戏
-     * @param version 指定版本
-     * @param skipAccountRefresh 跳过启动前的账号校验，直接使用现有凭据
+     * Launches the game
+     * @param version the version to launch
+     * @param skipAccountRefresh skips pre-launch account validation, using existing credentials
      */
     fun launch(
         context: Context,
@@ -86,7 +86,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
         onComplete: () -> Unit,
     ) {
         if (taskExecutor.isRunning()) {
-            //正在启动中，阻止这次启动请求
+            //A launch is already in progress; block this request
             isRunning()
             return
         }
@@ -120,7 +120,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
     }
 
     /**
-     * 取消当前的启动流程
+     * Cancels the current launch flow
      */
     fun cancel() {
         taskExecutor.cancel()
@@ -134,8 +134,8 @@ class GameLaunchFlow(scope: CoroutineScope) {
         exitActivity: () -> Unit,
         submitError: (ErrorViewModel.ThrowableMessage) -> Unit
     ): TaskFlowExecutor.TaskPhase {
-        //检查是否联网，根据这个条件决定是否校验账号
-        //以及，没有联网时，让微软账号、外置账号作为离线账号登录
+        //Check connectivity; that decides whether to validate the account
+        //and, when offline, log Microsoft/external accounts in as offline accounts
         val hasNetwork = isNetworkAvailable(context)
         if (!hasNetwork && !account.isLocalAccount()) {
             version.offlineAccountLogin = true
@@ -143,7 +143,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
 
         return buildPhase {
             if (hasNetwork && !skipAccountRefresh && AccountsManager.isLaunchCheckNeeded(account)) {
-                //账号管理页正在刷新该账号时，直接使用现有凭据启动
+                //While the account page is refreshing this account, launch with the existing credentials
                 addTask(
                     icon = R.drawable.ic_login,
                     title = androidText(R.string.account_logging_in, account.username),
@@ -167,7 +167,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
             }
 
             if (!version.skipGameIntegrityCheck()) {
-                //校验并修复游戏文件
+                //Verify and repair game files
                 addTask(
                     icon = R.drawable.ic_assignment_filled,
                     title = androidText(R.string.minecraft_download_stat_verify_task),
@@ -179,7 +179,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
                 )
             }
 
-            //启动游戏
+            //Launch the game
             addTask(
                 icon = R.drawable.ic_rocket_launch_filled,
                 title = androidText(R.string.main_launch_game)
@@ -193,7 +193,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
     }
 
     /**
-     * 微软账号：向服务端校验缓存的凭据，被拒绝或已临近过期时静默刷新
+     * Microsoft account: validates cached credentials server-side, silently refreshing when rejected or near expiry
      */
     private suspend fun checkMicrosoftAccount(task: Task, account: Account) {
         val expired = System.currentTimeMillis() > account.expiresAt - 5 * 60 * 1000
@@ -203,7 +203,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
     }
 
     /**
-     * 外置账号：依次尝试 validate 与 refresh，均被服务端拒绝时再用账号密码重新登录
+     * External account: tries validate then refresh; re-logins with username/password only when both are rejected
      */
     private suspend fun checkOtherAccount(task: Task, context: Context, account: Account) {
         task.updateMessage(androidText(R.string.account_logging_in, account.username))
@@ -241,7 +241,7 @@ class GameLaunchFlow(scope: CoroutineScope) {
     }
 
     /**
-     * 检查是否安装了 TouchController，安装后开启控制代理
+     * Checks TouchController is installed, enabling the control proxy afterwards
      */
     private suspend fun checkEnableTouchProxy(version: Version) {
         val modsDir = VersionFolders.MOD.getDir(version.getGameDir())

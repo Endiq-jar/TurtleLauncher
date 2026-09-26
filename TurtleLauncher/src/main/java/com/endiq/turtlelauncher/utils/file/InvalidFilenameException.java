@@ -62,11 +62,11 @@ public class InvalidFilenameException extends RuntimeException {
 
     private enum FilenameErrorType {
         /**
-         * 包含非法字符
+         * Contains illegal characters
          */
         CONTAINS_ILLEGAL_CHARACTERS,
         /**
-         * 长度不合法
+         * Illegal length
          */
         INVALID_LENGTH,
         /**

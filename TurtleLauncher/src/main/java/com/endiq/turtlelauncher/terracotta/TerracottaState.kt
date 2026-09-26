@@ -111,7 +111,7 @@ sealed class TerracottaState {
     ) : Ready(port, index, state) {
         @Keep
         enum class Difficulty(val textRes: Int) {
-            /** 不应该使用这个枚举的[textRes] */
+            /** This enum's [textRes] should not be used */
             UNKNOWN(-1),
             EASIEST(R.string.terracotta_difficulty_easiest),
             SIMPLE(R.string.terracotta_difficulty_simple),
@@ -212,7 +212,7 @@ class TerracottaStateTypeAdapterFactory : TypeAdapterFactory {
                     else -> throw JsonParseException("Unknown state type: $stateName")
                 }
 
-                //统一进行校验
+                //Validate uniformly
                 validateResult(result)
 
                 return result

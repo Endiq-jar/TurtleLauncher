@@ -23,7 +23,7 @@ import com.endiq.turtlelauncher.game.download.assets.platform.Platform
 import kotlinx.parcelize.Parcelize
 
 /**
- * 展示到模组管理页面的项目信息
+ * Project info shown on the mod management page
  */
 @Parcelize
 class ModProject(

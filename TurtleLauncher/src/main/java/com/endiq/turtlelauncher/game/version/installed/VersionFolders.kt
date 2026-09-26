@@ -21,17 +21,17 @@ package com.endiq.turtlelauncher.game.version.installed
 import java.io.File
 
 enum class VersionFolders(val folderName: String) {
-    /** 无目标文件夹 */
+    /** No target folder */
     NONE(""),
-    /** 模组文件夹 */
+    /** Mods folder */
     MOD("mods"),
-    /** 资源包文件夹 */
+    /** Resource packs folder */
     RESOURCE_PACK("resourcepacks"),
-    /** 存档文件夹 */
+    /** Saves folder */
     SAVES("saves"),
-    /** 光影包文件夹 */
+    /** Shader packs folder */
     SHADERS("shaderpacks"),
-    /** 截屏文件夹 */
+    /** Screenshots folder */
     SCREENSHOTS("screenshots");
 
     fun getDir(gameDir: String): String {

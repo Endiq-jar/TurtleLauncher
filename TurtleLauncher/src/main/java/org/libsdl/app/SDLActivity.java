@@ -1454,15 +1454,15 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     /**
-     * VMActivity 的 TextureView/SurfaceView 的 IME 可见性上报入口
+     * IME visibility report entry of VMActivity's TextureView/SurfaceView
      */
     public static void notifyImeVisibilityChanged(boolean visible) {
         SdlImeController.notifyVisibilityChanged(visible);
     }
 
     /**
-     * SDL 侧文本输入通道
-     * 合成 SDL_EVENT_TEXT_INPUT 向 native端提交文本
+     * SDL-side text input channel
+     * Composes SDL_EVENT_TEXT_INPUT, submitting text to the native side
      */
     public static void onNativeTextInput(String text) {
         if (!SdlBridge.getSdlEnabled() || text == null || text.isEmpty()) {
@@ -1543,7 +1543,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             onNativeKeyDown(keyCode);
 
-            //仅当 SDL 文本输入通道可接收输入时才合成文本，通道关闭时按键按事件原样上交
+            //Compose text only while the SDL text channel accepts input; with it closed, keys go up unmodified
             if (isTextInputEvent(event) && SdlImeController.isInputAccepted()) {
                 if (ic != null) {
                     ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);

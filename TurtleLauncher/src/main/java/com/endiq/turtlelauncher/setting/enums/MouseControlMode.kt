@@ -21,9 +21,9 @@ package com.endiq.turtlelauncher.setting.enums
 import com.endiq.turtlelauncher.R
 
 /**
- * 鼠标的两种控制模式：
- * SLIDE = “滑动控制”
- * CLICK = “点击控制”
+ * The mouse's two control modes:
+ * SLIDE = "slide control"
+ * CLICK = "click control"
  */
 enum class MouseControlMode(val nameRes: Int) {
     SLIDE(R.string.settings_control_mouse_control_mode_slide),

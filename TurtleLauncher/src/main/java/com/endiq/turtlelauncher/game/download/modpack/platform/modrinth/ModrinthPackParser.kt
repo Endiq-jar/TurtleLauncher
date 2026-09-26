@@ -22,7 +22,7 @@ import com.endiq.turtlelauncher.game.download.modpack.platform.PackPlatform
 import com.endiq.turtlelauncher.game.download.modpack.platform.SimplePackParser
 
 /**
- * Modrinth 整合包解析器，用于尝试以 .mrpack 的格式解析整合包
+ * Modrinth modpack parser, trying the .mrpack format
  */
 object ModrinthPackParser : SimplePackParser<ModrinthManifest>(
     indexFilePath = "modrinth.index.json",

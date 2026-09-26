@@ -327,7 +327,7 @@ private fun GameConfigs(
         )
 
         /**
-         * 临时已分配内存，用于UI状态更新
+         * Temporary allocated memory, driving UI state updates
          */
         var ramAllocation by remember { mutableIntStateOf(config.ramAllocation) }
         ToggleableIntSliderSettingsCard(
@@ -540,7 +540,7 @@ private fun SupportConfigs(
             onClick = onCheckVulkan
         )
 
-        //检查麦克风
+        //Check the microphone
         var microphoneState by remember { mutableStateOf<MicrophoneCheckState>(MicrophoneCheckState.None) }
         MicrophoneCheckOperation(
             state = microphoneState,

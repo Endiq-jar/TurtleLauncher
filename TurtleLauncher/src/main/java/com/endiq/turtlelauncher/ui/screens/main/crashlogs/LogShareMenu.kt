@@ -41,7 +41,7 @@ import com.endiq.turtlelauncher.ui.theme.onCardColor
 
 sealed interface LogShareMenuOperation {
     data object None : LogShareMenuOperation
-    /** 打开日志操作菜单 */
+    /** Open the log actions menu */
     data object ShowMenu : LogShareMenuOperation
 }
 
@@ -77,7 +77,7 @@ fun LogShareMenu(
                             .padding(all = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        //查看日志
+                        //View logs
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
@@ -92,7 +92,7 @@ fun LogShareMenu(
                             Spacer(Modifier.width(8.dp))
                             Text(text = stringResource(R.string.generic_view))
                         }
-                        //分享日志
+                        //Share the log
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
@@ -107,7 +107,7 @@ fun LogShareMenu(
                             Spacer(Modifier.width(8.dp))
                             Text(text = stringResource(R.string.crash_share_logs))
                         }
-                        //分享链接
+                        //Share the link
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = canUpload,
@@ -123,7 +123,7 @@ fun LogShareMenu(
                             Spacer(Modifier.width(8.dp))
                             Text(text = stringResource(R.string.crash_link_share_button))
                         }
-                        //关闭
+                        //Close
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {

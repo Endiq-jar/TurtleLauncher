@@ -128,7 +128,7 @@ private const val TAG = "LauncherSettingsScreen"
 
 private sealed interface CustomColorOperation {
     data object None : CustomColorOperation
-    /** 展示自定义主题颜色 Dialog */
+    /** Show the custom theme color dialog */
     data object Dialog: CustomColorOperation
 }
 
@@ -233,7 +233,7 @@ fun LauncherSettingsScreen(
                 }
             }
 
-            //启动器背景设置板块
+            //Launcher background section
             LocalBackgroundViewModel.current?.let { backgroundViewModel ->
                 AnimatedItem(scope) { yOffset ->
                     SettingsCardColumn(
@@ -323,7 +323,7 @@ fun LauncherSettingsScreen(
                 }
             }
 
-            //动画设置板块
+            //Animation settings section
             AnimatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
@@ -365,7 +365,7 @@ fun LauncherSettingsScreen(
                 }
             }
 
-            //Shizuku 集成（ADB 级文件访问）
+            //Shizuku integration (ADB-level file access)
             AnimatedItem(scope) { yOffset ->
                 com.endiq.turtlelauncher.shizuku.ShizukuSettingsSection(
                     modifier = Modifier
@@ -380,9 +380,9 @@ fun LauncherSettingsScreen(
                         .fillMaxWidth()
                         .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
                 ) {
-                    //这些镜像源都是为了改善中国大陆内陆的网络环境而存在的
-                    //境外不需要这些镜像源，反而可能拖慢境外的下载速度
-                    //所以不应该向中国境外开放这些选项
+                    //These mirrors exist to improve network conditions in mainland China
+                    //They may even slow downloads elsewhere
+                    //so the options stay hidden outside China
                     val isChinaMainland = remember { isChinaMainland() }
                     if (isChinaMainland) {
                         ListSettingsCard(
@@ -434,7 +434,7 @@ fun LauncherSettingsScreen(
                                         Logger.pack(logsFile)
                                         task.updateProgress(1f)
                                         task.updateMessage(null)
-                                        //分享压缩包
+                                        //Share the archive
                                         shareFile(
                                             context = context,
                                             file = logsFile
@@ -464,7 +464,7 @@ private fun CustomColorOperation(
             var tempColor by remember {
                 mutableStateOf(Color(AllSettings.launcherCustomColor.getValue()))
             }
-            //配色主题临时状态
+            //Temporary color palette state
             val originalStyle = remember { AllSettings.launcherCustomPaletteStyle.getValue() }
             var paletteStyle by remember {
                 mutableStateOf(originalStyle)
@@ -484,7 +484,7 @@ private fun CustomColorOperation(
                     AllSettings.launcherCustomColor.updateState(currentColor.toArgb())
                 },
                 onCancel = {
-                    //还原颜色、配色主题
+                    //Restore colors and palette
                     AllSettings.launcherCustomColor.updateState(colorController.getOriginalColor().toArgb())
                     AllSettings.launcherCustomPaletteStyle.updateState(originalStyle)
                     updateOperation(CustomColorOperation.None)
@@ -514,7 +514,7 @@ private fun CustomThemeDialog(
     }
 
     /**
-     * 是否开启编辑Hex对话框
+     * Whether the Hex edit dialog is open
      */
     var editHex by remember {
         mutableStateOf(false)
@@ -567,7 +567,7 @@ private fun CustomThemeDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             val scrollState = rememberLazyListState()
-                            //颜色风格
+                            //Color style
                             LazyColumn(
                                 modifier = Modifier
                                     .weight(1f)
@@ -579,7 +579,7 @@ private fun CustomThemeDialog(
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                                 state = scrollState,
                             ) {
-                                //标题
+                                //Title
                                 item {
                                     Text(
                                         text = stringResource(R.string.settings_launcher_color_theme_style),
@@ -612,13 +612,13 @@ private fun CustomThemeDialog(
                                     onChangeFinished = onChangeFinished
                                 )
 
-                                //颜色预览
+                                //Color preview
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     val originalColor = remember {
                                         colorController.getOriginalColor()
                                     }
 
-                                    //初始颜色
+                                    //Initial color
                                     Text(
                                         text = originalColor.toHex(),
                                         style = MaterialTheme.typography.labelMedium
@@ -648,7 +648,7 @@ private fun CustomThemeDialog(
                                                 .height(30.dp)
                                                 .background(color = selectedColor)
                                         )
-                                        //手动编辑Hex
+                                        //Manual Hex editing
                                         IconButton(
                                             modifier = Modifier.size(36.dp),
                                             onClick = { editHex = true }
@@ -696,7 +696,7 @@ private fun CustomThemeDialog(
             mutableStateOf(selectedHex)
         }
         val newColor = remember(value) {
-            //尝试转换为颜色对象
+            //Try converting to a color
             value.toColorOrNull()
         }
 
@@ -758,7 +758,7 @@ private fun CustomBackground(
                     dispatcher = Dispatchers.IO,
                     task = { task ->
                         task.updateMessage(androidText(R.string.settings_launcher_background_importing))
-                        backgroundViewModel.import(context, result[0] /* 取决于上面的allowMultiple，此处一定会是单个元素的列表 */)
+                        backgroundViewModel.import(context, result[0] /* allowMultiple above guarantees a single-element list here */)
                     },
                     onError = { th ->
                         backgroundViewModel.delete()

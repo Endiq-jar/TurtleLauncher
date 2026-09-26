@@ -19,18 +19,18 @@
 package com.endiq.turtlelauncher.ui.control.input
 
 /**
- * 当前输入模式
+ * Current input mode
  */
 enum class TextInputMode {
     /**
-     * 启用
+     * Enabled
      */
     ENABLE {
         override fun switch() = DISABLE
     },
 
     /**
-     * 禁用
+     * Disabled
      */
     DISABLE {
         override fun switch() = ENABLE

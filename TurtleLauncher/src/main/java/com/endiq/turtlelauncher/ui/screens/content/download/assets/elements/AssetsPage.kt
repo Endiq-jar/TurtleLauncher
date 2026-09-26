@@ -22,12 +22,12 @@ import com.endiq.turtlelauncher.game.download.assets.platform.PlatformSearchData
 import com.endiq.turtlelauncher.game.download.assets.utils.ModTranslations
 
 /**
- * 资源Search results页面信息
- * @param pageNumber 第几页
- * @param pageIndex 页面索引
- * @param totalPage 总页数
- * @param isLastPage 是否为最后一页
- * @param data Search results缓存
+ * Resource search results page info
+ * @param pageNumber the page number
+ * @param pageIndex the page index
+ * @param totalPage total page count
+ * @param isLastPage whether it's the last page
+ * @param data cached search results
  */
 data class AssetsPage(
     val pageNumber: Int,

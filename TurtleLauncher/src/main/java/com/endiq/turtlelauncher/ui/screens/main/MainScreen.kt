@@ -131,12 +131,12 @@ fun MainScreen(
 ) {
     val tasks by TaskSystem.tasksFlow.collectAsStateWithLifecycle()
 
-    //监控当前是否有任务正在进行
+    //Watch whether any task is running
     LaunchedEffect(tasks) {
         if (tasks.isEmpty()) {
             eventViewModel.sendKeepScreen(false)
         } else {
-            //有任务正在进行，避免熄屏
+            //A task is running: keep the screen on
             eventViewModel.sendKeepScreen(true)
         }
     }
@@ -147,7 +147,7 @@ fun MainScreen(
         AllSettings.launcherTaskMenuExpanded.save(!isTaskMenuExpanded)
     }
 
-    /** 回到主页面通用函数 */
+    /** Generic back-to-main-page function */
     val toMainScreen: () -> Unit = {
         screenBackStackModel.mainScreen.clearWith(NormalNavKey.LauncherMain)
     }
@@ -305,7 +305,7 @@ private fun <E: TitledNavKey> TopBar(
                             modifier = Modifier.fillMaxHeight(),
                             onClick = {
                                 if (!inLauncherScreen) {
-                                    //不在主屏幕时才允许返回
+                                    //Back allowed only off the main screen
                                     backDispatcher?.onBackPressed() ?: run {
                                         onScreenBack()
                                     }
@@ -323,7 +323,7 @@ private fun <E: TitledNavKey> TopBar(
                             modifier = Modifier.fillMaxHeight(),
                             onClick = {
                                 if (!inLauncherScreen) {
-                                    //不在主屏幕时才允许回到主页面
+                                    //Return-to-home allowed only off the main screen
                                     toMainScreen()
                                 }
                             }
@@ -537,14 +537,14 @@ private fun NavigationUI(
     }
 
     if (backStack.isNotEmpty()) {
-        /** 导航至版本详细信息屏幕 */
+        /** Navigate to the version detail screen */
         val navigateToVersions: (Version) -> Unit = { version ->
             screenBackStackModel.mainScreen.navigateTo(
                 screenKey = NestedNavKey.VersionSettings(version),
                 useClassEquality = true
             )
         }
-        /** 导航至整合包导出屏幕 */
+        /** Navigate to the modpack export screen */
         val navigateToExport: (Version) -> Unit = { version ->
             screenBackStackModel.mainScreen.removeAndNavigateTo(
                 remove = NestedNavKey.VersionSettings::class,
@@ -767,7 +767,7 @@ private fun TaskMenu(
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
                         ) {
-                            //取消任务
+                            //Cancel the task
                             TaskSystem.cancelTask(task.id)
                         }
                     }
@@ -823,7 +823,7 @@ private fun TaskItem(
                     )
                 }
 
-                if (taskProgress < 0) { //负数则代表不确定
+                if (taskProgress < 0) { //negative means indeterminate
                     LinearProgressIndicator(
                         modifier = Modifier.fillMaxWidth()
                     )

@@ -49,7 +49,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
- * 提起 ActionMenu 时的放大倍率
+ * Zoom factor while the ActionMenu is lifted
  */
 private const val PickUpScale = 1.08f
 
@@ -59,26 +59,26 @@ interface ActionMenuDragHandler {
     fun onDragEnd()
     fun onDragCancel()
 
-    /** 登记自行处理长按的内部区域 */
+    /** Register an inner region that handles long-press itself */
     fun addExclusion(exclusion: ActionMenuDragExclusion)
-    /** 移除已登记的内部区域 */
+    /** Remove a registered inner region */
     fun removeExclusion(exclusion: ActionMenuDragExclusion)
 }
 
 /**
- * 自行处理长按的内部区域（根坐标系矩形，随布局更新）
+ * Inner region handling long-press itself (root-coordinate rect, updated with layout)
  */
 class ActionMenuDragExclusion {
     internal var bounds: Rect? = null
 }
 
 /**
- * 当前生效的 ActionMenu 长按拖拽处理器
+ * The active ActionMenu long-press drag handler
  */
 val LocalActionMenuDrag = staticCompositionLocalOf<ActionMenuDragHandler?> { null }
 
 /**
- * 标记背景板为 ActionMenu 的长按拖拽锚点
+ * Marks the backdrop as the ActionMenu's long-press drag anchor
  */
 @Composable
 fun Modifier.actionMenuDragAnchor(): Modifier {
@@ -105,7 +105,7 @@ fun Modifier.actionMenuDragAnchor(): Modifier {
 }
 
 /**
- * 声明该元素区域自行处理长按
+ * Declares this element region handles long-press itself
  */
 @Composable
 fun Modifier.actionMenuDragExclusion(): Modifier {
@@ -123,8 +123,8 @@ fun Modifier.actionMenuDragExclusion(): Modifier {
 }
 
 /**
- * 创建 [ActionMenuDragState]
- * @param onCommit 松手后提交最终停泊侧
+ * Creates an [ActionMenuDragState]
+ * @param onCommit commits the final docked side on release
  */
 @Composable
 fun rememberActionMenuDragState(
@@ -147,7 +147,7 @@ fun rememberActionMenuDragState(
 }
 
 /**
- * ActionMenu 长按拖拽的状态持有者
+ * State holder for the ActionMenu long-press drag
  */
 @Stable
 class ActionMenuDragState(
@@ -158,37 +158,37 @@ class ActionMenuDragState(
     private val onCommit: (ActionMenuSide) -> Unit
 ) : ActionMenuDragHandler {
     /**
-     * ActionMenu 是否处于提起状态
+     * Whether the ActionMenu is lifted
      */
     var floating by mutableStateOf(false)
         private set
 
     /**
-     * 拖拽期间预览的停泊侧，null 表示未在拖拽
+     * The dock side previewed while dragging; null when not dragging
      */
     var previewSide by mutableStateOf<ActionMenuSide?>(null)
         private set
 
     /**
-     * 提起状态的放大比例
+     * Zoom ratio while lifted
      */
     var scale by mutableFloatStateOf(1f)
         private set
 
     /**
-     * 提起后卡片左上角在父容器坐标系下的位置
+     * The lifted card's top-left position in parent coordinates
      */
     var cardPosition by mutableStateOf(Offset.Zero)
         private set
 
     /**
-     * 松手后的归位动画位移，叠加在停泊位置上
+     * Docking-animation offset after release, layered on the docked position
      */
     val settleOffset = Animatable(Offset.Zero, Offset.VectorConverter)
 
     /**
-     * 预览让位时内容区的水平位移（布局方向坐标，向末尾侧为正），
-     * 停泊侧切换预览时内容区向停泊侧平移一个槽位
+     * Horizontal shift of the content area when previewing (layout-direction coordinates; positive toward the end side),
+     * when switching dock-side previews, the content area translates one slot toward the dock side
      */
     val previewShift = Animatable(0f, Float.VectorConverter)
 
@@ -200,37 +200,37 @@ class ActionMenuDragState(
     private val exclusions = mutableListOf<ActionMenuDragExclusion>()
 
     /**
-     * 已停泊侧（持久化状态）
+     * Docked side (persistent state)
      */
     var dockedSide = ActionMenuSide.END
 
     /**
-     * 布局方向是否为从右到左
+     * Whether the layout direction is right-to-left
      */
     var isRtl = false
 
     /**
-     * 父容器在根坐标系下的位置，用于把手指位置换算到父容器坐标
+     * The parent container's position in root coordinates, converting touch positions
      */
     var parentOrigin = Offset.Zero
 
     /**
-     * 父容器宽度（像素），用于换算屏幕中线与停泊位置
+     * Parent width in px, used to map the screen midline and docked positions
      */
     var parentWidthPx = 0f
 
     /**
-     * 停泊槽内容区与屏幕边缘的间距（像素）
+     * Gap between dock-slot content and screen edge (px)
      */
     var outerPaddingPx = 0f
 
     /**
-     * 停泊槽宽度（像素），即换边时内容区与卡片的位移量
+     * Dock-slot width (px): the content/card displacement when switching sides
      */
     var menuSpanPx = 0f
 
     /**
-     * @return 指定侧停泊槽内容区域的位置（父容器坐标）
+     * @return the given side's dock-slot content position (parent coordinates)
      */
     fun landingOf(side: ActionMenuSide): Offset {
         val physicallyLeft = if (isRtl) side == ActionMenuSide.END else side == ActionMenuSide.START
@@ -247,12 +247,12 @@ class ActionMenuDragState(
     }
 
     override fun onDragStart(position: Offset) {
-        //落点位于自行处理长按的内部区域时不接管，避免与内部长按手势同时触发
+        //Releases landing inside a self-handling region are not taken over, avoiding dual long-press triggers
         if (exclusions.any { it.bounds?.contains(position) == true }) return
 
         settleJob?.cancel()
         fingerAtGrab = position - parentOrigin
-        //以当前渲染位置（停泊位叠加进行中的归位偏移）为基准，提起瞬间不产生位移
+        //Anchor on the current render position (docked + in-progress offset), so lifting starts with no jump
         cardPositionAtGrab = landingOf(dockedSide) + settleOffset.value
         cardPosition = cardPositionAtGrab
         previewSide = dockedSide
@@ -265,7 +265,7 @@ class ActionMenuDragState(
         if (!floating) return
         val finger = position - parentOrigin
         cardPosition = cardPositionAtGrab + (finger - fingerAtGrab)
-        //以手指位置是否处于屏幕物理左半侧来判断预览停泊侧
+        //Preview the dock side by whether the finger is on the physical left half
         val physicalLeft = finger.x < parentWidthPx / 2f
         val side = if (isRtl) {
             if (physicalLeft) ActionMenuSide.END else ActionMenuSide.START
@@ -290,7 +290,7 @@ class ActionMenuDragState(
     }
 
     /**
-     * 松开卡片，从当前位置动画归位到目标停泊槽
+     * Releases the card, animating from the current spot to the target dock slot
      */
     private fun settle(target: ActionMenuSide) {
         settleJob?.cancel()
@@ -324,7 +324,7 @@ class ActionMenuDragState(
     }
 
     /**
-     * @return 预览指定侧时内容区需要的水平位移
+     * @return the content shift needed to preview the given side
      */
     private fun previewShiftTargetOf(side: ActionMenuSide): Float = when {
         side == dockedSide -> 0f

@@ -22,15 +22,15 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 远端返回的最新版本的启动器的信息，用于与本地启动器版本进行检查并更新
- * @param code 最新启动器的版本号
- * @param version 最新启动器的Version name
- * @param createdAt 发布时间
- * @param defaultCloudDrive 默认的网盘链接
- * @param cloudDrives 可用的网盘链接
- * @param files 可下载安装包文件
- * @param defaultBody 默认更新日志，当 [bodies] 中没有匹配的语言日志时使用
- * @param bodies 针对不同语言的更新日志列表
+ * The latest launcher info returned remotely, checked against the local version for updates
+ * @param code the latest launcher version code
+ * @param version the latest launcher version name
+ * @param createdAt publish time
+ * @param defaultCloudDrive the default cloud-drive link
+ * @param cloudDrives available cloud-drive links
+ * @param files downloadable package files
+ * @param defaultBody the default changelog, used when [bodies] has no matching language
+ * @param bodies per-language changelogs
  */
 @Serializable
 data class RemoteData(
@@ -52,10 +52,10 @@ data class RemoteData(
     val bodies: List<RemoteBody>
 ) {
     /**
-     * 网盘链接，按语言区分
-     * @param language 语言标识
-     * @param link 网盘链接
-     * @param links 同时支持的所有网盘列检
+     * Netdisk links, keyed by language
+     * @param language the language tag
+     * @param link the netdisk link
+     * @param links every concurrently supported cloud-drive link
      */
     @Serializable
     data class CloudDrive(
@@ -67,9 +67,9 @@ data class RemoteData(
         val links: List<Link> = emptyList()
     ) {
         /**
-         * 单个支持的网盘链接
-         * @param name 网盘名称
-         * @param link 网盘分享链接
+         * A single supported cloud-drive link
+         * @param name the cloud drive's name
+         * @param link the cloud drive share link
          */
         @Serializable
         data class Link(
@@ -81,11 +81,11 @@ data class RemoteData(
     }
 
     /**
-     * 最新版本的启动器的安装包文件
-     * @param fileName 可直接展示的File name
-     * @param uri 可直接在浏览器下载的链接
-     * @param arch 该安装包的架构
-     * @param size 该安装包文件的大小 (bytes)
+     * The latest launcher package file
+     * @param fileName a directly displayable file name
+     * @param uri a link downloadable straight in browser
+     * @param arch the package's architecture
+     * @param size the package file size (bytes)
      */
     @Serializable
     data class RemoteFile(
@@ -114,9 +114,9 @@ data class RemoteData(
     }
 
     /**
-     * 最新版本的启动器的更新日志，按语言区分
-     * @param language 语言标识
-     * @param markdown Markdown 内容
+     * The latest launcher changelog, keyed by language
+     * @param language the language tag
+     * @param markdown the Markdown content
      */
     @Serializable
     data class RemoteBody(

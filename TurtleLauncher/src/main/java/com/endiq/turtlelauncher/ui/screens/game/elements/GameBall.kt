@@ -119,7 +119,7 @@ private fun GameBallContent(
             Spacer(Modifier.width(4.dp))
         }
 
-        //实际内容
+        //Actual content
         Column(
             modifier = Modifier
                 .wrapContentSize()
@@ -130,7 +130,7 @@ private fun GameBallContent(
             ) {
                 Spacer(Modifier.height(4.dp))
             }
-            //帧率显示
+            //FPS display
             CustomAnimatedVisibility(
                 visible = showFps
             ) {
@@ -140,7 +140,7 @@ private fun GameBallContent(
                     style = MaterialTheme.typography.labelMedium
                 )
             }
-            //内存显示
+            //Memory display
             CustomAnimatedVisibility(
                 visible = showMemory
             ) {

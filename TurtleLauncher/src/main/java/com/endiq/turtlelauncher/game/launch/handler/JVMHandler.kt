@@ -57,7 +57,7 @@ class JVMHandler(
     onExit = onExit
 ) {
     /**
-     * 日志展示状态
+     * Log display state
      */
     private var logState by mutableStateOf(LogState.CLOSE)
 

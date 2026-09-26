@@ -46,16 +46,16 @@ import net.burningtnt.terracotta.TerracottaAndroidAPI
 private const val TAG = "TerracottaOperation"
 
 /**
- * 陶瓦联机状态操作
+ * Terracotta state operations
  */
 sealed interface TerracottaOperation {
     data object None: TerracottaOperation
-    /** 打开陶瓦联机菜单 */
+    /** Open the Terracotta menu */
     data object ShowMenu: TerracottaOperation
 }
 
 /**
- * 陶瓦联机状态操作
+ * Terracotta state operations
  */
 @Composable
 fun TerracottaOperation(
@@ -94,9 +94,9 @@ fun TerracottaOperation(
 
             val userName: String = remember(viewModel) {
                 viewModel.getUserName()
-            } ?: anonymousString //未设置，使用“匿名玩家”
+            } ?: anonymousString //unset: falls back to "anonymous player"
 
-            //支持任何房间，实时展示所有玩家配置
+            //Any room supported: all player profiles show live
             val profiles by viewModel.profiles.collectAsStateWithLifecycle()
 
             MultiplayerDialog(

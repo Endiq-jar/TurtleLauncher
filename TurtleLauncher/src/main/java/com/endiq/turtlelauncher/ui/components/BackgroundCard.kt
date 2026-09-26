@@ -40,8 +40,8 @@ import com.endiq.turtlelauncher.ui.theme.cardTitleColor
 import com.endiq.turtlelauncher.ui.theme.onCardColor
 
 /**
- * 背景卡片组件，
- * 使用方式与原本的[Card]无异，但[BackgroundCard]配置了更舒适的背景颜色
+ * Background card composable,
+ * Used just like a [Card], except [BackgroundCard] also configures a more comfortable background color
  */
 @Composable
 fun BackgroundCard(
@@ -72,8 +72,8 @@ fun BackgroundCard(
 }
 
 /**
- * 背景卡片组件，
- * 使用方式与原本的[Card]无异，但[BackgroundCard]配置了更舒适的背景颜色
+ * Background card composable,
+ * Used just like a [Card], except [BackgroundCard] also configures a more comfortable background color
  */
 @Composable
 fun BackgroundCard(
@@ -109,8 +109,8 @@ fun BackgroundCard(
 }
 
 /**
- * 适合在背景卡片组件顶部使用的标题栏Layout
- * @param alpha 组件背景颜色不透明度
+ * A title-bar layout suited to sit atop a BackgroundCard
+ * @param alpha opacity of the component background
  */
 @Composable
 fun CardTitleLayout(

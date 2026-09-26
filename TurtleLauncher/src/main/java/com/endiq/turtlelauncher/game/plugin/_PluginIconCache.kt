@@ -32,7 +32,7 @@ private const val TAG = "PluginIconCache"
 fun appCacheIcon(packageName: String): File = File(PathManager.DIR_CACHE_APP_ICON, "$packageName.png")
 
 /**
- * 缓存应用的图标到本地缓存目录，便于通过包名临时加载
+ * Caches app icons into a local cache directory, for quick loading by package name
  */
 fun cacheAppIcon(context: Context, appInfo: ApplicationInfo) {
     val packageName = appInfo.packageName
@@ -42,9 +42,9 @@ fun cacheAppIcon(context: Context, appInfo: ApplicationInfo) {
 
     runCatching {
         context.packageManager.let { manager ->
-            //读取图标，转换为bitmap
+            //Read the icon and convert it to a bitmap
             val icon = appInfo.loadIcon(manager).toBitmap()
-            //开始缓存
+            //Start caching
             iconFile.outputStream().use { stream ->
                 icon.compress(Bitmap.CompressFormat.PNG, 100, stream)
             }

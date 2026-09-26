@@ -28,7 +28,7 @@ import com.endiq.inputmap.keycodes.MOVEMENT_RIGHT
 import com.endiq.inputmap.keycodes.MOVEMENT_RIGHT_VALUE
 
 /**
- * 摇杆的每个方向代表的移动键键值
+ * Movement key each joystick direction maps to
  */
 val directionMapping = mapOf(
     JoystickDirection.East to listOf(
@@ -63,7 +63,7 @@ val directionMapping = mapOf(
 )
 
 /**
- * 所有的移动键键值
+ * All movement keycodes
  */
 val allAction = listOf(
     MOVEMENT_FORWARD to MOVEMENT_FORWARD_VALUE,

@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 /**
- * TextMate 语法与主题注册表
+ * TextMate grammar and theme registry
  */
 object TextMateRegistry {
     private const val GRAMMAR_DIR = "textmate/grammars"
@@ -46,8 +46,8 @@ object TextMateRegistry {
     private const val THEME_LIGHT = "light_vs"
 
     /**
-     * 已打包的语法
-     * 语法文件名与其对应的 TextMate scope
+     * Bundled grammars
+     * Grammar file names and their TextMate scopes
      */
     private val grammarScopes = listOf(
         "c.tmLanguage.json" to "source.c",
@@ -71,7 +71,7 @@ object TextMateRegistry {
     )
 
     /**
-     * File extension对应的 TextMate scope
+     * File extensions and their TextMate scopes
      */
     private val textMateScopes = mapOf(
         "md" to "text.html.markdown",
@@ -114,12 +114,12 @@ object TextMateRegistry {
     private val lock = ReentrantLock()
 
     /**
-     * jcodings 的 unicode 表格通过类加载器资源加载
-     * 若 APK 中资源缺失，[org.jcodings.unicode.UnicodeEncoding.CaseFold] 等类的
-     * 静态初始化会抛 [org.jcodings.exception.InternalException]
-     * 高亮线程因此产生未捕获异常并杀掉整个进程
+     * jcodings' unicode tables load via classloader resources
+     * If the APK lacks those resources, [org.jcodings.unicode.UnicodeEncoding.CaseFold]-like classes
+     * its static init throws [org.jcodings.exception.InternalException]
+     * the highlight thread then throws an uncaught exception and kills the whole process
      *
-     * 这里在加载语法前提前触发这些类的初始化，失败则禁用高亮
+     * Force these classes to initialize early, before loading grammars; highlighting is disabled on failure
      */
     private fun jcodingsTablesAvailable(): Boolean {
         val tableClasses = listOf(
@@ -142,7 +142,7 @@ object TextMateRegistry {
     }
 
     /**
-     * 注册 assets 中的语法与主题
+     * Registers grammars and themes from assets
      */
     private suspend fun ensureLoaded(context: Context) = withContext(Dispatchers.IO) {
         lock.withLock {
@@ -179,7 +179,7 @@ object TextMateRegistry {
                     FmLog.warn(TAG, "Load TextMate theme failed: $name", it)
                 }
             }
-            // 库内不会自动从主题 JSON 读取明暗属性，手动标记以让配色方案正确判定
+            // The library doesn't read light/dark from theme JSON on its own; set the flag manually so colors resolve right
             themeRegistry.findThemeByFileName(THEME_DARK)?.isDark = true
             themeRegistry.findThemeByFileName(THEME_LIGHT)?.isDark = false
 
@@ -193,8 +193,8 @@ object TextMateRegistry {
     }
 
     /**
-     * 获取指定 scope 的 TextMate 语言实例
-     * @return 失败返回 null 由调用方降级为纯文本
+     * Returns the TextMate language instance for a scope
+     * @return null on failure; callers degrade to plain text
      */
     suspend fun languageFor(scopeName: String, context: Context): TextMateLanguage? {
         ensureLoaded(context)
@@ -203,7 +203,7 @@ object TextMateRegistry {
             lock.withLock {
                 runCatching {
                     languageCache.getOrPut(scopeName) {
-                        // collectIdentifiers = true：收集文档标识符，提供代码补全条目
+                        // collectIdentifiers = true: gathers document identifiers, feeding code completions
                         TextMateLanguage.create(scopeName, grammarRegistry, themeRegistry, true)
                     }
                 }.getOrElse { e ->
@@ -215,9 +215,9 @@ object TextMateRegistry {
     }
 
     /**
-     * 获取与文件名对应的编辑器语言
-     * TextMate 语言首次创建需解析语法，耗时较高，应在 IO 线程调用
-     * @return 加载失败时返回 null
+     * Returns the editor language matching a file name
+     * First creation of a TextMate language parses its grammar and is costly; call on the IO thread
+     * @return null on load failure
      */
     suspend fun editorLanguageFor(name: String, context: Context): Language? {
         val ext = name.substringAfterLast('.', "").lowercase()
@@ -227,8 +227,8 @@ object TextMateRegistry {
     }
 
     /**
-     * 获取与当前主题一致的 TextMate 配色方案
-     * @return 失败返回 null
+     * Returns the TextMate color scheme matching the current theme
+     * @return null on failure
      */
     suspend fun colorScheme(isDark: Boolean, context: Context): TextMateColorScheme? {
         applyTheme(isDark, context)

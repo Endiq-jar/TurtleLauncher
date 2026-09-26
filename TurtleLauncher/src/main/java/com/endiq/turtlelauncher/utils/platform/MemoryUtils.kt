@@ -40,13 +40,13 @@ private fun getMemoryInfo(context: Context): ActivityManager.MemoryInfo {
 }
 
 /**
- * 获取系统总内存（单位：字节）
+ * Gets total system memory (bytes)
  */
 @WorkerThread
 fun getTotalMemory(context: Context) = getMemoryInfo(context).totalMem
 
 /**
- * 获取已使用内存（单位：字节）
+ * Gets used memory (bytes)
  */
 @WorkerThread
 fun getUsedMemory(context: Context): Long {
@@ -55,13 +55,13 @@ fun getUsedMemory(context: Context): Long {
 }
 
 /**
- * 获取当前可用内存（单位：字节）
+ * Gets currently available memory (bytes)
  */
 @WorkerThread
 fun getFreeMemory(context: Context) = getMemoryInfo(context).availMem
 
 /**
- * 为设置项获取最大可设置的内存值（为系统预留一些可用内存）
+ * Gets the max settable memory value, reserving some for the system
  */
 @WorkerThread
 fun getMaxMemoryForSettings(context: Context): Int {
@@ -76,7 +76,7 @@ fun getMaxMemoryForSettings(context: Context): Int {
 }
 
 /**
- * 转换为 MB 单位
+ * Converts to MB
  */
 fun Long.bytesToMB(decimals: Int = 2, roundDown: Boolean = false): Double {
     val megaBytes = this.toDouble() / BYTES_PER_MB

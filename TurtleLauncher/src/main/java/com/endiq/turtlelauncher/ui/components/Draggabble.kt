@@ -66,12 +66,12 @@ fun FloatingBall(
     val currentOnClick by rememberUpdatedState(onClick)
     val currentOnSavePos by rememberUpdatedState(onSavePos)
 
-    //在首次启动时，将悬浮球放到屏幕的 TopCenter
-    //确保这个行为只触发一次
+    //On first launch, place the floating ball at screen TopCenter
+    //Ensure this fires only once
     var isInitialized by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) { isInitialized = true }
 
-    //检查是否是RTL布局，需要做初始位置适配
+    //Adapt the initial position for RTL layouts
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     BoxWithConstraints(
         modifier = Modifier
@@ -99,7 +99,7 @@ fun FloatingBall(
                 .onSizeChanged { size ->
                     ballSize = size
                     if (isInitialized || currentPosition != Offset.Zero) return@onSizeChanged
-                    val x = ((parentWidth - ballSize.width) / 2f) //默认位置 TopCenter
+                    val x = ((parentWidth - ballSize.width) / 2f) //default position TopCenter
                     val positionX = x.coerceIn(0f, (parentWidth - ballSize.width).toFloat())
                     val positionY = 0f.coerceIn(0f, (parentHeight - ballSize.height).toFloat())
                     onPositionChanged(Offset(positionX, positionY))
@@ -132,12 +132,12 @@ fun FloatingBall(
                             val distanceFromStart = (change.position - startPosition).getDistance()
 
                             if (!isDragging && distanceFromStart > viewConfiguration.touchSlop) {
-                                //超出了拖动检测距离，说明是真的在进行拖动
-                                //标记当前为拖动，避免松开手指后，判定为点击事件
+                                //Past the drag threshold: it's a real drag
+                                //Flag it as dragging so releasing isn't judged as a click
                                 isDragging = true
                             }
 
-                            if (isDragging) { //只有在拖动的情况下，才会变更位置
+                            if (isDragging) { //position changes only while dragging
                                 val deltaX = if (isRtl) -delta.x else delta.x
                                 val newX = currentPosition.x + deltaX
                                 val newY = currentPosition.y + delta.y
@@ -153,7 +153,7 @@ fun FloatingBall(
                         if (isDragging) {
                             currentOnSavePos()
                         } else {
-                            //非拖动事件，判定为一次点击
+                            //Not a drag: treat as a click
                             currentOnClick()
                         }
                     }

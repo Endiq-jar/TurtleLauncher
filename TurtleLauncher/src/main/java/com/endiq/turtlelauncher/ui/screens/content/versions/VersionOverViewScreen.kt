@@ -244,7 +244,7 @@ private fun VersionInfoLayout(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                //添加卡片到主界面
+                //Add the card to the home screen
                 val cardExists by remember(version) {
                     VersionCardManager.cards.map { states ->
                         states.any {
@@ -492,7 +492,7 @@ private fun VersionQuickActions(
 }
 
 /**
- * 版本概览操作
+ * Version overview operations
  */
 sealed interface VersionsOperation {
     data object None: VersionsOperation

@@ -85,21 +85,21 @@ import com.endiq.turtlelauncher.ui.theme.onCardColor
 import com.endiq.turtlelauncher.utils.animation.getAnimateTween
 import com.endiq.turtlelauncher.utils.getTimeAgo
 
-/** Addon 加载状态 */
+/** Addon loading states */
 sealed interface AddonState {
-    /** 已完成加载 */
+    /** Loading finished */
     data object None : AddonState
-    /** 加载中 */
+    /** Loading */
     data object Loading : AddonState
     /**
-     * 加载出现异常
-     * @param message 异常消息代理对象
+     * Loading hit an exception
+     * @param message the exception message proxy
      */
     data class Error(val message: AndroidStringText): AddonState
 }
 
 /**
- * 简易 Addon 文本占位
+ * Simple Addon text placeholder
  */
 @Composable
 private fun AddonTextLayout(
@@ -120,7 +120,7 @@ private fun AddonTextLayout(
 }
 
 /**
- * 简易 Addon 文本占位
+ * Simple Addon text placeholder
  */
 @Composable
 private fun AddonTextLayout(
@@ -141,17 +141,17 @@ private fun AddonTextLayout(
 }
 
 /**
- * Addon 版本列表
- * @param state Addon 当前的加载状态
- * @param items Addon 版本列表
- * @param current 当前选择的 Addon 版本
- * @param incompatibleSet 当前 Addon 的不兼容列表
- * @param checkIncompatible 检查当前的 Addon 的不兼容情况
- * @param triggerCheckIncompatible 手动触发检查不兼容情况
- * @param error 设置错误名称，让该列表不可用
- * @param iconPainter Addon 的图标
- * @param maxListHeight 列表展开最高显示高度
- * @param autoCollapse 选择版本后是否自动收起
+ * Addon version list
+ * @param state the Addon's current loading state
+ * @param items the Addon version list
+ * @param current the currently selected Addon version
+ * @param incompatibleSet the current Addon's incompatibility list
+ * @param checkIncompatible checks the current Addon's incompatibilities
+ * @param triggerCheckIncompatible manually triggers an incompatibility check
+ * @param error sets an error name, disabling the list
+ * @param iconPainter the Addon's icon
+ * @param maxListHeight the expanded list's max height
+ * @param autoCollapse whether picking a version auto-collapses the list
  */
 @Composable
 fun <E> AddonListLayout(
@@ -180,7 +180,7 @@ fun <E> AddonListLayout(
     var selectedItem by remember { mutableStateOf<E?>(null) }
 
     LaunchedEffect(state, selectedItem, *triggerCheckIncompatible) {
-        //加载状态 || 选择项变更 || 手动触发，检查一次不兼容情况
+        //Loading state || selection change || manual trigger: run an incompatibility check
         checkIncompatible()
     }
 
@@ -195,7 +195,7 @@ fun <E> AddonListLayout(
         if (autoCollapse) expanded = false
     }
 
-    //不兼容列表不为空，清除当前Addon的选择
+    //A non-empty incompatibility list clears the current Addon selection
     LaunchedEffect(incompatibleSet) {
         if (incompatibleSet.isNotEmpty()) clear()
     }
@@ -222,7 +222,7 @@ fun <E> AddonListLayout(
                 incompatibleSet = incompatibleSet,
                 error = error,
                 expanded = expanded,
-                //加载已完成 && 版本列表不为空 && 不兼容列表为空 && 错误名称为 null -> 可展开
+                //Loaded && non-empty versions && no incompatibilities && null error -> expandable
                 enabled = state == AddonState.None && !items.isNullOrEmpty() && incompatibleSet.isEmpty() && error == null,
                 onClick = { expanded = !expanded },
                 onClear = ::clear,
@@ -477,7 +477,7 @@ fun OptiFineVersionSummary(
         modifier = Modifier.alpha(alpha = 0.7f),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        //版本状态
+        //Version states
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -489,7 +489,7 @@ fun OptiFineVersionSummary(
             )
             Text(text = typeText, style = textStyle)
         }
-        //发布时间
+        //Publish time
         optifine.releaseDate.takeIf { it.isNotEmpty() }?.let { releaseDate ->
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -504,7 +504,7 @@ fun OptiFineVersionSummary(
             }
         }
 
-        //兼容状态
+        //Compatibility state
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -548,7 +548,7 @@ fun ForgeVersionSummary(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (forgeVersion.isRecommended) {
-            //Forge 官方推荐
+            //Official Forge recommendation
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -564,7 +564,7 @@ fun ForgeVersionSummary(
                 )
             }
         }
-        //发布时间
+        //Publish time
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -595,7 +595,7 @@ fun NeoForgeSummary(
         modifier = Modifier.alpha(alpha = 0.7f),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        //版本状态
+        //Version states
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -626,7 +626,7 @@ fun FabricLikeSummary(
         modifier = Modifier.alpha(alpha = 0.7f),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        //版本状态
+        //Version states
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -647,7 +647,7 @@ fun CleanroomSummary(
     iconSize: Dp = 14.dp,
     textStyle: TextStyle = MaterialTheme.typography.labelSmall
 ) {
-    //更新时间
+    //Update time
     Row(
         modifier = Modifier.alpha(alpha = 0.7f),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -680,7 +680,7 @@ fun ModSummary(
         modifier = Modifier.alpha(alpha = 0.7f),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        //版本状态
+        //Version states
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -695,7 +695,7 @@ fun ModSummary(
                 style = textStyle
             )
         }
-        //更新时间
+        //Update time
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically

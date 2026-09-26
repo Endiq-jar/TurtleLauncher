@@ -181,8 +181,8 @@ class PlayerSkin(
     }
 
     /**
-     * 销毁 WebView 并释放资源
-     * 应在包含该组件的 Composable 离开组合树时调用
+     * Destroys the WebView and releases resources
+     * Call it when the Composable holding this leaves the tree
      */
     fun destroy() {
         webview?.apply {

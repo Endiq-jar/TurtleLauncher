@@ -51,7 +51,7 @@ import com.endiq.turtlelauncher.ui.screens.main.control_editor.InfoLayoutTextIte
 import com.endiq.turtlelauncher.utils.string.isNotEmptyOrBlank
 
 /**
- * 为控件选择外观
+ * Picks a style for the widget
  */
 @Composable
 fun EditWidgetStyle(

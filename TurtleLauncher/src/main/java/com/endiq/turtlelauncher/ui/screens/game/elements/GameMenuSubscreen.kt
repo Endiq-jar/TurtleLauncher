@@ -550,7 +550,7 @@ private fun ControlOverview(
                 contentColor = contentColor,
             )
         }
-        //控制布局不透明度
+        //Control layout opacity
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -580,7 +580,7 @@ private fun ControlMouse(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //隐藏虚拟鼠标
+        //Hides the virtual mouse
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -592,7 +592,7 @@ private fun ControlMouse(
                 enabled = AllSettings.mouseControlMode.state == MouseControlMode.CLICK
             )
         }
-        //触控板式操作
+        //Touchpad-style operation
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -604,7 +604,7 @@ private fun ControlMouse(
                 enabled = AllSettings.mouseControlMode.state == MouseControlMode.SLIDE
             )
         }
-        //鼠标控制模式
+        //Mouse control mode
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -617,7 +617,7 @@ private fun ControlMouse(
                 contentColor = contentColor,
             )
         }
-        //虚拟鼠标大小
+        //Virtual mouse size
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -631,7 +631,7 @@ private fun ControlMouse(
                 contentColor = contentColor,
             )
         }
-        //虚拟鼠标灵敏度
+        //Virtual mouse sensitivity
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -645,7 +645,7 @@ private fun ControlMouse(
                 contentColor = contentColor,
             )
         }
-        //抓获鼠标滑动灵敏度
+        //Captured mouse slide sensitivity
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -659,7 +659,7 @@ private fun ControlMouse(
                 contentColor = contentColor,
             )
         }
-        //虚拟鼠标长按触发的延迟
+        //Virtual mouse long-press trigger delay
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -684,7 +684,7 @@ private fun ControlGamepad(
     contentColor: Color = onCardColor(),
 ) {
     val listState = rememberLazyListState()
-    //重映射相关设置仅在映射模式下可用
+    //Remap settings apply only in mapping mode
     val remapEnabled = AllSettings.gamepadControl.state &&
         AllSettings.gamepadInputMode.state == GamepadInputMode.Mapped
     LazyColumn(
@@ -693,7 +693,7 @@ private fun ControlGamepad(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //手柄控制总开关
+        //Gamepad control master switch
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -709,7 +709,7 @@ private fun ControlGamepad(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //手柄输入模式
+        //Gamepad input mode
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -728,7 +728,7 @@ private fun ControlGamepad(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //手柄死区缩放
+        //Gamepad deadzone scaling
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -744,7 +744,7 @@ private fun ControlGamepad(
             )
         }
 
-        //摇杆指针灵敏度
+        //Stick cursor sensitivity
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -760,7 +760,7 @@ private fun ControlGamepad(
             )
         }
 
-        //摇杆视角灵敏度
+        //Stick camera sensitivity
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -776,7 +776,7 @@ private fun ControlGamepad(
             )
         }
 
-        //手柄映射配置切换
+        //Gamepad mapping config switching
         item {
             val list = remember(gamepadViewModel) {
                 gamepadViewModel.getAllConfigKeys()
@@ -824,7 +824,7 @@ private fun ControlGesture(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //手势控制
+        //Gesture control
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -836,7 +836,7 @@ private fun ControlGesture(
             )
         }
 
-        //点击触发的操作类型
+        //Action type fired on tap
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -851,7 +851,7 @@ private fun ControlGesture(
             )
         }
 
-        //长按触发的操作类型
+        //Action type fired on long-press
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -866,7 +866,7 @@ private fun ControlGesture(
             )
         }
 
-        //手势长按触发的延迟
+        //Gesture long-press trigger delay
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -886,7 +886,7 @@ private fun ControlGesture(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //快捷栏定位规则
+        //Hotbar positioning rule
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -900,7 +900,7 @@ private fun ControlGesture(
             )
         }
 
-        //快捷栏宽度
+        //Hotbar width
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -920,7 +920,7 @@ private fun ControlGesture(
             )
         }
 
-        //快捷栏高度
+        //Hotbar height
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -940,7 +940,7 @@ private fun ControlGesture(
             )
         }
 
-        //快捷栏双击与副手交换物品
+        //Hotbar double-tap swaps with the off-hand
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -952,7 +952,7 @@ private fun ControlGesture(
             )
         }
 
-        //快捷栏长按丢弃所选物品
+        //Hotbar long-press drops the selected item
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -964,7 +964,7 @@ private fun ControlGesture(
             )
         }
 
-        //快捷栏长按快捷栏触发延迟
+        //Hotbar long-press repeat trigger delay
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -1004,7 +1004,7 @@ private fun ControlGyroscope(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //陀螺仪控制
+        //Gyroscope control
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -1017,7 +1017,7 @@ private fun ControlGyroscope(
             )
         }
 
-        //陀螺仪控制灵敏度
+        //Gyroscope control sensitivity
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -1033,7 +1033,7 @@ private fun ControlGyroscope(
             )
         }
 
-        //陀螺仪采样率
+        //Gyroscope sampling rate
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -1049,7 +1049,7 @@ private fun ControlGyroscope(
             )
         }
 
-        //陀螺仪数值平滑
+        //Gyroscope value smoothing
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -1062,7 +1062,7 @@ private fun ControlGyroscope(
             )
         }
 
-        //陀螺仪平滑处理的窗口大小
+        //Window size for gyroscope smoothing
         item {
             MenuSliderLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -1077,7 +1077,7 @@ private fun ControlGyroscope(
             )
         }
 
-        //反转 X 轴
+        //Invert the X axis
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -1090,7 +1090,7 @@ private fun ControlGyroscope(
             )
         }
 
-        //反转 Y 轴
+        //Invert the Y axis
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),

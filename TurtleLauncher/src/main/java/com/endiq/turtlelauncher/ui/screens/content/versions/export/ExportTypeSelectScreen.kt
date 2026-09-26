@@ -55,7 +55,7 @@ import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.CardPosition
 import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.rememberSettingsCardShape
 
 /**
- * 整合包导出类型选择页
+ * Modpack export type picker
  */
 @Composable
 fun ExportTypeSelectScreen(
@@ -166,7 +166,7 @@ fun ExportTypeSelectScreen(
 
 
 /**
- * 导出类型布局
+ * Export type layout
  */
 @Composable
 private fun TypeItem(

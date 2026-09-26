@@ -218,7 +218,7 @@ fun AboutInfoScreen(
                 }
             }
 
-            //额外依赖库板块
+            //Extra dependency library section
             animatedItem(scope) { yOffset ->
                 ChunkLayout(
                     modifier = Modifier.offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
@@ -232,7 +232,7 @@ fun AboutInfoScreen(
                 }
             }
 
-            //已加载插件板块
+            //Loaded plugins section
             PluginLoader.allPlugins.takeIf { it.isNotEmpty() }?.let { allPlugins ->
                 animatedItem(scope) { yOffset ->
                     ChunkLayout(

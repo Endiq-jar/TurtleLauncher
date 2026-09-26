@@ -46,13 +46,13 @@ import java.util.concurrent.atomic.AtomicInteger
 private const val TAG = "ModUpdater"
 
 /**
- * 全自动模组检查更新，自动检查传入的模组列表，检查并获取模组最新版本，匹配现有MC版本、现有模组加载器
- * @param mods                  需要检查并更新的模组列表
- * @param modsDir               当前模组文件夹
- * @param minecraft             MC主版本号，用于版本匹配
- * @param modLoader             模组加载器信息，用于版本匹配
- * @param waitForUserConfirm    等待用户确认更新模组的信息
- *                              如果用户觉得没有问题，须返回`true`；否则返回`false`，安装会取消
+ * Fully automatic mod update check: checks the given mod list, fetches their newest versions, and matches them against the current MC version and mod loader
+ * @param mods                  the mod list to check and update
+ * @param modsDir               the current mods dir
+ * @param minecraft             the MC main version, used for version matching
+ * @param modLoader             mod loader info, used for version matching
+ * @param waitForUserConfirm    waits for the user to confirm the mod update info
+ *                              return `true` if the user approves; `false` cancels the install
  */
 class ModUpdater(
     private val mods: List<RemoteMod>,
@@ -66,27 +66,27 @@ class ModUpdater(
     val tasksFlow: StateFlow<List<TitledTask>> = taskExecutor.tasksFlow
 
     /**
-     * 需要检查新版本的模组列表
+     * Mods that need new-version checks
      */
     val dataList: MutableList<ModData> = mutableListOf()
 
     /**
-     * Needs an update的模组列表
+     * Mods that need an update
      */
     val allModsUpdate: MutableList<ModManifest> = mutableListOf()
 
     /**
-     * 最终更新的模组列表
+     * The final mod list to update
      */
     val finalModsUpdate: MutableList<ModManifest> = mutableListOf()
 
     /**
-     * 开始更新所有已选择的模组
-     * @param isRunning 正在运行中，拒绝此次更新请求时
-     * @param onUpdated 已成功更新所有模组
-     * @param onNoModUpdates 没有模组需要被更新时（所有选择的模组都是最新版）
-     * @param onCancelled 更新任务被取消时
-     * @param onError 更新模组时遇到错误
+     * Starts updating all selected mods
+     * @param isRunning called when this request is refused because an update is running
+     * @param onUpdated when all mods have been updated successfully
+     * @param onNoModUpdates when no mods need updating (all selected mods are up to date)
+     * @param onCancelled when the update task is cancelled
+     * @param onError when an error occurs while updating mods
      */
     fun updateAll(
         isRunning: () -> Unit = {},
@@ -96,7 +96,7 @@ class ModUpdater(
         onError: (Throwable) -> Unit
     ) {
         if (taskExecutor.isRunning()) {
-            //正在更新中，阻止这次更新请求
+            //An update is running; block this request
             isRunning()
             return
         }
@@ -109,12 +109,12 @@ class ModUpdater(
             onComplete = onUpdated,
             onError = { th ->
                 if (th is ModUpdateCancelledException) {
-                    //用户已取消本次更新
+                    //The user cancelled this update
                     onCancelled()
                     return@executePhasesAsync
                 }
                 if (th is NoModUpdatesAvailableException) {
-                    //所有模组都是最新版本，不Needs an update
+                    //All mods are up to date; nothing needs an update
                     onNoModUpdates()
                     return@executePhasesAsync
                 }
@@ -131,18 +131,18 @@ class ModUpdater(
 
         listOf(
             buildPhase {
-                //清理缓存
+                //Clear the cache
                 addTask(
                     id = "ModUpdater.ClearTemp",
                     title = androidText(R.string.download_install_clear_temp),
                     icon = R.drawable.ic_auto_delete_outlined
                 ) {
                     clearTempModUpdaterDir()
-                    //清理后，重新创建缓存目录
+                    //After cleanup, recreate the cache directory
                     tempModUpdaterDir.createDirAndLog()
                 }
 
-                //过滤模组数据
+                //Filter the mod data
                 addTask(
                     id = "ModUpdater.Filter",
                     title = androidText(R.string.mods_update_task_filter),
@@ -158,7 +158,7 @@ class ModUpdater(
                         task.updateProgress((index + 1f) / totalSize)
                         task.updateMessage(androidText(file.nameWithoutExtension))
 
-                        // 过滤不可检查远端的模组
+                        // Filter out mods that can't be checked remotely
                         if (!mod.localMod.checkRemote) return@forEachIndexed
 
                         val modFile = mod.remoteFile
@@ -194,13 +194,13 @@ class ModUpdater(
                     dataList.addAll(loadedData)
                 }
 
-                // 检查更新
+                // Check for updates
                 addTask(
                     id = "ModUpdater.CheckUpdate",
                     title = androidText(R.string.mods_update_task_check_update),
                     icon = R.drawable.ic_list_alt_check_outlined
                 ) { task ->
-                    // 最大并发数为 5
+                    // Concurrency capped at 5
                     val semaphore = Semaphore(5)
                     val completedCount = AtomicInteger(0)
                     val totalSize = dataList.size
@@ -208,31 +208,31 @@ class ModUpdater(
                     val updateResults = dataList.map { data ->
                         async(Dispatchers.IO) {
                             semaphore.withPermit {
-                                // 检查更新
+                                // Check for updates
                                 val version = data.checkUpdate(minecraft, modLoader)
 
-                                // 线程安全地更新进度条：以完成的数量来计算进度
+                                // Update the progress bar thread-safely: progress is computed from finished count
                                 val currentCompleted = completedCount.incrementAndGet()
                                 task.updateProgress(currentCompleted.toFloat() / totalSize)
                                 task.updateMessage(androidText(data.project.title))
 
-                                // 如果有新版本，返回键值对；否则返回 null
+                                // Return a pair when a new version exists; otherwise null
                                 if (version != null) data to version else null
                             }
                         }
-                    }.awaitAll().filterNotNull() // 等待所有任务完成，并过滤掉不Needs an update的 null 结果
+                    }.awaitAll().filterNotNull() // Wait for all tasks and filter out the null results needing no update
 
                     updateResults.forEach { (data, version) ->
                         allModsUpdate.add(ModManifest(data, version))
                     }
 
                     if (allModsUpdate.isEmpty()) {
-                        //所有模组都是最新版本，无需更新
+                        //All mods are up to date; no update needed
                         throw NoModUpdatesAvailableException()
                     }
                 }
 
-                //等待用户确认模组更新
+                //Wait for the user to confirm the mod updates
                 addTask(
                     id = "ModUpdater.WaitForUser",
                     title = androidText(R.string.mods_update_task_wait_for_user),
@@ -240,15 +240,15 @@ class ModUpdater(
                 ) {
                     val finalList = waitForUserConfirm(allModsUpdate).toFinalList()
                     if (finalList.isEmpty()) {
-                        // 用户取消了更新，或用户未选择要更新的模组
-                        // 这里抛出取消异常，结束全部任务
+                        // The user cancelled, or no mods were selected for update
+                        // Throw a cancellation exception here to end all tasks
                         throw ModUpdateCancelledException()
                     }
                     allModsUpdate.clear()
                     finalModsUpdate.addAll(finalList)
                 }
 
-                //下载新版本模组
+                //Download the new mod versions
                 addTask(
                     id = "ModUpdater.UpdateMod",
                     title = androidText(R.string.mods_update_task_download)
@@ -260,7 +260,7 @@ class ModUpdater(
                     updater.startDownload(task)
                 }
 
-                //替换模组文件
+                //Replace the mod files
                 addTask(
                     id = " ModUpdater.ReplaceMod",
                     title = androidText(R.string.mods_update_task_replace),
@@ -278,7 +278,7 @@ class ModUpdater(
                         task.updateProgress((index + 1).toFloat() / totalCount)
                         task.updateMessage(androidText(oldFile.name))
 
-                        //确保所有文件都有效
+                        //Ensure all files are valid
                         if (modsDir.exists() && oldFile.exists() && cacheFile.exists()) {
                             FileUtils.deleteQuietly(oldFile)
                             val newFile = File(modsDir, newFileName)
@@ -287,7 +287,7 @@ class ModUpdater(
                     }
                 }
 
-                //清理缓存
+                //Clear the cache
                 addTask(
                     id = "ModUpdater.ClearTempEnds",
                     title = androidText(R.string.download_install_clear_temp),
@@ -344,7 +344,7 @@ class ModUpdater(
     }
 
     /**
-     * 清理临时模组更新缓存目录
+     * Cleans the temporary mod update cache directory
      */
     private suspend fun clearTempModUpdaterDir() = withContext(Dispatchers.IO) {
         PathManager.DIR_CACHE_MOD_UPDATER.takeIf { it.exists() }?.let { folder ->

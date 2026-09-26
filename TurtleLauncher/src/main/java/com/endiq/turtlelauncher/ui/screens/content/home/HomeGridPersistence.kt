@@ -23,7 +23,7 @@ import com.google.gson.annotations.SerializedName
 import com.endiq.cardgrid.state.GridCard
 import com.tencent.mmkv.MMKV
 
-/** 单张卡片的持久化数据 */
+/** Persistent data of a single card */
 data class HomeCardSnapshot(
     @SerializedName("id")
     val id: String = "",
@@ -39,7 +39,7 @@ data class HomeCardSnapshot(
     val height: Int = 0
 )
 
-/** 网格布局的持久化数据，[columns] 为保存时的网格列数 */
+/** Persistent data of the grid layout, [columns] = grid columns at save time */
 data class HomeGridSnapshot(
     @SerializedName("columns")
     val columns: Int = 0,
@@ -48,9 +48,9 @@ data class HomeGridSnapshot(
 )
 
 /**
- * 主页网格布局的持久化：
- * 使用主页网格专用的 MMKV 实例存储 Gson 序列化的 JSON，与启动器设置存储分离，
- * 系统卡片不参与持久化。
+ * Home grid layout persistence:
+ * Stores Gson-serialized JSON in a dedicated MMKV instance, separate from launcher settings storage,
+ * system cards excluded from persistence.
  */
 object HomeGridStore {
     private const val KEY_LAYOUT = "homeCardLayout"
@@ -59,7 +59,7 @@ object HomeGridStore {
 
     private val gson = Gson()
 
-    /** 读取布局快照，无有效数据时返回 null */
+    /** Read the layout snapshot, null when there's no valid data */
     fun load(): HomeGridSnapshot? {
         val json = mmkv.decodeString(KEY_LAYOUT, "") ?: ""
         if (json.isBlank()) return null
@@ -68,7 +68,7 @@ object HomeGridStore {
         }.getOrNull()?.takeIf { it.cards.isNotEmpty() }
     }
 
-    /** 保存布局快照（仅用户卡片参与持久化） */
+    /** Save the layout snapshot (user cards only) */
     fun save(cards: List<GridCard>, columns: Int) {
         val snapshot = HomeGridSnapshot(
             columns = columns,

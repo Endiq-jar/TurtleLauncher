@@ -26,18 +26,18 @@ import androidx.compose.ui.unit.dp
 import com.endiq.turtlelauncher.setting.enums.isLauncherInDarkTheme
 import com.endiq.turtlelauncher.ui.components.influencedByBackgroundColor
 
-/** 应用整体背景的颜色 */
+/** The app's overall background color */
 @Composable
 fun backgroundColor(): Color = MaterialTheme.colorScheme.surfaceContainer
 @Composable
 fun onBackgroundColor(): Color = MaterialTheme.colorScheme.onSurfaceVariant
 
 /**
- * 卡片背景颜色
+ * Card background color
  * [androidx.compose.material3.Card]
  * [com.endiq.turtlelauncher.ui.components.BackgroundCard]
  * [androidx.compose.ui.window.Dialog]
- * @param influencedByBackground 是否受背景内容影响，更改自身不透明度
+ * @param influencedByBackground whether background content influences its own opacity
  */
 @Composable
 fun cardColor(
@@ -49,7 +49,7 @@ fun cardColor(
 @Composable
 fun onCardColor(): Color = MaterialTheme.colorScheme.onSurface
 /**
- * 卡片顶部Title的背景颜色，半透明的surface
+ * Background color of the card-top title, a translucent surface
  */
 @Composable
 fun cardTitleColor(
@@ -57,8 +57,8 @@ fun cardTitleColor(
 ): Color = MaterialTheme.colorScheme.surface.copy(alpha = alpha)
 
 /**
- * 卡片上的Item的背景颜色
- * @param influencedByBackground 是否受背景内容影响，更改自身不透明度
+ * Background color of items on the card
+ * @param influencedByBackground whether background content influences its own opacity
  */
 @Composable
 fun itemColor(

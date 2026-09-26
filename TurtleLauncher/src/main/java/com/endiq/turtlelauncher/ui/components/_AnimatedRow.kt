@@ -29,11 +29,11 @@ import androidx.compose.ui.unit.dp
 import com.endiq.turtlelauncher.utils.animation.swapAnimateDpAsState
 
 /**
- * 支持连锁动画效果的水平布局容器
- * 通过 [AnimatedRowScope.AnimatedItem] 构建子项，自动为每个子项应用递增的动画延迟
- * @param isVisible 控制容器内所有子项的动画触发状态
- * @param baseDelay 动画基础延迟时间(ms)，所有子项在此基础值上递增
- * @param delayIncrement 相邻子项间的动画延迟增量(ms)
+ * Horizontal layout container with cascading animation support
+ * Children are built via [AnimatedRowScope.AnimatedItem], each getting an incremented animation delay
+ * @param isVisible triggers animations of all children in the container
+ * @param baseDelay base animation delay in ms; children increment from it
+ * @param delayIncrement animation delay increment between adjacent children (ms)
  */
 @Composable
 fun AnimatedRow(
@@ -54,9 +54,9 @@ fun AnimatedRow(
 
 interface AnimatedRowScope {
     /**
-     * 在 [AnimatedRow] 中声明一个具有动画效果的子项
-     * @param delay 指定当前子项的动画延迟时间(ms)，如设置将覆盖自动计算的延迟值
-     * @param targetValue 初始偏移距离(Dp)
+     * Declares an animated child inside an [AnimatedRow]
+     * @param delay the child animation delay in ms; overrides the computed one when set
+     * @param targetValue initial offset distance (Dp)
      */
     @Composable
     fun AnimatedItem(
@@ -84,7 +84,7 @@ private class AnimatedRowScopeImpl(
         content: @Composable RowScope.(yOffset: Dp) -> Unit
     ) {
         val currentIndex = itemIndex++
-        //优先使用显式设置的延迟，否则基于索引自动计算递增延迟
+        //Prefer explicit delays; otherwise compute an incremented delay from the index
         val actualDelay = delay ?: (baseDelay + currentIndex * delayIncrement)
 
         val yOffset by swapAnimateDpAsState(

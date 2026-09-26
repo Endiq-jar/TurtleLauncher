@@ -23,8 +23,8 @@ import com.endiq.turtlelauncher.game.version.installed.VersionInfo
 import com.endiq.turtlelauncher.game.versioninfo.models.GameManifest
 
 /**
- * 依赖库加载顺序修复 & 依赖库检查
- * 为以后方便扩展考虑诞生的东西（
+ * Native library load-order fixing & dependency checking
+ * Born out of future extension needs (
  */
 class LibSortFix(
     versionInfo: VersionInfo?
@@ -35,7 +35,7 @@ class LibSortFix(
     private val mojangICU4jLib = "com.ibm.icu:icu4j-core-mojang:"
 
     /**
-     * 检查并插入依赖库
+     * Checks and inserts dependency libraries
      */
     fun LinkedHashMap<GameManifest.Library, String>.insertLib(
         libItem: GameManifest.Library,

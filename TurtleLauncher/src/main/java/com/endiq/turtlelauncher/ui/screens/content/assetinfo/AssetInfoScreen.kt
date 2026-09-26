@@ -47,7 +47,7 @@ import com.endiq.turtlelauncher.viewmodel.ErrorViewModel
 import com.endiq.turtlelauncher.viewmodel.EventViewModel
 
 /**
- * Addons资源信息屏幕 独立于下载页面的导航栈
+ * Addon resource info screen, independent of the download page's nav stack
  */
 @Composable
 fun AssetInfoScreen(
@@ -65,7 +65,7 @@ fun AssetInfoScreen(
 
     val context = LocalContext.current
 
-    // 下载资源操作
+    // Download-resource action
     var operation by remember { mutableStateOf<DownloadSingleOperation>(DownloadSingleOperation.None) }
     DownloadSingleOperation(
         operation = operation,

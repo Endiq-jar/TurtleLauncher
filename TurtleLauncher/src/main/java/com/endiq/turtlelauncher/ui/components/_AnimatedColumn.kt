@@ -38,11 +38,11 @@ import androidx.compose.ui.unit.dp
 import com.endiq.turtlelauncher.utils.animation.swapAnimateDpAsState
 
 /**
- * 支持连锁动画效果的垂直布局容器
- * 通过 [AnimatedColumnScope.AnimatedItem] 构建子项，自动为每个子项应用递增的动画延迟
- * @param isVisible 控制容器内所有子项的动画触发状态
- * @param baseDelay 动画基础延迟时间(ms)，所有子项在此基础值上递增
- * @param delayIncrement 相邻子项间的动画延迟增量(ms)
+ * Vertical layout container with cascading animation support
+ * Children are built via [AnimatedColumnScope.AnimatedItem], each getting an incremented animation delay
+ * @param isVisible triggers animations of all children in the container
+ * @param baseDelay base animation delay in ms; children increment from it
+ * @param delayIncrement animation delay increment between adjacent children (ms)
  */
 @Composable
 fun AnimatedColumn(
@@ -65,9 +65,9 @@ fun AnimatedColumn(
 
 interface AnimatedColumnScope {
     /**
-     * 在 [AnimatedColumn] 中声明一个具有动画效果的子项
-     * @param delay 指定当前子项的动画延迟时间(ms)，如设置将覆盖自动计算的延迟值
-     * @param targetValue 初始偏移距离(Dp)
+     * Declares an animated child inside an [AnimatedColumn]
+     * @param delay the child animation delay in ms; overrides the computed one when set
+     * @param targetValue initial offset distance (Dp)
      */
     @Composable
     fun AnimatedItem(
@@ -95,7 +95,7 @@ private class AnimatedColumnScopeImpl(
         content: @Composable ColumnScope.(yOffset: Dp) -> Unit
     ) {
         val currentIndex = itemIndex++
-        //优先使用显式设置的延迟，否则基于索引自动计算递增延迟
+        //Prefer explicit delays; otherwise compute an incremented delay from the index
         val actualDelay = delay ?: (baseDelay + currentIndex * delayIncrement)
 
         val yOffset by swapAnimateDpAsState(
@@ -114,11 +114,11 @@ private class AnimatedColumnScopeImpl(
 
 
 /**
- * 支持连锁动画效果的懒加载垂直列表容器
- * 通过 [AnimatedLazyListScope.animatedItems] 或 [AnimatedLazyListScope.animatedItem] 构建子项，自动为每个子项应用递增的动画延迟
- * @param isVisible 控制列表内所有子项的动画触发状态
- * @param baseDelay 动画基础延迟时间(ms)，所有子项在此基础值上递增
- * @param delayIncrement 相邻子项间的动画延迟增量(ms)
+ * Lazy vertical list container with cascading animation support
+ * Children are declared via [AnimatedLazyListScope.animatedItems] or [AnimatedLazyListScope.animatedItem], each getting an incremented delay
+ * @param isVisible triggers animations of all items in the list
+ * @param baseDelay base animation delay in ms; children increment from it
+ * @param delayIncrement animation delay increment between adjacent children (ms)
  */
 @Composable
 fun AnimatedLazyColumn(
@@ -146,9 +146,9 @@ fun AnimatedLazyColumn(
 
 interface AnimatedLazyListScope {
     /**
-     * 在 [LazyListScope] 中添加单个动画列表项
-     * @param delay 指定当前项的动画延迟时间(ms)，如设置将覆盖自动计算的延迟值
-     * @param targetValue 初始偏移距离(Dp)
+     * Adds a single animated list item in a [LazyListScope]
+     * @param delay this item animation delay in ms; overrides the computed one when set
+     * @param targetValue initial offset distance (Dp)
      */
     fun animatedItem(
         lazyListScope: LazyListScope,
@@ -159,9 +159,9 @@ interface AnimatedLazyListScope {
     )
 
     /**
-     * 在 [LazyListScope] 中批量添加动画列表项
-     * @param delay 基础延迟时间(ms)，每个项在此基础值上根据索引递增
-     * @param targetValue 初始偏移距离(Dp)
+     * Adds animated list items in bulk in a [LazyListScope]
+     * @param delay base delay in ms; each item increments from it by index
+     * @param targetValue initial offset distance (Dp)
      */
     fun <T> animatedItems(
         lazyListScope: LazyListScope,
@@ -188,7 +188,7 @@ private class AnimatedLazyListScopeImpl(
         content: @Composable LazyItemScope.(yOffset: Dp) -> Unit
     ) {
         val currentIndex = itemIndex++
-        //优先使用显式设置的延迟，否则基于索引自动计算递增延迟
+        //Prefer explicit delays; otherwise compute an incremented delay from the index
         val actualDelay = delay ?: (baseDelay + currentIndex * delayIncrement)
 
         lazyListScope.item(key = key) {

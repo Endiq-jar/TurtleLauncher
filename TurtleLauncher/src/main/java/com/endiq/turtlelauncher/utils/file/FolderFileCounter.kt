@@ -21,7 +21,7 @@ package com.endiq.turtlelauncher.utils.file
 import java.io.File
 
 /**
- * 记录文件夹内文件数量
+ * Records the file count inside a folder
  */
 class FolderFileCounter(
     private val dir: File
@@ -29,8 +29,8 @@ class FolderFileCounter(
     private var counts: Int? = null
 
     /**
-     * 记录目录内的文件数量，并检查是否有变化
-     * @return 当前目录
+     * Records the file count of a directory and checks for changes
+     * @return the current directory
      */
     fun checkDir(): Boolean {
         val tempCount = if (dir.isFile) {
@@ -44,12 +44,12 @@ class FolderFileCounter(
     }
 
     /**
-     * 获取上一次记录的目录内的文件数量
+     * Gets the previously recorded file count of the directory
      */
     fun getRecordedCount(): Int = counts ?: 0
 
     /**
-     * 当前是否从未检查过文件数量
+     * Whether the file count was never checked
      */
     fun isUnchecked(): Boolean = counts == null
 }

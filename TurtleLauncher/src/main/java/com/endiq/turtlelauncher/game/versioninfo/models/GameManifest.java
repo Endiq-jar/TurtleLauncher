@@ -59,7 +59,7 @@ public class GameManifest {
     @SerializedName("logging")
     private Logging logging;
     @SerializedName("inheritsFrom")
-    private String inheritsFrom; //作为非合并版本的标记
+    private String inheritsFrom; //marks a non-merged version
 
     public Arguments getArguments() {
         return arguments;

@@ -31,8 +31,8 @@ import com.endiq.turtlelauncher.utils.file.copyDirectoryContents
 import java.io.File
 
 /**
- * Modrinth 整合包安装信息
- * @param manifest Modrinth 整合包清单
+ * Modrinth modpack install info
+ * @param manifest the Modrinth modpack manifest
  */
 class ModrinthPack(
     root: File,
@@ -42,16 +42,16 @@ class ModrinthPack(
     platform = PackPlatform.Modrinth
 ) {
     /**
-     * 将 Modrinth 的清单读取为 [ModPackInfo] 信息对象
+     * Reads the Modrinth manifest into a [ModPackInfo] object
      */
     suspend fun readModrinth(
         task: Task,
         targetFolder: File,
         extractFiles: suspend (internalPath: String, outputDir: File) -> Unit
     ): ModPackInfo {
-        //获取所有需要下载的模组文件
+        //Collect all mod files to download
         val files = manifest.files.mapNotNull { manifestFile ->
-            //客户端不支持
+            //Unsupported by the client
             if (manifestFile.env?.client == "unsupported") return@mapNotNull null
             ModFile(
                 outputFile = File(targetFolder, manifestFile.path),
@@ -60,7 +60,7 @@ class ModrinthPack(
             )
         }
 
-        //获取加载器信息
+        //Collect loader info
         val loaders = manifest.dependencies.entries.mapNotNull { (id, version) ->
             when (id) {
                 "forge" -> ModLoader.FORGE to version
@@ -71,7 +71,7 @@ class ModrinthPack(
             }
         }
 
-        //提取覆盖包到目标目录
+        //Extract the override files into the target directory
         task.updateProgress(-1f)
         task.updateMessage(androidText(R.string.download_modpack_install_overrides))
         extractFiles("overrides", targetFolder)
@@ -99,7 +99,7 @@ class ModrinthPack(
                     ?.let { File(root, it) }
                     ?: root
                 if (sourceDir.exists()) {
-                    //提取文件
+                    //Extract files
                     copyDirectoryContents(
                         from = sourceDir,
                         to = outputDir,

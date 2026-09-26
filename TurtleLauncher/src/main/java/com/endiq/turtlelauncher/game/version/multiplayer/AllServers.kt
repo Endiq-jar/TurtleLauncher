@@ -45,12 +45,12 @@ class AllServers {
     private val hiddenServerList = mutableListOf<ServerData>()
 
     /**
-     * 尝试读取 servers.dat 文件中存储的服务器信息
+     * Tries to read server info stored in the servers.dat file
      */
     suspend fun loadServers(dataFile: File) {
         withContext(Dispatchers.IO) {
             runCatching {
-                //清除当前所有服务器
+                //Clear all current servers
                 _serverList.clear()
                 hiddenServerList.clear()
 
@@ -83,8 +83,8 @@ class AllServers {
     ) {
         if (isHidden) {
             hiddenServerList.add(server)
-            //Minecraft内有隐藏服务器自动清理机制
-            //如果隐藏的服务器数量大于16，则会开始清除前面的服务器
+            //Minecraft has an auto-cleanup mechanism for hidden servers
+            //When hidden servers exceed 16, earlier ones are removed
             while (this.hiddenServerList.size > 16) {
                 this.hiddenServerList.removeAt(this.hiddenServerList.size - 1)
             }
@@ -100,8 +100,8 @@ class AllServers {
     }
 
     /**
-     * 保存服务器列表
-     * @param savePath 生成的 servers.dat 文件会保存在什么目录下
+     * Saves the server list
+     * @param savePath the directory the generated servers.dat is saved into
      */
     suspend fun save(savePath: File) {
         withContext(Dispatchers.IO) {
@@ -114,7 +114,7 @@ class AllServers {
 
                 tag.put(serverTags)
 
-                //开始将数据写入文件，和原版 Minecraft 差不多的逻辑
+                //Start writing data to the file, much like vanilla Minecraft
                 val currentPath = savePath.toPath()
                 val newFile = Files.createTempFile(currentPath, "servers", ".dat").toFile()
                 NBTIO.writeFile(tag, newFile, false, false)
@@ -122,14 +122,14 @@ class AllServers {
                 val currentDataFile = currentPath.resolve("servers.dat").toFile()
                 val oldDataFile = currentPath.resolve("servers.dat_old").toFile()
 
-                //先尝试存档当前的服务器数据文件
+                //First back up the current server data file
                 FileUtils.deleteQuietly(oldDataFile)
                 if (currentDataFile.exists()) {
                     currentDataFile.copyTo(oldDataFile, true)
                     FileUtils.deleteQuietly(currentDataFile)
                 }
 
-                //然后复制缓存的新的数据文件
+                //Then copy the cached new data file over
                 newFile.copyTo(currentDataFile, true)
                 FileUtils.deleteQuietly(newFile)
             }.onFailure {
@@ -150,13 +150,13 @@ class AllServers {
     }
 
     /**
-     * [参考 WIKI](https://zh.minecraft.wiki/w/%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%88%97%E8%A1%A8%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F#%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)
+     * [Reference WIKI](https://minecraft.wiki/w/%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%88%97%E8%A1%A8%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F#%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)
      */
     private fun CompoundTag.parseServerData(): ServerData {
         val name = asStringNotNull("name", "")
         val origin = asStringNotNull("ip", "")
 
-        //尝试解析icon作为placeholder
+        //Try parsing the icon as a placeholder
         val icon = asString("icon", null)?.let { base64 ->
             runCatching {
                 Base64.getDecoder().decode(base64)

@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.ui.screens.game.elements.log_parser
 
 /**
- * 日志解析的共用逻辑
+ * Shared logic of log parsing
  */
 object LogParseCore {
     private val timePatterns = listOf(
@@ -78,7 +78,7 @@ object LogParseCore {
         var i = start + 1
         while (i < text.length) {
             when {
-                // 防跨行
+                // Line-span guard
                 text[i] == '\n' -> return -1
                 text[i] == quote && text[i - 1] != '\\' -> return i
             }

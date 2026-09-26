@@ -71,14 +71,14 @@ suspend fun fetchNodes(): List<URI> {
         nodeList?.let { return it }
 
         if (AllSettings.enableTerracottaNodes.getValue()) {
-            // 使用自定义的 EasyTier 服务器节点
+            // Use a custom EasyTier server node
             val url = AllSettings.terracottaNodes.getValue()
             if (url.isNotEmptyOrBlank()) {
                 val tempList = listOf(URI(url))
                 nodeList = tempList
                 return tempList
             }
-            // 为空则继续使用默认的节点逻辑
+            // Empty: keep the default node logic
         }
 
         withContext(Dispatchers.IO) {
@@ -137,7 +137,7 @@ private fun shouldUseNode(
 ): Boolean {
     if (region.isNullOrBlank()) return true
 
-    //仅限中国大陆地区使用
+    //For use in mainland China only
     val isMainLand = isChinaMainland()
     return isMainLand && region.equals("CN", ignoreCase = true)
 }

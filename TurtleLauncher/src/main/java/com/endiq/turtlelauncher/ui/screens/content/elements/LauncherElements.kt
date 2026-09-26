@@ -115,52 +115,52 @@ import kotlin.math.sqrt
 
 @Parcelize
 sealed interface QuickPlay : Parcelable {
-    /** 快速启动游玩存档  仅支持 1.20+ 23w14a+ */
+    /** Quick-launch save play (1.20+ / 23w14a+ only) */
     @Parcelize
     data class Save(val saveName: String): QuickPlay
 
-    /** 快速启动游玩服务器 */
+    /** Quick-launch server play */
     @Parcelize
     data class Server(val serverAddress: String): QuickPlay
 }
 
 sealed interface LaunchGameOperation {
     data object None : LaunchGameOperation
-    /** 没有安装版本/没有选中有效版本 */
+    /** No installed version / no valid version selected */
     data object NoVersion : LaunchGameOperation
-    /** Version name非法时 */
+    /** When the version name is illegal */
     data class InvalidVersionName(val th: InvalidFilenameException) : LaunchGameOperation
-    /** 没有可用账号 */
+    /** No usable account */
     data object NoAccount : LaunchGameOperation
 
-    /** 渲染器可配置，但需要用到文件管理权限 */
+    /** The renderer is configurable but needs the file manager permission */
     data class RendererNoStoragePermission(
         val renderer: RendererInterface,
         val version: Version,
         val quickPlay: QuickPlay?
     ) : LaunchGameOperation
 
-    /** 当前渲染器不支持选中版本 */
+    /** The current renderer doesn't support the selected version */
     data class UnsupportedRenderer(
         val renderer: RendererInterface,
         val version: Version,
         val quickPlay: QuickPlay?
     ): LaunchGameOperation
 
-    /** 当前已加载的插件不支持选中的版本 */
+    /** A loaded plugin doesn't support the selected version */
     data class UnsupportedPlugins(
         val plugins: List<ApkPlugin>,
         val version: Version,
         val quickPlay: QuickPlay?
     ): LaunchGameOperation
 
-    /** 尝试启动：启动前检查一些东西 */
+    /** Attempt launch: run prelaunch checks */
     data class TryLaunch(
         val version: Version?,
         val quickPlay: QuickPlay? = null
     ) : LaunchGameOperation
 
-    /** 账号凭据已被服务端拒绝，需要重新登录 */
+    /** The account credential was rejected by the server; a re-login is needed */
     data class AccountRelogin(
         val account: Account,
         val version: Version,
@@ -169,7 +169,7 @@ sealed interface LaunchGameOperation {
         val error: Throwable? = null
     ) : LaunchGameOperation
 
-    /** 账号刷新失败，可选择跳过刷新继续启动 */
+    /** Account refresh failed; the user may skip and launch anyway */
     data class AccountRefreshFailed(
         val account: Account,
         val error: Throwable,
@@ -177,7 +177,7 @@ sealed interface LaunchGameOperation {
         val quickPlay: QuickPlay?
     ) : LaunchGameOperation
 
-    /** 正式启动 */
+    /** Formal launch */
     data class RealLaunch(
         val version: Version,
         val quickPlay: QuickPlay?,
@@ -243,7 +243,7 @@ fun LaunchGameOperation(
                         message = activity.getString(R.string.renderer_version_storage_permissions, renderer.getRendererName()),
                         messageSdk30 = activity.getString(R.string.renderer_version_storage_permissions_sdk30, renderer.getRendererName()),
                         onDialogCancel = {
-                            //用户拒绝授权，但仍然允许启动（不过这会导致配置无法读取）
+                            //The user denied the grant but may still launch (configs become unreadable)
                             launchGameViewModel.updateOperation(LaunchGameOperation.RealLaunch(version, quickPlay))
                         }
                     )
@@ -309,7 +309,7 @@ fun LaunchGameOperation(
 
                 val mcVer = version.getVersionInfo()!!.minecraftVersion
 
-                // 设备完全支持 Vulkan 时跳过渲染器的版本支持检查
+                //Skip the renderer version-support check when Vulkan is fully supported
                 if (!version.hasVulkanBackend() || !ensureVulkanSupported(version)) {
                     val isRendererUnsupported =
                         (currentRenderer.getMinMCVersion()?.let { mcVer.isLowerVer(it) } ?: false) ||
@@ -330,8 +330,8 @@ fun LaunchGameOperation(
                     return@LaunchedEffect
                 }
 
-                //为可配置的渲染器检查文件管理权限
-                //前提：系统支持这个设置
+                //Check the file manager permission for configurable renderers
+                //Precondition: the system supports this setting
                 if (
                     canHandlePermission &&  !hasStoragePermission &&
                     RendererPluginManager.isConfigurablePlugin(version.getRenderer())
@@ -340,7 +340,7 @@ fun LaunchGameOperation(
                     return@LaunchedEffect
                 }
 
-                //正式启动游戏
+                //Formal game launch
                 launchGameViewModel.updateOperation(LaunchGameOperation.RealLaunch(version, quickPlay))
             }
         }
@@ -543,7 +543,7 @@ private fun AccountRefreshFailedDialog(
 }
 
 /**
- * 启动器背景图片/视频层
+ * Launcher background image/video layer
  */
 @Composable
 fun Background(
@@ -591,8 +591,8 @@ private fun Modifier.backgroundBlur(
 }
 
 /**
- * 背景模糊效果
- * @param enabled 是否应用模糊效果
+ * Background blur effect
+ * @param enabled whether the blur is applied
  */
 @Composable
 fun Modifier.backgroundGlass(
@@ -607,7 +607,7 @@ fun Modifier.backgroundGlass(
 }
 
 /**
- * 背景模糊效果
+ * Background blur effect
  */
 @Composable
 private fun Modifier.glass(
@@ -635,7 +635,7 @@ private fun Modifier.glass(
         }
     }
 
-    // null 表示没有外部模糊源（背景模式），直接模糊自身内容
+    // null means no external blur source (background mode); blur own content
     val input = if (hazeState != null) HazeInput.Sources(hazeState) else HazeInput.Content
 
     return this.hazeBlur(

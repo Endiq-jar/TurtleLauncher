@@ -90,7 +90,7 @@ class LaunchArgs(
                         if (quickPlay.saveName.isEmptyOrBlank()) return@let
 
                         if (info.quickPlay.isQuickPlaySingleplayer) {
-                            //将不受支持的字符转换为Unicode
+                            //Convert unsupported characters to Unicode
                             val saveName = quickPlay.saveName.toUnicodeEscaped()
                             argsList.apply {
                                 add("--quickPlaySingleplayer")
@@ -119,7 +119,7 @@ class LaunchArgs(
             }
         }
 
-        //追加版本配置的游戏参数，置于参数列表末尾
+        //Append the version config's game arguments at the end of the list
         argsList.addAll(version.getGameArgs().splitPreservingQuotes())
 
         return argsList
@@ -157,10 +157,10 @@ class LaunchArgs(
     }
 
     /**
-     * 组装 LWJGL 组件 classpath
-     * 版本 >= 3.4.1 -> 使用 3.4.1 组件；否则使用 3.3.3 组件。
-     * LWJGL2 时代（版本 <= 299）额外加入 lwjgl-lwjglx.jar 桥接层。
-     * lwjgl.jar 核心优先 -> merged-modules -> 其余模块。
+     * Assembles the LWJGL component classpath
+     * version >= 3.4.1 -> use the 3.4.1 components; otherwise the 3.3.3 ones.
+     * In the LWJGL2 era (version <= 299), also add the lwjgl-lwjglx.jar bridge layer.
+     * lwjgl.jar core first -> merged-modules -> the remaining modules.
      */
     private fun getLWJGL3ClassPath(): String {
         val versionDir = lwjglVersionDir(lwjglVersion)
@@ -176,7 +176,7 @@ class LaunchArgs(
     private fun lwjglJarOrder(name: String, versionDir: String, isLwjgl2: Boolean): Int = when (name) {
         "lwjgl.jar" -> 0
         "lwjgl-$versionDir-merged-modules.jar" -> 1
-        "lwjgl-lwjglx.jar" -> 3 // 桥接层放最后，仅 LWJGL2 使用
+        "lwjgl-lwjglx.jar" -> 3 // bridge last, LWJGL2 only
         else -> 2
     }
 
@@ -185,7 +185,7 @@ class LaunchArgs(
 
         if (account.isLocalAccount()) {
             if (account.hasSkinFile) {
-                //该离线账号拥有本地皮肤，启用离线yggdrasil服务器
+                //The offline account has a local skin: enable the offline Yggdrasil server
                 offlineServer.start()
                 offlineServer.addCharacter(account)
                 offlineServer.getPort()?.let { port ->
@@ -195,11 +195,11 @@ class LaunchArgs(
                     argsList.add("-javaagent:${LibPath.AUTHLIB_INJECTOR.absolutePath}=http://localhost:$port")
                     argsList.add("-Dauthlibinjector.side=client")
                 } ?: run {
-                    //无法获取端口号，说明服务器未成功启动
+                    //No port number means the server didn't start successfully
                     val msg = "Failed to start offline Yggdrasil server!"
                     LoggerBridge.append(msg)
                     Logger.warning(TAG, msg)
-                    //本次启动将被忽略，为避免浪费性能，关停服务器
+                    //This launch will be ignored; stop the server to avoid wasting cycles
                     offlineServer.stop()
                 }
             }
@@ -247,7 +247,7 @@ class LaunchArgs(
 
         val varArgMap: MutableMap<String, String> = android.util.ArrayMap()
         val launchClassPath = "${getLWJGL3ClassPath()}:${generateLaunchClassPath(gameManifest)}"
-        var hasClasspath = false //是否已经在jvm参数中包含 ${classpath} 配置
+        var hasClasspath = false //whether ${classpath} is already in the JVM args
 
         varArgMap["classpath_separator"] = ":"
         varArgMap["library_directory"] = getLibrariesHome(version.getGameHome())
@@ -257,7 +257,7 @@ class LaunchArgs(
 
         fun Any.processJvmArg(): String? = (this as? String)?.let { argument ->
             if (argument.startsWith("-Djava.library.path=")) {
-                //26.2+ Mojang 更改到了具体的路径，需要手动重定向
+                //26.2+ changed to a concrete path in Mojang's layout; it must be redirected manually
                 return@let $$"-Djava.library.path=${natives_directory}"
             }
             when {
@@ -267,7 +267,7 @@ class LaunchArgs(
                 argument.contains("-Dio.netty.native.workdir") ||
                 argument.contains("-Djna.tmpdir") ||
                 argument.contains("-Dorg.lwjgl.system.SharedLibraryExtractPath") -> {
-                    //使用一个可读的目录
+                    //Use a readable directory
                     argument.replace($$"${natives_directory}", PathManager.DIR_CACHE.absolutePath)
                 }
                 argument == $$"${classpath}" -> {
@@ -287,7 +287,7 @@ class LaunchArgs(
         return if (hasClasspath) {
             replacedArgs
         } else {
-            //不包含 ${classpath} 配置，则需要手动添加
+            //Without the ${classpath} placeholder, it must be added manually
             replacedArgs + arrayOf("-cp", launchClassPath)
         }
     }
@@ -334,7 +334,7 @@ class LaunchArgs(
 
 
     /**
-     * @return 库相对路径
+     * @return the library's relative path
      */
     private fun GameManifest.Library.progressLibrary(): String? {
         if (filterLibrary()) return null
@@ -401,10 +401,10 @@ class LaunchArgs(
 }
 
 /**
- * 从版本清单中探测要求的 LWJGL 主版本
- * 解析 `org.lwjgl:lwjgl:X.Y.Z` / `org.lwjgl.lwjgl:lwjgl:X.Y.Z` 坐标，
- * 返回去掉句点后的整数（如 3.3.3→333、3.4.1→341、2.9.9→299）
- * @return 无法确定时返回 0（默认按 LWJGL3 处理）
+ * Detects the LWJGL major version required by the version manifest
+ * Parses the `org.lwjgl:lwjgl:X.Y.Z` / `org.lwjgl.lwjgl:lwjgl:X.Y.Z` coordinates,
+ * returning the integer with dots stripped (e.g. 3.3.3→333, 3.4.1→341, 2.9.9→299)
+ * @return 0 when undetermined (treated as LWJGL3 by default)
  */
 fun detectLwjglVersion(manifest: GameManifest): Int {
     for (lib in manifest.libraries) {
@@ -424,7 +424,7 @@ fun detectLwjglVersion(manifest: GameManifest): Int {
 }
 
 /**
- * LWJGL 版本整数 -> 组件目录名。
- * 版本 >= 3.4.1 -> 3.4.1 组件；否则（含 LWJGL2 桥接场景）-> 3.3.3 组件
+ * LWJGL version integer -> component directory name.
+ * version >= 3.4.1 -> 3.4.1 components; otherwise (including LWJGL2 bridging) -> 3.3.3 components
  */
 fun lwjglVersionDir(lwjglVersion: Int): String = if (lwjglVersion >= 341) "3.4.1" else "3.3.3"

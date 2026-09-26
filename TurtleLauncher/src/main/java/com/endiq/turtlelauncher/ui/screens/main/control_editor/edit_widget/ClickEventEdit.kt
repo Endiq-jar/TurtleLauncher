@@ -86,7 +86,7 @@ fun EditWidgetClickEvent(
                 pagerState.animateScrollToPage(selectedTabIndex)
             }
 
-            //顶贴标签栏
+            //Sticky tab bar
             SecondaryTabRow(
                 selectedTabIndex = selectedTabIndex,
                 containerColor = cardColor(false)
@@ -159,7 +159,7 @@ private fun EditBasicEvent(
     ) {
         Spacer(Modifier)
 
-        //滑动触发
+        //Swipe trigger
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_swipple),
@@ -169,7 +169,7 @@ private fun EditBasicEvent(
             }
         )
 
-        //带动鼠标
+        //Carry the mouse along
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_penetrable),
@@ -179,7 +179,7 @@ private fun EditBasicEvent(
             }
         )
 
-        //可开关
+        //Toggleable
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_toggleable),
@@ -191,7 +191,7 @@ private fun EditBasicEvent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        //切换控制层可见性
+        //Toggle widget layer visibility
         InfoLayoutTextItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_switch_layers),
@@ -200,7 +200,7 @@ private fun EditBasicEvent(
             }
         )
 
-        //强制显示控件层
+        //Force-show the widget layer
         InfoLayoutTextItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_show_layers),
@@ -209,7 +209,7 @@ private fun EditBasicEvent(
             }
         )
 
-        //强制隐藏控件层
+        //Force-hide the widget layer
         InfoLayoutTextItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_hide_layers),

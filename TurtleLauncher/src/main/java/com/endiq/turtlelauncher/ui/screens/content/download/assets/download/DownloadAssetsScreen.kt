@@ -120,14 +120,14 @@ private class DownloadScreenViewModel(
     initialClasses: PlatformClasses
 ): ViewModel() {
     /**
-     * 资源类型，优先使用项目详情返回的准确类型
+     * Resource type; the project detail's accurate type wins
      */
     var classes by mutableStateOf(initialClasses)
         private set
 
-    //版本
+    //Versions
     private var _versionsList by mutableStateOf<List<VersionInfoMap>>(emptyList())
-    //未经映射的原始版本数据，类型修正后用于重新映射
+    //Unmapped raw version data, remapped after the type fix
     private var rawVersions: List<PlatformVersion> = emptyList()
     var versionsResult by mutableStateOf<DownloadAssetsState<List<VersionInfoMap>>>(DownloadAssetsState.Getting())
     var versionsLoading by mutableStateOf<DownloadAssetsVersionLoading>(DownloadAssetsVersionLoading.None)
@@ -157,7 +157,7 @@ private class DownloadScreenViewModel(
     }
 
     /**
-     * 类型修正后，使用原始版本数据重新映射版本列表
+     * After the type fix, remap the version list from raw data
      */
     private fun remapVersions() {
         if (rawVersions.isEmpty()) return
@@ -168,7 +168,7 @@ private class DownloadScreenViewModel(
     fun getVersions() {
         viewModelScope.launch {
             versionsResult = DownloadAssetsState.Getting()
-            //重新加载时重试此前获取失败的依赖项目
+            //A reload retries the dependency projects that failed before
             failedDependencyProjects.clear()
             if (platform == Platform.CURSEFORGE) {
                 versionsLoading = DownloadAssetsVersionLoading.StartLoadPage
@@ -184,7 +184,7 @@ private class DownloadScreenViewModel(
                     val versions: List<PlatformVersion> = result.initAll(projectId)
                     rawVersions = versions
 
-                    //版本列表先行展示，依赖项目信息改为后台缓存，不再阻塞列表加载
+                    //Versions show first; dependency project info caches in the background without blocking
                     _versionsList = versions.mapWithVersions(classes)
                     versionsResult = DownloadAssetsState.Success(_versionsList.filterInfos())
                     versionsLoading = DownloadAssetsVersionLoading.None
@@ -217,7 +217,7 @@ private class DownloadScreenViewModel(
         }
     }
 
-    //项目信息
+    //Project info
     var projectResult by mutableStateOf<DownloadAssetsState<Triple<PlatformProject, ModTranslations, ModTranslations.McMod?>>>(DownloadAssetsState.Getting())
 
     fun getProject() {
@@ -227,7 +227,7 @@ private class DownloadScreenViewModel(
                 projectID = projectId,
                 platform = platform,
                 onSuccess = { result ->
-                    //以项目详情返回的类型为准
+                    //Take the project detail's type as authoritative
                     val accurateClasses = result.platformClasses(classes)
                     if (accurateClasses != classes) {
                         classes = accurateClasses
@@ -244,17 +244,17 @@ private class DownloadScreenViewModel(
         }
     }
 
-    //缓存依赖项目
+    //Cache dependency projects
     val cachedDependencyProject = mutableStateMapOf<String, PlatformProject>()
-    //该依赖项目未找到，但是多个版本同时依赖这个不存在的项目
-    //就会进行很多次无效的访问，非常耗时
-    //需要记录不存在的依赖项目的id，避免下次继续获取
+    //The dependency wasn't found, yet many versions depend on this ghost project
+    //which would waste a lot of slow fetches
+    //Record the missing dependency IDs to skip refetching
     val notFoundDependencyProjects = mutableStateListOf<String>()
-    //依赖项目信息获取失败，在对话框里展示占位项
+    //Dependency info fetch failed; show a placeholder row in the dialog
     val failedDependencyProjects = mutableStateListOf<String>()
 
     /**
-     * 缓存依赖项目
+     * Caches dependency projects
      */
     private suspend fun cacheDependencyProject(
         platform: Platform,
@@ -265,7 +265,7 @@ private class DownloadScreenViewModel(
 
         try {
             val projectId = dependency.projectId ?: run {
-                //依赖只标注了精确版本，先通过版本反查其所属项目
+                //Dependencies only pin a version; resolve the owning project from the version first
                 getVersionById(
                     versionId = dependency.versionId
                         ?: error("The dependency does not provide a project id or a version id."),
@@ -299,7 +299,7 @@ private class DownloadScreenViewModel(
     }
 
     init {
-        //初始化后，获取项目、版本信息
+        //After init, fetch project and version info
         getVersions()
         getProject()
     }
@@ -310,7 +310,7 @@ private class DownloadScreenViewModel(
 }
 
 /**
- * 平台的接口是否返回了未找到
+ * Whether the platform API reported not-found
  */
 private fun Throwable.isNotFound(): Boolean =
     this is ClientRequestException && response.status.value == 404
@@ -331,10 +331,10 @@ private fun rememberDownloadAssetsViewModel(
 }
 
 /**
- * @param parentScreenKey 父屏幕Key
- * @param parentCurrentKey 父屏幕当前Key
- * @param currentKey 当前的Key
- * @param installedChecker 查询版本本地是否已安装，null 则不进行已安装标注
+ * @param parentScreenKey the parent screen key
+ * @param parentCurrentKey the parent screen's current key
+ * @param currentKey the current key
+ * @param installedChecker checks local install state; null skips installed marks
  */
 @Composable
 fun DownloadAssetsScreen(
@@ -381,7 +381,7 @@ fun DownloadAssetsScreen(
                                 DependencyEntry(dep, null, notFound = true)
                             viewModel.failedDependencyProjects.contains(key) ->
                                 DependencyEntry(dep, null)
-                            //依赖项目信息仍在获取中
+                            //Dependency info still being fetched
                             else -> null
                         }
                     }
@@ -415,7 +415,7 @@ fun DownloadAssetsScreen(
 }
 
 /**
- * 所有版本列表
+ * All version lists
  */
 @Composable
 private fun Versions(
@@ -467,7 +467,7 @@ private fun Versions(
         }
         is DownloadAssetsState.Success -> {
             Column(modifier = modifier) {
-                //简单过滤条件
+                //Simple filter criteria
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -515,7 +515,7 @@ private fun Versions(
                         val result = versions.result
                         val index = versions.result.indexOfFirst { it.isAdapt }
                         if (index >= 0 && index < result.size) {
-                            //自动滚动到适配的资源版本
+                            //Auto-scroll to a matching resource version
                             scrollState.animateScrollToItem(index)
                         }
                     }
@@ -564,7 +564,7 @@ private fun Versions(
 }
 
 /**
- * 项目信息板块
+ * Project info section
  */
 @Composable
 private fun ProjectInfo(
@@ -589,7 +589,7 @@ private fun ProjectInfo(
                         contentPadding = PaddingValues(all = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        //Icon、标题、简介的骨架
+                        //Icon/title/intro skeleton
                         item {
                             Column(
                                 modifier = Modifier
@@ -607,14 +607,14 @@ private fun ProjectInfo(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    //标题
+                                    //Title
                                     ShimmerBox(
                                         modifier = Modifier
                                             .fillMaxWidth(0.6f)
                                             .height(20.dp)
                                             .clip(RoundedCornerShape(4.dp))
                                     )
-                                    //简介
+                                    //Intro
                                     ShimmerBox(
                                         modifier = Modifier
                                             .fillMaxWidth(0.9f)
@@ -628,7 +628,7 @@ private fun ProjectInfo(
                 }
                 is DownloadAssetsState.Success -> {
                     val (project, mod, mcmod) = projectResult.result
-                    //项目基本信息
+                    //Project basic info
                     val platform = remember { project.platform() }
                     val iconUrl = remember { project.platformIconUrl() }
                     val title = remember { project.platformTitle() }
@@ -641,7 +641,7 @@ private fun ProjectInfo(
                         contentPadding = PaddingValues(all = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        //Icon、标题、简介
+                        //Icon, title, intro
                         item {
                             Column(
                                 modifier = Modifier
@@ -654,7 +654,7 @@ private fun ProjectInfo(
                                     size = 72.dp,
                                     iconUrl = iconUrl
                                 )
-                                //标题、简介
+                                //Title, intro
                                 Column(
                                     modifier = Modifier.padding(top = 8.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -676,7 +676,7 @@ private fun ProjectInfo(
                             }
                         }
 
-                        //相关链接
+                        //Related links
                         if (!urls.isAllNull()) {
                             item {
                                 Column(
@@ -730,7 +730,7 @@ private fun ProjectInfo(
                 }
             }
 
-            // 资源类型、收藏开关
+            // Resource type and favorite toggle
             Row(
                 modifier = Modifier.padding(all = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -751,7 +751,7 @@ private fun ProjectInfo(
                         if (isFavorite) {
                             FavoriteProjectsRepository.unfavorite(platform, projectId)
                         } else {
-                            //项目数据未就绪时无法生成收藏缓存，忽略此次操作
+                            //Without project data no favorite cache can form; ignore this action
                             (projectResult as? DownloadAssetsState.Success)
                                 ?.result?.first?.let { project ->
                                     FavoriteProjectsRepository.favorite(project, classes)

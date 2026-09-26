@@ -104,61 +104,61 @@ private const val TAG = "VersionExportScreen"
 
 private sealed interface PackExportOperation {
     data object None : PackExportOperation
-    /** 正在导出整合包中 */
+    /** Pack export in progress */
     data object Exporting : PackExportOperation
-    /** 成功导出整合包 */
+    /** Pack export succeeded */
     data object Finished : PackExportOperation
-    /** 导出过程出现异常 */
+    /** Exception during export */
     data class Error(val throwable: Throwable) : PackExportOperation
 }
 
 /**
- * 默认不选择的文件/文件夹
+ * Files/folders not selected by default
  */
 private val selectBlackList = listOf(
-    //Fabric的一些运行库，不需要打包
+    //Fabric runtime libraries; no need to pack
     ".fabric",
-    //游戏配置文件默认不选择
+    //Game config files: unselected by default
     "options.txt",
-    //包含natives的文件夹，一般是某些驱动文件
-    //没有打包的必要
+    //Folders containing natives, usually drivers
+    //Nothing worth packing
     "natives",
     "downloads",
-    //各启动器的配置文件
+    //Config files of various launchers
     "PCL", BuildKeys.LAUNCHER_IDENTIFIER, "fclversion.cfg",
-    //一般来说不需要打包游戏存档
+    //Game saves usually aren't packed
     "saves",
-    //Realms配置
+    //Realms config
     "realms_persistence.json",
-    //登录过的账号uuid缓存
+    //UUID cache of accounts that logged in
     "usercache.json",
-    //XXX日志
+    //XXX logs
     ".log", "logs"
 )
 
 /**
- * @param versionName 当前游戏版本的自定义名称
+ * @param versionName the current game version's custom name
  */
 private class ExportModpackViewModel(
     val mcVersion: String,
     val versionName: String,
     val gamePath: File,
     val loader: ExportInfo.LoaderVersion?,
-    /** 当前版本配置的游戏参数，导出时预填 */
+    /** The version's game arguments, prefilled on export */
     val gameArgs: String,
-    /** 当前版本配置的 JVM 参数，导出时预填 */
+    /** The version's JVM arguments, prefilled on export */
     val javaArgs: String
 ): ViewModel() {
     private val _allFiles = MutableStateFlow<List<FileSelectionData>>(emptyList())
-    /** 当前可供选择的全部文件/目录 */
+    /** All currently selectable files/directories */
     val allFiles = _allFiles.asStateFlow()
 
     private val _selectedFiles = MutableStateFlow(false)
-    /** 当前是否选则了文件 */
+    /** Whether any file is selected */
     val selectedFiles = _selectedFiles.asStateFlow()
 
     private val _isRefreshingFiles = MutableStateFlow(false)
-    /** 当前是否正在刷新文件列表 */
+    /** Whether the file list is refreshing */
     val isRefreshingFiles = _isRefreshingFiles.asStateFlow()
 
     private val _exportInfo = MutableStateFlow(defaultInfo())
@@ -173,7 +173,7 @@ private class ExportModpackViewModel(
     }
 
     private val _selectingFolder = MutableStateFlow(false)
-    /** 用户是否正在选择导出目录 */
+    /** Whether the user is picking an export directory */
     val selectingFolder = _selectingFolder.asStateFlow()
     fun updateSelecting(value: Boolean) {
         _selectingFolder.update { value }
@@ -206,7 +206,7 @@ private class ExportModpackViewModel(
     }
 
     private val _packExporter = MutableStateFlow<PackExporter?>(null)
-    /** 整合包导出器 */
+    /** Modpack exporter */
     val packExporter = _packExporter.asStateFlow()
 
     private val startMutex = Mutex()
@@ -266,7 +266,7 @@ private class ExportModpackViewModel(
     private var currentRefreshJob: Job? = null
 
     /**
-     * 刷新当前版本目录下可选择的文件列表
+     * Refreshes the selectable file list under the current version dir
      */
     fun refreshFiles(
         isInit: Boolean = true
@@ -281,7 +281,7 @@ private class ExportModpackViewModel(
             val temp = packFiles(gamePath)
 
             if (isInit) {
-                //如果是初始化，则预先选择部分文件
+                //On initialization, preselect some files
                 temp.forEach { data ->
                     if (selectBlackList.any { data.file.name.contains(it) }) {
                         data.updateSelectState(Selected.Unselected)
@@ -313,7 +313,7 @@ private class ExportModpackViewModel(
         _selectedFiles.update { false }
         try {
             val count = FileSelectionData.refreshTreeSelect(_allFiles.value)
-            //根据选中的文件数量来判断是否选择了文件
+            //Whether any file is selected is judged by the selected count
             _selectedFiles.update { count > 0 }
         } catch (_: CancellationException) {
 
@@ -346,7 +346,7 @@ private class ExportModpackViewModel(
 
             for (file in files) {
                 if (packBlackList.any { pattern -> file.name.contains(pattern) }) continue
-                //只有根目录的文件才能设置别名
+                //Only root-level files may get aliases
                 val alias = if (currentDepth == 1) getAlias(file.name) else null
 
                 if (file.isDirectory) {
@@ -386,7 +386,7 @@ private class ExportModpackViewModel(
     }
 
     /**
-     * 获取文件的别称（玩家看得懂的名称）
+     * Returns the file's alias (a player-readable name)
      */
     private fun getAlias(fileName: String): Int? {
         return when (fileName) {
@@ -553,7 +553,7 @@ private fun NavigationUI(
                         ActivityResultContracts.StartActivityForResult()
                     ) { result ->
                         val uri = result.data?.data?.let { uri ->
-                            //获取永久读写uri
+                            //Get a persistable read/write uri
                             context.contentResolver.takePersistableUriPermission(
                                 uri,
                                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
@@ -592,7 +592,7 @@ private fun NavigationUI(
                             },
                             onConfirm = {
                                 showSelectTip = false
-                                //开始选择目录
+                                //Start picking a directory
                                 viewModel.updateSelecting(true)
                                 safLauncher.launch(
                                     Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)

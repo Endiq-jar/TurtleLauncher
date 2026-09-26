@@ -22,7 +22,7 @@ import com.endiq.turtlelauncher.utils.compareLangTag
 import java.util.Locale
 
 /**
- * 根据当前系统语言寻找合适的Body
+ * Finds the right body by system language
  */
 fun RemoteData.findCurrentBody(
     locale: Locale
@@ -35,7 +35,7 @@ fun RemoteData.findCurrentBody(
 }
 
 /**
- * 根据当前系统语言寻找合适的网盘链接，若未找到则尝试匹配默认网盘链接
+ * Finds the right cloud-drive link by system language, falling back to the default
  */
 fun RemoteData.getCurrentCouldDrive(
     locale: Locale
@@ -45,8 +45,8 @@ fun RemoteData.getCurrentCouldDrive(
     }.find { drive ->
         locale.compareLangTag(drive.language)
     } ?: defaultCloudDrive?.takeIf {
-        //如果是 NULL，则是全区域可用
-        //否则根据语言决定是否可用
+        //NULL: available in every region
+        //otherwise availability depends on language
         it.language == "NULL" || locale.compareLangTag(it.language)
     }
 }

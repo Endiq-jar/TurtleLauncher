@@ -29,10 +29,10 @@ import java.util.Random
 private const val TAG = "ServerRedirect"
 
 /**
- * 在默认端口尝试 SRV 重定向
+ * Tries SRV redirection on the default port
  */
 /**
- * 在默认端口尝试 SRV 重定向
+ * Tries SRV redirection on the default port
  */
 suspend fun lookupRedirect(original: ServerAddress): ServerAddress? {
     if (original.port != ServerAddress.DEFAULT_PORT) return null

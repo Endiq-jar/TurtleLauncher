@@ -133,9 +133,9 @@ private class AddonsViewModel(
         { FabricAPIVersions.fetchVersionList(gameVersion) },
         {
             addonList.fabricAPIList = it
-            //检查用户是否已经选择了 Fabric Loader
+            //Check whether the user already picked Fabric Loader
             if (currentAddon.fabricVersion.value != null) {
-                //如果已经选择，这里将会自动选择 Fabric API
+                //If so, auto-select Fabric API here
                 currentAddon.fabricAPIVersion.value = it?.firstOrNull()
             }
         }
@@ -152,9 +152,9 @@ private class AddonsViewModel(
         { LegacyFabricAPIVersions.fetchVersionList(gameVersion) },
         {
             addonList.legacyFabricAPIList = it
-            //检查用户是否已经选择了 Legacy Fabric
+            //Check whether the user already picked Legacy Fabric
             if (currentAddon.legacyFabricVersion.value != null) {
-                //如果已经选择，这里将会自动选择 Legacy Fabric API
+                //If so, auto-select Legacy Fabric API here
                 currentAddon.legacyFabricAPIVersion.value = it?.firstOrNull()
             }
         }
@@ -171,9 +171,9 @@ private class AddonsViewModel(
         { QuiltAPIVersions.fetchVersionList(gameVersion) },
         {
             addonList.quiltAPIList = it
-            //检查用户是否已经选择了 Quilt Loader
+            //Check whether the user already picked Quilt Loader
             if (currentAddon.quiltVersion.value != null) {
-                //如果已经选择，这里将会自动选择 Quilted Fabric API
+                //If so, auto-select Quilted Fabric API here
                 currentAddon.quiltAPIVersion.value = it?.firstOrNull()
             }
         }
@@ -224,8 +224,8 @@ private class AddonsViewModel(
 }
 
 /**
- * 下载游戏页面（选择附加内容）
- * @param refreshErrorCheck 刷新Version name错误检查
+ * Game download page (picking addons)
+ * @param refreshErrorCheck refreshes the version name error check
  */
 @Composable
 fun DownloadGameWithAddonScreen(
@@ -388,9 +388,9 @@ fun DownloadGameWithAddonScreen(
                                 currentAddon = viewModel.currentAddon,
                                 onValueChanged = { version ->
                                     viewModel.refreshIcon()
-                                    //如果用户手动选择了 Fabric
+                                    //If the user manually picked Fabric
                                     if (version != null) {
-                                        //这里将会自动选择最新的 Fabric API
+                                        //the latest Fabric API auto-selects here
                                         val lastAPIVersion =
                                             viewModel.addonList.fabricAPIList?.firstOrNull()
                                         viewModel.currentAddon.fabricAPIVersion.value = lastAPIVersion
@@ -446,9 +446,9 @@ fun DownloadGameWithAddonScreen(
                                 currentAddon = viewModel.currentAddon,
                                 onValueChanged = { version ->
                                     viewModel.refreshIcon()
-                                    //如果用户手动选择了 Legacy Fabric
+                                    //If the user manually picked Legacy Fabric
                                     if (version != null) {
-                                        //这里将会自动选择最新的 Legacy Fabric API
+                                        //the latest Legacy Fabric API auto-selects here
                                         val lastAPIVersion =
                                             viewModel.addonList.legacyFabricAPIList?.firstOrNull()
                                         viewModel.currentAddon.legacyFabricAPIVersion.value = lastAPIVersion
@@ -504,9 +504,9 @@ fun DownloadGameWithAddonScreen(
                                 currentAddon = viewModel.currentAddon,
                                 onValueChanged = { version ->
                                     viewModel.refreshIcon()
-                                    //如果用户手动选择了 Quilt
+                                    //If the user manually picked Quilt
                                     if (version != null) {
-                                        //这里将会自动选择最新的 Quilted Fabric API
+                                        //the latest Quilted Fabric API auto-selects here
                                         val lastAPIVersion =
                                             viewModel.addonList.quiltAPIList?.firstOrNull()
                                         viewModel.currentAddon.quiltAPIVersion.value = lastAPIVersion
@@ -560,7 +560,7 @@ private fun ScreenHeader(
             )
 
             var nameValue by remember { mutableStateOf(gameVersion) }
-            //用户是否对Version name进行过编辑
+            //Whether the user edited the version name
             var editedByUser by remember { mutableStateOf(false) }
 
             AutoChangeVersionName(
@@ -579,7 +579,7 @@ private fun ScreenHeader(
                 isFilenameInvalid(nameValue)
             }
             val isVersionOverwrite = remember(nameValue) {
-                //如果目标版本存在，则使用覆盖安装的方式进行安装
+                //When the target version exists, install via overwrite
                 isVersionExists(nameValue, true)
             }
 
@@ -603,7 +603,7 @@ private fun ScreenHeader(
                     onValueChange = {
                         nameValue = it
                         if (!editedByUser) {
-                            //用户已经对Version name进行了编辑
+                            //The user has edited the version name
                             editedByUser = true
                         }
                     },
@@ -643,9 +643,9 @@ private fun ScreenHeader(
             val versions by VersionsManager.versions.collectAsStateWithLifecycle()
             if (versions.isNotEmpty()) {
                 Row {
-                    //不使用viewModel存储，防止版本刷新这里状态不同步
+                    //Deliberately not stored in the viewModel, avoiding stale state across version refreshes
                     var showMenu by remember { mutableStateOf(false) }
-                    //选择要覆盖安装的版本
+                    //Pick the version to overwrite
                     IconButton(
                         onClick = {
                             showMenu = true
@@ -667,7 +667,7 @@ private fun ScreenHeader(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
-                        //一个提醒用的Text
+                        //A reminder Text
                         Text(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                             text = stringResource(R.string.download_game_version_overwrite_select_subtitle),
@@ -684,9 +684,9 @@ private fun ScreenHeader(
                                 },
                                 onClick = {
                                     showMenu = false
-                                    //直接更新当前编辑的名称
+                                    //Update the edited name directly
                                     nameValue = version.getVersionName()
-                                    editedByUser = true //也算是用户编辑了，不过目的是防止选择加载器被覆盖
+                                    editedByUser = true //counts as user-edited; prevents loader selection from overwriting
                                 }
                             )
                         }
@@ -723,7 +723,7 @@ private fun VersionIconPreview(
 ) {
     val iconRes = remember(refreshIcon) {
         when {
-            currentAddon.optifineVersion.value != null && currentAddon.forgeVersion.value != null -> R.drawable.img_anvil //OptiFine & Forge 同时选择
+            currentAddon.optifineVersion.value != null && currentAddon.forgeVersion.value != null -> R.drawable.img_anvil //OptiFine & Forge together
             currentAddon.optifineVersion.value != null -> R.drawable.img_loader_optifine
             currentAddon.forgeVersion.value != null -> R.drawable.img_anvil
             currentAddon.neoforgeVersion.value != null -> R.drawable.img_loader_neoforge
@@ -743,8 +743,8 @@ private fun VersionIconPreview(
 }
 
 /**
- * 根据当前已选择的Addon，自动修改Version name
- * @param editedByUser Version name是否已被用户修改，如果用户已经修改过Version name，则阻止自动修改
+ * Auto-derives the version name from the selected Addons
+ * @param editedByUser whether the user already edited the name, blocking auto-derivation
  */
 @Composable
 private fun AutoChangeVersionName(

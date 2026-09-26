@@ -458,7 +458,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (vmViewModel.textInputMode == TextInputMode.ENABLE) {
-                    //那应该是想退出输入框了
+                    //They probably want to leave the input box
                     vmViewModel.disableInputMode()
                     return
                 }
@@ -468,7 +468,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             }
         })
 
-        //关闭菜单之后，每次启动游戏都提醒，防止部分人误触了不知道怎么解决 >:(
+        //After closing the menu, remind on every game launch, since some users tap by mistake and get stuck >:(
         if (!AllSettings.showMenuBall.getValue()) {
             Toast.makeText(
                 this@VMActivity,
@@ -486,7 +486,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                     }
 
                     if (vmViewModel.textInputMode == TextInputMode.ENABLE) {
-                        //输入栏控制区域
+                        //Input bar control area
                         HidableInputLayout(
                             onSend = { text ->
                                 vmViewModel.sendInputText(text)
@@ -503,7 +503,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                         )
                     }
 
-                    //鼠标变更为抓获模式时，应该关闭输入框
+                    //Close the input box when the mouse switches to captured mode
                     val cursorMode by TLBridgeStates.cursorMode.collectAsStateWithLifecycle()
                     LaunchedEffect(cursorMode) {
                         if (cursorMode == CURSOR_DISABLED) vmViewModel.disableInputMode()
@@ -568,8 +568,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     }
 
     /**
-     * SDL 会在窗口创建等时机按窗口宽高动态请求方向，导致有可能被设置为竖屏,
-     * 在此处重写强制锁定为 sensorLandscape 即可
+     * SDL dynamically requests orientation from window size at creation; missing this can set it to portrait,
+     * override here to force-lock sensorLandscape
      */
     override fun setRequestedOrientation(requestedOrientation: Int) {
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE)
@@ -583,8 +583,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     }
 
     /**
-     * 尺寸刷新的参照屏幕尺寸
-     * 自定义分辨率下游戏 Surface 不再铺满全屏，其视图尺寸不能作为参照，此时优先使用全屏布局尺寸
+     * Reference screen size for size refresh
+     * With a custom resolution the game Surface no longer fills the screen; its size is no reference, so the fullscreen layout size wins
      */
     private fun referenceScreenSize(fallback: IntSize): IntSize {
         return vmViewModel.screenSize.takeIf { it.width > 0 && it.height > 0 } ?: fallback
@@ -594,7 +594,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     private var refreshSizeJob: Job? = null
     private var pendingRefreshSize: IntSize? = null
     /**
-     * 事件驱动的窗口尺寸刷新入口
+     * Event-driven entry for window size refresh
      */
     private fun requestRefreshWindowSize(screenSize: IntSize) {
         if (screenSize.width <= 0 || screenSize.height <= 0) return
@@ -648,7 +648,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     private fun stopAllService() {
         stopService(Intent(this, GameService::class.java))
         if (TerracottaVPNService.isRunning()) {
-            //停止指令必须用 stopService 下发
+            //Stop commands must go through stopService
             stopService(Intent(this, TerracottaVPNService::class.java))
         }
     }
@@ -661,8 +661,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 
         val code = AllSettings.physicalKeyImeCode.state
         if (isPressed && code != null && event.keyCode == code) {
-            //用户按下了绑定呼出输入法的按键
-            //开启或关闭输入法
+            //The user pressed the key bound to summon the IME
+            //Toggle the IME
             vmViewModel.textInputMode = vmViewModel.textInputMode.switch()
             return true
         }
@@ -676,11 +676,11 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             }
 
             if (event.keyCode == KeyEvent.KEYCODE_TAB) {
-                //对于Tab键，为了避免选中其他的组件，这里应该直接拦截
+                //For the Tab key, intercept directly here to avoid selecting other components
                 return true
             }
-            //在输入文本的时候，应该避免继续处理按键事件
-            //否则输入法的一些功能键会失效
+            //While typing, stop processing key events any further
+            //otherwise some IME function keys stop working
             return super.dispatchKeyEvent(event)
         }
         event.device?.let {
@@ -689,8 +689,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                 source and InputDevice.SOURCE_MOUSE == InputDevice.SOURCE_MOUSE) {
 
                 if (event.keyCode == KeyEvent.KEYCODE_BACK) {
-                    //一些系统会将鼠标右键当成KEYCODE_BACK来处理，需要在这里进行拦截
-                    //然后发送真实的鼠标右键
+                    //Some systems report right-click as KEYCODE_BACK, so intercept it here
+                    //then send the real right mouse button
                     withHandler { sendMouseRight(isPressed) }
                     return false
                 }
@@ -718,9 +718,9 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     )
 
     /**
-     * 请求系统将屏幕切换到设备支持的最高刷新率，避免游戏帧率被系统限制在自选的较低刷新档位
+     * Asks the system to switch the screen to the highest supported refresh rate, keeping the game uncapped by a user-set lower tier
      *
-     * 参考 MinecraftGLSurface（https://github.com/AngelAuraMC/Amethyst-Android/blob/v3_openjdk/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/MinecraftGLSurface.java）
+     * See MinecraftGLSurface (https://github.com/AngelAuraMC/Amethyst-Android/blob/v3_openjdk/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/MinecraftGLSurface.java)
      */
     private fun voteMaxDisplayRefreshRate(surface: Surface) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
@@ -736,7 +736,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         val nativeSurface = Surface(surface)
         voteMaxDisplayRefreshRate(nativeSurface)
         SdlBridge.prepareSurface(this, nativeSurface, gameSurfaceView?.parent as? ViewGroup, surface)
-        //游戏请求 GLFW direct gamepad 时的通知接收方
+        //Notification receiver when the game requests GLFW direct gamepad
         CallbackBridge.setDirectGamepadEnableHandler {
             LoggerBridge.append("TurtleLauncher: Direct gamepad handler enabled")
         }
@@ -848,7 +848,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                 }
             }
 
-            //游戏模式下使用自定义分辨率时，游戏画面等比缩放居中显示（黑边）
+            //Game mode with a custom resolution: the view scales aspect-fit, centered (letterboxed)
             val letterboxed = withHandler { type } == HandlerType.GAME &&
                     AllSettings.resolutionRule.state == ResolutionRule.CUSTOM
             val renderSize = rememberGameRenderSize(screenSize)
@@ -874,10 +874,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                     },
                 factory = { context ->
                     val view = if (AllSettings.useSurfaceView.getValue()) {
-                        //使用 SurfaceView 渲染
+                        //Renders with a SurfaceView
                         SurfaceView(context).apply {
                             holder.addCallback(this@VMActivity)
-                            // SDL 模式需要父 ViewGroup（输入法 EditText 附加用）
+                            // SDL mode needs the parent ViewGroup (for the IME EditText)
                             gameSurfaceView = this
                         }.also { surface ->
                             applySizeToSurface = { width, height ->
@@ -915,8 +915,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 }
 
 /**
- * 让VMActivity进入运行游戏模式
- * @param version 指定版本
+ * Puts VMActivity into game-running mode
+ * @param version the version to launch
  */
 fun runGame(
     context: Context,
@@ -932,10 +932,10 @@ fun runGame(
 }
 
 /**
- * 让VMActivity进入运行Jar模式
- * @param jarFile 指定 jar 文件
- * @param jreName 指定使用的 Java 环境，null 则为自动选择
- * @param customArgs 指定 jvm 参数
+ * Puts VMActivity into jar-running mode
+ * @param jarFile the jar file to run
+ * @param jreName the Java runtime to use; null picks automatically
+ * @param customArgs custom JVM arguments
  */
 fun runJar(
     context: Context,

@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile as JDKZipFile
 
 /**
- * 检查包内是否包含OptiFine的特征
+ * Checks whether the package contains OptiFine's signature
  */
 fun JDKZipFile.checkOptiFine(): Boolean {
     return checkOptiFine { path ->
@@ -15,7 +15,7 @@ fun JDKZipFile.checkOptiFine(): Boolean {
 }
 
 /**
- * 检查包内是否包含OptiFine的特征
+ * Checks whether the package contains OptiFine's signature
  */
 fun ZipFile.checkOptiFine(): Boolean {
     return checkOptiFine { path ->
@@ -27,13 +27,13 @@ private fun checkOptiFine(
     checkEntry: (String) -> Any?,
 ): Boolean {
     return checkEntry("optifine/Installer.class") != null &&
-           // 仅检查了 1.7.2  1.12.2  1.21.11
+           // Only checked 1.7.2, 1.12.2, 1.21.11
            checkEntry("optifine/OptiFineTweaker.class") != null
 }
 
 
 /**
- * 尝试获取OptiFine的版本号
+ * Tries to get OptiFine's version number
  */
 fun JDKZipFile.tryGetOptiFineVersion(): String? {
     return tryGetOptiFineVersion(
@@ -43,7 +43,7 @@ fun JDKZipFile.tryGetOptiFineVersion(): String? {
 }
 
 /**
- * 尝试获取OptiFine的版本号
+ * Tries to get OptiFine's version number
  */
 fun ZipFile.tryGetOptiFineVersion(): String? {
     return tryGetOptiFineVersion(

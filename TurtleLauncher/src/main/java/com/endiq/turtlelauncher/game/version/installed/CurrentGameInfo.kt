@@ -29,9 +29,9 @@ import java.util.concurrent.ConcurrentHashMap
 private const val TAG = "CurrentGameInfo"
 
 /**
- * 当前游戏状态信息（支持旧配置迁移）
- * @property version 当前选择的Version name
- * @property favoritesMap 收藏夹映射表 <收藏夹名称, 包含的版本集合>
+ * Current game state info (supports legacy config migration)
+ * @property version currently selected version name
+ * @property favoritesMap favorites map (favorites name, contained versions)
  */
 @Keep
 data class CurrentGameInfo(
@@ -41,8 +41,8 @@ data class CurrentGameInfo(
     val favoritesMap: MutableMap<String, MutableSet<String>> = ConcurrentHashMap()
 ) {
     /**
-     * 原子化保存当前状态到文件
-     * @param gameHome 信息所属的Game directories
+     * Atomically saves the current state to file
+     * @param gameHome the game directory this info belongs to
      */
     fun saveCurrentInfo(gameHome: String) {
         val infoFile = getInfoFile(gameHome)
@@ -58,8 +58,8 @@ data class CurrentGameInfo(
 private fun getInfoFile(gameHome: String) = File(gameHome, "turtle-game.cfg")
 
 /**
- * 刷新并返回最新的游戏信息（自动处理旧配置迁移）
- * @param gameHome 信息所属的Game directories
+ * Refreshes and returns the latest game info (auto-handling legacy config migration)
+ * @param gameHome the game directory this info belongs to
  */
 fun refreshCurrentInfo(gameHome: String): CurrentGameInfo {
     val infoFile = getInfoFile(gameHome)

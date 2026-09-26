@@ -62,13 +62,13 @@ import com.endiq.turtlelauncher.game.version.installed.Version
 import com.endiq.turtlelauncher.ui.components.LittleTextLabel
 import com.endiq.turtlelauncher.ui.screens.content.elements.VersionIconImage
 
-/** 版本卡片启动回调 */
+/** Version card launch callback */
 val LocalHomeCardLauncher = staticCompositionLocalOf<(Version) -> Unit> { {} }
-/** 版本卡片打开版本设置屏的回调 */
+/** Version card callback opening the version settings screen */
 val LocalHomeCardVersionSettings = staticCompositionLocalOf<(Version) -> Unit> { {} }
 
 /**
- * 版本卡片内容
+ * Version card content
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -80,11 +80,11 @@ fun CardState.VersionCardContent(cardId: String) {
     val version = (card?.status as? VersionCardStatus.Available)?.version
     val onOpenSettings = LocalHomeCardVersionSettings.current
 
-    //点按手势不持有指针事件，交互状态与版本实例在回调触发时读取即时值
+    //The tap gesture holds no pointer events; interaction state and the version instance are read live when the callback fires
     val currentVersion by rememberUpdatedState(version)
     val currentInteraction by rememberUpdatedState(interaction)
 
-    //文本显示门槛
+    //Text display threshold
     val showSummary = sizeClass.height >= CardSizeClass.LARGE
     val showDetails = sizeClass.height >= CardSizeClass.MEDIUM
     val iconSize = iconSizeFor(sizeClass)
@@ -146,8 +146,8 @@ private fun enlargedIconSize(sizeClass: CardSizeClass): Dp = when (sizeClass) {
 }
 
 /**
- * 卡身点按手势：点按全程不消费指针事件，与网格的长按、拖动手势互不干扰；
- * 按压超过长按时长或移动超出触摸斜率均不视为点按。
+ * Card-body tap gesture: pointer events stay unconsumed throughout, never interfering with grid long-press or drag;
+ * holding past the long-press timeout or moving beyond the touch slop no longer counts as a tap.
  */
 private fun Modifier.homeCardTap(onTap: () -> Unit): Modifier = pointerInput(Unit) {
     awaitEachGesture {
@@ -172,7 +172,7 @@ private fun Modifier.homeCardTap(onTap: () -> Unit): Modifier = pointerInput(Uni
 }
 
 /**
- * 大卡片
+ * Large card
  */
 @Composable
 private fun HeroContent(
@@ -188,7 +188,7 @@ private fun HeroContent(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        //头行占用按钮之外的剩余空间；按钮非加权、先行测量，任何高度下都不会被挤压
+        //The head row takes all space left of the button; the unweighted button measures first and never gets squeezed
         CardHeader(
             modifier = Modifier.weight(1f),
             iconSize = iconSize,
@@ -249,7 +249,7 @@ private fun CardHeader(
 }
 
 /**
- * 窄宽卡片
+ * Narrow-width card
  */
 @Composable
 private fun NarrowContent(
@@ -333,7 +333,7 @@ private fun NarrowContent(
 }
 
 /**
- * 宽卡片
+ * Wide card
  */
 @Composable
 private fun WideContent(
@@ -392,7 +392,7 @@ private fun WideContent(
     }
 }
 
-/** 卡片文本区 */
+/** Card text area */
 @Composable
 private fun CardTexts(
     modifier: Modifier = Modifier,
@@ -419,7 +419,7 @@ private fun CardTexts(
         }
 
         if (version != null && showSummary && version.isSummaryValid()) {
-            //版本描述：多行模式放开行数并以省略号收尾，否则单行跑马灯
+            //Version description: multi-line mode wraps freely ending with ellipsis, otherwise single-line marquee
             Text(
                 modifier = if (multiline) {
                     Modifier
@@ -435,7 +435,7 @@ private fun CardTexts(
 
         when (val status = card?.status) {
             is VersionCardStatus.Available -> if (showDetails) {
-                //版本详细信息
+                //Version detail info
                 val versionInfo = status.version.getVersionInfo()
                 FlowRow(
                     modifier = Modifier.alpha(0.7f),
@@ -458,7 +458,7 @@ private fun CardTexts(
                     }
                 }
             }
-            //占位状态标签不受尺寸门槛限制，任何形态都需要提示原因
+            //Placeholder state labels ignore the size threshold: every form must hint the reason
             is VersionCardStatus.Deleted -> StatusPlaceholder(
                 text = stringResource(R.string.home_version_card_deleted)
             )

@@ -352,8 +352,8 @@ fun OwnOutlinedTextField(
 }
 
 /**
- * 有范围约束的整数输入框，仅允许输入数字
- * 输入为空或非法时不提交
+ * Range-constrained integer field; digits only
+ * Empty or invalid input is never committed
  */
 @Composable
 fun IntInputField(

@@ -22,7 +22,7 @@ import com.endiq.inputmap.keycodes.LwjglGlfwKeycode
 import com.endiq.turtlelauncher.R
 
 /**
- * 手势控制点击时触发的按钮
+ * The button fires on a gesture-control tap
  */
 enum class GestureActionType(val nameRes: Int) {
     MOUSE_RIGHT(R.string.settings_control_gesture_trigger_mouse_right),
@@ -30,7 +30,7 @@ enum class GestureActionType(val nameRes: Int) {
 }
 
 /**
- * 转换为实际的Lwjgl键值
+ * Converts to the actual LWJGL key value
  */
 fun GestureActionType.toAction(): Int =
     when (this) {

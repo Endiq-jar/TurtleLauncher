@@ -92,7 +92,7 @@ object AWTCharSender : CharacterSenderStrategy {
     }
 
     /**
-     * 获取 AWT 鼠标点击事件
+     * Returns an AWT mouse click event
      */
     fun getMouseButton(button: Int): Int? {
         return when (button) {

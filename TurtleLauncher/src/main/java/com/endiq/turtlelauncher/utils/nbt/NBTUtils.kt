@@ -33,96 +33,96 @@ private inline fun <reified T : Tag, R> CompoundTag.getAs(key: String, crossinli
     return (this.get(key) as? T)?.let(mapper) ?: defaultValue
 }
 
-/** 获取指定键对应的 CompoundTag */
+/** Gets the CompoundTag of the given key */
 fun CompoundTag.asCompoundTag(key: String): CompoundTag? {
     return this.get(key) as? CompoundTag
 }
 
 /**
- * 获取指定键对应的 Boolean 值，通过 ByteTag 的方式手动判断
+ * Gets the Boolean of the given key, manually judged via ByteTag
  */
 fun CompoundTag.asBoolean(key: String, defaultValue: Boolean?): Boolean? {
     return asByte(key, defaultValue?.let { if (it) 1 else 0 })?.let { it == 1.toByte() }
 }
 
 /**
- * 获取指定键对应的 Boolean 值，通过 ByteTag 的方式手动判断
+ * Gets the Boolean of the given key, manually judged via ByteTag
  */
 fun CompoundTag.asBooleanNotNull(key: String, defaultValue: Boolean): Boolean {
     return asByteNotNull(key, if (defaultValue) 1 else 0) == 1.toByte()
 }
 
-/** 获取指定键对应的 Byte 值 */
+/** Gets the Byte of the given key */
 fun CompoundTag.asByte(key: String, defaultValue: Byte?): Byte? {
     return getAs<ByteTag, Byte?>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Byte 值 */
+/** Gets the Byte of the given key */
 fun CompoundTag.asByteNotNull(key: String, defaultValue: Byte): Byte {
     return getAs<ByteTag, Byte>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Short 值 */
+/** Gets the Short of the given key */
 fun CompoundTag.asShort(key: String, defaultValue: Short?): Short? {
     return getAs<ShortTag, Short?>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Short 值 */
+/** Gets the Short of the given key */
 fun CompoundTag.asShortNotNull(key: String, defaultValue: Short): Short {
     return getAs<ShortTag, Short>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Int 值 */
+/** Gets the Int of the given key */
 fun CompoundTag.asInt(key: String, defaultValue: Int?): Int? {
     return getAs<IntTag, Int?>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Int 值 */
+/** Gets the Int of the given key */
 fun CompoundTag.asIntNotNull(key: String, defaultValue: Int): Int {
     return getAs<IntTag, Int>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Long 值 */
+/** Gets the Long of the given key */
 fun CompoundTag.asLong(key: String, defaultValue: Long?): Long? {
     return getAs<LongTag, Long?>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Long 值 */
+/** Gets the Long of the given key */
 fun CompoundTag.asLongNotNull(key: String, defaultValue: Long): Long {
     return getAs<LongTag, Long>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Float 值 */
+/** Gets the Float of the given key */
 fun CompoundTag.asFloat(key: String, defaultValue: Float?): Float? {
     return getAs<FloatTag, Float?>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Float 值 */
+/** Gets the Float of the given key */
 fun CompoundTag.asFloatNotNull(key: String, defaultValue: Float): Float {
     return getAs<FloatTag, Float>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Double 值 */
+/** Gets the Double of the given key */
 fun CompoundTag.asDouble(key: String, defaultValue: Double?): Double? {
     return getAs<DoubleTag, Double?>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 Double 值 */
+/** Gets the Double of the given key */
 fun CompoundTag.asDoubleNotNull(key: String, defaultValue: Double): Double {
     return getAs<DoubleTag, Double>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 String 值 */
+/** Gets the String of the given key */
 fun CompoundTag.asString(key: String, defaultValue: String?): String? {
     return getAs<StringTag, String?>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 String 值 */
+/** Gets the String of the given key */
 fun CompoundTag.asStringNotNull(key: String, defaultValue: String): String {
     return getAs<StringTag, String>(key, { it.value }, defaultValue)
 }
 
-/** 获取指定键对应的 tag 列表 */
+/** Gets the tag list of the given key */
 fun CompoundTag.asList(key: String, defaultValue: ListTag?): ListTag? {
     return getAs<ListTag, ListTag?>(key, { it }, defaultValue)
 }

@@ -143,7 +143,7 @@ fun InfoLayoutSliderItem(
 }
 
 /**
- * 列表信息设置项
+ * List info settings item
  */
 @Composable
 fun <E> InfoLayoutListItem(

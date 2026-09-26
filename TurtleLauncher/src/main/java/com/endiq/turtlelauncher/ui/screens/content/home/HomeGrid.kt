@@ -58,8 +58,8 @@ import com.endiq.turtlelauncher.ui.theme.cardColor
 import com.endiq.turtlelauncher.ui.theme.onCardColor
 
 /**
- * 主页网格：系统卡片列 + 卡片网格库容器，
- * 负责布局的播种、持久化与版本卡片记录同步。
+ * Home grid: system-card column plus the card-grid container,
+ * handling layout seeding, persistence, and version record sync.
  */
 @Composable
 fun HomeGrid(
@@ -68,7 +68,7 @@ fun HomeGrid(
 ) {
     val scrollState = rememberScrollState()
 
-    // 播种持久化的用户卡片布局
+    // Seed the persisted user-card layout
     LaunchedEffect(Unit) {
         val snapshot = HomeGridStore.load()
         state.seed(
@@ -90,7 +90,7 @@ fun HomeGrid(
         )
     }
 
-    // 布局结算后持久化
+    // Persist after layout settles
     LaunchedEffect(Unit) {
         state.onLayoutCommitted = {
             HomeGridStore.save(
@@ -100,14 +100,14 @@ fun HomeGrid(
         }
     }
 
-    // 卡片移除回调：同步版本卡片记录
+    // Card-removed callback: sync version card records
     LaunchedEffect(Unit) {
         state.onCardRemoved = { cardId ->
             VersionCardManager.removeCard(cardId)
         }
     }
 
-    // 与版本卡片记录保持同步：记录存在而网格缺卡时补齐
+    // Sync with version card records: re-add when a record exists but the grid lacks the card
     LaunchedEffect(Unit) {
         VersionCardManager.cards.collect { states ->
             states.forEach { cardState ->

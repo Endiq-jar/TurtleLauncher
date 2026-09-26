@@ -130,22 +130,22 @@ sealed interface VersionsOperation {
 
 sealed interface CleanupOperation {
     data object None : CleanupOperation
-    /** 清理前的提醒 */
+    /** Pre-cleanup reminder */
     data object Tip : CleanupOperation
-    /** 开始清理 */
+    /** Starts cleaning */
     data object Clean : CleanupOperation
-    /** 清理失败 */
+    /** Cleanup failed */
     data class Error(val error: Throwable) : CleanupOperation
-    /** 成功清除 */
+    /** Succeeded */
     data class Success(val count: Int, val size: String) : CleanupOperation
 }
 
 enum class VersionCategory(val textRes: Int) {
-    /** 全部 */
+    /** All */
     ALL(R.string.generic_all),
-    /** 原版 */
+    /** Vanilla */
     VANILLA(R.string.versions_manage_category_vanilla),
-    /** 带有模组加载器 */
+    /** With a mod loader */
     MODLOADER(R.string.versions_manage_category_modloader)
 }
 
@@ -606,7 +606,7 @@ fun CleanupOperation(
                     Spacer(Modifier.height(4.dp))
                     Text(stringResource(R.string.versions_manage_cleanup_warning))
                     Text("../assets/..")
-                    //不再清理依赖库，文件并不会太大，也有可能导致其他问题：#617
+                    //Libraries are no longer cleaned: they're small and cleaning could cause other issues: #617
 //                    Text("../libraries/..")
                 },
                 onConfirm = onClean,
@@ -617,7 +617,7 @@ fun CleanupOperation(
             if (cleaner != null) {
                 val tasks = cleaner.tasksFlow.collectAsStateWithLifecycle()
                 if (tasks.value.isNotEmpty()) {
-                    //清理无用游戏文件流程对话框
+                    //Dialog for the useless-game-file cleanup flow
                     TitleTaskFlowDialog(
                         title = stringResource(R.string.versions_manage_cleanup),
                         tasks = tasks.value,
@@ -838,7 +838,7 @@ fun VersionItemLayout(
                             menuExpanded = false
                         }
                     )
-                    //添加卡片到主界面
+                    //Add the card to the home screen
                     val cardExists by remember(version) {
                         VersionCardManager.cards.map { states ->
                             states.any {
@@ -914,7 +914,7 @@ fun CommonVersionInfoLayout(
                 text = versionName,
                 style = MaterialTheme.typography.labelLarge
             )
-            //版本描述
+            //Version description
             if (isValid && isSummaryValid) {
                 val versionSummary = remember(version) {
                     version.getVersionSummary()
@@ -927,7 +927,7 @@ fun CommonVersionInfoLayout(
                     style = MaterialTheme.typography.labelMedium
                 )
             }
-            //版本详细信息
+            //Version detail info
             FlowRow(
                 modifier = Modifier.alpha(0.7f),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -1013,7 +1013,7 @@ fun VersionIconImage(
 }
 
 /**
- * 模组加载器图标展示组件，包装 [Image]
+ * Mod loader icon component, wrapping [Image]
  */
 @Composable
 fun ModLoaderIcon(

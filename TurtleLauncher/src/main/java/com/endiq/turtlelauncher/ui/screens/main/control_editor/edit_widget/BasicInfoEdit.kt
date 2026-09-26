@@ -53,7 +53,7 @@ import com.endiq.turtlelauncher.ui.screens.main.control_editor.InfoLayoutSliderI
 import com.endiq.turtlelauncher.ui.screens.main.control_editor.getVisibilityText
 
 /**
- * 编辑控件基本信息
+ * Edits widget basic info
  */
 @Composable
 fun EditWidgetInfo(
@@ -138,7 +138,7 @@ private fun LazyListScope.commonInfos(
     buttonSize: ButtonSize,
     onButtonSizeChanged: (ButtonSize) -> Unit,
 ) {
-    //可见场景
+    //Visible scenarios
     item {
         InfoLayoutListItem(
             modifier = Modifier.fillMaxWidth(),
@@ -192,7 +192,7 @@ private fun LazyListScope.commonInfos(
         Spacer(modifier = Modifier.height(4.dp))
     }
 
-    //尺寸类型
+    //Size type
     item {
         InfoLayoutListItem(
             modifier = Modifier.fillMaxWidth(),
@@ -213,7 +213,7 @@ private fun LazyListScope.commonInfos(
 
     when (buttonSize.type) {
         ButtonSize.Type.Dp -> {
-            //绝对宽度
+            //Absolute width
             item {
                 InfoLayoutSliderItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -229,7 +229,7 @@ private fun LazyListScope.commonInfos(
                 )
             }
 
-            //绝对高度
+            //Absolute height
             item {
                 InfoLayoutSliderItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -254,7 +254,7 @@ private fun LazyListScope.commonInfos(
                 return stringResource(textRes)
             }
 
-            //百分比宽度
+            //Percentage width
             item {
                 InfoLayoutSliderItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -271,7 +271,7 @@ private fun LazyListScope.commonInfos(
                 )
             }
 
-            //控件宽度参考对象
+            //Widget width reference
             item {
                 InfoLayoutListItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -285,7 +285,7 @@ private fun LazyListScope.commonInfos(
                 )
             }
 
-            //百分比高度
+            //Percentage height
             item {
                 InfoLayoutSliderItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -302,7 +302,7 @@ private fun LazyListScope.commonInfos(
                 )
             }
 
-            //控件高度参考对象
+            //Widget height reference
             item {
                 InfoLayoutListItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -327,7 +327,7 @@ private fun LazyListScope.joystickInfos(
     screenHeight: Float,
     data: ObservableJoystickData
 ) {
-    // 可见场景
+    // Visible scenarios
     item {
         InfoLayoutListItem(
             modifier = Modifier.fillMaxWidth(),
@@ -343,7 +343,7 @@ private fun LazyListScope.joystickInfos(
         Spacer(modifier = Modifier.height(4.dp))
     }
 
-    // 位置 X
+    // Position X
     item {
         InfoLayoutSliderItem(
             modifier = Modifier.fillMaxWidth(),
@@ -360,7 +360,7 @@ private fun LazyListScope.joystickInfos(
         )
     }
 
-    // 位置 Y
+    // Position Y
     item {
         InfoLayoutSliderItem(
             modifier = Modifier.fillMaxWidth(),
@@ -381,7 +381,7 @@ private fun LazyListScope.joystickInfos(
         Spacer(modifier = Modifier.height(4.dp))
     }
 
-    // 尺寸类型
+    // Size type
     val sizeTypes = listOf(ButtonSize.Type.Dp, ButtonSize.Type.Percentage)
     item {
         InfoLayoutListItem(

@@ -19,10 +19,10 @@
 package com.endiq.turtlelauncher.game.plugin.renderer_v2.data
 
 /**
- * 渲染器配置项状态、存储
- * @param packageName 插件包名，用于 MMKV 存储命名空间隔离
- * @param envs 渲染器环境变量配置项
- * @param genSummary 将 [RendererConfig.MetaString] 转换为本地化文本
+ * Renderer config state and storage
+ * @param packageName plugin package name, for MMKV storage namespace isolation
+ * @param envs renderer env var config entries
+ * @param genSummary renders [RendererConfig.MetaString] into localized text
  */
 class RendererEnv(
     val packageName: String,
@@ -35,7 +35,7 @@ class RendererEnv(
         val mmkv = rendererEnvMMKV()
         val prefix = "$packageName:"
 
-        // 收集所有可配置环境变量键（Selectable / Customizable / Toggleable）
+        // Collect all configurable env var keys (Selectable / Customizable / Toggleable)
         val currentConfigurableKeys = envs.mapNotNull { env ->
             when (env) {
                 is RendererConfig.Env.NormalEnv -> null
@@ -45,7 +45,7 @@ class RendererEnv(
             }
         }.toSet()
 
-        // 清理插件更新后不再受支持的环境变量
+        // Drop env vars no longer supported after a plugin update
         mmkv.allKeys()
             ?.filter { it.startsWith(prefix) }
             ?.forEach { storedKey ->
@@ -56,7 +56,7 @@ class RendererEnv(
                 }
         }
 
-        // 为每个可配置环境变量创建设置单元
+        // Create a setting unit for each configurable env var
         val units = mutableMapOf<String, EnvSettingUnit>()
         for (env in envs) {
             when (env) {
@@ -78,7 +78,7 @@ class RendererEnv(
                     unit.init()
                     unit.initCheck()
 
-                    // 校验已保存的值是否仍在当前可选值列表中，不在则重置为默认值
+                    // Validate saved values against the current options; reset to default when absent
                     if (unit.state !in env.items.values) {
                         unit.save(env.items.defaultValue)
                     }
@@ -120,7 +120,7 @@ class RendererEnv(
     }
 
     /**
-     * 获取该渲染器当前的环境变量配置
+     * Returns the renderer's current env var configuration
      */
     fun getEnv(): Map<String, String> {
         val result = mutableMapOf<String, String>()
@@ -153,12 +153,12 @@ class RendererEnv(
     }
 
     /**
-     * 获取所有可配置环境变量的设置单元列表
+     * Returns the setting units of all configurable env vars
      */
     fun getConfigurableUnits(): List<EnvSettingUnit> = settingUnits.values.toList()
 
     /**
-     * 从 [RendererConfig.Env] 中提取 [RendererConfig.MetaString] 的 key
+     * Extracts [RendererConfig.MetaString] keys from [RendererConfig.Env]
      */
     private fun RendererConfig.Env.getTitleMetaString(): String? {
         return when (this) {

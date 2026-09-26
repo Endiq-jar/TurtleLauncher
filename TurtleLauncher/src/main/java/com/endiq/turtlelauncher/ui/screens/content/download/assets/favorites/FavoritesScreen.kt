@@ -98,23 +98,23 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
- * 收藏Sort order
+ * Favorite SortOrder
  */
 private enum class FavoriteSortBy {
-    /** 收藏时间，新到旧 */
+    /** Favorite time, newest first */
     FOLLOW_TIME,
-    /** 项目名称，字典序 */
+    /** Project name, lexicographic */
     TITLE
 }
 
 /**
- * 收藏过滤器可用的模组加载器，两平台按显示名合并
+ * Mod loaders usable by the favorite filter, both platforms merged by display name
  */
 private val favoriteModLoaderFilters: List<PlatformDisplayLabel> =
     (modrinthModLoaderFilters + curseForgeModLoaderFilters).distinctBy { it.getDisplayName() }
 
 private class FavoritesScreenViewModel : ViewModel() {
-    /** 分类过滤器，null 表示全部 */
+    /** Category filter; null means all */
     var category by mutableStateOf<PlatformClasses?>(null)
         private set
     var searchName by mutableStateOf("")
@@ -123,7 +123,7 @@ private class FavoritesScreenViewModel : ViewModel() {
     var modloaderFilter by mutableStateOf<List<PlatformDisplayLabel>>(emptyList())
 
     /**
-     * 过滤后用于展示的收藏列表，仅从数据池中过滤，不触发任何加载
+     * The filtered favorite list for display; filters the data pool without triggering loads
      */
     val items: List<FavoriteEntry> by derivedStateOf {
         val keyword = searchName.trim()
@@ -137,7 +137,7 @@ private class FavoritesScreenViewModel : ViewModel() {
             }
             .filter { entry -> platformFilter == null || entry.platform == platformFilter }
             .filter { entry ->
-                //加载器信息仅来自远端数据，未就绪的条目视为不匹配
+                //Loader info only exists on remote data; unprepared entries count as unmatched
                 modloaderNames.isEmpty() ||
                         entry.remote?.platformModLoaders()
                             ?.any { it.getDisplayName() in modloaderNames } == true
@@ -153,7 +153,7 @@ private class FavoritesScreenViewModel : ViewModel() {
 
     fun onCategoryChange(value: PlatformClasses?) {
         category = value
-        //分类不再需要Mod loader filter时，重置过滤器，避免过滤器继续对列表生效
+        //When the category drops the loader filter, reset it so it stops affecting the list
         if (value != PlatformClasses.MOD && value != PlatformClasses.MOD_PACK) {
             modloaderFilter = emptyList()
         }
@@ -161,7 +161,7 @@ private class FavoritesScreenViewModel : ViewModel() {
 
     fun onScreenEntered() {
         viewModelScope.launch {
-            //先完成数据同步，再基于最新数据池刷新远端数据
+            //Sync data first, then refresh remote data from the newest pool
             FavoriteProjectsRepository.reload()
             FavoriteProjectsRepository.refreshRemote()
         }
@@ -178,7 +178,7 @@ private fun rememberFavoritesScreenViewModel(): FavoritesScreenViewModel = viewM
 }
 
 /**
- * @param swapToDownload 跳转到资源类型对应的下载分类屏幕详情页
+ * @param swapToDownload jumps to the download category screen for the resource type, into its detail page
  */
 @Composable
 fun FavoritesScreen(
@@ -198,7 +198,7 @@ fun FavoritesScreen(
         Triple(parentScreenKey, parentCurrentKey, false),
         Triple(screenKey, currentKey, false)
     ) { isVisible ->
-        //每进入一次屏幕，重载收藏数据并刷新远端数据
+        //Every screen entry reloads favorites and refreshes remote data
         LaunchedEffect(Unit) {
             viewModel.onScreenEntered()
         }
@@ -242,9 +242,9 @@ private fun FavoritesContent(
 
     Box(modifier = modifier) {
         if (!repositoryLoaded) {
-            //收藏数据装载中
+            //Favorites loading
         } else if (repositoryEmpty) {
-            //暂无任何收藏
+            //No favorites yet
             Column(
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -264,14 +264,14 @@ private fun FavoritesContent(
                 )
             }
         } else {
-            //分类操作栏滚动吸附
+            //Category action bar scroll snapping
             val density = LocalDensity.current
             val topAppBarState = rememberTopAppBarState()
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
             val headerTopPaddingPx = with(density) { 12.dp.toPx() }
             var headerHeightPx by remember { mutableIntStateOf(0) }
 
-            //操作栏阴影跟随滚动线性过渡
+            //Action bar shadow follows scrolling linearly
             val listState = rememberLazyListState()
             val listScrolledFraction = remember(listState, headerTopPaddingPx) {
                 derivedStateOf {
@@ -286,12 +286,12 @@ private fun FavoritesContent(
                 derivedStateOf { 1f - topAppBarState.collapsedFraction }
             }
             val actionBarShadowElevation = if (backgroundVisible()) {
-                0.dp //背景可见时不使用阴影，因为卡片会半透明化
+                0.dp //No shadow while background is visible: cards go translucent
             } else {
                 5.dp * barShownFraction.value * listScrolledFraction.value
             }
 
-            //列表顶部淡化，凸显悬浮分类操作栏的视觉层级
+            //Fade the list top, emphasizing the floating category bar's layering
             val listTopFadePx = (headerHeightPx + headerTopPaddingPx + 80f) *
                     listScrolledFraction.value *
                     barShownFraction.value
@@ -315,7 +315,7 @@ private fun FavoritesContent(
             ) {
                 val entries = viewModel.items
                 if (entries.isEmpty()) {
-                    //过滤后无结果
+                    //No results after filtering
                     item {
                         Box(
                             modifier = Modifier
@@ -351,7 +351,7 @@ private fun FavoritesContent(
                 }
             }
 
-            //悬浮分类操作栏
+            //Floating category action bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -441,7 +441,7 @@ private fun FavoritesFilter(
         contentPadding = PaddingValues(top = 12.dp, end = 12.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        //名称搜索，直接从数据池过滤，无需主动触发
+        //Name search filters the data pool directly; no explicit trigger
         item {
             OwnOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
@@ -461,7 +461,7 @@ private fun FavoritesFilter(
             )
         }
 
-        //目标平台过滤
+        //Target platform filter
         item {
             FilterListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -482,7 +482,7 @@ private fun FavoritesFilter(
             )
         }
 
-        //Sort order过滤
+        //Sort filter
         item {
             FilterListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -507,7 +507,7 @@ private fun FavoritesFilter(
             )
         }
 
-        //模组加载器，仅模组、整合包分类提供
+        //Mod loader, offered for mods and packs only
         val enableModLoader = viewModel.category == PlatformClasses.MOD ||
                 viewModel.category == PlatformClasses.MOD_PACK
         if (enableModLoader) {
@@ -531,7 +531,7 @@ private fun FavoritesFilter(
 }
 
 /**
- * 在组件顶部绘制指定像素高度的线性渐隐
+ * Draws a linear fade of the given pixel height atop the component
  */
 private fun Modifier.topFade(heightPx: Float): Modifier = this
     .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)

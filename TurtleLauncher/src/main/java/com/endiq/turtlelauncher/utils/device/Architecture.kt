@@ -74,7 +74,7 @@ object Architecture {
         else -> "UNSUPPORTED_ARCH"
     }
 
-    /** Android ABI 目录名 */
+    /** Android ABI directory name */
     fun archAsStringAndroid(arch: Int): String = when (arch) {
         ARCH_ARM64 -> "arm64-v8a"
         ARCH_ARM -> "armeabi-v7a"

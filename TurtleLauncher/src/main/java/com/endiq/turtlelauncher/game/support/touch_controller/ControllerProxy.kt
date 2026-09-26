@@ -33,7 +33,7 @@ import top.fifthlight.touchcontroller.proxy.client.android.transport.UnixSocketT
 private const val TAG = "ControllerProxy"
 
 /**
- * 为适配 TouchController 模组
+ * For adapting to the TouchController mod
  * [Touch Controller](https://modrinth.com/mod/touchcontroller)
  */
 object ControllerProxy {
@@ -41,7 +41,7 @@ object ControllerProxy {
     val proxyClient = _proxyClient.asStateFlow()
 
     /**
-     * 启动控制代理客户端，目的是与 TouchController 模组进行通信
+     * Starts the control proxy client, to communicate with the TouchController mod
      */
     fun startProxy(
         context: Context,

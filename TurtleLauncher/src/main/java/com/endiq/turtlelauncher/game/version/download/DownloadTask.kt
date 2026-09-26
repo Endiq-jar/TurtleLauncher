@@ -29,20 +29,20 @@ import org.apache.commons.io.FileUtils
 import java.io.File
 
 /**
- * 一个待下载文件的完整描述
- * 候选源、目标位置与校验方式
- * 批量执行交给 [BatchDownloader]，单个文件也可以通过 [com.endiq.turtlelauncher.game.download.engine.DownloadEngine] 直接驱动
+ * Complete description of one file to download
+ * Candidate sources, target location and validation
+ * Bulk execution goes to [BatchDownloader]; a single file can also be driven directly via [com.endiq.turtlelauncher.game.download.engine.DownloadEngine]
  */
 class DownloadTask(
     val urls: List<String>,
     private val verifyIntegrity: Boolean,
     val targetFile: File,
     val sha1: String? = null,
-    /** 已知大小，用于进度统计与预分配；未知传 -1 */
+    /** Known size, for progress accounting and pre-allocation; -1 when unknown */
     val size: Long = -1L,
     /**
-     * 是否本身是可以被下载的，如果不可下载，则只允许以目标文件已存在的形式满足，
-     * 若强行下载会以 404 失败
+     * Whether the file is downloadable at all; if not, it may only be satisfied by the target already existing,
+     * since forcing the download fails with 404
      */
     val isDownloadable: Boolean = true
 ) {
@@ -66,14 +66,14 @@ class DownloadTask(
         }
     }
 
-    /** 目标已存在且校验可用时返回 true */
+    /** True when the target already exists and validates */
     fun existingFileValid(): Boolean {
         val file = targetFile
         if (!file.exists()) return false
         if (!verifyIntegrity) return true
 
         if (sha1.isNullOrBlank()) {
-            //排除目标无法被下载的情况，比如Forge的client
+            //Rule out targets that can't be downloaded, e.g. Forge's client
             if (!isDownloadable) return true
             return archiveOrPlainValid(file)
         }

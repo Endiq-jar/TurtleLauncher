@@ -22,6 +22,6 @@ import com.endiq.turtlelauncher.BuildKeys
 import com.tencent.mmkv.MMKV
 
 /**
- * 启动器全局 MMKV，管理所有设置项
+ * Global launcher MMKV managing all settings items
  */
 fun launcherMMKV(): MMKV = MMKV.mmkvWithID(BuildKeys.LAUNCHER_IDENTIFIER, MMKV.MULTI_PROCESS_MODE)

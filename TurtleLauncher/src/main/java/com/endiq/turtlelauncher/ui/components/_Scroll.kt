@@ -42,15 +42,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 为可滚动的组件增加边缘渐隐的效果，可以很直观的提醒用户这里可以被滑动，
- * 效果类似元安卓View体系下的 fading edge
- * - 本实现依赖 `graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)`，
- *   该设置会让内容在单独的离屏缓冲区中绘制，以便后续通过混合模式（如 DstOut）实现“擦除”效果
- * - 如果将此修饰符放在 `padding()`、`scroll()` 或其他修饰符之后，
- *   那么离屏层可能只包裹部分内容，导致渐隐区域无法覆盖整个可见范围，从而看起来“没有效果”
- * @param direction 控制渐隐的方向，默认是垂直方向
- * @param position 指定在哪个边缘显示渐隐效果（上、下或两边）
- * @param style 控制渐隐的样式
+ * Gives a scrollable component edge-fade feedback, an intuitive way to hint that the area scrolls,
+ * similar to the fading edge of the classic Android View system
+ * - This implementation relies on `graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)`,
+ *   which draws content into a separate off-screen buffer, enabling blend modes (like DstOut) to erase
+ * - Placing this modifier after `padding()`, `scroll()` or others,
+ *   the off-screen layer may wrap only part of the content, so the fade cannot cover the visible range and looks broken
+ * @param direction the fade direction; vertical by default
+ * @param position which edges to fade (top, bottom, or both)
+ * @param style the fade style
  */
 @Composable
 fun Modifier.fadeEdge(
@@ -73,7 +73,7 @@ fun Modifier.fadeEdge(
     } else 0f
 
     return this
-        //使用离屏合成，让混合模式只影响当前组件，不污染父级与同级元素
+        //Use off-screen compositing so the blend mode only affects this component, not parents or siblings
         .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
         .drawWithContent {
             drawContent()
@@ -82,15 +82,15 @@ fun Modifier.fadeEdge(
 }
 
 /**
- * 为可滚动的组件增加边缘渐隐的效果，可以很直观的提醒用户这里可以被滑动，
- * 效果类似元安卓View体系下的 fading edge
- * - 本实现依赖 `graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)`，
- *   该设置会让内容在单独的离屏缓冲区中绘制，以便后续通过混合模式（如 DstOut）实现“擦除”效果
- * - 如果将此修饰符放在 `padding()`、`scroll()` 或其他修饰符之后，
- *   那么离屏层可能只包裹部分内容，导致渐隐区域无法覆盖整个可见范围，从而看起来“没有效果”
- * @param direction 控制渐隐的方向，默认是垂直方向
- * @param position 指定在哪个边缘显示渐隐效果（上、下或两边）
- * @param style 控制渐隐的样式
+ * Gives a scrollable component edge-fade feedback, an intuitive way to hint that the area scrolls,
+ * similar to the fading edge of the classic Android View system
+ * - This implementation relies on `graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)`,
+ *   which draws content into a separate off-screen buffer, enabling blend modes (like DstOut) to erase
+ * - Placing this modifier after `padding()`, `scroll()` or others,
+ *   the off-screen layer may wrap only part of the content, so the fade cannot cover the visible range and looks broken
+ * @param direction the fade direction; vertical by default
+ * @param position which edges to fade (top, bottom, or both)
+ * @param style the fade style
  */
 @Composable
 fun Modifier.fadeEdge(
@@ -107,7 +107,7 @@ fun Modifier.fadeEdge(
     val topDistancePx = when {
         firstItem == null -> 0f
         state.firstVisibleItemIndex == 0 -> -firstItem.offset.toFloat()
-        else -> fadePx //说明已经不在顶部了，直接满强度
+        else -> fadePx //no longer at the top: full strength
     }
     val startFade = if (state.canScrollBackward) {
         (topDistancePx / fadePx).coerceIn(0f, 1f) * fadePx
@@ -121,14 +121,14 @@ fun Modifier.fadeEdge(
         state.firstVisibleItemIndex + layoutInfo.visibleItemsInfo.size == layoutInfo.totalItemsCount &&
                 lastItem.offset + lastItem.size > viewportHeight ->
             (lastItem.offset + lastItem.size - viewportHeight).toFloat()
-        else -> fadePx //还没到底部，直接满强度
+        else -> fadePx //not at the bottom yet: full strength
     }
     val endFade = if (state.canScrollForward) {
         (bottomDistancePx / fadePx).coerceIn(0f, 1f) * fadePx
     } else 0f
 
     return this
-        //使用离屏合成，让混合模式只影响当前组件，不污染父级与同级元素
+        //Use off-screen compositing so the blend mode only affects this component, not parents or siblings
         .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
         .drawWithContent {
             drawContent()
@@ -137,7 +137,7 @@ fun Modifier.fadeEdge(
 }
 
 /**
- * 内部统一渲染渐隐的函数
+ * Internal unified fade renderer
  */
 private fun DrawScope.drawFadeEdges(
     startFade: Float,
@@ -190,7 +190,7 @@ private fun DrawScope.drawFadeEdge(
 }
 
 /**
- * 控制渐隐的方向
+ * Controls the fade direction
  */
 @Immutable
 enum class EdgeDirection {
@@ -198,20 +198,20 @@ enum class EdgeDirection {
 }
 
 /**
- * 指定在哪一侧显示渐隐效果
+ * Specifies which edge fades
  */
 @Immutable
 enum class EdgeSide(val includeStart: Boolean, val includeEnd: Boolean) {
-    /** 上/左 */
+    /** Top/left */
     Start(true, false),
-    /** 下/右 */
+    /** Bottom/right */
     End(false, true),
-    /** 两边 */
+    /** Both sides */
     Both(true, true)
 }
 
 /**
- * 渐隐样式定义,通常情况下使用默认的 [BlendMode.DstOut] 即可
+ * Fade style definition; the default [BlendMode.DstOut] suffices
  */
 @Immutable
 data class FadeStyle(
@@ -220,13 +220,13 @@ data class FadeStyle(
 )
 
 /**
- * 黑色 -> 透明 的线性渐变，结合 [BlendMode.DstOut] 实现淡化效果
- * @param direction 决定渐变的方向
+ * Black-to-transparent linear gradient; with [BlendMode.DstOut] it achieves the fade
+ * @param direction which way the gradient runs
  */
 fun createDefaultFadeStyle(
     direction: EdgeDirection
 ): FadeStyle {
-    //黑色 -> 透明
+    //Black -> transparent
     val colorStops = arrayOf(
         0f to Color.Black,
         1f to Color.Transparent

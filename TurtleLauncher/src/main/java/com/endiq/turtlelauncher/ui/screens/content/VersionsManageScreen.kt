@@ -119,21 +119,21 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.math.roundToInt
 
 private class VersionsScreenViewModel : ViewModel() {
-    /** 版本类别分类 */
+    /** Version category grouping */
     var versionCategory by mutableStateOf(VersionCategory.ALL)
         private set
-    /** 重排序刷新key */
+    /** Reorder refresh key */
     var resortKey by mutableIntStateOf(0)
         private set
 
-    /** 游戏路径相关操作 */
+    /** Game path related operations */
     var gamePathOperation by mutableStateOf<GamePathOperation>(GamePathOperation.None)
 
-    /** 全部版本的数量 */
+    /** Count of all versions */
     var allVersionsCount by mutableIntStateOf(0)
-    /** 原版版本数量 */
+    /** Vanilla version count */
     var vanillaVersionsCount by mutableIntStateOf(0)
-    /** 模组Loader version数量 */
+    /** Mod loader version count */
     var modloaderVersionsCount by mutableIntStateOf(0)
 
     fun startRefreshVersions() {
@@ -146,7 +146,7 @@ private class VersionsScreenViewModel : ViewModel() {
     private var mutex: Mutex = Mutex()
 
     /**
-     * 变更当前版本列表的过滤类型
+     * Changes the version list's filter type
      */
     fun changeCategory(category: VersionCategory) {
         currentJob?.cancel()
@@ -158,16 +158,16 @@ private class VersionsScreenViewModel : ViewModel() {
     }
 
     /**
-     * 重新排序当前版本列表
+     * Reorders the current version list
      */
     fun resortVersions() {
         resortKey++
     }
 
-    /** 清理游戏文件操作 */
+    /** Game file cleanup operations */
     var cleanupOperation by mutableStateOf<CleanupOperation>(CleanupOperation.None)
 
-    /** 游戏无用资源清理者 */
+    /** Useless game resource cleaner */
     var cleaner by mutableStateOf<GameAssetCleaner?>(null)
 
     fun cleanUnusedFiles(
@@ -383,7 +383,7 @@ private fun LeftMenu(
                     selected = currentPath == pathItem.path,
                     enabled = canHandlePermission,
                     onClick = {
-                        if (!isRefreshing) { //避免频繁刷新，防止currentGameInfo意外重置
+                        if (!isRefreshing) { //avoid frequent refreshes that could reset currentGameInfo
                             if (pathItem.id == GamePathManager.DEFAULT_ID) {
                                 GamePathManager.saveDefaultPath()
                             } else {
@@ -471,7 +471,7 @@ private fun VersionsLayout(
     Box(
         modifier = modifier.offset { IntOffset(x = 0, y = surfaceYOffset.roundToPx()) }
     ) {
-        if (isRefreshing) { //版本正在刷新中
+        if (isRefreshing) { //versions are refreshing
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -486,14 +486,14 @@ private fun VersionsLayout(
                 submitError = submitError
             )
 
-            // 操作栏滚动吸附
+            // Action bar scroll snapping
             val density = LocalDensity.current
             val topAppBarState = rememberTopAppBarState()
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
             val headerTopPaddingPx = with(density) { 12.dp.toPx() }
             var headerHeightPx by remember { mutableIntStateOf(0) }
 
-            // 操作栏阴影跟随滚动线性过渡
+            // Action bar shadow follows scrolling linearly
             val listState = rememberLazyListState()
             val listScrolledFraction = remember(listState, headerTopPaddingPx) {
                 derivedStateOf {
@@ -508,7 +508,7 @@ private fun VersionsLayout(
                 derivedStateOf { 1f - topAppBarState.collapsedFraction }
             }
             val actionBarShadowElevation = if (backgroundVisible()) {
-                0.dp // 背景可见时不使用阴影，因为卡片会半透明化
+                0.dp // No shadow while the background is visible: cards go translucent
             } else {
                 5.dp * barShownFraction.value * listScrolledFraction.value
             }
@@ -551,7 +551,7 @@ private fun VersionsLayout(
                                 onSelected = {
                                     if (version == currentVersion) return@VersionItemLayout
                                     if (!VersionsManager.saveVersion(version)) {
-                                        //不允许选择无效版本
+                                        //Invalid versions can't be selected
                                         versionsOperation = VersionsOperation.InvalidDelete(version)
                                     }
                                 },
@@ -624,7 +624,7 @@ private fun VersionsLayout(
                             }
                         }
 
-                        // 版本分类
+                        // Version categories
                         Surface(
                             modifier = Modifier
                                 .weight(1f, fill = false)
@@ -676,7 +676,7 @@ private fun VersionsLayout(
 }
 
 /**
- * 在组件顶部绘制指定像素高度的线性渐隐
+ * Draws a linear fade of the given pixel height atop the component
  */
 private fun Modifier.topFade(heightPx: Float): Modifier = this
     .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)

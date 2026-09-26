@@ -34,18 +34,18 @@ object NativePluginManager: ApkPluginManager() {
         get() = AllSettings.disableNativeLibPlugins.getValue()
 
     /**
-     * 获取全部已加载的原生库插件
+     * Returns all loaded native library plugins
      */
     fun getPlugins(): List<NativePlugin> = nativePlugins.toList()
 
     /**
-     * 获取所有未禁用的原生库插件
+     * Returns all non-disabled native library plugins
      */
     fun getCheckedPlugins(): List<NativePlugin> =
         nativePlugins.filter { it.packageName !in disabledPlugins }
 
     /**
-     * 获取所有未禁用的原生库插件的 native lib dir
+     * Returns the native lib dirs of all non-disabled native plugins
      */
     fun getPaths(): List<String> {
         return buildList {
@@ -57,7 +57,7 @@ object NativePluginManager: ApkPluginManager() {
     }
 
     /**
-     * 获取所有未禁用的原生库插件的 JVM 环境参数
+     * Returns the JVM environment arguments of all non-disabled native plugins
      */
     fun getJVMEnv(): List<String> {
         return buildList {
@@ -153,10 +153,10 @@ object NativePluginManager: ApkPluginManager() {
             if (resolvedPath.startsWith(basePath)) {
                 resolvedPath
             } else {
-                null //阻止路径穿越
+                null //block path traversal
             }
         } catch (_: Exception) {
-            null //无效的路径
+            null //invalid path
         }
     }
 }

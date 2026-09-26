@@ -69,42 +69,42 @@ import kotlin.coroutines.resume
 
 private const val TAG = "ModpackImportVM"
 
-/** 导入整合包相关操作 */
+/** pack import operations */
 sealed interface ModpackImportOperation {
     data object None : ModpackImportOperation
     /** Starts importing a modpack */
     data object Import : ModpackImportOperation
-    /** 不支持的整合包或格式无效 */
+    /** Unsupported pack or invalid format */
     data class NotSupport(val reason: UnsupportedPackReason) : ModpackImportOperation
-    /** 整合包导入完成 */
+    /** pack import finished */
     data object Finished : ModpackImportOperation
-    /** 导入整合包时出现异常 */
+    /** Exception during pack import */
     data class Error(val th: Throwable) : ModpackImportOperation
 }
 
-/** 整合包Version name自定义状态操作 */
+/** pack version-name customization state operations */
 sealed interface VersionNameOperation {
     data object None : VersionNameOperation
-    /** 等待用户输入Version name */
+    /** Waiting for the user's version name */
     data class Waiting(val name: String) : VersionNameOperation
 }
 
-/** 整合包安装确认使用移动网络状态操作 */
+/** State op for the modpack-install cellular-confirmation dialog */
 sealed interface ConfirmMobileDataOperation {
     data object None : ConfirmMobileDataOperation
-    /** 等待用户确认使用移动网络 */
+    /** Waiting for the user's mobile-data confirmation */
     data object Waiting : ConfirmMobileDataOperation
 }
 
 /**
- * 导入整合包ViewModel
+ * pack import ViewModel
  */
 class ModpackImportViewModel : ViewModel() {
     var importOperation by mutableStateOf<ModpackImportOperation>(ModpackImportOperation.None)
     var versionNameOperation by mutableStateOf<VersionNameOperation>(VersionNameOperation.None)
     var confirmMobileDataOperation by mutableStateOf<ConfirmMobileDataOperation>(ConfirmMobileDataOperation.None)
 
-    //等待用户输入Version name相关
+    //Version name input wait handling
     private var versionNameContinuation: (Continuation<String>)? = null
     suspend fun waitForVersionName(name: String): String {
         return suspendCancellableCoroutine { cont ->
@@ -114,16 +114,16 @@ class ModpackImportViewModel : ViewModel() {
     }
 
     /**
-     * 用户确认输入Version name
+     * The user confirmed the version name
      */
     fun confirmVersionName(name: String) {
-        //恢复continuation
+        //Resume the continuation
         versionNameContinuation?.resume(name)
         versionNameContinuation = null
         versionNameOperation = VersionNameOperation.None
     }
 
-    //警告使用移动网络相关
+    //Mobile-data warning handling
     private var confirmMobileData : (Continuation<Boolean>)? = null
     suspend fun waitForConfirmMobileData(): Boolean {
         return suspendCancellableCoroutine { cont ->
@@ -133,17 +133,17 @@ class ModpackImportViewModel : ViewModel() {
     }
 
     /**
-     * 用户是否确认使用移动网络
+     * Whether the user confirmed mobile data
      */
     fun confirmUseMobileData(use: Boolean) {
-        //恢复continuation
+        //Resume the continuation
         confirmMobileData?.resume(use)
         confirmMobileData = null
         confirmMobileDataOperation = ConfirmMobileDataOperation.None
     }
 
     /**
-     * 整合包导入器
+     * pack importer
      */
     var importer by mutableStateOf<ModpackImporter?>(null)
 
@@ -157,7 +157,7 @@ class ModpackImportViewModel : ViewModel() {
         onStop: () -> Unit = {}
     ) {
         if (importOperation != ModpackImportOperation.None) {
-            //当前有别的导入任务，拒绝这次导入
+            //Another import is running; refuse this one
             return
         }
         importOperation = ModpackImportOperation.Import
@@ -183,7 +183,7 @@ class ModpackImportViewModel : ViewModel() {
                 onError = { th ->
                     importer = null
                     importOperation = if (th is PackNotSupportedException) {
-                        //整合包不受支持，无法导入
+                        //Unsupported pack; cannot import
                         ModpackImportOperation.NotSupport(th.reason)
                     } else {
                         ModpackImportOperation.Error(th)
@@ -250,7 +250,7 @@ fun ModpackImportOperation(
                     ) {
                         when (operation.reason) {
                             UnsupportedPackReason.CorruptedArchive -> {
-                                //因文件无法解压导致的无法导入
+                                //Unimportable because extraction failed
                                 Text(text = stringResource(R.string.import_modpack_not_supported_text1))
 
                                 Text(text = stringResource(R.string.import_modpack_not_supported_text2))
@@ -259,7 +259,7 @@ fun ModpackImportOperation(
                                 Text(text = stringResource(R.string.import_modpack_not_supported_text4))
                             }
                             UnsupportedPackReason.UnsupportedFormat -> {
-                                //启动器确实不支持这个格式
+                                //The launcher truly doesn't support this format
                                 Text(text = stringResource(R.string.import_modpack_not_supported_formats))
                                 AllSupportPackDisplay(modifier = Modifier.fillMaxWidth())
                             }
@@ -331,7 +331,7 @@ fun ModpackImportOperation(
 }
 
 /**
- * 所有支持的整合包格式展示
+ * Displays all supported pack formats
  */
 @Composable
 fun AllSupportPackDisplay(
@@ -384,7 +384,7 @@ fun ModpackConfirmUseMobileDataOperation(
                     onConfirmUse(false)
                 },
                 onConfirm = {
-                    //用户坚持使用移动网络
+                    //The user insists on mobile data
                     onConfirmUse(true)
                 }
             )

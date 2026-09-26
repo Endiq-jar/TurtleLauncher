@@ -24,10 +24,10 @@ import com.endiq.turtlelauncher.game.plugin.renderer_v2.data.RendererEnv
 import com.endiq.turtlelauncher.game.renderer.RendererInterface
 
 /**
- * V2 渲染器插件项
- * @param packageName 插件包名
- * @param nativePath 插件的原生库路径
- * @param renderer 外部插件导入的渲染器配置
+ * V2 renderer plugin entry
+ * @param packageName plugin package name
+ * @param nativePath the plugin's native library path
+ * @param renderer renderer config imported by the external plugin
  */
 class RendererV2Data(
     val packageName: String,

@@ -51,13 +51,13 @@ import kotlin.math.min
 private const val TAG = "Version"
 
 /**
- * Minecraft 版本，由Version name进行区分
+ * A Minecraft version, distinguished by its version name
  * @param versionName Version name
- * @param gameHome 版本所在的Game directories（.minecraft）
- * @param versionConfig 独立版本的配置
- * @param versionInfo 版本信息
- * @param isValid 版本的有效性
- * @param versionType 版本的类型
+ * @param gameHome the game directory holding the version (.minecraft)
+ * @param versionConfig the per-version configuration
+ * @param versionInfo version info
+ * @param isValid the version's validity
+ * @param versionType the version's type
  */
 @Keep
 @Parcelize
@@ -69,27 +69,27 @@ class Version(
     private val isValid: Boolean,
     val versionType: VersionType,
     /**
-     * 控制是否将当前账号视为离线账号启动游戏
+     * Controls whether the current account launches the game as an offline account
      */
     var offlineAccountLogin: Boolean = false,
     /**
-     * 快速启动
+     * Quick launch
      */
     var quickPlaySingle: QuickPlay? = null,
     /**
-     * 启用控制代理
+     * Enables the control proxy
      */
     var enableTouchProxy: Boolean = false
 ): Parcelable {
     /**
-     * 当前版本是否被置顶
+     * Whether the current version is pinned
      */
     @IgnoredOnParcel
     var pinnedState by mutableStateOf(versionConfig.pinned)
         private set
 
     /**
-     * 设置版本的置顶状态并保存
+     * Sets and saves the version's pinned state
      */
     fun setPinnedAndSave(value: Boolean) {
         this.versionConfig.setPinnedAndSave(value) { state ->
@@ -98,66 +98,66 @@ class Version(
     }
 
     /**
-     * @return 版本所在的Game directories（.minecraft）
+     * @return the version's game directory (.minecraft)
      */
     fun getGameHome(): String = gameHome
 
     /**
-     * @return 获取版本所属的版本文件夹
+     * @return the folder the version belongs to
      */
     fun getVersionsFolder(): String = getVersionsHome(gameHome)
 
     /**
-     * @return 获取版本文件夹
+     * @return the version folder
      */
     fun getVersionPath(): File = File(getVersionsFolder(), versionName)
 
     /**
-     * @return 获取Version name
+     * @return the version name
      */
     fun getVersionName(): String = versionName
 
     /**
-     * @return 启动器版本标识文件夹
+     * @return the launcher version marker folder
      */
     fun getTurtleVersionPath(): File = File(getVersionPath(), BuildKeys.LAUNCHER_IDENTIFIER)
 
     /**
-     * @return 游戏的上一次运行日志
+     * @return the game's last run log
      */
     fun getLatestLog(): File = File(getTurtleVersionPath(), LogName.GAME.fileName)
 
     /**
-     * @return 获取版本设置的图标
+     * @return the icon set for the version
      */
     fun getVersionIconFile(): File = File(getTurtleVersionPath(), "VersionIcon.png")
 
     /**
-     * 获取继承（inheritsFrom）版本的客户端 jar 文件
-     * @param inheritsFrom 版本声明的继承目标
-     * @return 继承目标未声明或文件不存在时返回 null
+     * Returns the client jar of the inherited (inheritsFrom) version
+     * @param inheritsFrom the version's declared inheritance target
+     * @return null when undeclared or the file doesn't exist
      */
     fun getInheritedClientJar(inheritsFrom: String?): File? =
         inheritsFrom?.let { File(File(getVersionsFolder(), it), "$it.jar") }
             ?.takeIf { jar -> jar.exists() }
 
     /**
-     * @return 获取客户端 jar 文件
+     * @return the client jar file
      */
     fun getClientJar(): File = File(getVersionPath(), "$versionName.jar")
 
     /**
-     * @return 获取版本隔离配置
+     * @return the version isolation config
      */
     fun getVersionConfig() = versionConfig
 
     /**
-     * @return 获取版本信息
+     * @return the version info
      */
     fun getVersionInfo() = versionInfo
 
     /**
-     * @return 版本描述是否可用
+     * @return whether the version description is usable
      */
     fun isSummaryValid(): Boolean {
         val summary = versionConfig.versionSummary
@@ -165,7 +165,7 @@ class Version(
     }
 
     /**
-     * @return 获取版本描述
+     * @return the version description
      */
     fun getVersionSummary(): String {
         if (!isValid()) throw IllegalStateException("The version is invalid!")
@@ -173,26 +173,26 @@ class Version(
     }
 
     /**
-     * @return 版本的有效性：是否存在版本JSON文件、版本文件夹是否存在
+     * @return version validity: whether the version JSON file and the version folder exist
      */
     fun isValid() = isValid && getVersionPath().exists()
 
     /**
-     * @return 是否开启了版本隔离
+     * @return whether version isolation is enabled
      */
     fun isIsolation() = versionConfig.isIsolation()
 
     /**
-     * @return 是否跳过游戏完整性检查
+     * @return whether the game integrity check is skipped
      */
     fun skipGameIntegrityCheck() = versionConfig.skipGameIntegrityCheck()
 
     /**
-     * @return 获取版本的游戏文件夹路径（若开启了版本隔离，则路径为版本文件夹）
+     * @return the version's game folder path (the version folder when isolation is enabled)
      */
     fun getGameDir(): File {
         return if (versionConfig.isIsolation()) getVersionPath()
-        //未开启版本隔离可以使用自定义路径，如果自定义路径为空（则为未设置），那么返回默认游戏路径（.minecraft/）
+        //Without isolation a custom path may be used; when it's empty (unset), the default game path (.minecraft/) is returned
         else if (versionConfig.customPath.isNotEmpty()) File(versionConfig.customPath)
         else File(gameHome)
     }
@@ -230,24 +230,24 @@ class Version(
     fun getTouchVibrateKind(): VibrationHandler.VibrateKind = versionConfig.touchVibrateKind ?: VibrationHandler.VibrateKind.default
 }
 
-/** 通过版本文件夹获取启动器版本标识文件夹 */
+/** Returns the launcher version marker folder for a version folder */
 fun getTurtleVersionPath(versionFolder: File): File = File(versionFolder, BuildKeys.LAUNCHER_IDENTIFIER)
 
-/** 通过版本文件夹获取版本图标文件 */
+/** Returns the version icon file for a version folder */
 fun getVersionIconFile(versionFolder: File): File = File(getTurtleVersionPath(versionFolder), "VersionIcon.png")
 
 /** 26.2-snapshot-1 */
 private const val VULKAN_RUNTIME_WORLD_VERSION = 4883
 
 /**
- * 游戏是否带有 Vulkan 后端
+ * Whether the game carries a Vulkan backend
  */
 suspend fun Version.hasVulkanBackend(): Boolean {
     return withContext(Dispatchers.IO) {
         val clientJar = getClientJar()
         if (!clientJar.exists()) return@withContext false
         runCatching {
-            //在客户端中读取数据版本
+            //Read the data version inside the client
             ZipFile(clientJar).use { zip ->
                 val worldVersion = zip.getEntry("version.json")
                     ?.readText(zip)

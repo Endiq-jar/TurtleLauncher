@@ -92,7 +92,7 @@ fun EditJoystickEvents(
             .fillMaxSize()
             .padding(horizontal = 4.dp)
     ) {
-        // 摇杆方向选择
+        // Joystick direction selection
         Box(
             modifier = Modifier
                 .weight(2f)
@@ -125,7 +125,7 @@ fun EditJoystickEvents(
             }
         }
 
-        // 事件编辑入口
+        // Event editing entry
         Box(
             modifier = Modifier
                 .weight(3f)
@@ -341,7 +341,7 @@ private fun AreaButton(
 
 
 /**
- * 启动器事件编辑
+ * Launcher event editing
  */
 @Composable
 private fun JoystickLauncherEventDialog(
@@ -443,21 +443,21 @@ private fun JoystickBasicEventPage(
             .padding(all = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 切换控件层可见性
+        // Toggle widget layer visibility
         InfoLayoutTextItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_switch_layers),
             onClick = { switchControlLayers(ClickEvent.Type.SwitchLayer) }
         )
 
-        // 强制显示控件层
+        // Force-show the widget layer
         InfoLayoutTextItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_show_layers),
             onClick = { switchControlLayers(ClickEvent.Type.ShowLayer) }
         )
 
-        // 强制隐藏控件层
+        // Force-hide the widget layer
         InfoLayoutTextItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_hide_layers),
@@ -469,7 +469,7 @@ private fun JoystickBasicEventPage(
 
 
 /**
- * 按键事件编辑
+ * Key event editing
  */
 @Composable
 private fun JoystickKeyEventDialog(

@@ -61,7 +61,7 @@ class CurseForgePackExporter: AbstractExporter(
                 title = androidText(R.string.versions_export_task_fetch_remote),
                 icon = R.drawable.ic_search
             ) { task ->
-                //获取远端数据
+                //Fetch remote data
                 packRemote(
                     gamePath = info.gamePath,
                     selectedFiles = info.selectedFiles,
@@ -134,7 +134,7 @@ class CurseForgePackExporter: AbstractExporter(
 
             val manifestFile = File(tempPath, "manifest.json")
             val jsonString = GSON.toJson(manifest)
-            //写入整合包清单信息
+            //Write the modpack manifest
             manifestFile.writeText(jsonString)
 
             writeModList(tempPath)
@@ -214,7 +214,7 @@ class CurseForgePackExporter: AbstractExporter(
                 }
                 modListFile.writeText(modListHtml)
             } else {
-                //默认创建一个空文件
+                //Create an empty file by default
                 modListFile.createNewFile()
             }
         }

@@ -44,38 +44,38 @@ import com.endiq.turtlelauncher.utils.file.ifExists
 import com.endiq.turtlelauncher.viewmodel.GamepadViewModel
 
 /**
- * 鼠标指针抓取模式
+ * Mouse pointer capture mode
  */
 typealias CursorMode = Int
 
 /**
- * 可根据指针抓取模式，自切换的虚拟指针模拟层
- * @param cursorMode                当前指针抓取模式
- * @param controlMode               控制模式：SLIDE（滑动控制）、CLICK（点击控制）
- * @param enableMouseClick          是否开启虚拟鼠标点击操作（仅适用于滑动控制）
- * @param longPressTimeoutMillis    长按触发检测时长
- * @param requestPointerCapture     是否使用鼠标抓取方案
- * @param hideMouseInClickMode      是否在鼠标为点击控制模式时，隐藏鼠标指针
- * @param gamepadViewModel          更新手柄状态的ViewModel
- * @param onTouch                   触摸到鼠标层
- * @param onMouse                   实体鼠标交互事件
- * @param onTap                     点击回调
- * @param onCapturedTap             抓取模式点击回调，参数是触摸点在控件内的绝对坐标
- * @param onLongPress               长按开始回调
- * @param onLongPressEnd            长按结束回调
- * @param onCapturedLongPress       抓取模式长按开始回调
- * @param onCapturedLongPressEnd    抓取模式长按结束回调
- * @param onPointerMove             指针移动回调，参数在 SLIDE 模式下是指针位置，CLICK 模式下是手指当前位置
- * @param onCapturedMove            抓取模式指针移动回调，返回滑动偏移量
- * @param onMouseScroll             实体鼠标指针滚轮滑动
- * @param onMouseButton             实体鼠标指针按钮按下反馈
- * @param isMoveOnlyPointer         指针是否被父级标记为仅可滑动指针
- * @param onOccupiedPointer         占用指针回调
- * @param onReleasePointer          释放指针回调
- * @param enableScrollGesture       是否启用双指滑动滚动手势
- * @param onScrollGesture           双指滑动滚动回调，参数为滚轮滚动的偏移量
- * @param mouseSize                 指针大小
- * @param cursorSensitivity         指针灵敏度（滑动模式生效）
+ * Virtual pointer simulation layer that auto-switches on capture mode
+ * @param cursorMode                the current pointer capture mode
+ * @param controlMode               Control mode: SLIDE (slide control), CLICK (click control)
+ * @param enableMouseClick          Whether virtual mouse click actions are enabled (slide control only)
+ * @param longPressTimeoutMillis    long-press trigger detection timeout
+ * @param requestPointerCapture     whether pointer capture is used
+ * @param hideMouseInClickMode      whether the pointer hides in click-control mode
+ * @param gamepadViewModel          ViewModel updating gamepad state
+ * @param onTouch                   touch on the mouse layer
+ * @param onMouse                   physical mouse interaction event
+ * @param onTap                     tap callback
+ * @param onCapturedTap             captured-mode tap callback; argument is the touch point's absolute coordinates in the control
+ * @param onLongPress               long-press start callback
+ * @param onLongPressEnd            long-press end callback
+ * @param onCapturedLongPress       captured-mode long-press start callback
+ * @param onCapturedLongPressEnd    captured-mode long-press end callback
+ * @param onPointerMove             pointer move callback; takes the pointer position in SLIDE mode and the finger position in CLICK mode
+ * @param onCapturedMove            captured-mode move callback, passing the slide offset
+ * @param onMouseScroll             physical mouse wheel scrolling
+ * @param onMouseButton             physical mouse button feedback
+ * @param isMoveOnlyPointer         whether the parent marked the pointer as move-only
+ * @param onOccupiedPointer         occupy-pointer callback
+ * @param onReleasePointer          release-pointer callback
+ * @param enableScrollGesture       whether the two-finger scroll gesture is enabled
+ * @param onScrollGesture           two-finger scroll callback, passing the wheel offset
+ * @param mouseSize                 pointer size
+ * @param cursorSensitivity         pointer sensitivity (slide mode only)
  */
 @Composable
 fun SwitchableMouseLayout(
@@ -120,25 +120,25 @@ fun SwitchableMouseLayout(
 
     val lastVirtualMousePos = remember { object { var value: Offset? = null } }
 
-    //判断鼠标是否正在被抓取
+    //Check whether the mouse is being captured
     val isCaptured by remember(cursorMode) {
         mutableStateOf(
             value = cursorMode == CURSOR_DISABLED
         )
     }
 
-    //当前是否为物理鼠标模式
+    //Is this physical mouse mode right now?
     var isPhysicalMouseMode by remember {
         mutableStateOf(
-            if (PhysicalMouseChecker.physicalMouseConnected) { //物理鼠标已连接
-                !requestPointerCapture //根据是否是抓取模式（虚拟鼠标控制模式）判断物理鼠标是否显示
+            if (PhysicalMouseChecker.physicalMouseConnected) { //physical mouse connected
+                !requestPointerCapture //physical mouse visibility follows capture mode (virtual mouse control mode)
             } else {
                 false
             }
         )
     }
-    //检查并应用当前物理鼠标模式
-    //若未捕获的情况下，正在使用，则标记为物理鼠标模式
+    //Check and apply the current physical mouse mode
+    //If it's in use while not captured, mark physical mouse mode
     fun checkPhysicalMouseMode(using: Boolean) {
         isPhysicalMouseMode = !requestPointerCapture && using
     }
@@ -153,11 +153,11 @@ fun SwitchableMouseLayout(
         updateMousePointer(
             show = if (cursorMode == CURSOR_ENABLED) {
                 when {
-                    //物理鼠标已连接 && 当前为物理鼠标模式：是否为抓获控制模式
+                    //Physical mouse connected and physical mode active: is it captured control mode?
                     PhysicalMouseChecker.physicalMouseConnected && isPhysicalMouseMode -> requestPointerCapture
-                    //点击控制模式：由隐藏虚拟鼠标设置决定
+                    //Click-control mode: decided by the hide-virtual-mouse setting
                     controlMode == MouseControlMode.CLICK -> !hideMouseInClickMode
-                    //滑动控制始终显示
+                    //Slide control always shows it
                     else -> controlMode == MouseControlMode.SLIDE
                 }
             } else false
@@ -166,7 +166,7 @@ fun SwitchableMouseLayout(
 
     val requestPointerCapture1 by remember(isCaptured) {
         mutableStateOf(
-            value = if (isCaptured) true //被抓取时，开启实体鼠标指针抓取模式
+            value = if (isCaptured) true //when captured, capture the physical mouse pointer
             else requestPointerCapture
         )
     }
@@ -183,8 +183,8 @@ fun SwitchableMouseLayout(
     }
     LaunchedEffect(isCaptured) {
         val pos = lastVirtualMousePos.value?.takeIf {
-            //如果当前正在使用物理鼠标，则使用上次虚拟鼠标的位置
-            //否则默认将鼠标放到屏幕正中心
+            //With a physical mouse in use, fall back to the last virtual mouse position
+            //Otherwise default the mouse to the screen center
             isPhysicalMouseMode
         } ?: centerPos
         if (!isCaptured) updatePointerPos(pos)
@@ -239,7 +239,7 @@ fun SwitchableMouseLayout(
             controlMode = if (cursorMode == CURSOR_ENABLED) {
                 controlMode
             } else {
-                //捕获模式下，只有滑动控制模式才能获取到滑动偏移量
+                //In capture mode, only slide control receives slide offsets
                 MouseControlMode.SLIDE
             },
             enableMouseClick = enableMouseClick,
@@ -263,7 +263,7 @@ fun SwitchableMouseLayout(
                         onTap(
                             if (controlMode == MouseControlMode.CLICK) {
                                 updateMousePointer(!isCaptured && !hideMouseInClickMode)
-                                //当前手指的绝对坐标
+                                //The current finger's absolute coordinates
                                 pointerPosition = fingerPos
                                 fingerPos
                             } else {
@@ -308,7 +308,7 @@ fun SwitchableMouseLayout(
                             )
                         } else {
                             updateMousePointer(!hideMouseInClickMode)
-                            //当前手指的绝对坐标
+                            //The current finger's absolute coordinates
                             offset
                         }
                         updatePointerPos(pointerPosition)
@@ -330,7 +330,7 @@ fun SwitchableMouseLayout(
                             )
                             updatePointerPos(pointerPosition)
                         } else {
-                            //非鼠标抓取模式
+                            //Not pointer-capture mode
                             updateMousePointer(false)
                             pointerPosition = offset
                             updatePointerPos(pointerPosition)

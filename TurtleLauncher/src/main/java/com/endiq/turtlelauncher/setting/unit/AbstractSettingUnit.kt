@@ -27,17 +27,17 @@ abstract class AbstractSettingUnit<V>(
     val defaultValue: V
 ) {
     /**
-     * @return 获取当前的设置值
+     * @return the current setting value
      */
     abstract fun getValue(): V
 
     /**
-     * 保存设置值
+     * Saves the setting value
      */
     protected abstract fun saveValue(v: V): V
 
     /**
-     * 可观察的状态
+     * An observable state
      */
     var state by mutableStateOf(defaultValue)
         protected set
@@ -47,28 +47,28 @@ abstract class AbstractSettingUnit<V>(
     }
 
     /**
-     * 保存当前状态值
+     * Saves the current state value
      */
     fun save() {
         saveValue(this.state)
     }
 
     /**
-     * 存入值
+     * Stored-in value
      */
     fun save(value: V) {
         this.state = saveValue(value)
     }
 
     /**
-     * **仅更新状态**，不保存值
+     * **Update the state only**, without persisting
      */
     open fun updateState(value: V) {
         this.state = value
     }
 
     /**
-     * 重置当前设置单元为默认值
+     * Resets this setting unit to default
      */
     fun reset() {
         this.state = saveValue(defaultValue)

@@ -111,7 +111,7 @@ private val SCROLL_GESTURE_SCROLL_DISTANCE = 6.dp
  * @param onReleasePointer          pointer release callback
  * @param enableScrollGesture       whether the two-finger scroll gesture is enabled
  * @param onScrollGesture           two-finger scroll callback; the argument is the wheel scroll offset
- * @param inputChange               重新启动内部的 pointerInput 块，让触摸逻辑能够实时拿到最新的外部参数
+ * @param inputChange               restarts the inner pointerInput block so touch logic always sees the latest external params
  */
 @Composable
 fun TouchpadLayout(
@@ -142,7 +142,7 @@ fun TouchpadLayout(
 
     val composeFocusCount by SdlBridge.composeFocus.collectAsStateWithLifecycle()
 
-    //确保 pointerInput 中总是调用到最新的回调，避免闭包捕获旧值
+    //Ensure pointerInput always calls the newest callbacks, avoiding stale closure captures
     val currentOnTouch by rememberUpdatedState(onTouch)
     val currentControlMode by rememberUpdatedState(controlMode)
     val currentEnableMouseClick by rememberUpdatedState(enableMouseClick)
@@ -163,28 +163,28 @@ fun TouchpadLayout(
             .pointerHoverIcon(pointerIcon)
             .pointerInput(*inputChange) {
                 coroutineScope {
-                    /** 所有被占用的指针 */
+                    /** All occupied pointers */
                     val occupiedPointers = mutableSetOf<PointerId>()
 
-                    /** 当前正在被处理的指针 */
+                    /** The pointer currently being handled */
                     var activePointer: PointerId? = null
                     val longPressJobs = mutableMapOf<PointerId, Job>()
 
-                    /** 每个指针的拖动状态 */
+                    /** Per-pointer drag state */
                     val dragStates = mutableMapOf<PointerId, DragState>()
 
-                    /** moveOnly 指针集合，用于处理滑动事件 */
+                    /** The moveOnly pointer set, for move events */
                     val moveOnlyPointers = mutableSetOf<PointerId>()
-                    /** 双指滑动滚动手势占用的指针 */
+                    /** Pointer occupied by the two-finger scroll gesture */
                     val scrollGesturePointers = mutableSetOf<PointerId>()
-                    /** 双指滑动滚动手势是否正在进行 */
+                    /** Whether the two-finger scroll gesture is active */
                     var scrollGestureActive = false
-                    /** 双指滑动滚动手势中，未满一次滚动的位移余量 */
+                    /** Leftover displacement under one scroll step in the gesture */
                     var scrollGestureRemainder = Offset.Zero
-                    /** 活跃指针的按下时间，用于判定双指是否几乎同时按下 */
+                    /** Press timestamps of active pointers, judging near-simultaneity */
                     var activePointerDownTime = 0L
 
-                    /** 清除鼠标触摸层的状态 */
+                    /** Clears the mouse touch layer state */
                     fun resetTouchState() {
                         activePointer = null
                         dragStates.clear()
@@ -209,27 +209,27 @@ fun TouchpadLayout(
                                             return@forEach
                                         }
 
-                                        //刚触摸到屏幕时，触发触摸事件回调
+                                        //Fire the touch callback when the screen is first touched
                                         currentOnTouch()
 
                                         val pointerId = change.id
-                                        //是否被父级标记为仅处理滑动
+                                        //Whether the parent marked it as move-only
                                         val isMoveOnly = isMoveOnlyPointer(pointerId)
 
-                                        //如果是 moveOnly 指针
+                                        //If it's a moveOnly pointer
                                         if (isMoveOnly) {
-                                            //如果当前没有活跃指针，则成为活跃指针
-                                            //这样当第一根手指被标记为 moveOnly 后，第二根手指可以接管
+                                            //With no active pointer, become the active one
+                                            //That way a first moveOnly finger lets a second finger take over
                                             if (activePointer == null) {
                                                 activePointer = pointerId
                                                 dragStates[pointerId] = DragState(startPosition = change.position)
                                             } else {
-                                                //如果已有活跃指针，仅处理滑动
+                                                //With an active pointer already, only movement is handled
                                                 moveOnlyPointers.add(pointerId)
                                             }
                                         } else if (activePointer == null && !change.isConsumed) {
-                                            //如果没有活跃指针，且当前指针未被消费，则开始处理这个指针
-                                            //fix: 只有真正成为 activePointer 的指针，才标记为已占用
+                                            //With no active pointer and this pointer unconsumed, start handling it
+                                            //fix: only pointers that truly become activePointer get marked as occupied
                                             if (pointerId !in occupiedPointers) {
                                                 onOccupiedPointer(pointerId)
                                                 occupiedPointers.add(pointerId)
@@ -243,7 +243,7 @@ fun TouchpadLayout(
 
                                             if (currentControlMode == MouseControlMode.SLIDE && currentEnableMouseClick) {
                                                 longPressJobs[pointerId] = launch {
-                                                    //只在滑动点击模式下进行长按计时
+                                                    //Long-press timing runs only in slide/click mode
                                                     val timeout =
                                                         if (currentLongPressTimeoutMillis > 0) {
                                                             currentLongPressTimeoutMillis
@@ -252,7 +252,7 @@ fun TouchpadLayout(
                                                         }
                                                     delay(timeout.milliseconds)
 
-                                                    //检查是否仍在处理此指针且未开始拖动
+                                                    //Check we're still handling this pointer that hasn't started a drag
                                                     if (activePointer == pointerId && dragStates[pointerId]?.isDragging != true) {
                                                         dragStates[pointerId]?.longPressTriggered = true
                                                         currentOnLongPress()
@@ -261,21 +261,21 @@ fun TouchpadLayout(
                                             }
 
                                             if (currentControlMode == MouseControlMode.CLICK) {
-                                                //点击模式下，如果触摸，无论如何都应该更新指针位置
+                                                //In click mode, a touch must update the pointer position regardless
                                                 currentOnPointerMove(change.position, false)
                                             }
                                         } else if (currentEnableScrollGesture && scrollGesturePointers.isEmpty() && !change.isConsumed) {
-                                            //尝试与已按下的指针组成双指滑动滚动手势
-                                            //两根指针都不能来源于控制布局，需几乎同时按下，且第一根指针尚未开始拖动虚拟鼠标
+                                            //Try pairing with the pressed pointer as a two-finger scroll gesture
+                                            //Neither pointer may come from the control layout; both must press nearly together before the first drags the virtual mouse
                                             activePointer?.takeIf { it != pointerId }?.let { first ->
                                                 if (!isMoveOnlyPointer(first)
                                                     && change.uptimeMillis - activePointerDownTime <= SCROLL_GESTURE_DOWN_WINDOW_MILLIS
                                                     && dragStates[first]?.let { !it.isDragging && !it.longPressTriggered } == true
                                                 ) {
                                                     longPressJobs.remove(first)?.cancel()
-                                                    //标记第一根指针为拖动状态，避免手势结束后误触点击
+                                                    //Mark the first pointer as dragging so the gesture's end isn't a stray click
                                                     dragStates[first]?.isDragging = true
-                                                    //第二根指针同样注册为占用，避免被控制布局抢占
+                                                    //Register the second pointer as occupied too, so the layout can't grab it
                                                     if (pointerId !in occupiedPointers) {
                                                         onOccupiedPointer(pointerId)
                                                         occupiedPointers.add(pointerId)
@@ -289,8 +289,8 @@ fun TouchpadLayout(
                                         }
                                     }
 
-                                //处理双指滑动滚动手势的移动，取双指位移的平均值，
-                                //滑动距离累计满一次阈值时，发送一次滚轮滚动事件
+                                //Handle the gesture's movement: average both pointers' displacement,
+                                //and fire one wheel scroll each time a threshold's worth accumulates
                                 if (scrollGestureActive) {
                                     var deltaSum = Offset.Zero
                                     event.changes
@@ -317,13 +317,13 @@ fun TouchpadLayout(
                                     }
                                 }
 
-                                //处理移动事件，处理活跃指针的移动
+                                //Handle move events: process the active pointer's movement
                                 activePointer?.takeIf { it !in scrollGesturePointers }?.let { pointerId ->
                                     event.changes
                                         .firstOrNull { it.id == pointerId && it.positionChanged() && !it.isConsumed }
                                         ?.let { moveChange ->
                                             val dragState = dragStates[pointerId] ?: return@let
-                                            //是否被父级标记为仅处理滑动
+                                            //Whether the parent marked it as move-only
                                             val isMoveOnly = isMoveOnlyPointer(pointerId)
 
                                             if (isMoveOnly) {
@@ -338,10 +338,10 @@ fun TouchpadLayout(
                                                                 (moveChange.position - dragState.startPosition).getDistance()
 
                                                             if (distanceFromStart > viewConfiguration.touchSlop && !dragState.isDragging) {
-                                                                //超出了滑动检测距离，说明是真的在进行滑动
+                                                                //Past the slide threshold: it's a real slide
                                                                 dragState.isDragging = true
                                                                 longPressJobs.remove(pointerId)
-                                                                    ?.cancel() //取消长按计时
+                                                                    ?.cancel() //cancel long-press timing
                                                             }
 
                                                             if (dragState.isDragging || dragState.longPressTriggered) {
@@ -370,7 +370,7 @@ fun TouchpadLayout(
                                         }
                                 }
 
-                                //处理 moveOnly 指针的移动
+                                //Handle moveOnly pointer movement
                                 event.changes
                                     .filter { moveOnlyPointers.contains(it.id) && it.positionChanged() && !it.isConsumed }
                                     .forEach { moveChange ->
@@ -384,19 +384,19 @@ fun TouchpadLayout(
                                         }
                                     }
 
-                                //释放
+                                //Release
                                 event.changes
                                     .filter { it.changedToUpIgnoreConsumed() }
                                     .forEach { change ->
                                         val pointerId = change.id
-                                        //是否被父级标记为仅处理滑动
+                                        //Whether the parent marked it as move-only
                                         val isMoveOnly = isMoveOnlyPointer(pointerId)
 
                                         longPressJobs.remove(pointerId)?.cancel()
                                         val dragState = dragStates.remove(pointerId)
 
                                         if (pointerId in scrollGesturePointers) {
-                                            //滚动手势的指针抬起，直接结束手势，不触发点击
+                                            //A scroll-gesture pointer lift ends the gesture outright, never firing a click
                                             scrollGesturePointers.remove(pointerId)
                                             scrollGestureActive = false
                                             if (pointerId == activePointer) {
@@ -415,7 +415,7 @@ fun TouchpadLayout(
                                                         }
 
                                                         MouseControlMode.CLICK -> {
-                                                            //未进入长按，算一次点击事件
+                                                            //No long-press entered: count as a click
                                                             currentOnTap(change.position)
                                                         }
                                                     }
@@ -425,7 +425,7 @@ fun TouchpadLayout(
                                             activePointer = null
                                         }
 
-                                        //从 moveOnly 指针集合中移除
+                                        //Drop it from the moveOnly set
                                         moveOnlyPointers.remove(pointerId)
 
                                         if (!isMoveOnly && pointerId in occupiedPointers) {
@@ -468,9 +468,9 @@ fun TouchpadLayout(
 }
 
 /**
- * 简单的实体鼠标捕获层
- * @param enabled                   是否使用鼠标抓取方案
- * @param onMouse                   实体鼠标开始响应事件的回调
+ * Simple physical mouse capture layer
+ * @param enabled                   whether pointer capture is used
+ * @param onMouse                   callback when the physical mouse starts responding
  * @param onMouseMove               physical mouse pointer move callback
  * @param onMouseScroll             physical mouse wheel scroll
  * @param onMouseButton             physical mouse button press feedback
@@ -572,8 +572,8 @@ private fun SimpleMouseCapture(
 }
 
 /**
- * 实体鼠标指针事件监听
- * @param disabled 是否禁用
+ * Physical mouse pointer event listener
+ * @param disabled whether it's disabled
  */
 private fun Modifier.mouseEventModifier(
     disabled: Boolean,
@@ -595,7 +595,7 @@ private fun Modifier.mouseEventModifier(
     val currentOnMouseButton by rememberUpdatedState(onMouseButton)
 
     var lastButtons by remember(*inputChange) {
-        //位掩码存储鼠标按键按下状态
+        //Mouse button states stored as a bitmask
         mutableIntStateOf(0)
     }
 
@@ -606,8 +606,8 @@ private fun Modifier.mouseEventModifier(
 
         val isMouse = event.isFromSource(InputDevice.SOURCE_MOUSE)
         val isStylus = event.isFromSource(InputDevice.SOURCE_STYLUS)
-        //过滤掉不是鼠标或者触控笔的类型
-        //触控笔（Chromebook、三星等）
+        //Filter out anything that isn't mouse or stylus
+        //Stylus (Chromebook, Samsung, etc.)
         if (!isMouse && !isStylus) {
             return@pointerInteropFilter false
         }
@@ -641,14 +641,14 @@ private fun Modifier.mouseEventModifier(
                 )
             }
 
-            //检查并处理触控笔按下
+            //Check and handle stylus press
             MotionEvent.ACTION_DOWN,
             MotionEvent.ACTION_POINTER_DOWN -> {
                 if (isStylus) {
                     currentOnMouseButton(MotionEvent.BUTTON_PRIMARY, true)
                 }
             }
-            //检查并处理触控笔抬起
+            //Check and handle stylus release
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_UP -> {
                 if (isStylus) {

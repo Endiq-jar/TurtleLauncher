@@ -244,7 +244,7 @@ fun GameSettingsScreen(
                 }
             }
 
-            //Emotes（Emotecraft 模组集成）
+            //Emotes (Emotecraft mod integration)
             AnimatedItem(scope) { yOffset ->
                 com.endiq.turtlelauncher.game.emotes.EmotesSettingsSection(
                     modifier = Modifier

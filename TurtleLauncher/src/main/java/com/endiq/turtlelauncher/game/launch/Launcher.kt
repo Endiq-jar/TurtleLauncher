@@ -67,18 +67,18 @@ abstract class Launcher(
     lateinit var runtime: Runtime
         protected set
 
-    /** 当前启动版本要求的 LWJGL 版本（见 [detectLwjglVersion]），0 = 未探测/默认 */
+    /** LWJGL version required by the launching version (see [detectLwjglVersion]); 0 = undetected/default */
     protected var lwjglVersion: Int = 0
         private set
 
     /**
-     * 当前启动版本的 LWJGL natives 目录
+     * LWJGL natives directory of the launching version
      */
     protected lateinit var lwjglNativesDir: String
         private set
 
     /**
-     * 初始化 LWJGL 组件
+     * Initializes the LWJGL components
      */
     protected suspend fun initLwjglComponent(context: Context, version: Int) {
         check(!::lwjglNativesDir.isInitialized) { "LWJGL component has already been initialized" }
@@ -131,7 +131,7 @@ abstract class Launcher(
     abstract fun exit()
 
     /**
-     * Game directories（.minecraft），默认为当前选择的Game directories
+     * Game directory (.minecraft); defaults to the currently selected one
      */
     protected open fun getMinecraftPath(): String = getGameHome()
 
@@ -165,7 +165,7 @@ abstract class Launcher(
         )
     }
 
-    //伪 suspend 函数，等待 JVM 的退出代码
+    //Pseudo-suspend function waiting for the JVM exit code
     private suspend fun launchJavaVM(
         context: Context,
         jvmArgs: List<String>,
@@ -208,7 +208,7 @@ abstract class Launcher(
     }
 
     /**
-     * 添加 JVM 参数
+     * Adds JVM arguments
      */
     protected open fun MutableMap<String, String>.putJavaArgs() {}
 
@@ -236,8 +236,8 @@ abstract class Launcher(
             put("pojav.path.minecraft", getMinecraftPath())
             put("pojav.path.private.account", PathManager.DIR_DATA_BASES.absolutePath)
             put("org.lwjgl.vulkan.libname", "libvulkan.so")
-            // LWJGL 3.4 的 Library.loadSystem 通过该属性定位 native 库。
-            // 指向 per-version natives 目录，保证 3.4.x 游戏加载对应版本的 liblwjgl.so 等。
+            // LWJGL 3.4's Library.loadSystem locates native libraries via this property.
+            // Point at the per-version natives directory, so 3.4.x games load the matching liblwjgl.so et al.
             put("org.lwjgl.librarypath", lwjglNativesDir)
             put("glfwstub.windowWidth", screenSize.width.toString())
             put("glfwstub.windowHeight", screenSize.height.toString())
@@ -287,7 +287,7 @@ abstract class Launcher(
     }
 
     /**
-     * 确保 DNS 配置文件存在
+     * Ensures DNS config files exist
      */
     private fun ensureDNSConfig(): File {
         val resolvFile = File(PathManager.DIR_GAME, "resolv.conf")
@@ -295,7 +295,7 @@ abstract class Launcher(
         Logger.info(TAG, "Using DNS servers for game: $servers")
         val configText = servers.joinToString(separator = "\n") { "nameserver $it" }
         runCatching {
-            // Configuration files不存在或内容不一致时覆写一次
+            // Overwrite once when the config files are missing or their contents mismatch
             if (!resolvFile.exists() || resolvFile.readText().trim() != configText.trim()) {
                 resolvFile.writeText(configText)
             }
@@ -309,11 +309,11 @@ abstract class Launcher(
     private fun buildResolvConfSet(): Set<String> {
         return buildSet {
             getSystemDnsServerAddresses()
-                // JNDI DNS 的 nameserver 解析无法处理裸 IPv6 地址，仅保留 IPv4
+                // JNDI DNS nameserver resolution can't handle bare IPv6 addresses; keep IPv4 only
                 ?.filterNot { it.contains(':') }
                 ?.let { addAll(it) }
 
-            // 按地区获取公共 DNS
+            // Pick public DNS by region
             if (LocaleList.getDefault().get(0).displayName != Locale.CHINA.displayName) {
                 add("1.1.1.1")
                 add("1.0.0.1")
@@ -325,8 +325,8 @@ abstract class Launcher(
     }
 
     /**
-     * @param args 需要进行处理的参数
-     * @param ramAllocation 指定内存空间大小
+     * @param args the arguments to process
+     * @param ramAllocation the assigned memory size
      */
     protected open fun progressFinalUserArgs(
         args: MutableList<String>,
@@ -357,7 +357,7 @@ abstract class Launcher(
 
         // Force LWJGL to use the Freetype library intended for it, instead of using the one
         // that we ship with Java (since it may be older than what's needed).
-        // 始终指向 LWJGL 组件 natives 目录内的库，禁止回退到应用原生 libs 目录（其中不含 LWJGL 系库）
+        // Always point at libraries inside the LWJGL component natives dir; never fall back to the app's native libs (no LWJGL there)
         args.add("-Dorg.lwjgl.freetype.libname=${File(lwjglNativesDir, "libfreetype.so").absolutePath}")
 
         // Our spirv-cross is compiled shared, so it gets named shared.
@@ -428,7 +428,7 @@ abstract class Launcher(
     protected fun getLibraryPath(): String {
         val libDirName = if (is64BitsDevice) "lib64" else "lib"
         val path = listOfNotNull(
-            // per-version LWJGL natives 优先，避免 APK 内旧版 native 抢占
+            // per-version LWJGL natives first, so the APK's older natives can't win
             lwjglNativesDir,
             "/system/$libDirName",
             "/vendor/$libDirName",
@@ -599,7 +599,7 @@ fun getCacioJavaArgs(
 }
 
 /**
- * 获取设备 SoC 名称，在 API 31+ 读取系统属性 ro.soc.model，若失败则返回 Build.HARDWARE
+ * Returns the device SoC name: reads the ro.soc.model system property on API 31+, falling back to Build.HARDWARE
  */
 fun getSocName(): String {
     return runCatching {

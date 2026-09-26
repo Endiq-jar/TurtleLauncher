@@ -39,37 +39,37 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "DownloadModViewModel"
 
-/** 下载模组屏幕的本地模组安装信息状态 */
+/** Local mod install state for the mod download screen */
 class DownloadModViewModel : ViewModel() {
-    /** 当前匹配的目标平台 */
+    /** The current match target platform */
     var currentPlatform: Platform = AllSettings.searchModPlatform.getValue()
         private set
 
-    /** 是否正在进行本地扫描或平台匹配 */
+    /** Whether a local scan or platform match is running */
     var matching by mutableStateOf(false)
         private set
 
-    /** 当前平台下本地已安装的模组项目映射，键为平台项目ID */
+    /** Locally installed mod projects for the current platform, keyed by platform project ID */
     var installedByProject by mutableStateOf<Map<String, InstalledMod>>(emptyMap())
         private set
 
-    /** 当前平台下本地已安装的模组版本映射，键为平台版本ID */
+    /** Locally installed mod versions for the current platform, keyed by platform version ID */
     private var installedByVersion by mutableStateOf<Map<String, InstalledMod>>(emptyMap())
 
     private var scanJob: Job? = null
 
-    /** 最近一次扫描对应的Version name，用于判断扫描目标是否变化 */
+    /** The last scan's version name, detecting target changes */
     private var scannedVersionName: String? = null
 
-    /** 最近一次扫描得到的所有本地模组文件指纹 */
+    /** All local mod file fingerprints from the last scan */
     private var scannedFingerprints: List<ModFingerprints> = emptyList()
 
-    /** 本次生命周期内已完成的平台匹配结果，避免切换平台时重复计算 */
+    /** Finished platform matches of this lifecycle, avoiding recomputation on platform switches */
     private val matchedResults =
         mutableMapOf<Platform, Pair<Map<String, InstalledMod>, Map<String, InstalledMod>>>()
 
     /**
-     * 查询平台项目在本地是否已安装
+     * Checks whether a platform project is installed locally
      */
     fun checkProject(platform: Platform, projectId: String): InstalledMod? {
         return installedByProject[projectId]
@@ -77,7 +77,7 @@ class DownloadModViewModel : ViewModel() {
     }
 
     /**
-     * 查询平台版本在本地是否已安装
+     * Checks whether a platform version is installed locally
      */
     fun checkVersion(version: PlatformVersion): InstalledMod? {
         return installedByVersion[version.platformId()]
@@ -85,10 +85,10 @@ class DownloadModViewModel : ViewModel() {
     }
 
     /**
-     * 扫描指定游戏版本的模组目录，并按当前平台匹配本地已安装的模组
+     * Scans a game version's mods directory and matches locally installed mods per the current platform
      *
-     * 扫描目标版本变化时立即清除旧的匹配结果；
-     * 同版本重复扫描时保留旧结果直至新结果就绪，避免标注闪烁
+     * Changing the scanned version drops old matches at once;
+     * rescanning the same version keeps old results until new ones arrive, avoiding flicker
      */
     fun scan(version: Version?) {
         val versionName = version?.getVersionName()
@@ -100,7 +100,7 @@ class DownloadModViewModel : ViewModel() {
             installedByProject = emptyMap()
             installedByVersion = emptyMap()
         }
-        //重扫后指纹集合可能变化，已完成的平台匹配结果全部失效
+        //A rescan may change fingerprints; finished platform matches all go stale
         matchedResults.clear()
 
         scanJob = viewModelScope.launch {
@@ -126,13 +126,13 @@ class DownloadModViewModel : ViewModel() {
     }
 
     /**
-     * 搜索平台变更时，使用已扫描的指纹按新平台重新匹配
+     * On platform change, the scanned fingerprints re-match against the new platform
      */
     fun onPlatformChanged(platform: Platform) {
         if (currentPlatform == platform) return
         currentPlatform = platform
 
-        // 扫描尚未结束时，扫描尾部会自动按最新平台进行匹配
+        //If the scan is still running, its tail auto-matches with the newest platform
         if (scanJob?.isActive == true) return
 
         scanJob = viewModelScope.launch {
@@ -165,14 +165,14 @@ class DownloadModViewModel : ViewModel() {
             byVersion[installed.versionId] = installed
         }
 
-        //边匹配边同步到UI，匹配到多少显示多少
+        //Results sync to the UI as they match
         val matched = matchInstalledMods(fingerprints, platform) { incremental ->
             incremental.byProject.values.forEach(::collect)
             installedByProject = byProject.toMap()
             installedByVersion = byVersion.toMap()
         }
 
-        // 存在失败分块时不做会话内缓存，下次切换平台时重试（成功块已有持久缓存兜底）
+        //Failed chunks skip the session cache and retry on the next platform switch (successful chunks already persist)
         if (matched.complete) matchedResults[platform] = matched.byProject to matched.byVersion
         installedByProject = matched.byProject
         installedByVersion = matched.byVersion

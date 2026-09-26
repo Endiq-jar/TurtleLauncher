@@ -38,28 +38,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 
 /**
- * Android 可展示字符串文本代理接口，提供不同的文本展现方式
+ * Android displayable string proxy interface, offering several text sources and presentations
  */
 sealed interface AndroidStringText {
     /**
-     * 直接展示普通字符串
+     * Directly displays a plain string
      *
-     * @property value 字符串内容
+     * @property value the string content
      */
     data class Text(val value: String) : AndroidStringText
 
     /**
-     * 展示带有样式的富文本
+     * Displays styled rich text
      *
-     * @property value [AnnotatedString] 内容
+     * @property value the [AnnotatedString] content
      */
     data class Annotated(val value: AnnotatedString) : AndroidStringText
 
     /**
-     * 通过 Android 资源 ID 加载字符串，支持格式化参数
+     * Loads a string from an Android resource ID, supporting format args
      *
-     * @property key 字符串资源 ID
-     * @property args 格式化参数，支持 [AndroidStringText]
+     * @property key the string resource ID
+     * @property args format args; [AndroidStringText] supported
      */
     data class StringRes(
         @field:androidx.annotation.StringRes
@@ -86,9 +86,9 @@ sealed interface AndroidStringText {
     }
 
     /**
-     * 拼接多个 [AndroidStringText] 实例
+     * Concatenates multiple [AndroidStringText] instances
      *
-     * @property texts 要拼接的字符串列表
+     * @property texts the strings to concatenate
      */
     data class Appended(
         val texts: List<AndroidStringText>
@@ -96,31 +96,31 @@ sealed interface AndroidStringText {
 }
 
 /**
- * 创建 [AndroidStringText.Text] 实例
+ * Creates an [AndroidStringText.Text] instance
  *
- * @param string 字符串内容
+ * @param string the string content
  */
 fun androidText(string: String) = AndroidStringText.Text(string)
 
 /**
- * 创建 [AndroidStringText.Annotated] 实例
+ * Creates an [AndroidStringText.Annotated] instance
  *
- * @param annotated [AnnotatedString] 内容
+ * @param annotated the [AnnotatedString] content
  */
 fun androidText(annotated: AnnotatedString) = AndroidStringText.Annotated(annotated)
 
 /**
- * 创建 [AndroidStringText.StringRes] 实例
+ * Creates an [AndroidStringText.StringRes] instance
  *
- * @param key 字符串资源 ID
+ * @param key the string resource ID
  */
 fun androidText(@StringRes key: Int) = AndroidStringText.StringRes(key, null)
 
 /**
- * 创建带有格式化参数的 [AndroidStringText.StringRes] 实例
+ * Creates a [AndroidStringText.StringRes] instance with format arguments
  *
- * @param key 字符串资源 ID
- * @param args 格式化参数
+ * @param key the string resource ID
+ * @param args the format args
  */
 fun androidText(
     @StringRes
@@ -129,13 +129,13 @@ fun androidText(
 ) = AndroidStringText.StringRes(key, args)
 
 /**
- * 创建 [AndroidStringText.Appended] 实例
+ * Creates an [AndroidStringText.Appended] instance
  */
 fun androidText(vararg texts: AndroidStringText) = AndroidStringText.Appended(texts.toList())
 
 
 /**
- * 使用 DSL 构建 [AndroidStringText.Appended] 实例
+ * Builds an [AndroidStringText.Appended] instance via DSL
  */
 inline fun buildAppendedText(
     block: AndroidStringTextBuilder.() -> Unit
@@ -147,37 +147,37 @@ private annotation class AndroidStringTextDsl
 class AndroidStringTextBuilder {
     private val texts = mutableListOf<AndroidStringText>()
     /**
-     * 追加普通字符串
+     * Appends a plain string
      */
     fun append(text: String) {
         texts.add(AndroidStringText.Text(text))
     }
     /**
-     * 追加带有样式的富文本
+     * Appends styled rich text
      */
     fun append(text: AnnotatedString) {
         texts.add(AndroidStringText.Annotated(text))
     }
     /**
-     * 通过 Android 资源 ID 加载字符串
+     * Loads a string from an Android resource ID
      */
     fun append(@StringRes resId: Int) {
         texts.add(AndroidStringText.StringRes(resId, null))
     }
     /**
-     * 通过 Android 资源 ID 加载字符串，支持格式化参数
+     * Loads a string from an Android resource ID, supporting format args
      */
     fun append(@StringRes resId: Int, vararg args: Any) {
         texts.add(AndroidStringText.StringRes(resId, args))
     }
     /**
-     * 追加另一个字符串代理对象
+     * Appends another string proxy
      */
     fun append(other: AndroidStringText) {
         texts.add(other)
     }
     /**
-     * 构建 [AndroidStringText.Appended] 实例
+     * Builds an [AndroidStringText.Appended] instance
      */
     fun build(): AndroidStringText = AndroidStringText.Appended(texts.toList())
 }
@@ -185,10 +185,10 @@ class AndroidStringTextBuilder {
 
 
 /**
- * 用于展示 [AndroidStringText] 的 Composable 组件
+ * A Composable for displaying an [AndroidStringText]
  *
- * 该组件是对 [Text] 的封装，能够根据 [AndroidStringText] 的具体类型
- * 自动选择合适的方式进行渲染
+ * A wrapper over [Text]; picks the right renderer per [AndroidStringText] class
+ * variant automatically
  */
 @Composable
 fun AndroidStringText(
@@ -230,7 +230,7 @@ fun AndroidStringText(
 }
 
 /**
- * 将 [AndroidStringText] 解析为 [AnnotatedString]
+ * Resolves an [AndroidStringText] into an [AnnotatedString]
  */
 @Composable
 fun resolveAndroidString(text: AndroidStringText): AnnotatedString {
@@ -265,9 +265,9 @@ fun resolveAndroidString(text: AndroidStringText): AnnotatedString {
 }
 
 /**
- * 在非 Composable 环境中将 [AndroidStringText] 解析为 [String]
+ * Resolves an [AndroidStringText] into a [String] outside Composable contextsng]
  *
- * @param context Android [Context]，用于加载 [AndroidStringText.StringRes] 类型的字符串资源
+ * @param context the Android [Context] used to load [AndroidStringText.StringRes] string resources
  */
 fun AndroidStringText.toAndroidString(context: Context): String = when (this) {
     is AndroidStringText.Text -> value

@@ -56,7 +56,7 @@ fun SendKeycodeOperation(
             )
             DisposableEffect(Unit) {
                 onDispose {
-                    //停止所有的按键事件
+                    //Stop all key events
                     pressedEvents.forEach { keyString ->
                         lwjglEvent(keyString, isMouse = false, isPressed = false)
                     }

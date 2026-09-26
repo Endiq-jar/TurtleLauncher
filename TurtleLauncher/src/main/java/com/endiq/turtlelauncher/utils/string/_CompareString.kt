@@ -85,56 +85,56 @@ fun naturalCompare(a: String, b: String): Int {
 }
 
 /**
- * 与另一个版本比较
+ * Compares against another version
  */
 fun String.compareVersion(otherVer: String): Int {
     return ComparableVersion(this).compareTo(ComparableVersion(otherVer))
 }
 
 /**
- * 是否等于另一个版本（版本语义一致即可）
+ * Whether it equals another version (same version semantics)
  */
 fun String.isVersionEqualTo(otherVer: String): Boolean {
     return ComparableVersion(this) == ComparableVersion(otherVer)
 }
 
 /**
- * 是否大于等于另一个版本
+ * Whether ≥ another version
  */
 fun String.isBiggerOrEqualTo(otherVer: String): Boolean {
     return ComparableVersion(this) >= ComparableVersion(otherVer)
 }
 
 /**
- * 是否大于另一个版本
+ * Whether > another version
  */
 fun String.isBiggerTo(otherVer: String): Boolean {
     return ComparableVersion(this) > ComparableVersion(otherVer)
 }
 
 /**
- * 是否小于等于另一个版本
+ * Whether ≤ another version
  */
 fun String.isLowerOrEqualTo(otherVer: String): Boolean {
     return ComparableVersion(this) <= ComparableVersion(otherVer)
 }
 
 /**
- * 是否小于另一个版本
+ * Whether < another version
  */
 fun String.isLowerTo(otherVer: String): Boolean {
     return ComparableVersion(this) < ComparableVersion(otherVer)
 }
 
 /**
- * 是否等于另一个版本
+ * Whether it equals another version
  */
 fun String.isEqualTo(otherVer: String): Boolean {
     return ComparableVersion(this) == ComparableVersion(otherVer)
 }
 
 /**
- * 是否在某个版本区间之内（闭区间）
+ * Whether inside a version interval (closed)
  */
 fun String.isBetween(min: String, max: String): Boolean {
     val ver = ComparableVersion(this)
@@ -142,7 +142,7 @@ fun String.isBetween(min: String, max: String): Boolean {
 }
 
 /**
- * 是否是早于某个主版本的大版本变更（比如用于判定是否是 1.13 以前）
+ * Whether it's an earlier major-version change (e.g. judging pre-1.13)
  */
 fun String.isBeforeMajorVersion(major: Int): Boolean {
     val majorVersion = this.split('.').firstOrNull()?.toIntOrNull() ?: return false

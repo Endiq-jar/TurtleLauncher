@@ -34,11 +34,11 @@ import dagger.hilt.android.AndroidEntryPoint
 private const val BUNDLE_THROWABLE = "BUNDLE_THROWABLE"
 
 /**
- * 用于显示致命崩溃信息的 Activity
+ * Activity for showing fatal crash info
  *
- * 此 Activity 会向用户展示一个 AlertDialog，详细说明崩溃情况
+ * It shows the user an AlertDialog detailing the crash,
  *
- * 它被设计为与主启动器相互独立，以确保即使启动器本身出现严重问题，也能正常显示该界面
+ * and stays independent from the main launcher, so it displays properly even when the launcher itself breaks badly
  */
 @AndroidEntryPoint
 class FatalErrorActivity : AbstractAppCompatActivity() {
@@ -66,7 +66,7 @@ class FatalErrorActivity : AbstractAppCompatActivity() {
 }
 
 /**
- * 使用指定的 throwable 显示致命错误界面
+ * Shows the fatal error screen for the given throwable
  */
 fun showFatalError(context: Context, throwable: Throwable) {
     val intent = Intent(context, FatalErrorActivity::class.java).apply {

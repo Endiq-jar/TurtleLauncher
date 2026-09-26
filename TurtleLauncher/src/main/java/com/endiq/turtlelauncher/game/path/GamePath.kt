@@ -27,16 +27,16 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "gamePaths")
 data class GamePath(
     /**
-     * 单项唯一ID
+     * Unique ID of one entry
      */
     @PrimaryKey
     val id: String,
     /**
-     * Game directories的标题
+     * The game directory's title
      */
     var title: String,
     /**
-     * 目标路径
+     * Target path
      */
     val path: String
 )

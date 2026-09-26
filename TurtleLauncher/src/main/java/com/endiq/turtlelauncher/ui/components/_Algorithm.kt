@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 
 /**
- * 根据屏幕高度，以特定比例计算最大高度
+ * Computes a maximum height as a fraction of screen height
  */
 @Composable
 fun rememberMaxHeight(fraction: Float = 3f / 5f): Dp {
@@ -42,7 +42,7 @@ fun rememberMaxHeight(fraction: Float = 3f / 5f): Dp {
 }
 
 /**
- * 根据屏幕宽度，以特定比例计算最大宽度
+ * Computes a maximum width as a fraction of screen width
  */
 @Composable
 fun rememberMaxWidth(fraction: Float = 3f / 4f): Dp {

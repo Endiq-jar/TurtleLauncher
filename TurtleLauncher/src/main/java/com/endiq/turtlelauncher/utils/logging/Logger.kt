@@ -51,7 +51,7 @@ object Logger : CoroutineScope {
     private lateinit var PACKAGE_PREFIX: String
 
     /**
-     * 当前进程的标识
+     * The current process's tag
      */
     private lateinit var PROCESS_TAG: String
     private val isInitialized = AtomicBoolean(false)
@@ -76,8 +76,8 @@ object Logger : CoroutineScope {
         launch(Dispatchers.IO) {
             setupLogWriter()
 
-            //由于安卓不存在“退出”这种设置
-            //所以清理旧的日志的工作需要放到初始化阶段
+            //Android has no concept of "exit",
+            //so old-log cleanup runs during init
             deleteOldLogs()
 
             printLauncherInfo()
@@ -87,7 +87,7 @@ object Logger : CoroutineScope {
     }
 
     /**
-     * 获取当前进程标识
+     * Gets the current process's tag
      */
     private fun getProcessTag(context: Context): String {
         val processName = context.applicationInfo.processName
@@ -146,7 +146,7 @@ object Logger : CoroutineScope {
     private fun handleLogMessage(message: LogMessage) {
         val formatted = formatMessage(message)
 
-        //输出到 Logcat
+        //Print into Logcat
         printToLogcat(message.level, formatted)
 
         logWriter?.apply {
@@ -196,7 +196,7 @@ object Logger : CoroutineScope {
     private suspend fun deleteOldLogs() = withContext(Dispatchers.IO) {
         PathManager.DIR_LAUNCHER_LOGS.listFiles()?.let { files ->
             val cutoff = System.currentTimeMillis() - logRetentionDays * 86400000L
-            //清理遗留的 0kb 空日志
+            //Cleanup leftover 0kb empty logs
             val emptyLogCutoff = System.currentTimeMillis() - 60 * 1000L
             files.filter {
                 it.lastModified() < cutoff ||
@@ -220,7 +220,7 @@ object Logger : CoroutineScope {
         log(Level.DEBUG, tag, msg, t)
 
     /**
-     * 输出日志
+     * Prints a log
      */
     fun log(level: Level, tag: String, message: String, throwable: Throwable? = null) {
         if (!isInitialized.get()) return
@@ -239,7 +239,7 @@ object Logger : CoroutineScope {
     }
 
     /**
-     * 打包所有日志文件
+     * Packs all log files
      */
     suspend fun pack(target: File) {
         withContext(Dispatchers.IO) {

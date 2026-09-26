@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.ui.control.gamepad
 
 /**
- * 摇杆类型，用于区分事件来自左摇杆还是右摇杆
+ * Joystick type, telling left-stick events from right-stick events
  */
 enum class JoystickType {
     Left, Right

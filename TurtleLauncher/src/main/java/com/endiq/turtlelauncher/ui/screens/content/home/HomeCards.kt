@@ -39,14 +39,14 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.ui.components.BackgroundCard
 import com.endiq.turtlelauncher.ui.screens.content.home.version.VersionCardContent
 
-/** 系统卡片（不可变更），由启动器自行提供并绘制在网格之外 */
+/** System cards (fixed), provided by the launcher itself and drawn outside the grid */
 class SystemCard(val id: String, val content: @Composable () -> Unit)
 
 /**
- * 主页卡片注册表
+ * Home card registry
  */
 object HomeCards {
-    /** 版本卡片的类型 id */
+    /** The version card's type id */
     const val VERSION_CARD_TYPE_ID = "version_card"
 
     private val versionCardType = CardType(
@@ -62,13 +62,13 @@ object HomeCards {
         }
     )
 
-    /** 版本卡片类型 */
+    /** Version card type */
     fun versionCardType(): CardType = versionCardType
 
-    /** 用户卡片类型注册表 */
+    /** User card type registry */
     val userCardTypes: List<CardType> = listOf(versionCardType)
 
-    /** 系统卡片（不可变更） */
+    /** System cards (fixed) */
     fun systemCards(): List<SystemCard> = buildList {
         if (BuildConfig.DEBUG) {
             add(debugWarningCard())
@@ -76,7 +76,7 @@ object HomeCards {
     }
 
     /**
-     * debug版本关不掉的警告，防止有人把测试版当正式版用 XD
+     * Debug-only undismissable warning, keeping test builds from posing as stable XD
      */
     private fun debugWarningCard() = SystemCard(id = "system_debug_warning") {
         BackgroundCard(

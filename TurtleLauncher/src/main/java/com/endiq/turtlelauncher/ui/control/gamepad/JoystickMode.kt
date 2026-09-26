@@ -21,11 +21,11 @@ package com.endiq.turtlelauncher.ui.control.gamepad
 import com.endiq.turtlelauncher.R
 
 /**
- * 摇杆控制模式
+ * Joystick control mode
  */
 enum class JoystickMode(val titleRes: Int, val summaryRes: Int) {
     /**
-     * 使用左摇杆控制移动，右摇杆控制视角
+     * Left stick moves, right stick steers the camera
      */
     LeftMovement(
         titleRes = R.string.settings_gamepad_joystick_mode_left,
@@ -33,7 +33,7 @@ enum class JoystickMode(val titleRes: Int, val summaryRes: Int) {
     ),
 
     /**
-     * 使用右摇杆控制移动，左摇杆控制视角
+     * Right stick moves, left stick steers the camera
      */
     RightMovement(
         titleRes = R.string.settings_gamepad_joystick_mode_right,

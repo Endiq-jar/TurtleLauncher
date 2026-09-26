@@ -55,8 +55,8 @@ import com.endiq.turtlelauncher.utils.math.subtractBigDecimal
 import java.text.DecimalFormat
 
 /**
- * 简单的文本滑动条，支持实时显示当前滑动条的数值，支持显示自定义数值的单位
- * @param shorter 是否使用更短的指示器的滑动条
+ * Simple text slider with a live value bubble, supporting custom value units
+ * @param shorter whether the shorter thumb style is used
  */
 @Composable
 fun SimpleTextSlider(
@@ -89,10 +89,10 @@ fun SimpleTextSlider(
     }
 
     LaunchedEffect(Unit) {
-        //检查值是否被刻意的修改为超出范围
+        //Check whether the value was deliberately pushed out of range
         if (value !in valueRange) {
             val newValue = value.coerceIn(valueRange)
-            //调回范围内
+            //Pull it back in range
             changeValue(newValue, true)
         }
     }
@@ -208,9 +208,9 @@ fun IndicatorSlider(
     @IntRange(from = 0) steps: Int = 0,
     colors: SliderColors = SliderDefaults.colors()
 ) {
-    /** Slider顶部需要裁切的像素 */
+    /** Pixels to clip at the slider top */
     val sliderTopCut = with(LocalDensity.current) { 8.dp.toPx().toInt() }
-    /** Slider底部需要裁切的像素 */
+    /** Pixels to clip at the slider bottom */
     val sliderBottomCut = with(LocalDensity.current) { 6.dp.toPx().toInt() }
     Layout(
         modifier = modifier,

@@ -104,7 +104,7 @@ class SplashActivity : BaseAppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
 
-        //若依赖未完成，暂存外部导入，待依赖完成后处理
+        //If dependencies aren't ready, stash the external import until they finish
         if (!areAllTasksFinished()) {
             if (isImportIntent(intent) && !isLauncherIntent(intent)) {
                 pendingImportIntent = intent
@@ -158,7 +158,7 @@ class SplashActivity : BaseAppCompatActivity() {
     }
 
     private fun checkAllTask() {
-        //检查应用 assets 目录
+        //Check the app assets directory
         listAssetsPath("runtimes").forEach { filePath ->
             Logger.info(TAG, "The launcher contains the runtime environment: $filePath")
         }
@@ -219,7 +219,7 @@ class SplashActivity : BaseAppCompatActivity() {
             jobs.joinAll()
         }.invokeOnCompletion {
             AllSettings.javaRuntime.apply {
-                //检查并设置默认的Java环境
+                //Check and set the default Java environment
                 if (getValue().isEmpty()) save(Jre.JRE_8.jreName)
             }
             finishSplash()
@@ -282,7 +282,7 @@ class SplashActivity : BaseAppCompatActivity() {
             return false
         } else {
             try {
-                //可持久化访问授权
+                //Persistable access grant
                 contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } catch (_: Exception) {
                 Logger.warning(TAG, "No persistable permission granted for $uri")
@@ -303,7 +303,7 @@ class SplashActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 根据 AndroidManifest 内为 activity-alias 配置的 meta-data 来判断导入类型
+     * Reads the meta-data configured for the activity-alias in AndroidManifest.xml to determine the import type
      */
     private fun resolveImportType(intent: Intent): String {
         val comp = intent.component ?: return IMPORT_TYPE_UNKNOWN

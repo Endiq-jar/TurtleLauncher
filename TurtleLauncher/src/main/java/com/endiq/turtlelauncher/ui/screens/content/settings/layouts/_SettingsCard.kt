@@ -40,11 +40,11 @@ import com.endiq.turtlelauncher.ui.components.BackgroundCard
 import com.endiq.turtlelauncher.ui.components.TitleAndSummary
 
 /**
- * 根据卡片在UI组中的位置，选择不同的圆角形状
+ * Picks different corner shapes by the card's position in its UI group
  */
 enum class CardPosition {
     /**
-     * 位于 UI 组的顶部
+     * At the top of the UI group
      * ``` txt
      *   _______
      *  +       +
@@ -57,7 +57,7 @@ enum class CardPosition {
     Top,
 
     /**
-     * 位于 UI 组的顶部左侧
+     * At the top-left of the UI group
      * ``` txt
      *   ________
      *  +        |
@@ -70,7 +70,7 @@ enum class CardPosition {
     TopStart,
 
     /**
-     * 位于 UI 组的顶部右侧
+     * At the top-right of the UI group
      * ``` txt
      *  ________
      * |        +
@@ -83,7 +83,7 @@ enum class CardPosition {
     TopEnd,
 
     /**
-     * 位于 UI 组的中部
+     * At the middle of the UI group
      * ``` txt
      *  _________
      * |         |
@@ -96,7 +96,7 @@ enum class CardPosition {
     Middle,
 
     /**
-     * 位于 UI 组的底部
+     * At the bottom of the UI group
      * ``` txt
      *  _________
      * |         |
@@ -109,7 +109,7 @@ enum class CardPosition {
     Bottom,
 
     /**
-     * 位于 UI 组的底部左侧
+     * At the bottom-left of the UI group
      * ``` txt
      *  _________
      * |         |
@@ -122,7 +122,7 @@ enum class CardPosition {
     BottomStart,
 
     /**
-     * 位于 UI 组的底部右侧
+     * At the bottom-right of the UI group
      * ``` txt
      *  _________
      * |         |
@@ -135,7 +135,7 @@ enum class CardPosition {
     BottomEnd,
 
     /**
-     * 单个 UI 组件
+     * A standalone UI component
      * ``` txt
      *   _______
      *  +       +
@@ -149,7 +149,7 @@ enum class CardPosition {
 }
 
 /**
- * 根据 UI 组件在组中的位置决定的形状
+ * The shape chosen by the component's position in its group
  */
 @Composable
 fun rememberSettingsCardShape(

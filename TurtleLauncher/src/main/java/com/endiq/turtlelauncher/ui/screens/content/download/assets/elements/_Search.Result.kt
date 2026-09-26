@@ -108,10 +108,10 @@ sealed interface SearchAssetsState {
 }
 
 /**
- * 资源Search results展示列表
- * @param swapToDownload 跳转到下载详情页
- * @param installedInfo 查询项目本地是否已安装，键为平台与平台项目ID
- * @param onNavigatePage 导航到指定页面
+ * Resource search results list
+ * @param swapToDownload jumps to the download detail page
+ * @param installedInfo checks local install state, keyed by platform and project ID
+ * @param onNavigatePage navigates to a specific page
  */
 @Composable
 fun ResultListLayout(
@@ -146,7 +146,7 @@ fun ResultListLayout(
             val listState = rememberLazyListState()
             val maxCollapsePx = with(LocalDensity.current) { controllerHeight.toPx() }
 
-            //计算缩放比例，滑动偏移限制在0 ~ maxCollapsePx之间
+            //Compute the scale, clamping slide offset to 0..maxCollapsePx
             val fraction by remember {
                 derivedStateOf {
                     val index = listState.firstVisibleItemIndex
@@ -250,7 +250,7 @@ private fun PageController(
             ) {
                 var number by remember { mutableIntStateOf(page.pageNumber) }
                 var numberText by remember { mutableStateOf("${page.pageNumber}") }
-                //编辑页码
+                //Edit the page number
                 SmallOutlinedEditField(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -261,7 +261,7 @@ private fun PageController(
                     onValueChange = onValueChange@ { value ->
                         if (page.totalPage <= 0) return@onValueChange
                         val number0 = if (value.isEmptyOrBlank()) {
-                            1 //为了编辑体验，留空时视为1
+                            1 //blank input counts as 1 for editing comfort
                         } else {
                             value.toIntOrNull() ?: return@onValueChange
                         }
@@ -284,7 +284,7 @@ private fun PageController(
                 )
             }
 
-            //页码
+            //Page number
             AnimatedVisibility(
                 visible = !editPageNumber,
                 enter = expandHorizontally() + fadeIn(),
@@ -330,7 +330,7 @@ private fun PageController(
             }
 
             IconButton(
-                enabled = page.pageNumber > 1, //不是第一页
+                enabled = page.pageNumber > 1, //not the first page
                 onClick = {
                     onPreviousPage()
                     editPageNumber = false
@@ -343,7 +343,7 @@ private fun PageController(
             }
 
             IconButton(
-                enabled = !page.isLastPage, //不是最后一页
+                enabled = !page.isLastPage, //not the last page
                 onClick = {
                     onNextPage()
                     editPageNumber = false
@@ -476,7 +476,7 @@ fun ResultProjectLayout(
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    //描述
+                    //Description
                     Text(
                         modifier = Modifier.weight(1f),
                         text = description,
@@ -485,7 +485,7 @@ fun ResultProjectLayout(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    //下载量
+                    //Downloads
                     Row(
                         modifier = Modifier.alpha(0.7f),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -508,7 +508,7 @@ fun ResultProjectLayout(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    //标签栏
+                    //Tag bar
                     Row(
                         modifier = Modifier
                             .weight(1f)
@@ -534,7 +534,7 @@ fun ResultProjectLayout(
                         }
                     }
 
-                    //资源的类别
+                    //The resource's category
                     if (classes != null) {
                         ClassesIdentifier(classes = classes)
                     }
@@ -564,13 +564,13 @@ fun ProjectTitleHead(
     classes: PlatformClasses? = null,
     reserveAuthor: Boolean = false
 ) {
-    //标题栏、作者栏、平台标签
+    //Title bar, author bar, platform tags
     Row(
         modifier = modifier.height(IntrinsicSize.Min),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //标题栏、作者栏
+        //Title bar, author bar
         Row(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically,
@@ -600,7 +600,7 @@ fun ProjectTitleHead(
                 )
             }
             if (author == null && reserveAuthor) {
-                //作者信息缺失时保留占位
+                //Keep the placeholder when author info is missing
                 Text(
                     modifier = Modifier
                         .weight(0.4f, fill = false)
@@ -611,11 +611,11 @@ fun ProjectTitleHead(
                 )
             }
         }
-        //资源的类别
+        //The resource's category
         classes?.let {
             ClassesIdentifier(classes = it)
         }
-        //平台标签
+        //Platform tags
         PlatformIdentifier(platform = platform)
     }
 }

@@ -26,12 +26,12 @@ import com.endiq.turtlelauncher.game.download.assets.platform.modrinth.models.Mo
 import kotlinx.parcelize.Parcelize
 
 /**
- * 本地模组文件在平台上匹配到的安装信息
+ * Platform-matched install info of a local mod file
  * @param platform Owning platform
- * @param projectId 平台项目ID
- * @param versionId 平台版本（文件）ID
- * @param versionName 平台版本号
- * @param notFound 平台上是否存在该项目；作为指纹未命中时的负缓存标记
+ * @param projectId platform project ID
+ * @param versionId platform version (file) ID
+ * @param versionName platform version name
+ * @param notFound whether the project is absent from the platform; serves as the negative cache flag for fingerprint misses
  */
 @Parcelize
 data class InstalledMod(
@@ -43,7 +43,7 @@ data class InstalledMod(
 ) : Parcelable
 
 /**
- * 指纹匹配到的平台版本转换为本地安装信息
+ * Converts a fingerprint-matched platform version into local install info
  */
 fun PlatformVersion.toInstalledMod(): InstalledMod = when (this) {
     is ModrinthVersion -> InstalledMod(

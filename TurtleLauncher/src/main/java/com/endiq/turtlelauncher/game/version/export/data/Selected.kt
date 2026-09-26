@@ -19,10 +19,10 @@
 package com.endiq.turtlelauncher.game.version.export.data
 
 enum class Selected {
-    /** 全选 */
+    /** All */
     Selected,
-    /** 选择部分 */
+    /** Partial */
     Indeterminate,
-    /** 不选择 */
+    /** None */
     Unselected
 }

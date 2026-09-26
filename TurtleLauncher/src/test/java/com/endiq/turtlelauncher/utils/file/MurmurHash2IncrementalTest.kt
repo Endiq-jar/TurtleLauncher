@@ -61,7 +61,7 @@ class MurmurHash2IncrementalTest {
     }
 
     /**
-     * 参考实现：过滤字节后交由 commons-codec 整体哈希
+     * Reference implementation: filter bytes, then let commons-codec hash them whole
      */
     private fun referenceHash(file: File, byteToSkip: List<Int>): Long {
         val baos = ByteArrayOutputStream()
@@ -84,7 +84,7 @@ class MurmurHash2IncrementalTest {
     fun computeHashMatchesReference() {
         val byteToSkip = listOf(0x9, 0xa, 0xd, 0x20)
         val random = Random(seed = 42)
-        //覆盖空文件、块边界前后、以及大量需要剔除的字节等场景
+        //Covers empty files, block boundaries, and scenarios with many excluded bytes
         val sizes = intArrayOf(0, 1, 3, 4, 5, 8191, 8192, 8193, 100_003)
 
         val dir = createTempDirectory("murmur2-test").toFile()

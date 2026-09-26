@@ -80,8 +80,8 @@ import com.endiq.turtlelauncher.ui.theme.onItemColor
 import com.endiq.turtlelauncher.utils.animation.getAnimateTween
 
 /**
- * 新一代渲染器插件的环境变量配置对话框
- * @param units 该渲染器所有可配置的环境变量单元
+ * New-gen renderer plugin env var config dialog
+ * @param units all configurable env var units of this renderer
  */
 @Composable
 fun RendererV2ConfigDialog(
@@ -116,13 +116,13 @@ fun RendererV2ConfigDialog(
                     modifier = Modifier.padding(all = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    //标题
+                    //Title
                     MarqueeText(
                         text = stringResource(R.string.settings_renderer_config_title),
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    //配置项列表
+                    //Config item list
                     val scrollState = rememberLazyListState()
                     LazyColumn(
                         modifier = Modifier
@@ -168,7 +168,7 @@ fun RendererV2ConfigDialog(
                         }
                     }
 
-                    //底部按钮
+                    //Bottom buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
@@ -184,7 +184,7 @@ fun RendererV2ConfigDialog(
 }
 
 /**
- * Dialog 内使用的配置项基础布局
+ * Base layout of config items inside the dialog
  */
 @Composable
 private fun DialogItemLayout(
@@ -206,7 +206,7 @@ private fun DialogItemLayout(
 }
 
 /**
- * 选项式环境变量配置项
+ * Option-style env var config item
  */
 @Composable
 private fun SelectableEnvItem(
@@ -301,7 +301,7 @@ private fun SelectableEnvItem(
 }
 
 /**
- * 自由填写式环境变量配置项
+ * Free-form env var config item
  */
 @Composable
 private fun CustomizableEnvItem(
@@ -340,7 +340,7 @@ private fun CustomizableEnvItem(
 }
 
 /**
- * 开关式环境变量配置项
+ * Toggle-style env var config item
  */
 @Composable
 private fun ToggleableEnvItem(

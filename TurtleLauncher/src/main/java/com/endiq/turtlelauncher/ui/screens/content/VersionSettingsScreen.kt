@@ -120,16 +120,16 @@ import java.util.concurrent.TimeoutException
 
 private const val TAG = "VersionSettings"
 
-/** 更新加载器状态操作 */
+/** Update-loader state operations */
 private sealed interface UpdateLoaderOperation {
     data object None: UpdateLoaderOperation
-    /** 提醒加载器的变更情况 */
+    /** Remind about loader changes */
     data class Tip(val diffs: AddonDiffs, val info: GameDownloadInfo): UpdateLoaderOperation
-    /** 警告通知权限，可以无视，并直接开始安装 */
+    /** Notification permission warning; may be ignored to install directly */
     data class WarningForNotification(val diffs: AddonDiffs, val info: GameDownloadInfo): UpdateLoaderOperation
-    /** 开始安装 */
+    /** Install started */
     data object Install: UpdateLoaderOperation
-    /** 安装过程中出现异常 */
+    /** Exception during install */
     data class Error(val th: Throwable): UpdateLoaderOperation
 }
 
@@ -137,7 +137,7 @@ private class UpdateLoaderViewModel: ViewModel() {
     var installOperation by mutableStateOf<UpdateLoaderOperation>(UpdateLoaderOperation.None)
 
     /**
-     * 游戏安装器
+     * Game installer
      */
     var installer by mutableStateOf<GameInstaller?>(null)
 
@@ -310,7 +310,7 @@ private fun TabMenu(
         Spacer(modifier = Modifier.height(12.dp))
         settingItems.forEach { item ->
             if (item.key == NormalNavKey.Versions.UpdateLoader && !canUpdateLoader) {
-                //Unsupported自动更新安装，不放置“更新加载器/安装加载器”入口
+                //Auto-update unsupported: no "update loader / install loader" entries
                 return@forEach
             }
 
@@ -434,11 +434,11 @@ private fun NavigationUI(
                         version = version
                     ) { diffs, info ->
                         if (viewModel.installOperation !is UpdateLoaderOperation.None) {
-                            //不是待安装状态，拒绝此次安装
+                            //Not in pending-install state; refuse this install
                             return@UpdateLoaderScreen
                         }
                         if (!NotificationManager.checkNotificationEnabled(context)) {
-                            //警告通知权限
+                            //Warn about notification permission
                             viewModel.installOperation = UpdateLoaderOperation.WarningForNotification(diffs, info)
                         } else {
                             viewModel.installOperation = UpdateLoaderOperation.Tip(diffs, info)
@@ -592,7 +592,7 @@ private fun UpdateLoaderOperation(
                     ) {
                         Text(text = stringResource(R.string.versions_update_loader_diff_message))
 
-                        //格式化差异文本
+                        //Format the diff text
                         operation.diffs.list.forEach { diff ->
                             val modloader = diff.getLoader().displayName
                             val string = when (diff) {
@@ -629,7 +629,7 @@ private fun UpdateLoaderOperation(
                 val updateLoader by installer.tasksFlow.collectAsStateWithLifecycle()
                 val installLog = installer.logOutput.collectAsStateWithLifecycle()
                 if (updateLoader.isNotEmpty()) {
-                    //安装/变更加载器流程对话框
+                    //Install/change loader flow dialog
                     TitleTaskFlowDialog(
                         title = stringResource(R.string.versions_update_loader),
                         tasks = updateLoader,

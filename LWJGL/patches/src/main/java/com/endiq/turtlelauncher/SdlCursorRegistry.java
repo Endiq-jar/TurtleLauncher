@@ -42,7 +42,7 @@ public final class SdlCursorRegistry {
             case 8: return GLFW_RESIZE_NS_CURSOR;    // SDL_SYSTEM_CURSOR_NS_RESIZE
             case 9: return GLFW_RESIZE_ALL_CURSOR;   // SDL_SYSTEM_CURSOR_MOVE
             case 10: return GLFW_NOT_ALLOWED_CURSOR; // SDL_SYSTEM_CURSOR_NOT_ALLOWED
-            default: return GLFW_ARROW_CURSOR;       // DEFAULT/WAIT/PROGRESS/单边 resize 等
+            default: return GLFW_ARROW_CURSOR;       // DEFAULT/WAIT/PROGRESS/one-sided resize, etc.
         }
     }
 }

@@ -36,7 +36,7 @@ class EventViewModel : ViewModel() {
     val events = _events.asSharedFlow()
 
     /**
-     * 发送一个事件
+     * Posts an event
      */
     fun sendEvent(event: Event) {
         viewModelScope.launch {
@@ -46,80 +46,80 @@ class EventViewModel : ViewModel() {
 
     sealed interface Event {
         sealed interface Key : Event {
-            /** 让MainActivity开始按键捕获 */
+            /** Tell MainActivity to start key capture */
             data object StartKeyCapture : Key
-            /** 让MainActivity停止按键捕获 */
+            /** Tell MainActivity to stop key capture */
             data object StopKeyCapture : Key
-            /** 由MainActivity发送的按键捕获结果 */
+            /** Key capture result posted by MainActivity */
             data class OnKeyDown(val key: KeyEvent) : Key
         }
         sealed interface Game : Event {
-            /** 禁用/启用VMActivity按键处理 */
+            /** Disable/enable VMActivity key handling */
             data class KeyHandle(val handle: Boolean): Game
-            /** 呼出IME */
+            /** Summon the IME */
             data class SwitchIme(val mode: TextInputMode?) : Game
-            /** 刷新游戏画面分辨率 */
+            /** Refresh the game surface resolution */
             data object RefreshSize : Game
-            /** 用户按下系统返回键 */
+            /** The user pressed the system back key */
             data object OnBack : Game
             /** [com.endiq.turtlelauncher.game.launch.handler.AbstractHandler.onResume] */
             data object OnResume: Game
         }
         sealed interface Terracotta : Event {
-            /** 申请 VPN 权限 */
+            /** Request VPN permission */
             data object RequestVPN : Terracotta
-            /** 更新 VPN 状态文本 */
+            /** Update the VPN status text */
             data class VPNUpdateState(val stringRes: Int): Terracotta
-            /** 关停 VPN */
+            /** Shut the VPN down */
             data object StopVPN : Terracotta
         }
-        /** 启动游戏相关的事件 */
+        /** Game-launch-related events */
         sealed interface Launch : Event {
-            /** 主菜单的启动游戏 */
+            /** Main-menu game launch */
             data class Game(val version: Version?) : Launch
-            /** 快速启动游戏并进入服务器 */
+            /** Quick-launch the game into a server */
             data class PlayServer(val version: Version, val address: String): Launch
-            /** 快速启动游戏并进入存档 */
+            /** Quick-launch the game into a save */
             data class PlaySave(val version: Version, val saveName: String): Launch
         }
-        /** 检查更新 */
+        /** Check for updates */
         data object CheckUpdate : Event
-        /** 在浏览器访问链接 */
+        /** Open a link in the browser */
         data class OpenLink(val url: String) : Event
-        /** 让 MainActivity 防止熄屏 */
+        /** Make MainActivity keep the screen on */
         data class KeepScreen(val on: Boolean) : Event
-        /** 导入控制布局 */
+        /** Imports a control layout */
         data class ImportControls(val uris: List<Uri>) : Event
-        /** 打开下载插件的链接窗口 */
+        /** Open the plugin download link window */
         data class DownloadPlugins(val link: Links): Event {
             data class Links(
                 val github: String,
                 val cloudDrives: List<CloudDrive> = emptyList()
             )
             /**
-             * 网盘链接，按语言区分
-             * @param language 语言标识
-             * @param link 网盘链接
+             * Netdisk links, keyed by language
+             * @param language the language tag
+             * @param link the netdisk link
              */
             data class CloudDrive(
                 val language: String,
                 val link: String
             )
         }
-        /** 分享游戏日志 */
+        /** Share the game log */
         sealed interface LogShare : Event {
             data class ShareGameLog(val logFile: File) : LogShare
         }
-        /** 设备 Vulkan 检查 */
+        /** Device Vulkan check */
         data class VulkanCheck(val version: Version): Event
 
-        /** 在 MainActivity 中显示 Toast */
+        /** Show a Toast inside MainActivity */
         data class ShowToast(
             val text: AndroidStringText,
             val duration: Int = Toast.LENGTH_SHORT
         ) : Event
 
-        /** 打开文件管理器 */
+        /** Open the file manager */
         data class OpenFileManager(
             val rootPath: String,
             val currentPath: String? = null,

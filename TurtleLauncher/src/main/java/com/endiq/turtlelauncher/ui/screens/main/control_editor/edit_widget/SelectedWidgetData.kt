@@ -22,9 +22,9 @@ import com.endiq.layer_controller.observable.ObservableControlLayer
 import com.endiq.layer_controller.observable.ObservableWidget
 
 /**
- * 将在组件编辑对话框中编辑的组件
- * @param data 要编辑的组件
- * @param layer 该组件所属的控件层
+ * The component being edited in the edit dialog
+ * @param data the component to edit
+ * @param layer the widget layer the component belongs to
  */
 data class SelectedWidgetData(
     val data: ObservableWidget,

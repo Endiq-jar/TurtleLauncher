@@ -100,7 +100,7 @@ fun artifactToPath(library: GameManifest.Library): String? {
     if (library.isNative) run {
         val natives = library.natives ?: return@run
         if (natives.isNotEmpty()) {
-            //Android，在这里使用Linux
+            //Android counts as Linux here
             val native = natives[OperatingSystem.Linux] ?: return@run
             classifier = "-$native"
         }
@@ -133,7 +133,7 @@ private fun updateLibrary(
         path = replacement.newPath
         sha1 = replacement.newSha1
         url = replacement.newUrl
-        //新版本的大小与旧版本必然不同，残留旧值会令下载器提前截断文件
+        //The new version's size necessarily differs; a stale value would make the downloader truncate the file early
         if (replacement.newSize > 0) size = replacement.newSize
     }
 }

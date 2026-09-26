@@ -32,7 +32,7 @@ object MurmurHash2Incremental {
     }
 
     /**
-     * 已知过滤后长度时的哈希计算，避免为统计长度而重复扫描文件
+     * Hash computation with the filtered length known upfront, avoiding re-scanning files just to count
      */
     fun computeHash(
         file: File,
@@ -42,7 +42,7 @@ object MurmurHash2Incremental {
     ): Long = computeHashInternal(file, skipTable(byteToSkip), filteredLength, seed)
 
     /**
-     * 跳过字节的 256 长度查找表，逐字节判断时避免装箱与线性查找
+     * A 256-entry lookup table of skipped bytes, avoiding boxing and linear scans in per-byte checks
      */
     private fun skipTable(byteToSkip: List<Int>): BooleanArray =
         BooleanArray(256).also { table -> byteToSkip.forEach { table[it] = true } }
@@ -82,7 +82,7 @@ object MurmurHash2Incremental {
                     val b = buf[i]
                     val value = b.toInt() and 0xFF
 
-                    //跳过指定字节
+                    //Skip the given bytes
                     if (skipTable[value]) continue
 
                     buffer[bufferIndex++] = b

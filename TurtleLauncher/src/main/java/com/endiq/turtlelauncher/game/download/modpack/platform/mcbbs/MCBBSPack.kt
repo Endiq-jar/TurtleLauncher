@@ -79,7 +79,7 @@ class MCBBSPack(
                     targetVersionName = waitForVersionName(manifest.name)
                 }
 
-                //提取整合包文件
+                //Extract modpack files
                 addTask(
                     id = "ImportModpack.ExtractFiles",
                     title = androidText(R.string.import_modpack_task_extract_files),
@@ -109,7 +109,7 @@ class MCBBSPack(
                         customVersionName = targetVersionName
                     )
 
-                    //构建模组加载器安装信息
+                    //Build mod loader install info
                     manifest.addons.forEach { addon ->
                         with(manifest) { addon.retrieveLoader() }?.let { pair ->
                             pair.retrieveLoader(
@@ -180,15 +180,15 @@ class MCBBSPack(
 
             //Create version info
             VersionConfig.createIsolation(targetClientDir).apply {
-                //游戏参数
+                //Game arguments
                 manifest.launchInfo.launchArguments?.joinToString(" ")?.let { arg ->
                     this.gameArgs = arg
                 }
-                //Jvm 参数
+                //JVM arguments
                 manifest.launchInfo.javaArguments?.joinToString(" ")?.let { arg ->
                     this.jvmArgs = arg
                 }
-                //内存配置
+                //Memory configuration
                 this.ramAllocation = manifest.launchInfo.minMemory
                 this.versionSummary = manifest.description
             }.save()

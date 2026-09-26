@@ -32,7 +32,7 @@ class ServerAddress(
     val port: Int = DEFAULT_PORT
 ) : Parcelable {
     /**
-     * 尝试获取为国际化域名（IDN）
+     * Tries obtaining the internationalized domain (IDN)
      */
     fun getASCIIHost(default: String = host): String {
         return try {
@@ -50,9 +50,9 @@ class ServerAddress(
             require(address.isNotEmpty()) { "Address cannot be empty" }
             
             return when {
-                //处理 IPv6 地址 -> [host]:port
+                //Handle IPv6 addresses -> [host]:port
                 address.startsWith('[') -> parseIPv6(address)
-                //普通 host:port 格式
+                //Normal host:port format
                 ':' in address -> parseWithPort(address)
                 else -> ServerAddress(address, DEFAULT_PORT)
             }

@@ -106,8 +106,8 @@ private fun List<String>.rememberCardPosition(
 }
 
 /**
- * 填写整合包配置信息
- * @param onFinishClick 结束编辑
+ * Editing the modpack configuration
+ * @param onFinishClick finishes editing
  */
 @Composable
 fun ExportInfoScreen(
@@ -134,7 +134,7 @@ fun ExportInfoScreen(
             contentPadding = PaddingValues(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) { scope ->
-            //整合包名称/版本编辑
+            //Modpack name/version editing
             animatedItem(scope) { yOffset ->
                 Row(
                     modifier = Modifier
@@ -233,7 +233,7 @@ fun ExportInfoScreen(
             }
 
             if (info.packType.options.requireGameArgs) {
-                //游戏参数
+                //Game arguments
                 animatedItem(scope) { yOffset ->
                     TextInputSettingsCard(
                         modifier = Modifier
@@ -253,7 +253,7 @@ fun ExportInfoScreen(
             }
 
             if (info.packType.options.requireJavaArgs) {
-                //Java虚拟机参数
+                //JVM arguments
                 animatedItem(scope) { yOffset ->
                     TextInputSettingsCard(
                         modifier = Modifier
@@ -273,7 +273,7 @@ fun ExportInfoScreen(
             }
 
             if (info.packType.options.requireWebsiteUrl) {
-                //整合包官方网站
+                //Modpack official website
                 animatedItem(scope) { yOffset ->
                     TextInputSettingsCard(
                         modifier = Modifier
@@ -293,7 +293,7 @@ fun ExportInfoScreen(
             }
 
             if (info.packType.options.requireMinMemory) {
-                //最小内存
+                //Minimum memory
                 animatedItem(scope) { yOffset ->
                     var memory by remember(info) { mutableIntStateOf(info.minMemory) }
 
@@ -317,7 +317,7 @@ fun ExportInfoScreen(
             }
 
             if (info.packType.options.requireMaxMemory) {
-                //最大内存
+                //Maximum memory
                 animatedItem(scope) { yOffset ->
                     var memory by remember(info) { mutableIntStateOf(info.maxMemory) }
 
@@ -341,7 +341,7 @@ fun ExportInfoScreen(
             }
 
             if (info.packType.options.requirePackModrinth) {
-                //是否打包 Modrinth 的远程资源
+                //Whether to bundle Modrinth remote resources
                 animatedItem(scope) { yOffset ->
                     SwitchSettingsCard(
                         modifier = Modifier
@@ -361,7 +361,7 @@ fun ExportInfoScreen(
             }
 
             if (info.packType.options.requirePackCurseForge) {
-                //是否打包 CurseForge 的远程资源
+                //Whether to bundle CurseForge remote resources
                 animatedItem(scope) { yOffset ->
                     val enabled = remember(info) {
                         info.packType == PackType.CurseForge ||
@@ -390,7 +390,7 @@ fun ExportInfoScreen(
                 }
             }
 
-            //导出按钮
+            //Export button
             animatedItem(scope) { yOffset ->
                 Column(
                     modifier = Modifier
@@ -407,7 +407,7 @@ fun ExportInfoScreen(
                         }
                     }
 
-                    //对于打包远端资源的提示
+                    //Hint about bundling remote resources
                     AnimatedVisibility(
                         visible = packRemote
                     ) {

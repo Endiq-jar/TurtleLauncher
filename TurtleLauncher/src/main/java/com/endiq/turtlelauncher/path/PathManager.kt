@@ -127,10 +127,10 @@ class PathManager {
         }
 
         /**
-         * 处理历史遗留的旧文件
+         * Handles legacy old files
          */
         private fun handleLegacy() {
-            //不再支持的共用游戏运行日志
+            //The shared game run log is no longer supported
             File(DIR_FILES_EXTERNAL, LogName.GAME.fileName).takeIf { it.exists() }?.let {
                 FileUtils.deleteQuietly(it)
             }

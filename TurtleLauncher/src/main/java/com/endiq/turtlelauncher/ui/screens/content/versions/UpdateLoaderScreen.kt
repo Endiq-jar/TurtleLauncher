@@ -87,9 +87,9 @@ data class AddonDiffs(
     }
 
     /**
-     * 差异: 模组Loader version
-     * @param original 当前版本使用的版本
-     * @param updateTo 要变更的版本
+     * Difference: mod loader version
+     * @param original the version currently used
+     * @param updateTo the version to switch to
      */
     data class VersionChangeDiff(
         val modloader: ModLoader,
@@ -100,7 +100,7 @@ data class AddonDiffs(
     }
 
     /**
-     * 差异: 移除模组加载器
+     * Difference: the mod loader is removed
      */
     data class RemoveDiff(
         val modloader: ModLoader
@@ -109,8 +109,8 @@ data class AddonDiffs(
     }
 
     /**
-     * 差异: 载入新模组加载器
-     * @param version 要安装的版本
+     * Difference: a new mod loader is installed
+     * @param version the version to install
      */
     data class NewLoadDiff(
         val modloader: ModLoader,
@@ -121,7 +121,7 @@ data class AddonDiffs(
 }
 
 /**
- * 生成模组Loader version差异信息
+ * Builds the mod loader version difference info
  */
 private fun CurrentAddon.generateDiff(
     loaderInfo: VersionInfo.LoaderInfo?
@@ -160,7 +160,7 @@ private fun CurrentAddon.generateDiff(
         error("The launcher does not support automatically downloading this loader: ${currentLoader.displayName}")
     }
 
-    //当前加载器的变更
+    //Changes to the current loader
     if (currentAddonVersion == null) {
         diffs.add(AddonDiffs.RemoveDiff(modloader = currentLoader))
     } else {
@@ -173,7 +173,7 @@ private fun CurrentAddon.generateDiff(
         )
     }
 
-    //新载入加载器的变更情况
+    //Changes for the newly installed loader
     loaderVersions.forEach { (loader, version) ->
         if (loader != currentLoader && version != null) {
             diffs.add(
@@ -198,19 +198,19 @@ private class AddonsViewModel(
     val addonList = AddonList()
     val currentAddon = CurrentAddon()
 
-    /** 是否已经找到游戏使用的模组Loader version */
+    /** Whether the game's mod loader was identified */
     private var isLoaderVersionFound: Boolean = false
-    /** 所有加载器是否都已经完成初始化 */
+    /** Whether every loader finished initializing */
     var isLoaded by mutableStateOf(false)
         private set
-    /** 是否允许用户点击更新按钮 */
+    /** Whether the user may tap the update button */
     var canUpdate by mutableStateOf(false)
         private set
 
     private suspend fun updateLoadedState() {
         mutex.withLock {
             if (isLoaded) return@withLock
-            //已经找到游戏使用的模组加载器，或者所有的模组加载器列表都加载完成
+            //The game's loader was identified, or every loader list finished loading
             val isLoaded0 = isLoaderVersionFound || buildList {
                 add(currentAddon.forgeState)
                 if (loaderSupports.isNeoForgeSupports) {
@@ -236,7 +236,7 @@ private class AddonsViewModel(
 
     fun checkCanUpdate() {
         if (!isLoaded) {
-            //初始化未完成
+            //Initialization incomplete
             canUpdate = false
             return
         }
@@ -261,13 +261,13 @@ private class AddonsViewModel(
         }.isEmpty()
 
         if (loaderInfo == null) {
-            //如果当前版本没有加载器，则根据当前是否选择加载器决定
+            //Without a loader on the version, decide by whether the user picked one
             canUpdate = !unselectedLoader
             return
         }
 
         if (unselectedLoader) {
-            //用户没有选择任何加载器
+            //The user picked no loader
             canUpdate = false
             return
         }
@@ -283,13 +283,13 @@ private class AddonsViewModel(
         }
 
         if (version == null) {
-            //如果加载器对应版本为空，则说明用户更改了游戏模组加载器，允许更新
+            //An empty loader version means the user switched loaders, so allow the update
             canUpdate = true
             return
         }
 
-        //对比模组加载器与游戏的模组加载器的版本
-        //能否更新取决于是否有做修改
+        //Compare the picked loader version with the game's own loader version
+        //Whether updating is allowed depends on actual changes
         canUpdate = !version.isVersion(loaderInfo.version)
     }
 
@@ -409,8 +409,8 @@ private class AddonsViewModel(
     }
 
     /**
-     * 后续如果有加载失败希望重载的列表时，使用这个函数进行单独重载。
-     * 重新检查并应用加载成功的状态
+     * Call this to reload an individually failed list later.
+     * Rechecks and applies the loaded state
      */
     private fun reloadSingleAndCheck(
         block: suspend () -> Unit
@@ -422,7 +422,7 @@ private class AddonsViewModel(
     }
 
     /**
-     * 一次性加载全部的模组Loader version列表
+     * Loads every mod loader version list in one shot
      */
     private fun reloadAllLoaders() {
         viewModelScope.launch {
@@ -475,7 +475,7 @@ private class AddonsViewModel(
 }
 
 /**
- * 更新模组加载器
+ * Updates the mod loader
  */
 @Composable
 fun UpdateLoaderScreen(
@@ -489,8 +489,8 @@ fun UpdateLoaderScreen(
         version.getVersionInfo() ?: error("Using the \"Loader Update Screen\" is not supported for versions with unspecified version information.")
     }
     if (versionInfo.loaderInfo?.loader?.autoDownloadable == false) {
-        //Unsupported自动安装，不允许进入这个屏幕
-        //理论上不会走到这里，以防万一，这里进行兜底
+        //Automatic install unsupported: forbid entering this screen
+        //Unreachable in theory; kept as a safety net
         backToMainScreen()
         return
     }

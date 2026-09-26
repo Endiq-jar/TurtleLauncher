@@ -66,7 +66,7 @@ import com.endiq.turtlelauncher.utils.logging.Logger
 private const val TAG = "AssetsCommonElements"
 
 /**
- * 本地已安装标识
+ * Locally installed badge
  */
 @Composable
 fun InstalledModBadge(
@@ -92,7 +92,7 @@ fun InstalledModBadge(
 }
 
 /**
- * 平台标识元素，展示平台Logo + 平台名称
+ * Platform badge element: platform logo + name
  */
 @Composable
 fun PlatformIdentifier(
@@ -117,7 +117,7 @@ fun PlatformIdentifier(
 }
 
 /**
- * 获取平台的LOGO
+ * Returns the platform's logo
  */
 fun Platform.getDrawable() = when (this) {
     Platform.CURSEFORGE -> R.drawable.img_platform_curseforge
@@ -125,7 +125,7 @@ fun Platform.getDrawable() = when (this) {
 }
 
 /**
- * 平台品牌卡片背景色，取自平台官方LOGO主色
+ * Platform brand card background, from the platform logo's main color
  */
 fun Platform.getBrandColor(): Color = when (this) {
     Platform.CURSEFORGE -> Color(0xFFF16436)
@@ -133,7 +133,7 @@ fun Platform.getBrandColor(): Color = when (this) {
 }
 
 /**
- * 平台品牌卡片内容色
+ * Platform brand card content color
  */
 fun Platform.getBrandContentColor(): Color = when (this) {
     Platform.CURSEFORGE -> Color.White
@@ -141,7 +141,7 @@ fun Platform.getBrandContentColor(): Color = when (this) {
 }
 
 /**
- * 资源类型标识元素
+ * Resource type badge element
  */
 @Composable
 fun ClassesIdentifier(
@@ -217,7 +217,7 @@ private fun BasicIdentifier(
 }
 
 /**
- * 资源封面网络图标
+ * Resource cover icon from the network
  * @param iconUrl Icon URL
  */
 @Composable
@@ -235,7 +235,7 @@ fun AssetsIcon(
         iconUrl?.takeIf { it.isNotBlank() }?.let {
             ImageRequest.Builder(context)
                 .data(it)
-                .size(pxSize) //固定大小
+                .size(pxSize) //fixed size
                 .listener(
                     onError = { _, result -> Logger.warning(TAG, "Coil: error = ${result.throwable}") }
                 )
@@ -244,7 +244,7 @@ fun AssetsIcon(
         }
     }
 
-    //预加载
+    //Preload
     LaunchedEffect(imageRequest) {
         imageRequest?.let { context.imageLoader.enqueue(it) }
     }
@@ -282,9 +282,9 @@ fun AssetsIcon(
 }
 
 /**
- * 整合包格式标识元素，展示格式图标 + 格式名称
+ * Pack format badge element: format icon + name
  *
- * 以Image展示图标
+ * Renders the icon with Image
  */
 @Composable
 fun PackIdentifier(

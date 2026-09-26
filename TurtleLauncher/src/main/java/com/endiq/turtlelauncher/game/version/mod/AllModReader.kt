@@ -50,16 +50,16 @@ class AllModReader(val modsDir: File) {
     }
 
     /**
-     * 异步读取所有模组文件，将其包装为支持同步远端项目数据的对象
+     * Asynchronously reads all mod files, wrapping them into objects that can sync remote project data
      */
     suspend fun readAllForRemote(): List<RemoteMod> = withContext(Dispatchers.IO) {
-        //扫描文件，封装任务
+        //Scan files and wrap the task
         val results = readAllMods { RemoteMod(localMod = it) }
         return@withContext results.sortedBy { it.localMod.file.name }
     }
 
     /**
-     * 异步读取所有模组文件，获取所有本地模组信息
+     * Asynchronously reads all mod files, gathering all local mod info
      */
     suspend fun readAllLocals(): List<LocalMod> = withContext(Dispatchers.IO) {
         readAllMods { it }
@@ -68,7 +68,7 @@ class AllModReader(val modsDir: File) {
     private suspend fun <T> readAllMods(
         pack: (LocalMod) -> T
     ): List<T> = withContext(Dispatchers.IO) {
-        //扫描文件，封装任务
+        //Scan files and wrap the task
         val tasks = scanFiles(pack)
 
         buildList {
@@ -114,7 +114,7 @@ class AllModReader(val modsDir: File) {
                     }.onFailure { e ->
                         if (e !is UnpackZipException) Log.d(TAG, "Exception encountered while parsing the mod", e)
                     }.getOrNull()
-                    //返回null，继续使用下一个解析器
+                    //null: fall through to the next parser
                 } ?: throw IllegalArgumentException("No matching reader for extension: $extension")
             } catch (e: Exception) {
                 when (e) {

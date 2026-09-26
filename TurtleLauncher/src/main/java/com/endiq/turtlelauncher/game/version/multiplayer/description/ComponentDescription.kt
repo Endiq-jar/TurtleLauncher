@@ -35,7 +35,7 @@ private fun flattenComponents(
 }
 
 /**
- * 文本组件列表式服务器描述
+ * Server description as a list of text components
  */
 @Serializable
 data class ComponentDescriptionRoot(
@@ -52,16 +52,16 @@ data class ComponentDescriptionRoot(
 }
 
 /**
- * 文本组件式服务器描述
- * [参考实现 WIKI](https://zh.minecraft.wiki/w/%E6%96%87%E6%9C%AC%E7%BB%84%E4%BB%B6#%E5%9F%BA%E7%A1%80%E7%BB%93%E6%9E%84)（仅部分实现）
- * @param text 这个组件的实际文本
- * @param color 控制这个文本组件的颜色，为 null 代表使用系统默认颜色
- * @param bold 控制这个文本组件是否为粗体
- * @param italic 控制这个文本组件是否为斜体
- * @param underlined 控制这个文本组件是否带有下划线
- * @param strikethrough 控制这个文本组件是否带有删除线
- * @param obfuscated 控制这个文本组件是否渲染为随机字符
- * @param extra 此文本组件的子组件，子组件自动继承父组件的文本属性（仅子组件未定义的属性）
+ * Server description as text components
+ * [Reference implementation WIKI](https://minecraft.wiki/w/Text_component_format) (partial implementation)
+ * @param text the component's actual text
+ * @param color the component's color; null uses the system default
+ * @param bold whether the component is bold
+ * @param italic whether the component is italic
+ * @param underlined whether the component is underlined
+ * @param strikethrough whether the component is struck through
+ * @param obfuscated whether the component renders as random characters
+ * @param extra child components; children inherit only the parent's undefined text properties
  */
 @Serializable
 data class ComponentDescription(

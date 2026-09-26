@@ -72,7 +72,7 @@ fun DownloadSavesScreen(
 
     val context = LocalContext.current
 
-    //下载资源操作
+    //Resource download operations
     var operation by remember { mutableStateOf<DownloadSingleOperation>(DownloadSingleOperation.None) }
     DownloadSingleOperation(
         operation = operation,

@@ -46,5 +46,4 @@ Legend: ✅ already present · ➕ added in this round · ❌ missing (candidate
 - Deleted: `api.github.com/repos/ZalithLauncher/Zalith-Info/...` usage, miawa Zalith-info mirror, the MovTery afdian link and the donation-nag dialog.
 - Temporarily disabled: the bangbang93 afdian donation button (card kept, `button = {}` + comment) – re-enable by restoring the `Button` in `AboutInfoScreen.kt`.
 - All BMCL mirror endpoints (`bmclapi2.bangbang93.com`) intentionally kept: they are download mirrors for Chinese users, not donation links.
-- English-sweep: all CJK string literals + ~450 highest-traffic source comments translated; locale data files (`mod_data.txt`, `modpack_data.txt`, `default_layout.json` matchQueues) intentionally kept bilingual.
-README: remaining CJK code comments (~7k lines, deep internals) are queued for follow-up translation batches.
+- English-sweep: **complete** — every CJK line is now translated across the whole repo (app main + tests, all library modules, and LWJGL patches): verified programmatically at 0 remaining CJK code/comment lines. CJK-in-resources is limited to intentional items: `values/chinese_festivals.xml` is translated, only `translatable="false"` language display names keep native script by design, and mod/modpack locale data assets plus `default_layout.json` locale match-keys stay bilingual on purpose.

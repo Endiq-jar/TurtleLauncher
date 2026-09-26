@@ -87,7 +87,7 @@ class GameLauncher(
 
     private val version = config.version
     private val usingAccount = if (version.offlineAccountLogin) {
-        //使用临时离线账号启动游戏
+        //Launch the game with a temporary offline account
         config.account.copy(
             accountType = AccountType.LOCAL.tag
         )
@@ -106,7 +106,7 @@ class GameLauncher(
 
         val manifest = GSON.fromJson(File(version.getVersionPath(), "${version.getVersionName()}.json").readText(), GameManifest::class.java)
         val clientJar = manifest.inheritsFrom?.let { inheritsFrom ->
-            //FIXME: 依赖的是一个原版ID的版本，但这个版本可能是用户自行安装的，只是Version name与ID一致，不保证客户端真的是对应版本
+            //FIXME: relies on a vanilla-ID version the user may have installed themselves with only a matching name; the client isn't guaranteed to be that version
             version.getInheritedClientJar(inheritsFrom)
         } ?: version.getClientJar()
 
@@ -156,7 +156,7 @@ class GameLauncher(
         //Jna
         jnaDir?.let { dir ->
             val dirPath = dir.absolutePath
-            put("jna.boot.library.path", dirPath) //覆盖父类添加的jna路径
+            put("jna.boot.library.path", dirPath) //override the jna path added by the parent
         }
     }
 
@@ -188,7 +188,7 @@ class GameLauncher(
         super.dlopenEngine()
         appendTitle("DLOPEN Renderer")
 
-        //声音引擎加载后，dlopen渲染器的库
+        //After the sound engine loads, dlopen the renderer library
         RendererPluginManager.selectedRendererPlugin?.let { renderer ->
             val libs by renderer.getDlopenLibrary()
             libs.forEach { libPath ->
@@ -221,7 +221,7 @@ class GameLauncher(
 
         disableSplash(gameDirPath)
 
-        //初始化运行环境
+        //Initialize the runtime environment
         this.runtime = runtime
         val launchArgs = LaunchArgs(
             runtimeLibraryPath = getRuntimeLibraryPath(),
@@ -293,9 +293,9 @@ class GameLauncher(
     }
 
     /**
-     * 获取Java运行环境名称，
-     * 如果版本独立设置了运行环境，则直接选定它；
-     * 如果版本未设置，则根据全局设置或自动选择
+     * Returns the Java runtime name:
+     * when the version pins its own runtime, that one is selected directly;
+     * otherwise it follows the global setting or auto-selection.
      */
     private fun getRuntime(): String {
         val versionRuntime = version.getJavaRuntime().takeIf { it.isNotEmpty() } ?: ""
@@ -306,14 +306,14 @@ class GameLauncher(
 
         if (AllSettings.autoPickJavaRuntime.getValue()) {
             val loaderInfo = version.getVersionInfo()?.loaderInfo
-            //开启了自动选择，根据游戏需求的版本做选择
+            //Auto-selection enabled: pick per the version the game needs
             val targetJavaVersion = when (loaderInfo?.loader) {
-                ModLoader.BABRIC -> 17 //Babric 推荐使用 17
+                ModLoader.BABRIC -> 17 //Babric recommends 17
                 ModLoader.CLEANROOM -> {
                     if (loaderInfo.version.isBiggerTo("0.4.4-alpha")) {
-                        25 //0.5.0-alpha 及以上要求使用 25
+                        25 //0.5.0-alpha and up require 25
                     } else {
-                        21 //0.4.4-alpha 及以下要求使用 21
+                        21 //0.4.4-alpha and below require 21
                     }
                 }
                 else -> gameManifest.javaVersion?.majorVersion ?: 8
@@ -333,7 +333,7 @@ class GameLauncher(
     }
 
     /**
-     * 禁用Forge的启动屏幕
+     * Disables Forge's loading screen
      * [Modified from PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/blob/a6f3fc0/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/Tools.java#L372-L391)
      */
     private fun disableSplash(dir: File) {
@@ -374,7 +374,7 @@ private fun setRendererEnv(envMap: MutableMap<String, String>) {
     val renderer = Renderers.getCurrentRenderer()
     val rendererId = renderer.getRendererId()
 
-    // SDL 环境变量
+    // SDL environment variables
     envMap["SDL_OPENGL_LIBRARY"] = rendererId
 
     if (rendererId.startsWith("opengles2")) {
@@ -390,7 +390,7 @@ private fun setRendererEnv(envMap: MutableMap<String, String>) {
     renderer.getRendererEGL()?.let { eglName ->
         envMap["POJAVEXEC_EGL"] = eglName
 
-        // 指定 SDL EGL
+        // Designate SDL EGL
         val nativeLibPath = if (renderer is Plugin) {
             renderer.getNativeLibPath()
         } else {

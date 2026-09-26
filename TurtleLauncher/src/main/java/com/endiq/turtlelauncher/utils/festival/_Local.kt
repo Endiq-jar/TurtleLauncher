@@ -21,7 +21,7 @@ package com.endiq.turtlelauncher.utils.festival
 import androidx.compose.runtime.compositionLocalOf
 
 /**
- * 提供今天的节日信息
+ * Provides today's festival info
  */
 val LocalFestivals = compositionLocalOf<List<Festival>> {
     error("No Festivals provided")

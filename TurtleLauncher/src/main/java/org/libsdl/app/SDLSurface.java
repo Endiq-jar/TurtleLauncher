@@ -116,7 +116,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         SDLActivity.getSDLSurface().surfaceCreated(null);
     }
 
-    /** 清空静态 native surface 引用（SdlBridge teardown/reset 时调用） */
+    /** Clears static native surface refs (called on SdlBridge teardown/reset) */
     public static void clearNativeSurface() {
         mNativeSurface = null;
     }

@@ -136,7 +136,7 @@ class BatchDownloaderE2ETest {
             val failure = runCatching { batch.run() }.exceptionOrNull()
 
             assertTrue(failure is BatchDownloadException)
-            //两轮整批重试，404 每轮只请求一次
+            //Two full-batch retries; 404s request only once per round
             assertEquals(2, requestsSeen.get())
             assertEquals(setOf(missingFile.absolutePath), batch.lastRunFailures.keys)
             assertEquals(404, batch.lastRunFailures.values.first().findHttpCode())
@@ -164,7 +164,7 @@ class BatchDownloaderE2ETest {
 
             val failure = runCatching { batch.run() }.exceptionOrNull()
 
-            //10 个文件里只有少数被真正尝试，剩余的随熔断取消，不再空转
+            //Among 10 files only a few were attempted; the rest cancel on circuit-break, no spinning
             assertTrue(failure is BatchDownloadException)
             assertTrue(failure!!.message!!.contains("aborted"))
             assertTrue(requestsSeen.get() < 10)
@@ -195,7 +195,7 @@ class BatchDownloaderE2ETest {
 
             val failure = runCatching { batch.run() }.exceptionOrNull()
 
-            //有文件持续成功：不触发熔断，走常规失败聚合
+            //Files keep succeeding: no circuit-break, regular failure aggregation
             assertTrue(failure is BatchDownloadException)
             assertFalse(failure!!.message!!.contains("aborted"))
             assertEquals(6, batch.stats.downloadedFiles)

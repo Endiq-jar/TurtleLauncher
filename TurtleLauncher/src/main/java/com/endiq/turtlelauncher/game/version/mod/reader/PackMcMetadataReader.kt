@@ -106,7 +106,7 @@ object PackMcMetadataReader : ModMetadataReader {
     }
 
     /**
-     * 获取原始文件名，移除 .disabled 后缀
+     * Returns the original file name with the .disabled suffix removed
      */
     private fun getRawFileName(file: File): String {
         val fileName = file.name

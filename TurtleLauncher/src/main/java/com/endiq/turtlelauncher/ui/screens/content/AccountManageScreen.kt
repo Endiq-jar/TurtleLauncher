@@ -111,15 +111,15 @@ import com.endiq.turtlelauncher.viewmodel.LocalBackgroundViewModel
 import com.endiq.turtlelauncher.viewmodel.ScreenBackStackViewModel
 
 /**
- * 封装账号界面 UI 交互的回调函数
+ * Callbacks encapsulating the account screen's UI interactions
  * 
- * @property onIntent 发送 MVI Intent 到 ViewModel
- * @property openLink 打开外部链接
- * @property backToMainScreen 返回主界面
- * @property navigateToWeb 导航到应用内浏览器界面
- * @property checkIfInWebScreen 检查当前是否在浏览器界面中（用于微软登录逻辑判断）
- * @property formatError 格式化异常为本地化字符串
- * @property submitError 提交错误到全局错误展示系统
+ * @property onIntent sends MVI Intents to the ViewModel
+ * @property openLink opens external links
+ * @property backToMainScreen goes back to the home screen
+ * @property navigateToWeb navigates to the in-app browser screen
+ * @property checkIfInWebScreen whether we're on the browser screen (Microsoft login logic)
+ * @property formatError formats an exception into a localized string
+ * @property submitError submits errors to the global error display
  */
 private data class AccountActions(
     val onIntent: (AccountManageIntent) -> Unit,
@@ -132,24 +132,24 @@ private data class AccountActions(
 )
 
 /**
- * 进入账号管理器时，可附加的打开登录菜单选项
+ * Options to auto-open a login menu when entering the account manager
  */
 enum class FirstLoginMenu {
-    /** 不打开菜单 */
+    /** Don't open any menu */
     NONE,
-    /** 打开微软登录菜单 */
+    /** Open the Microsoft login menu */
     MICROSOFT,
-    /** 打开总登录菜单 */
+    /** Open the combined login menu */
     NORMAL
 }
 
 /**
- * 账号管理主界面
+ * Account management main screen
  *
- * @param backStackViewModel 屏幕堆栈管理器
- * @param backToMainScreen 返回主屏幕的回调
- * @param openLink 外部链接跳转回调
- * @param submitError 全局错误提交回调
+ * @param backStackViewModel the screen back stack manager
+ * @param backToMainScreen back-to-home callback
+ * @param openLink external link callback
+ * @param submitError global error submission callback
  */
 @Composable
 fun AccountManageScreen(
@@ -221,7 +221,7 @@ fun AccountManageScreen(
 }
 
 /**
- * 账号管理界面的实际内容布局
+ * Account management screen content layout
  */
 @Composable
 private fun AccountManageContent(
@@ -270,7 +270,7 @@ private fun AccountManageContent(
 }
 
 /**
- * 左侧登录方式菜单组件
+ * Left login-method menu component
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -292,7 +292,7 @@ private fun ActionsLayout(
             .offset { IntOffset(x = xOffset.roundToPx(), y = 0) }
             .fillMaxHeight()
     ) {
-        //玩家模型预览
+        //Player model preview
         val refreshWardrobe by AccountsManager.refreshWardrobe.collectAsStateWithLifecycle()
         val accountSkin = remember(currentAccount, refreshWardrobe) {
             currentAccount?.getSkinFile()?.takeIf { it.exists() }
@@ -350,13 +350,13 @@ private fun ActionsLayout(
             }
         }
 
-        //添加账号
+        //Add an account
         ScalingActionButton(
             modifier = Modifier
                 .fillMaxWidth(),
             onClick = {
                 if (isOffline) {
-                    //非正版状态下，只允许创建微软账号
+                    //Non-genuine state: only Microsoft accounts may be created
                     actions.onIntent(AccountManageIntent.UpdateMicrosoftLoginOp(MicrosoftLoginOperation.Tip))
                 } else {
                     actions.onIntent(AccountManageIntent.UpdateLoginMenuOp(LoginMenuOperation.Login))
@@ -419,7 +419,7 @@ private fun LoginMenuOperation(
 }
 
 /**
- * 微软登录相关逻辑处理
+ * Microsoft login logic handling
  */
 @Composable
 private fun MicrosoftLoginOperation(
@@ -458,7 +458,7 @@ private fun MicrosoftLoginOperation(
 }
 
 /**
- * 离线账号登录相关逻辑处理
+ * Offline account login logic handling
  */
 @Composable
 private fun LocalLoginOperation(
@@ -538,7 +538,7 @@ private fun LocalLoginOperation(
 }
 
 /**
- * 第三方验证服务器登录逻辑处理
+ * Third-party auth server login logic handling
  */
 @Composable
 private fun OtherLoginOperation(
@@ -612,7 +612,7 @@ private fun OtherLoginOperation(
 }
 
 /**
- * 验证服务器管理操作逻辑处理
+ * Auth server management logic handling
  */
 @Composable
 private fun ServerTypeOperation(
@@ -672,7 +672,7 @@ private fun ServerTypeOperation(
 }
 
 /**
- * 账号列表组件
+ * Account list component
  */
 @Composable
 private fun AccountsLayout(
@@ -723,7 +723,7 @@ private fun AccountsLayout(
                             .padding(vertical = 6.dp),
                         currentAccount = currentAccount,
                         account = account,
-                        enabled = !isOffline, //非正版状态下不允许选择任何状态
+                        enabled = !isOffline, //non-genuine state forbids picking anything
                         onSelected = { AccountsManager.setCurrentAccount(it) },
                         openChangeSkinDialog = {
                             if (!account.isAuthServerAccount()) {
@@ -766,7 +766,7 @@ private fun AccountsLayout(
 }
 
 /**
- * 账号皮肤操作逻辑处理
+ * Account skin operation logic handling
  */
 @Composable
 private fun AccountSkinOperation(
@@ -826,7 +826,7 @@ private fun AccountSkinOperation(
 }
 
 /**
- * 通用账号管理操作逻辑处理（如删除确认）
+ * Generic account management logic handling (e.g. delete confirmation)
  */
 @Composable
 private fun AccountOperation(

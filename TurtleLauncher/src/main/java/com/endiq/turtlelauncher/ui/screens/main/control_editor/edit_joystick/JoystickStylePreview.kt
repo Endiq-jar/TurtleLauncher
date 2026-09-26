@@ -46,7 +46,7 @@ private fun Color.applyAlpha(multiplier: Float): Color {
 }
 
 /**
- * 决定使用哪个主题配置
+ * Picks the theme config to use
  */
 fun resolveThemeConfig(
     style: ObservableJoystickStyle,
@@ -111,7 +111,7 @@ private fun outlineToPath(outline: Outline): Path {
 }
 
 /**
- * 简单的摇杆样式预览渲染，不包含任何交互逻辑
+ * Simple joystick style preview rendering, without any interaction logic
  */
 @Composable
 fun JoystickStylePreview(

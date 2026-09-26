@@ -34,12 +34,12 @@ import java.util.Base64
 private const val TAG = "ServerData"
 
 /**
- * Minecraft 服务器主要信息数据类
- * @param name 由玩家定义的服务器名称
- * @param originIp 玩家填写的原始服务器ip地址
- * @param texturePackStatus 服务器的纹理包启用状态
- * @param acceptedCodeOfConduct 是否已接受服务器代码条款
- * @param icon 服务器保存在本地的图标
+ * Core data class of a Minecraft server
+ * @param name the player-defined server name
+ * @param originIp the raw server IP the player entered
+ * @param texturePackStatus the server's texture pack status
+ * @param acceptedCodeOfConduct whether the server code of conduct was accepted
+ * @param icon the server icon saved locally
  */
 data class ServerData(
     var name: String,
@@ -53,15 +53,15 @@ data class ServerData(
     ) {
         ENABLED(1),
         DISABLED(0),
-        /** 提示用户启用纹理包 */
+        /** Prompt the user to enable texture packs */
         PROMPT(null)
     }
 
     sealed interface Operation {
         data object Loading : Operation
-        /** 服务器加载成功 */
+        /** Server loaded successfully */
         data class Loaded(val result: ServerPingResult) : Operation
-        /** 无法连接至服务器 */
+        /** Cannot connect to the server */
         data object Failed : Operation
     }
 
@@ -72,8 +72,8 @@ data class ServerData(
         private set
 
     /**
-     * 尝试 Ping 这个服务器
-     * @param requestSave 请求保存整个服务器列表
+     * Tries to ping this server
+     * @param requestSave requests saving the whole server list
      */
     suspend fun load(
         requestSave: (reason: String) -> Unit = {}
@@ -89,9 +89,9 @@ data class ServerData(
             val result = pingServer(resolvedAddress)
 
             val icon0 = result.status.favicon?.icon
-            //检查远端返回的图标是否和本地保存的不同
+            //Check whether the server-returned icon differs from the locally saved one
             val isDifferentIcon = icon0 != null && !icon0.contentEquals(icon)
-            //如果不同，则应用新的图标，并发起保存请求
+            //If so, apply the new icon and request a save
             if (isDifferentIcon) {
                 icon = icon0
                 withContext(Dispatchers.Main) {

@@ -1,6 +1,6 @@
 package org.lwjgl.openal.jsound;
 
-/** 极简日志输出到 stdout/stderr，随游戏日志被启动器一并捕获。 */
+/** Minimal logging to stdout/stderr, captured by the launcher alongside game logs. */
 final class JSoundLog {
 
     private JSoundLog() {

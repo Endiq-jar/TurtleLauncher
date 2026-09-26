@@ -22,24 +22,24 @@ import com.endiq.turtlelauncher.utils.string.stripColorCodes
 import java.io.File
 
 /**
- * 资源包信息类
+ * Resource pack info class
  */
 data class ResourcePackInfo(
-    /** 资源包文件 */
+    /** The resource pack file */
     val file: File,
-    /** 提前计算好的文件大小（文件夹形式的资源包不计算文件大小） */
+    /** Precomputed file size (folder resource packs have no computed size) */
     val fileSize: Long? = null,
-    /** 清除颜色替换符后的文件名 */
+    /** File name with color codes stripped */
     val rawName: String = file.name.stripColorCodes(),
-    /** 显示名称（如果是压缩包类型的资源包，将被去掉扩展名） */
+    /** Display name (archive resource packs have their extension removed) */
     val displayName: String = if (file.isDirectory) file.name else file.nameWithoutExtension,
-    /** 资源包是否有效 */
+    /** Whether the resource pack is valid */
     val isValid: Boolean,
-    /** 资源包的描述信息 */
+    /** The resource pack's description */
     val description: String?,
-    /** 资源包的格式版本 */
+    /** The resource pack's format version */
     val packFormat: Int?,
-    /** 资源包的图标 */
+    /** The resource pack's icon */
     val icon: ByteArray?
 ) {
     override fun equals(other: Any?): Boolean {

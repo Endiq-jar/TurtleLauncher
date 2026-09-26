@@ -19,6 +19,6 @@
 package com.endiq.turtlelauncher.game.version.multiplayer.description
 
 /**
- * 服务器描述文本
+ * Server description text
  */
 interface ServerDescription

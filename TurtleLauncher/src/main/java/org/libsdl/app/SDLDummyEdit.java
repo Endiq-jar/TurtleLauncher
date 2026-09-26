@@ -38,7 +38,7 @@ public class SDLDummyEdit extends View implements View.OnKeyListener
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (!SdlImeController.isInputAccepted()) {
-            //文本输入通道关闭后，编辑文本的view不应再参与输入
+            //With the channel closed, the editing view no longer joins input
             SdlImeController.requestHide(SdlImeController.Source.BACK);
             return true;
         }

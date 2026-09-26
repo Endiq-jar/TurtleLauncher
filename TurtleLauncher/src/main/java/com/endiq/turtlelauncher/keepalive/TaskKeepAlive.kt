@@ -34,11 +34,11 @@ import kotlin.time.Duration.Companion.milliseconds
 private const val TAG = "TaskKeepAlive"
 
 /**
- * 任务保活控制器
+ * Task keep-alive controller
  */
 object TaskKeepAlive {
     /**
-     * 所有任务结束后的延迟停止时间，避免连续任务之间出现空隙导致服务频繁启停
+     * Delayed stop after all tasks end, so back-to-back tasks don't churn the service on and off
      */
     private const val STOP_DELAY_MS = 1_500L
 
@@ -46,12 +46,12 @@ object TaskKeepAlive {
     private val activeCount = AtomicInteger(0)
     private var stopJob: Job? = null
 
-    /** 应用级 Context，在 Application 启动时赋值，可能被其他线程读取 */
+    /** App-level Context, assigned at Application startup; may be read by other threads */
     @Volatile
     private var appContext: Context? = null
 
     /**
-     * 当前持有保活的任务数量
+     * Number of tasks currently holding keep-alive
      */
     val count: Int get() = activeCount.get()
 
@@ -61,22 +61,22 @@ object TaskKeepAlive {
     }
 
     /**
-     * 申请保活，每调用一次 [acquire]，都必须对应调用一次 [release]
-     * 只要任务被提交/任务流开始执行就会立即拉起前台服务，与任务是否真的在下载无关
+     * Acquires keep-alive; every [acquire] call must be paired with a [release]
+     * The foreground service starts as soon as a task submits, regardless of whether it's actually downloading
      */
     @JvmStatic
     @Synchronized
     fun acquire() {
         val count = activeCount.incrementAndGet()
-        //有新任务加入，取消待执行的停止
+        //A new task joined: cancel the pending stop
         stopJob?.cancel()
         stopJob = null
-        //首个任务立即拉起服务，确保应用即将退至后台时也能拿到前台身份
+        //The first task starts the service immediately, ensuring foreground identity even if the app backgrounds
         if (count == 1) startService()
     }
 
     /**
-     * 释放保活
+     * Releases keep-alive
      */
     @JvmStatic
     @Synchronized
@@ -86,7 +86,7 @@ object TaskKeepAlive {
     }
 
     /**
-     * 立即停止保活并清空计数，用于Stops all tasks、应用崩溃等场景
+     * Immediately stops keep-alive and clears the count; used for stop-all-tasks, app crashes, etc.
      */
     @JvmStatic
     @Synchronized
@@ -101,7 +101,7 @@ object TaskKeepAlive {
         stopJob?.cancel()
         stopJob = scope.launch {
             delay(STOP_DELAY_MS.milliseconds)
-            //延迟期间可能又有新任务加入
+            //New tasks may join during the delay
             if (activeCount.get() == 0) stopService()
         }
     }
@@ -118,7 +118,7 @@ object TaskKeepAlive {
                 Intent(context, TaskKeepAliveService::class.java)
             )
         }.onFailure { e ->
-            //应用处于后台等受限状态时系统会拒绝启动前台服务，此时忽略即可
+            //The system refuses foreground services when the app is backgrounded; just ignore that
             Logger.error(TAG, "Failed to start the task keep-alive service", e)
         }
     }

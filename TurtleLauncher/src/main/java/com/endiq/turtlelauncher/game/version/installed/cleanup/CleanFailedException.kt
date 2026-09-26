@@ -22,8 +22,8 @@ import java.io.File
 import java.io.IOException
 
 /**
- * 文件清理失败异常
- * @param files 无法清理的文件
+ * File cleanup failure exception
+ * @param files files that couldn't be cleaned
  */
 class CleanFailedException(
     val files: List<File>

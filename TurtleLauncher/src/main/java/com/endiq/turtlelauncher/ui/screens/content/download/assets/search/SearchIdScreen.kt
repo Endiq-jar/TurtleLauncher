@@ -101,36 +101,36 @@ private const val TAG = "SearchIdScreen"
 
 private sealed interface SearchIdOperation {
     data object None : SearchIdOperation
-    /** 加载项目中 */
+    /** Project loading */
     data object Loading : SearchIdOperation
-    /** 已获得Search results */
+    /** Search results obtained */
     data class Result(
         val project: PlatformProject,
         val mcMod: ModTranslations.McMod?,
         val mod: ModTranslations,
     ) : SearchIdOperation
 
-    /** 未找到该项目 */
+    /** Project not found */
     data object NotFound : SearchIdOperation
-    /** 项目类别不受支持 */
+    /** Unsupported project category */
     data object Unsupported : SearchIdOperation
 
-    /** 获取过程中出现异常 */
+    /** Exception while fetching */
     data class Error(val message: AndroidStringText) : SearchIdOperation
 }
 
 private class SearchIdViewModel: ViewModel() {
-    //fixme: 默认视为模组，通常情况下，获取到的项目会带有类别
+    //fixme: treated as a mod by default; fetched projects usually do carry a category
     val defaultClasses = PlatformClasses.MOD
 
     var projectId by mutableStateOf("")
     var platform by mutableStateOf(Platform.CURSEFORGE)
 
-    /** 搜索页面操作状态 */
+    /** Search page operation states */
     var operation by mutableStateOf<SearchIdOperation>(SearchIdOperation.None)
 
     private var searchJob: Job? = null
-    /** 开始按照ID搜索 */
+    /** Start searching by ID */
     fun search() {
         val id = projectId
         val platform0 = platform
@@ -412,7 +412,7 @@ private fun ResultLayout(
             )
         }
 
-        //项目相关链接、截图
+        //Project links and screenshots
         if (!urls.isAllNull()) {
             item {
                 val scale = remember { Animatable(initialValue = 0.95f) }

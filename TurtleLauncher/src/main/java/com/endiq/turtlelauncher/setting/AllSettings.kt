@@ -175,189 +175,189 @@ object AllSettings : SettingsRegistry() {
     val physicalMouseMode = boolSetting("physicalMouseMode", true)
 
     /**
-     * 按键键值，按下按键呼出输入法
+     * The key value; pressing it summons the IME
      */
     val physicalKeyImeCode = intSetting("physicalKeyImeCode", null)
 
     /**
-     * 隐藏虚拟鼠标
+     * Hides the virtual mouse
      */
     val hideMouse = boolSetting("hideMouse", false)
 
     /**
-     * 虚拟鼠标大小（Dp）
+     * Virtual mouse size (Dp)
      */
     val mouseSize = intSetting("mouseSize", 24, 5..50)
 
     /**
-     * 虚拟鼠标箭头热点坐标
+     * Virtual mouse arrow hotspot coordinates
      */
     val arrowMouseHotspot = parcelableSetting("arrowMouseHotspot", LEFT_TOP_HOTSPOT)
 
     /**
-     * 虚拟鼠标链接选择热点坐标
+     * Virtual mouse link-select hotspot coordinates
      */
     val linkMouseHotspot = parcelableSetting("linkMouseHotspot", CursorHotspot(xPercent = 23, yPercent = 0))
 
     /**
-     * 虚拟鼠标输入选择热点坐标
+     * Virtual mouse input-select hotspot coordinates
      */
     val iBeamMouseHotspot = parcelableSetting("iBeamMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标十字热点坐标
+     * Virtual mouse cross hotspot coordinates
      */
     val crossHairMouseHotspot = parcelableSetting("crossHairMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标Resize (vertical)热点坐标
+     * Virtual mouse vertical-resize hotspot coordinates
      */
     val resizeNSMouseHotspot = parcelableSetting("resizeNSMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标Resize (horizontal)热点坐标
+     * Virtual mouse horizontal-resize hotspot coordinates
      */
     val resizeEWMouseHotspot = parcelableSetting("resizeEWMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标Resize (all directions)热点坐标
+     * Virtual mouse all-directions-resize hotspot coordinates
      */
     val resizeAllMouseHotspot = parcelableSetting("resizeAllMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标Not allowed / invalid operation热点坐标
+     * Virtual mouse not-allowed hotspot coordinates
      */
     val notAllowedMouseHotspot = parcelableSetting("notAllowedMouseHotspot", CENTER_HOTSPOT)
 
     /**
-     * 虚拟鼠标灵敏度
+     * Virtual mouse sensitivity
      */
     val cursorSensitivity = intSetting("cursorSensitivity", 100, 25..300)
 
     /**
-     * 被抓获指针移动灵敏度
+     * Captured-pointer move sensitivity
      */
     val mouseCaptureSensitivity = intSetting("mouseCaptureSensitivity", 100, 25..300)
 
     /**
-     * 虚拟鼠标控制模式
+     * Virtual mouse control mode
      */
     val mouseControlMode = enumSetting("mouseControlMode", MouseControlMode.SLIDE)
 
     /**
-     * 鼠标控制长按延迟
+     * Mouse-control long-press delay
      */
     val mouseLongPressDelay = intSetting("mouseLongPressDelay", 300, 100..1000)
 
     /**
-     * 是否开启虚拟鼠标点击操作
+     * Whether virtual mouse click actions are enabled
      */
     val enableMouseClick = boolSetting("enableMouseClick", true)
 
     /**
-     * 是否启用手柄控制
+     * Whether gamepad control is enabled
      */
     val gamepadControl = boolSetting("gamepadControl", true)
 
     /**
-     * SDL 下是否允许自动唤起输入法
+     * Whether auto-summoning the IME is allowed under SDL
      */
     val sdlAutoShowIme = boolSetting("sdlAutoShowIme", true)
 
     /**
-     * 手柄输入模式（映射虚拟按键 / SDL 直通）
+     * Gamepad input mode (map virtual keys / SDL passthrough)
      */
     val gamepadInputMode = enumSetting("gamepadInputMode", GamepadInputMode.Mapped)
 
     /**
-     * 是否已完成手柄输入模式的选择询问
+     * Whether the gamepad input mode prompt has been answered
      */
     val gamepadInputModePrompted = boolSetting("gamepadInputModePrompted", false)
 
     /**
-     * 摇杆死区缩放
+     * Joystick deadzone scaling
      */
     val gamepadDeadZoneScale = intSetting("gamepadDeadZoneScale", 100, 50..200)
 
     /**
-     * 手柄映射配置
+     * Gamepad mapping config
      */
     val gamepadMappingConfig = stringSetting("gamepadMappingConfig", "default")
 
     /**
-     * 摇杆控制模式
+     * Joystick control mode
      */
     val joystickControlMode = enumSetting("joystickControlMode", JoystickMode.LeftMovement)
 
     /**
-     * 手柄摇杆控制鼠标指针时的灵敏度
+     * Gamepad joystick sensitivity when steering the mouse cursor
      */
     val gamepadCursorSensitivity = intSetting("gamepadCursorSensitivity", 100, 25..300)
 
     /**
-     * 手柄摇杆控制游戏视角时的灵敏度
+     * Gamepad joystick sensitivity when steering the game camera
      */
     val gamepadCameraSensitivity = intSetting("gamepadCameraSensitivity", 100, 25..300)
 
     /**
-     * 手势控制
+     * Gesture control
      */
     val gestureControl = boolSetting("gestureControl", false)
 
     /**
-     * 手势控制点击时触发的鼠标按钮
+     * The mouse button fires on a gesture-control tap
      */
     val gestureTapMouseAction = enumSetting("gestureTapMouseAction", GestureActionType.MOUSE_RIGHT)
 
     /**
-     * 手势控制长按时触发的鼠标按钮
+     * The mouse button fires on a gesture-control long-press
      */
     val gestureLongPressMouseAction = enumSetting("gestureLongPressMouseAction", GestureActionType.MOUSE_LEFT)
 
     /**
-     * 手势控制长按延迟
+     * Gesture-control long-press delay
      */
     val gestureLongPressDelay = intSetting("gestureLongPressDelay", 300, 100..1000)
 
     /**
-     * 陀螺仪控制
+     * Gyroscope control
      */
     val gyroscopeControl = boolSetting("gyroscopeControl", false)
 
     /**
-     * 陀螺仪控制灵敏度
+     * Gyroscope control sensitivity
      */
     val gyroscopeSensitivity = intSetting("gyroscopeSensitivity", 100, 25..300)
 
     /**
-     * 陀螺仪采样率
+     * Gyroscope sampling rate
      */
     val gyroscopeSampleRate = intSetting("gyroscopeSampleRate", 16, 5..50)
 
     /**
-     * 陀螺仪数值平滑
+     * Gyroscope value smoothing
      */
     val gyroscopeSmoothing = boolSetting("gyroscopeSmoothing", true)
 
     /**
-     * 陀螺仪平滑处理的窗口大小
+     * Window size for gyroscope smoothing
      */
     val gyroscopeSmoothingWindow = intSetting("gyroscopeSmoothingWindow", 4, 2..10)
 
     /**
-     * 反转 X 轴
+     * Invert the X axis
      */
     val gyroscopeInvertX = boolSetting("gyroscopeInvertX", false)
 
     /**
-     * 反转 Y 轴
+     * Invert the Y axis
      */
     val gyroscopeInvertY = boolSetting("gyroscopeInvertY", false)
 
     //Launcher
     /**
-     * 颜色主题色
-     * Android 12+ 默认动态主题色
+     * Color theme hue
+     * Android 12+ dynamic theme color by default
      */
     val launcherColorTheme = enumSetting(
         "launcherColorTheme",
@@ -366,97 +366,97 @@ object AllSettings : SettingsRegistry() {
     )
 
     /**
-     * 自定义颜色主题色
+     * Custom color theme hue
      */
     val launcherCustomColor = intSetting("launcherCustomColor", Color.Blue.toArgb())
 
     /**
-     * 自定义颜色配色风格
+     * Custom color palette style
      */
     val launcherCustomPaletteStyle = enumSetting("launcherCustomPaletteStyle", PaletteStyle.TonalSpot)
 
     /**
-     * 启动器UI深色主题
+     * Launcher UI dark theme
      */
     val launcherDarkMode = enumSetting("launcherDarkMode", DarkMode.FollowSystem)
 
     /**
-     * 启动器语言
+     * Launcher language
      */
     val launcherLanguage = enumSetting("launcherLanguage", AppLanguage.ENGLISH)
 
     /**
-     * 启动器部分屏幕全屏
+     * Launcher partial-screen fullscreen
      */
     val launcherFullScreen = boolSetting("launcherFullScreen", true)
 
     /**
-     * 通过 Shizuku 以 ADB 权限访问 Android/data 等受限目录
+     * Access Android/data and other restricted dirs via Shizuku with ADB privileges
      */
     val shizukuEnabled = boolSetting("shizukuEnabled", false)
 
     /**
-     * 访问 Android/data 时优先使用 Shizuku，而不是 SAF 目录授权
+     * Prefer Shizuku over SAF directory grants when accessing Android/data
      */
     val shizukuPreferOverSaf = boolSetting("shizukuPreferOverSaf", true)
 
     /**
-     * 持续型节日彩蛋效果
+     * Persistent holiday easter-egg effects
      */
     val launcherFestivalEffects = boolSetting("launcherFestivalEffects", true)
 
     /**
-     * 动画倍速
+     * Animation speed factor
      */
     val launcherAnimateSpeed = intSetting("launcherAnimateSpeed", 5, 0..10)
 
     /**
-     * 动画幅度
+     * Animation intensity
      */
     val launcherAnimateExtent = intSetting("launcherAnimateExtent", 5, 0..10)
 
     /**
-     * 启动器页面切换动画类型
+     * Launcher page transition animation type
      */
     val launcherSwapAnimateType = enumSetting("launcherSwapAnimateType", TransitionAnimationType.JELLY_BOUNCE)
 
     /**
-     * 主界面操作菜单的停泊侧
+     * Which side the home action menu docks to
      */
     val launcherActionMenuSide = enumSetting("launcherActionMenuSide", ActionMenuSide.END)
 
     /**
-     * 启动器背景元素不透明度
+     * Launcher background element opacity
      */
     val launcherBackgroundOpacity = intSetting("launcherBackgroundOpacity", 80, 20..100)
 
     /**
-     * 启动器视频背景音量
+     * Launcher video background volume
      */
     val videoBackgroundVolume = intSetting("videoBackgroundVolume", 0, 0..100)
 
     /**
-     * 启动器背景模糊效果
+     * Launcher background blur effect
      */
     val backgroundBlur = intSetting("backgroundBlur", 0, 0..40)
 
     /**
-     * 启动器背景模糊效果类型
+     * Launcher background blur type
      */
     val backgroundBlurType = enumSetting("backgroundBlurType", BackgroundBlur.Background)
 
     /**
-     * 启动器上次检查更新时，用户选择忽略的版本号
+     * The version the user chose to skip at the last update check
      */
     val lastIgnoredVersion = intSetting("lastIgnoredVersion", null)
 
     /**
-     * 启动器日志保留天数
+     * Launcher log retention days
      */
     val launcherLogRetentionDays = intSetting("launcherLogRetentionDays", 7, 1..14)
 
     /**
-     * 游戏内容下载源
+     * Game content download source
      */
     val gameDownloadSource = enumSetting(
         "gameDownloadSource",
@@ -465,7 +465,7 @@ object AllSettings : SettingsRegistry() {
     )
 
     /**
-     * 资源平台下载源
+     * Resource platform download source
      */
     val assetPlatformSource = enumSetting(
         "assetPlatformSource",
@@ -475,153 +475,153 @@ object AllSettings : SettingsRegistry() {
 
     //Control
     /**
-     * 全局默认控制布局文件名
+     * Global default control layout file name
      */
     val controlLayout = stringSetting("controlLayout", "")
 
     //Other
     /**
-     * 当前选择的账号
+     * Currently selected account
      */
     val currentAccount = stringSetting("currentAccount", "")
 
     /**
-     * 当前选择的Game directoriesid
+     * Currently selected game directoryid
      */
     val currentGamePathId = stringSetting("currentGamePathId", GamePathManager.DEFAULT_ID)
 
     /**
-     * 启动器任务菜单是否展开
+     * Whether the launcher task menu is expanded
      */
     val launcherTaskMenuExpanded = boolSetting("launcherTaskMenuExpanded", true)
 
     /**
-     * 在游戏菜单悬浮窗上显示帧率
+     * Show FPS on the in-game menu overlay
      */
     val showFPS = boolSetting("showFPS", true)
 
     /**
-     * 在游戏菜单悬浮窗上显示内存
+     * Show memory on the in-game menu overlay
      */
     val showMemory = boolSetting("showMemory", false)
 
     /**
-     * 在游戏画面上展示菜单悬浮窗
+     * Show the menu overlay on the game surface
      */
     val showMenuBall = boolSetting("showMenuBall", true)
 
     /**
-     * 游戏菜单悬浮窗位置
+     * In-game menu overlay position
      */
     val menuBallPos = offsetSetting("menuBallPos", Offset.Zero)
 
     /**
-     * 游戏菜单悬浮窗不透明度
+     * In-game menu overlay opacity
      */
     val menuBallOpacity = intSetting("menuBallOpacity", 100, 20..100)
 
     /**
-     * 快捷栏判定箱计算规则
+     * Hotbar hitbox computation rule
      */
     val hotbarRule = enumSetting("hotbarRule", HotbarRule.Auto)
 
     /**
-     * 快捷栏宽度百分比
+     * Hotbar width percentage
      */
     val hotbarWidth = intSetting("hotbarWidth", 500, 0..1000)
 
     /**
-     * 快捷栏高度百分比
+     * Hotbar height percentage
      */
     val hotbarHeight = intSetting("hotbarHeight", 100, 0..1000)
 
     /**
-     * 快捷栏双击与副手交换物品
+     * Hotbar double-tap swaps with the off-hand
      */
     val hotbarDoubleClick = boolSetting("hotbarDoubleClick", true)
 
     /**
-     * 快捷栏长按丢弃所选物品
+     * Hotbar long-press drops the selected item
      */
     val hotbarLongClick = boolSetting("hotbarLongClick", true)
 
     /**
-     * 快捷栏长按快捷栏触发延迟
+     * Hotbar long-press repeat trigger delay
      */
     val hotbarLongClickDelay = intSetting("hotbarLongClickDelay", 300, 100..1000)
 
     /**
-     * 游戏内控制布局的整体不透明度
+     * Overall opacity of the in-game control layout
      */
     val controlsOpacity = intSetting("controlsOpacity", 100, 0..100)
 
     /**
-     * 控制布局编辑器：是否开启控件吸附功能
+     * Control layout editor: whether widget snapping is enabled
      */
     val editorEnableWidgetSnap = boolSetting("editorEnableWidgetSnap", true)
 
     /**
-     * 控制布局编辑器：是否在所有控件层范围内吸附
+     * Control layout editor: whether snapping spans all widget layers
      */
     val editorSnapInAllLayers = boolSetting("editorSnapInAllLayers", false)
 
     /**
-     * 控制布局编辑器：控件Snap mode
+     * Control layout editor: widget snap mode
      */
     val editorWidgetSnapMode = enumSetting("editorWidgetSnapMode", SnapMode.FullScreen)
 
     /**
-     * 是否启用陶瓦联机
+     * Whether Terracotta multiplayer is enabled
      */
     val enableTerracotta = boolSetting("enableTerracotta", false)
 
     /**
-     * 是否使用自定义 EasyTier 服务器节点
+     * Whether to use a custom EasyTier server node
      */
     val enableTerracottaNodes = boolSetting("enableTerracottaNodes", false)
 
     /**
-     * 陶瓦联机：自定义 EasyTier 服务器节点
+     * Terracotta: custom EasyTier server node
      */
     val terracottaNodes = stringSetting("terracottaNodes", "")
 
     /**
-     * 陶瓦联机公告版本号
+     * Terracotta announcement version number
      */
     val terracottaNoticeVer = intSetting("terracottaNoticeVer", -1)
 
     /**
-     * 上次检查更新的时间戳
+     * Timestamp of the last update check
      */
     val lastUpgradeCheck = longSetting("lastUpgradeCheck", 0L)
 
     /**
-     * 玩家结束运行游戏的次数
+     * How many times the player has closed the game
      */
     val finishedGame = intSetting("finishedGame", 0)
 
     /**
-     * 是否在打开启动器时，根据特定的运行游戏次数，显示赞助支持弹窗
+     * Whether opening the launcher shows the sponsorship dialog at given game-run counts
      */
     val showSponsorship = boolSetting("showSponsorship", true)
 
     /**
-     * 搜索模组的初始搜索平台
+     * Initial search platform when searching mods
      */
     val searchModPlatform = enumSetting("searchModPlatform", Platform.CURSEFORGE)
 
     /**
-     * 搜索整合包的初始搜索平台
+     * Initial search platform when searching packs
      */
     val searchModpackPlatform = enumSetting("searchModpackPlatform", Platform.CURSEFORGE)
 
     /**
-     * 搜索资源包的初始搜索平台
+     * Initial search platform when searching resource packs
      */
     val searchResourcePackPlatform = enumSetting("searchResourcePackPlatform", Platform.CURSEFORGE)
 
     /**
-     * 搜索光影的初始搜索平台
+     * Initial search platform when searching shaders
      */
     val searchShadersPlatform = enumSetting("searchShadersPlatform", Platform.CURSEFORGE)
 }

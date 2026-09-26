@@ -239,9 +239,9 @@ private val EDIT_LAYOUT: List<List<KeySpec>> = listOf(
 )
 
 /**
- * 虚拟键盘对话框，展示一个包含主要按键的键盘
- * @param onSwitch [isTapMode] 为 `false` 时，触摸按键的回调函数
- * @param onTap [isTapMode] 为 `true` 时，点击按键的回调函数
+ * Virtual keyboard dialog showing a keyboard with the main keys
+ * @param onSwitch press-key callback when [isTapMode] is `false`
+ * @param onTap the tap-key callback when [isTapMode] is `true`
  */
 @Composable
 fun Keyboard(
@@ -283,10 +283,10 @@ fun Keyboard(
 }
 
 /**
- * 虚拟键盘对话框，展示一个包含主要按键的键盘，主要用于手柄键值绑定
- * @param selectedKeys 当前键绑定的所有键值
- * @param onKeyAdd 绑定新的键值
- * @param onKeyRemove 解绑键值
+ * Virtual keyboard dialog showing a keyboard with the main keys, mainly for gamepad binding
+ * @param selectedKeys all keys bound under the current binding
+ * @param onKeyAdd binds a new key
+ * @param onKeyRemove unbinds a key
  */
 @Composable
 fun GamepadBindingKeyboard(
@@ -382,7 +382,7 @@ fun GamepadSpecialArea(
         contentPadding = PaddingValues(all = 12.dp),
         state = scrollState
     ) {
-        //鼠标左键
+        //Left mouse button
         item {
             val selected = remember(refreshed) { isSelected(ControlEventKeycode.GLFW_MOUSE_BUTTON_LEFT) }
             InfoLayoutTextItem(
@@ -395,7 +395,7 @@ fun GamepadSpecialArea(
                 selected = selected
             )
         }
-        //鼠标中键
+        //Middle mouse button
         item {
             val selected = remember(refreshed) { isSelected(ControlEventKeycode.GLFW_MOUSE_BUTTON_MIDDLE) }
             InfoLayoutTextItem(
@@ -408,7 +408,7 @@ fun GamepadSpecialArea(
                 selected = selected
             )
         }
-        //鼠标右键
+        //Right mouse button
         item {
             val selected = remember(refreshed) { isSelected(ControlEventKeycode.GLFW_MOUSE_BUTTON_RIGHT) }
             InfoLayoutTextItem(
@@ -421,7 +421,7 @@ fun GamepadSpecialArea(
                 selected = selected
             )
         }
-        //单次鼠标滚轮上
+        //Single wheel scroll up
         item {
             val selected = remember(refreshed) { isSelected(SPECIAL_KEY_MOUSE_SCROLL_UP) }
             InfoLayoutTextItem(
@@ -434,7 +434,7 @@ fun GamepadSpecialArea(
                 selected = selected
             )
         }
-        //单次鼠标滚轮下
+        //Single wheel scroll down
         item {
             val selected = remember(refreshed) { isSelected(SPECIAL_KEY_MOUSE_SCROLL_DOWN) }
             InfoLayoutTextItem(
@@ -482,7 +482,7 @@ private fun KeyboardNavDialog(
             contentColor = onCardColor(),
         ) {
             Column {
-                //顶贴标签栏
+                //Sticky tab bar
                 SecondaryTabRow(
                     selectedTabIndex = selectedTabIndex,
                     containerColor = cardTitleColor()
@@ -618,7 +618,7 @@ private fun KeyButton(
     aspectRatio: Float = 1f
 ) {
     /**
-     * 当前按钮是否为按下的状态
+     * Whether the button is currently pressed
      */
     val isSelected = remember(refreshed) { isSelected(identifier) }
     var pressed by remember { mutableStateOf(false) }

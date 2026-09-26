@@ -22,7 +22,7 @@ import android.net.ConnectivityManager
 import com.endiq.turtlelauncher.context.GlobalContext
 
 /**
- * 获取设备当前网络的真实 DNS 服务器
+ * Gets the device's real DNS servers
  */
 fun getSystemDnsServerAddresses(): List<String>? {
     return runCatching {

@@ -55,7 +55,7 @@ import org.libsdl.app.SDLActivity
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * 简单的手柄摇杆、按键事件捕获层
+ * Simple gamepad stick/button event capture layer
  */
 @Composable
 fun SimpleGamepadCapture(
@@ -79,12 +79,12 @@ fun SimpleGamepadCapture(
         )
     )
 
-    //是否正在绑定键值
+    //Whether a key binding is in progress
     val uiOperation by rememberUpdatedState(remapperViewModel.uiOperation)
     fun isBinding() = uiOperation != GamepadRemapOperation.None
 
-    //以事件接收的方式，单独处理按键事件
-    //事件源：GameHandler 处理来自 VMActivity 的 dispatchKeyEvent
+    //Handle key events separately via an event receiver
+    //Source: GameHandler processes the dispatch from VMActivityispatchKeyEvent
     DisposableEffect(view, gamepadViewModel) {
         val listener: (KeyEvent) -> Unit = { event ->
             if (isBinding()) {
@@ -110,7 +110,7 @@ fun SimpleGamepadCapture(
     DisposableEffect(view, gamepadViewModel) {
         val motionListener = View.OnGenericMotionListener { motionView, event ->
             if (event.isGamepadEvent() && AllSettings.gamepadControl.state && gamepadViewModel.checkModePrompt()) {
-                //模式选择询问优先级最高
+                //The mode-selection prompt wins top priority
                 true
             } else if (isBinding()) {
                 remapperViewModel.sendEvent(
@@ -125,7 +125,7 @@ fun SimpleGamepadCapture(
                         try {
                             SDLActivity.forwardGenericMotionToSDL(motionView, event)
                         } catch (_: UnsatisfiedLinkError) {
-                            //SDL native 未就绪时忽略
+                            //Ignored while SDL native isn't ready
                         }
                     }
                     true
@@ -157,12 +157,12 @@ fun SimpleGamepadCapture(
                     ensureActive()
                     if (isBinding()) break
 
-                    //检查手柄活动状态
+                    //Check gamepad activity state
                     val pollLevel = gamepadViewModel.checkGamepadActive()
                     if (pollLevel == GamepadViewModel.PollLevel.Close) break
 
-                    // 按实际轮询间隔归一化本帧偏移量
-                    // 首轮询间隔记为0，避免重启循环后视角跳动
+                    // Normalize this frame's offset by the actual polling interval
+                    // Treat the first interval as 0 to avoid camera jumps when restarting the loop
                     val now = System.nanoTime()
                     val deltaMs = if (lastPollTime == 0L) 0.0 else (now - lastPollTime) / 1_000_000.0
                     lastPollTime = now
@@ -178,8 +178,8 @@ fun SimpleGamepadCapture(
 }
 
 /**
- * 手柄事件监听者
- * @param listener 事件回调
+ * Gamepad event listener
+ * @param listener the event callback
  */
 @Composable
 private fun GamepadEventListener(
@@ -197,7 +197,7 @@ private fun GamepadEventListener(
 }
 
 /**
- * 手柄活动监听者
+ * Gamepad activity listener
  */
 @Composable
 fun GamepadOnActionListener(
@@ -218,9 +218,9 @@ fun GamepadOnActionListener(
 }
 
 /**
- * 统一实现的手柄按键事件监听器
- * @param isGrabbing 用于判断是否处于游戏中，区分游戏内、菜单内的按键绑定
- * @param onKeyEvent 键盘映射事件回调
+ * Unified gamepad key event listener
+ * @param isGrabbing judges in-game state, separating in-game from in-menu bindings
+ * @param onKeyEvent keyboard mapping event callback
  */
 @Composable
 fun GamepadKeyListener(
@@ -254,7 +254,7 @@ fun GamepadKeyListener(
             when (event) {
                 is GamepadViewModel.Event.Button -> {
                     if (!event.pressed) {
-                        //松开时使用之前记录的按下事件
+                        //On release, reuse the recorded press event
                         lastPressKey[event.code]?.let { lastEvents ->
                             currentOnKeyEvent(lastEvents, false)
                             lastPressKey.remove(event.code)
@@ -285,7 +285,7 @@ fun GamepadKeyListener(
             }
         },
         onDisposeCallback = {
-            //松开所有正在按下的按键
+            //Release all currently pressed keys
             lastPressKey.forEach { (_, events) ->
                 currentOnKeyEvent(events, false)
             }
@@ -301,9 +301,9 @@ fun GamepadKeyListener(
 }
 
 /**
- * 统一实现的手柄摇杆控制视角/鼠标指针的事件监听器
- * @param isGrabbing 判断当前是否在游戏中，若在游戏内，则根据事件中的摇杆类型判定以哪个摇杆的偏移量操作视角
- *                   若在游戏外，则所有摇杆都支持返回偏移量（操控鼠标指针）
+ * A unified gamepad stick listener steering the camera/mouse cursor.
+ * @param isGrabbing whether we're in-game; in-game, the event's stick type decides
+ *                   which stick's offset steers the camera; outside, every stick reports offsets (cursor steering)
  */
 @Composable
 fun GamepadStickCameraListener(
@@ -336,9 +336,9 @@ fun GamepadStickCameraListener(
 }
 
 /**
- * 统一实现的手柄摇杆控制玩家移动的事件监听器
- * @param isGrabbing 判断当前是否在游戏中，若在游戏内，则根据事件中的摇杆类型判定以哪个摇杆的方向，控制玩家移动
- * @param onKeyEvent 回调根据 options.txt 内保存的移动键键值转化的控制事件
+ * A unified gamepad stick listener steering player movement.
+ * @param isGrabbing whether we're in-game; in-game, the event's stick type decides which stick moves the player
+ * @param onKeyEvent callback turning the movement keys stored in options.txt into control events
  */
 @Composable
 fun GamepadStickMovementListener(
@@ -350,8 +350,8 @@ fun GamepadStickMovementListener(
     val joystickControlMode by rememberUpdatedState(AllSettings.joystickControlMode.state)
     val currentOnKeyEvent by rememberUpdatedState(onKeyEvent)
 
-    //缓存已按下的事件，目的是当游戏进入菜单后，能够清除状态
-    //避免回到游戏时出现一直移动的问题
+    //Cache pressed events so they can be cleared once a menu opens,
+    //preventing stuck movement when returning to the game
     val allPressEvent = remember { mutableStateSetOf<String>() }
 
     fun sendKeyEvent(
@@ -417,21 +417,21 @@ fun GamepadStickMovementListener(
 }
 
 /**
- * 通过事件获取获取设备名称
+ * Reads the device name from the event
  */
 fun MotionEvent.getDeviceName(): String {
     return device.descriptor
 }
 
 /**
- * 通过事件获取获取设备名称
+ * Reads the device name from the event
  */
 fun KeyEvent.getDeviceName(): String {
     return device.descriptor
 }
 
 /**
- * 检查触摸事件是否来自手柄
+ * Checks whether a touch event came from a gamepad
  */
 fun MotionEvent.isGamepadEvent(): Boolean {
     return isFromSource(InputDevice.SOURCE_JOYSTICK) ||

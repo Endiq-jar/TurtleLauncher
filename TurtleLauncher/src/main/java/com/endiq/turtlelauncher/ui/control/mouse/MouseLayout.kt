@@ -59,64 +59,64 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * 默认（箭头）鼠标指针图片文件
+ * Default (arrow) cursor image file
  */
 val arrowPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("default_pointer.image")
 
 /**
- * 手形鼠标指针图片文件
+ * Hand cursor image file
  */
 val linkPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("link_pointer.image")
 
 /**
- * 输入鼠标指针图片文件
+ * Input cursor image file
  */
 val iBeamPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("ibeam_pointer.image")
 
 /**
- * 十字鼠标指针图片文件
+ * Crosshair cursor image file
  */
 val crossHairPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("crosshair_pointer.image")
 
 /**
- * 上下鼠标指针图标文件
+ * Vertical-resize cursor icon file
  */
 val resizeNSPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("resize_NS_pointer.image")
 
 /**
- * 左右鼠标指针图标文件
+ * Horizontal-resize cursor icon file
  */
 val resizeEWPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("resize_EW_pointer.image")
 
 /**
- * 全部方向鼠标指针图标文件
+ * All-directions cursor icon file
  */
 val resizeAllPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("resize_ALL_pointer.image")
 
 /**
- * Not allowed / invalid operation鼠标指针图标文件
+ * Not-allowed cursor icon file
  */
 val notAllowedPointerFile: File = PathManager.DIR_MOUSE_POINTER.child("not_allowed_pointer.image")
 
 /**
- * 虚拟指针模拟层
- * @param controlMode               控制模式：SLIDE（滑动控制）、CLICK（点击控制）
- * @param enableMouseClick          是否开启虚拟鼠标点击操作（仅适用于滑动控制）
- * @param longPressTimeoutMillis    长按触发检测时长
- * @param requestPointerCapture     是否使用鼠标抓取方案
- * @param hideMouseInClickMode      是否在鼠标为点击控制模式时，隐藏鼠标指针
- * @param lastMousePosition         上次虚拟鼠标指针位置
- * @param onTap                     点击回调，参数是触摸点在控件内的绝对坐标
- * @param onLongPress               长按开始回调
- * @param onLongPressEnd            长按结束回调
- * @param onPointerMove             指针移动回调，参数在 SLIDE 模式下是指针位置，CLICK 模式下是手指当前位置
- * @param onMouseScroll             实体鼠标指针滚轮滑动
- * @param onMouseButton             实体鼠标指针按钮按下反馈
- * @param isMoveOnlyPointer         指针是否被父级标记为仅可滑动指针
- * @param onOccupiedPointer         占用指针回调
- * @param onReleasePointer          释放指针回调
- * @param mouseSize                 指针大小
- * @param cursorSensitivity         指针灵敏度（滑动模式生效）
+ * Virtual pointer simulation layer
+ * @param controlMode               Control mode: SLIDE (slide control), CLICK (click control)
+ * @param enableMouseClick          Whether virtual mouse click actions are enabled (slide control only)
+ * @param longPressTimeoutMillis    long-press trigger detection timeout
+ * @param requestPointerCapture     whether pointer capture is used
+ * @param hideMouseInClickMode      whether the pointer hides in click-control mode
+ * @param lastMousePosition         last virtual mouse position
+ * @param onTap                     tap callback; argument is the touch point's absolute coordinates in the control
+ * @param onLongPress               long-press start callback
+ * @param onLongPressEnd            long-press end callback
+ * @param onPointerMove             pointer move callback; takes the pointer position in SLIDE mode and the finger position in CLICK mode
+ * @param onMouseScroll             physical mouse wheel scrolling
+ * @param onMouseButton             physical mouse button feedback
+ * @param isMoveOnlyPointer         whether the parent marked the pointer as move-only
+ * @param onOccupiedPointer         occupy-pointer callback
+ * @param onReleasePointer          release-pointer callback
+ * @param mouseSize                 pointer size
+ * @param cursorSensitivity         pointer sensitivity (slide mode only)
  */
 @Composable
 fun VirtualPointerLayout(
@@ -157,11 +157,11 @@ fun VirtualPointerLayout(
     LaunchedEffect(hideMouseInClickMode) {
         updateMousePointer(
             show = when {
-                //物理鼠标已连接：是否为抓获控制模式
+                //Physical mouse connected: is it captured control mode?
                 PhysicalMouseChecker.physicalMouseConnected -> requestPointerCapture
-                //点击控制模式：由隐藏虚拟鼠标设置决定
+                //Click-control mode: decided by the hide-virtual-mouse setting
                 controlMode == MouseControlMode.CLICK -> !hideMouseInClickMode
-                //滑动控制始终显示
+                //Slide control always shows it
                 else -> controlMode == MouseControlMode.SLIDE
             }
         )
@@ -169,8 +169,8 @@ fun VirtualPointerLayout(
 
     var pointerPosition by remember {
         val pos = lastMousePosition?.takeIf {
-            //如果当前正在使用物理鼠标，则使用上次虚拟鼠标的位置
-            //否则默认将鼠标放到屏幕正中心
+            //With a physical mouse in use, fall back to the last virtual mouse position
+            //Otherwise default the mouse to the screen center
             !showMousePointer
         } ?: Offset(screenWidth / 2f, screenHeight / 2f)
         onPointerMove(pos)
@@ -204,7 +204,7 @@ fun VirtualPointerLayout(
                 onTap(
                     if (controlMode == MouseControlMode.CLICK) {
                         updateMousePointer(!hideMouseInClickMode)
-                        //当前手指的绝对坐标
+                        //The current finger's absolute coordinates
                         pointerPosition = fingerPos
                         fingerPos
                     } else {
@@ -223,7 +223,7 @@ fun VirtualPointerLayout(
                     )
                 } else {
                     updateMousePointer(!hideMouseInClickMode)
-                    //当前手指的绝对坐标
+                    //The current finger's absolute coordinates
                     offset
                 }
                 onPointerMove(pointerPosition)
@@ -237,7 +237,7 @@ fun VirtualPointerLayout(
                     )
                     onPointerMove(pointerPosition)
                 } else {
-                    //非鼠标抓取模式
+                    //Not pointer-capture mode
                     updateMousePointer(false)
                     pointerPosition = offset
                     onPointerMove(pointerPosition)
@@ -255,8 +255,8 @@ fun VirtualPointerLayout(
 }
 
 /**
- * 虚拟鼠标位置修饰，根据大小、指针形状，结合实际指针位置、启动器指针热点设置
- * 计算出合适的指针位置
+ * Virtual mouse position decoration; computes the right pointer position from size,
+ * cursor shape, actual pointer position and the launcher's hotspot setting
  */
 @Composable
 fun Modifier.mouseFixedPosition(
@@ -290,7 +290,7 @@ fun Modifier.mouseFixedPosition(
 }
 
 /**
- * 根据指针形状返回不同的鼠标图片文件
+ * Returns the matching mouse image per cursor shape
  */
 @Composable
 fun getMouseFile(
@@ -311,7 +311,7 @@ fun getMouseFile(
 }
 
 /**
- * 在屏幕上显示虚拟鼠标指针
+ * Renders the virtual mouse pointer on screen
  */
 @Composable
 fun MousePointer(

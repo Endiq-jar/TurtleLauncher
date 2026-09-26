@@ -30,13 +30,13 @@ import kotlin.math.sin
 
 private const val MOUSE_MAX_ACCELERATION = 2.0
 
-/** 采样基准周期（ms） */
+/** Sampling reference period (ms) */
 private const val BASE_TICK_MS = 16.0
-/** 单次偏移量的最大时间倍率 */
+/** Maximum time multiplier per offset */
 private const val MAX_TIME_SCALE = 4.0
 
 /**
- * 摇杆横轴、纵轴偏移量状态
+ * Joystick X/Y offset state
  */
 class Joystick(
     val type: JoystickType,
@@ -44,7 +44,7 @@ class Joystick(
     var verticalValue: Float = 0f
 ) {
     /**
-     * 摇杆当前方向
+     * The joystick's current direction
      */
     var direction: JoystickDirection = JoystickDirection.None
         private set
@@ -58,14 +58,14 @@ class Joystick(
         val mouseAngle = angleRadian ?: getAngleRadian()
         val acceleration = acceleration ?: calculateAcceleration()
 
-        // 偏移量按实际采样间隔归一化
-        // 采样率越高，单次偏移越小
+        // Normalize offsets by the actual sampling interval
+        // Higher sample rates shrink each offset
         val timeScale = (deltaMs / BASE_TICK_MS).coerceIn(0.0, MAX_TIME_SCALE)
         val deltaX = (cos(mouseAngle) * acceleration * timeScale).toFloat()
         val deltaY = (sin(mouseAngle) * acceleration * timeScale).toFloat()
 
         val offset = Offset(deltaX, -deltaY)
-        //偏移量为0的情况下，无论发不发送事件都是无意义的
+        //At zero offset, sending events or not is meaningless either way
         if (offset != Offset.Zero) {
             sendEvent(
                 Event.StickOffset(type, offset)

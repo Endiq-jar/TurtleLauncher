@@ -86,7 +86,7 @@ fun LogBox(
 
     val config = remember {
         object {
-            /** 缓冲区刷新间隔，单位：ms */
+            /** Buffer flush interval, in ms */
             val BUFFER_FLUSH_INTERVAL: Long = AllSettings.logBufferFlushInterval.getValue().toLong()
         }
     }
@@ -122,7 +122,7 @@ fun LogBox(
                             withContext(Dispatchers.Main) {
                                 logList.addAll(pending)
                                 if (autoScrollDown) {
-                                    //尝试进行滚动
+                                    //Try to scroll
                                     scrollChannel.value?.trySend(Unit)
                                 }
                             }
@@ -133,7 +133,7 @@ fun LogBox(
                 }
             }
 
-            //自动滚动部分
+            //Auto-scroll part
             launch(Dispatchers.Main) {
                 scrollChannel.value?.consumeAsFlow()?.collect {
                     runCatching {
@@ -187,7 +187,7 @@ fun LogBox(
                 }
             }
 
-            //右侧控制区域
+            //Right-side control area
             VerticalDivider(
                 modifier = Modifier.fillMaxHeight(),
                 color = Color.White.copy(0.4f)
@@ -203,7 +203,7 @@ fun LogBox(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    //关闭
+                    //Close
                     LogBoxIconButton(
                         onClick = onClose,
                         toggle = false
@@ -214,7 +214,7 @@ fun LogBox(
                             contentDescription = null
                         )
                     }
-                    //清理
+                    //Cleanup
                     LogBoxIconButton(
                         onClick = {
                             synchronized(buffer) {
@@ -230,7 +230,7 @@ fun LogBox(
                             contentDescription = null
                         )
                     }
-                    //自动滚动
+                    //Auto-scroll
                     LogBoxIconButton(
                         onClick = {
                             val value = !autoScrollDown
@@ -247,7 +247,7 @@ fun LogBox(
                             contentDescription = null
                         )
                     }
-                    //滚动到底部
+                    //Scroll to the bottom
                     LogBoxIconButton(
                         onClick = {
                             scrollChannel.value?.trySend(Unit)

@@ -40,17 +40,17 @@ data class PackMcMeta(
 
     sealed class DescriptionContent {
         /**
-         * 纯文本描述
+         * Plain text description
          */
         data class Text(val text: String) : DescriptionContent()
         
         /**
-         * 带格式的描述
+         * Formatted description
          */
         data class Formatted(val parts: List<Part>) : DescriptionContent()
         
         /**
-         * 描述部分
+         * The description section
          */
         data class Part(
             val text: String,

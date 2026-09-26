@@ -34,10 +34,10 @@ import java.io.File
 private const val TAG = "ModData"
 
 /**
- * Needs an update的模组的数据类，记录模组文件和模组所属的项目
- * @param modFile 模组在模组平台上对应的文件
- * @param project 模组在模组平台上所属的项目
- * @param mcMod 模组翻译信息
+ * Data class of a mod that needs an update, recording the mod file and its project
+ * @param modFile the mod's file on the platform
+ * @param project the mod's project on the platform
+ * @param mcMod the mod translation info
  */
 data class ModData(
     val file: File,
@@ -46,15 +46,15 @@ data class ModData(
     val mcMod: ModTranslations.McMod?
 ) {
     /**
-     * 当前模组的版本号，用于新旧对比
+     * The current mod's version number, for old-vs-new comparison
      */
     var currentVersion: String? = null
         private set
 
     /**
-     * 检查模组更新
-     * @param minecraftVer MC版本，用于筛选版本
-     * @param modLoader 模组加载器信息，用于筛选版本
+     * Checks for mod updates
+     * @param minecraftVer the MC version, used to filter versions
+     * @param modLoader mod loader info, used to filter versions
      */
     suspend fun checkUpdate(
         minecraftVer: String,
@@ -70,44 +70,44 @@ data class ModData(
                     .toSet()
                 val targetLoaders = when {
                     currentLoaderName in currentFileLoaders -> {
-                        // 当前模组文件支持当前游戏加载器：仅检查当前加载器通道的更新
+                        // The current mod file supports the current game loader: check updates only on the current loader channel
                         setOf(currentLoaderName)
                     }
 
                     currentFileLoaders.isNotEmpty() -> {
-                        // 当前模组文件不支持当前游戏加载器（例如 信雅互联 场景）：
-                        // 优先沿用该模组文件自身支持的加载器通道来检查更新
+                        // The current mod file doesn't support the current game loader (e.g. the Sinytra Connector scenario):
+                        // Prefer the loader channel the mod file itself supports when checking updates
                         currentFileLoaders
                     }
 
                     else -> {
-                        // 无法识别当前文件加载器信息时，回退到当前游戏加载器
+                        // When the file's loader can't be identified, fall back to the current game loader
                         setOf(currentLoaderName)
                     }
                 }
 
-                // 获取所有版本并初始化
+                // Fetch all versions and initialize
                 val versions = getVersions(
                     projectId,
                     project.platform
                 ).initAll(projectId)
                     .filter { version ->
                         if (version.platformId() == modFile.id) {
-                            // 当前版本，设置版本号
+                            // Current version: set the version number
                             currentVersion = version.platformVersion()
                         }
                         val loaderNames = version.platformLoaders()
                             .map { it.getDisplayName().lowercase() }
                             .toSet()
-                        // 是否支持当前MC版本
+                        // Whether it supports the current MC version
                         minecraftVer in version.platformGameVersion() &&
-                        // 是否匹配目标加载器（当前加载器，或当前文件自身的加载器）
+                        // Whether it matches the target loader (the current loader, or the file's own loader)
                         loaderNames.any { it in targetLoaders } &&
-                        // 是否比当前版本更新
+                        // Whether it's newer than the current one
                         version.platformDatePublished() > datePublished
                     }
 
-                // 获取最新的版本
+                // Take the newest version
                 versions.firstOrNull()?.also { version ->
                     Logger.info(TAG, "Detected update for mod ${file.name}: $currentVersion -> ${version.platformVersion()}")
                 }

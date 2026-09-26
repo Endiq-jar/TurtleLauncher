@@ -21,12 +21,12 @@ package com.endiq.turtlelauncher.utils.animation
 import com.endiq.turtlelauncher.R
 
 enum class TransitionAnimationType(val textRes: Int) {
-    /** 关闭 */
+    /** Off */
     CLOSE(R.string.generic_close),
-    /** 回弹 */
+    /** Rebound */
     JELLY_BOUNCE(R.string.animate_type_jelly_bounce),
-    /** 弹跳 */
+    /** Bounce */
     BOUNCE(R.string.animate_type_bounce),
-    /** 切入 */
+    /** Cut in */
     SLICE_IN(R.string.animate_type_slice_in)
 }

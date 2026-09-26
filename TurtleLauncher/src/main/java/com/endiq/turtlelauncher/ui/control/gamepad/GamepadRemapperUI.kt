@@ -76,7 +76,7 @@ import kotlin.time.Duration.Companion.milliseconds
 private const val TAG = "GamepadRemapper"
 
 /**
- * 构建出需要重新映射的所有步骤
+ * Builds all steps needing remapping
  */
 fun buildRemapperSteps(
     a: Boolean = false,
@@ -129,10 +129,10 @@ sealed interface GamepadRemapOperation {
 }
 
 /**
- * 重新映射手柄各个按键、摇杆的事件的可视化操作流程
- * @param remapperViewModel 需要通过在View绑定MotionEvent、KeyEvent事件监听器
- *                          将事件发送至此ViewModel，该流程负责接收并处理事件，从而完成绑定
- * @param steps             所有事件绑定的步骤，可自定义需要哪些流程
+ * Remaps every gamepad button and stick event; the visual operation flow
+ * @param remapperViewModel bound from the View, which binds the MotionEvent/KeyEvent listeners
+ *                          and sends the events here; the flow receives and processes them, completing the binding
+ * @param steps             all binding steps; customize which ones to include
  */
 @Composable
 fun GamepadRemapperDialog(
@@ -188,12 +188,12 @@ fun GamepadRemapperDialog(
                 if (progress > 0) {
                     progress--
                 } else {
-                    //如果已经是第一步，返回提示界面
+                    //If already at the first step, show the hint screen
                     changeOperation(GamepadRemapOperation.Tip(deviceName))
                 }
             }
 
-            //进度变更之后，需要固定等待一段时间重新开始监听事件
+            //After progress changes, wait a fixed grace period before listening for events again
             LaunchedEffect(progress) {
                 isListening = false
                 delay(700L.milliseconds)
@@ -241,7 +241,7 @@ fun GamepadRemapperDialog(
             }
 
             //----------------------
-            //UI交互页面，这里无法使用Dialog，因为这里不应该获得焦点
+            //UI interaction page: no Dialog here, since this should never take focus
             //----------------------
 
             AnimatedVisibility(
@@ -308,7 +308,7 @@ fun GamepadRemapperDialog(
                                 targetValue = progress.toFloat() / steps.size.toFloat()
                             )
 
-                            //当前进度显示
+                            //Current progress display
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),

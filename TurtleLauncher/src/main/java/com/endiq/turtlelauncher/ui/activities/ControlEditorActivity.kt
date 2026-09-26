@@ -52,30 +52,30 @@ class ControlEditorActivity : BaseAppCompatActivity() {
 
     override fun getTaskDescriptionTitle(): String = getString(R.string.control_manage_info_edit)
 
-    /** 编辑器 */
+    /** The editor */
     private val editorViewModel: EditorViewModel by viewModels()
 
     /**
-     * 启动器背景内容管理 ViewModel
+     * Launcher background content management ViewModel
      */
     private val backgroundViewModel: BackgroundViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /** 控制布局绝对路径 */
+        /** The control layout's absolute path */
         val controlPath: String = intent.extras?.getString(BUNDLE_CONTROL) ?: return runFinish()
-        /** 控制布局文件 */
+        /** The control layout file */
         val controlFile: File = File(controlPath).takeIf { it.isFile && it.exists() } ?: return runFinish()
-        /** 控制布局 */
+        /** The control layout */
         val layout: ControlLayout = runCatching {
             loadLayoutFromFile(controlFile)
         }.getOrNull() ?: return runFinish()
 
-        //初始化控制布局
+        //Initialize the control layout
         editorViewModel.initLayout(layout)
 
-        //绑定返回键按下事件，防止直接退出导致控制布局丢失所有变更
-        //提醒用户保存并退出
+        //Bind the back key: exiting directly would make the control layout lose all changes
+        //Prompt the user to save and exit
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 editorViewModel.onBackPressed(context = this@ControlEditorActivity) {
@@ -107,11 +107,11 @@ class ControlEditorActivity : BaseAppCompatActivity() {
                             viewModel = editorViewModel,
                             targetFile = controlFile,
                             exit = {
-                                //已保存控制布局后进行的退出
+                                //Exit after the control layout has been saved
                                 finish()
                             },
                             menuExit = {
-                                //菜单要求的直接退出，使用对话框让用户确认
+                                //A menu-requested direct exit opens a confirmation dialog
                                 editorViewModel.showExitEditorDialog(
                                     context = this@ControlEditorActivity,
                                     onExit = {
@@ -128,7 +128,7 @@ class ControlEditorActivity : BaseAppCompatActivity() {
 }
 
 /**
- * 开启控制布局编辑器
+ * Opens the control layout editor
  */
 fun startEditorActivity(context: Context, file: File) {
     val intent = Intent(context, ControlEditorActivity::class.java).apply {

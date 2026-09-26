@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.utils.file;
 
 /**
- * 解压、读取 Zip 文件时遇到异常
+ * Exception hit while unzipping/reading a Zip file
  */
 public class UnpackZipException extends RuntimeException {
     public UnpackZipException() {

@@ -96,7 +96,7 @@ private fun computeLauncherEventState(events: List<ClickEvent>): LauncherEventSt
 }
 
 /**
- * 启动器事件编辑
+ * Launcher event editing
  */
 @Composable
 fun LauncherEventsEdit(
@@ -120,7 +120,7 @@ fun LauncherEventsEdit(
             .then(modifier),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 切换输入法
+        // Toggle the IME
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.game_menu_option_input_method),
@@ -128,7 +128,7 @@ fun LauncherEventsEdit(
             onValueChange = { toggleEvent(it, ClickEvent(ClickEvent.Type.LauncherEvent, LAUNCHER_EVENT_SWITCH_IME)) }
         )
 
-        // 切换菜单
+        // Toggle the menu
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_switch_menu),
@@ -138,7 +138,7 @@ fun LauncherEventsEdit(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 鼠标左键
+        // Left mouse button
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_mouse_left),
@@ -146,7 +146,7 @@ fun LauncherEventsEdit(
             onValueChange = { toggleEvent(it, ClickEvent(ClickEvent.Type.LauncherEvent, ControlEventKeycode.GLFW_MOUSE_BUTTON_LEFT)) }
         )
 
-        // 鼠标中键
+        // Middle mouse button
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_mouse_middle),
@@ -154,7 +154,7 @@ fun LauncherEventsEdit(
             onValueChange = { toggleEvent(it, ClickEvent(ClickEvent.Type.LauncherEvent, ControlEventKeycode.GLFW_MOUSE_BUTTON_MIDDLE)) }
         )
 
-        // 鼠标右键
+        // Right mouse button
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_mouse_right),
@@ -164,7 +164,7 @@ fun LauncherEventsEdit(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 持续鼠标滚轮上
+        // Continuous wheel scroll up
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_mouse_scroll_up),
@@ -172,7 +172,7 @@ fun LauncherEventsEdit(
             onValueChange = { toggleEvent(it, ClickEvent(ClickEvent.Type.LauncherEvent, LAUNCHER_EVENT_SCROLL_UP)) }
         )
 
-        // 单次鼠标滚轮上
+        // Single wheel scroll up
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_mouse_scroll_up_single),
@@ -180,7 +180,7 @@ fun LauncherEventsEdit(
             onValueChange = { toggleEvent(it, ClickEvent(ClickEvent.Type.LauncherEvent, LAUNCHER_EVENT_SCROLL_UP_SINGLE)) }
         )
 
-        // 持续鼠标滚轮下
+        // Continuous wheel scroll down
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_mouse_scroll_down),
@@ -188,7 +188,7 @@ fun LauncherEventsEdit(
             onValueChange = { toggleEvent(it, ClickEvent(ClickEvent.Type.LauncherEvent, LAUNCHER_EVENT_SCROLL_DOWN)) }
         )
 
-        // 单次鼠标滚轮下
+        // Single wheel scroll down
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_mouse_scroll_down_single),
@@ -198,7 +198,7 @@ fun LauncherEventsEdit(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 发送文本
+        // Send text
         InfoLayoutTextItem(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.control_editor_edit_event_launcher_send_text),

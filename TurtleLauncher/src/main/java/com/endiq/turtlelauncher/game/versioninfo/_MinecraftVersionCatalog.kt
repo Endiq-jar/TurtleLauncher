@@ -22,7 +22,7 @@ import com.endiq.turtlelauncher.R
 import org.jackhuang.hmcl.util.versioning.GameVersionNumber
 
 /**
- * 所有热门的模组支持版本
+ * All popular mod-supported versions
  */
 val popularVersions = listOf(
     "26.2", "26.1",
@@ -37,7 +37,7 @@ val popularVersions = listOf(
 )
 
 /**
- * 愚人节版本类型
+ * April Fools version types
  */
 enum class AprilFoolsType(
     val summary: Int? = null,
@@ -86,7 +86,7 @@ enum class AprilFoolsType(
 }
 
 /**
- * 愚人节版本
+ * April Fools versions
  */
 data class AprilFoolsVersion(
     val version: String,
@@ -94,7 +94,7 @@ data class AprilFoolsVersion(
 )
 
 /**
- * 可供下载的愚人节版本
+ * Downloadable April Fools versions
  */
 val allAprilFools = listOf(
     AprilFoolsVersion("26w14a", AprilFoolsType.HerdCraft),
@@ -113,7 +113,7 @@ val allAprilFools = listOf(
 )
 
 /**
- * 给出的 MC 版本号Whether it's a full release
+ * Whether the given MC version is a full release
  */
 fun filterRelease(versionString: String): Boolean {
     return GameVersionNumber.asGameVersion(versionString).isRelease

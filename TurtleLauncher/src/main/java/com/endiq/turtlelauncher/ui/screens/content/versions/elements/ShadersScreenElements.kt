@@ -22,16 +22,16 @@ import java.io.File
 
 sealed interface ShaderOperation {
     data object None : ShaderOperation
-    /** 执行任务中 */
+    /** Running a task */
     data object Progress : ShaderOperation
-    /** 重命名光影包输入对话框 */
+    /** Rename shader pack input dialog */
     data class Rename(val info: ShaderPackInfo) : ShaderOperation
-    /** 删除光影包对话框 */
+    /** Delete shader pack dialog */
     data class Delete(val info: ShaderPackInfo) : ShaderOperation
 }
 
 /**
- * 光影包信息
+ * Shader pack info
  */
 data class ShaderPackInfo(
     val file: File,
@@ -39,7 +39,7 @@ data class ShaderPackInfo(
 )
 
 /**
- * 简易过滤器，过滤特定的光影包
+ * A simple filter matching specific shader packs
  */
 fun List<ShaderPackInfo>.filterShaders(
     nameFilter: String

@@ -34,18 +34,18 @@ import java.io.File
 private const val TAG = "SaveUtils"
 
 /**
- * 判断这个存档是否与指定的版本兼容
- * @param minecraftVersion 当前 MC 的版本，用于比较版本兼容性
+ * Checks whether this save is compatible with the given version
+ * @param minecraftVersion the current MC version, used for compatibility comparison
  */
 fun SaveData.isCompatible(minecraftVersion: String) =
     isValid && levelMCVersion != null && minecraftVersion.isBiggerOrEqualVer(levelMCVersion)
 
 /**
- * 从 level.dat 文件中解析出必要的信息，构建 SaveData
- * [参考 Minecraft Wiki](https://zh.minecraft.wiki/w/%E5%AD%98%E6%A1%A3%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F#%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)
- * @param saveFile 存档的文件夹
- * @param levelDatFile level.dat 文件
- * @param worldGenDatFile 26.1+ 新存档格式，将世界生成设置迁移到了 /data/minecraft/world_gen_settings.dat
+ * Parses the required info out of level.dat to build a SaveData
+ * [Reference Minecraft Wiki](https://minecraft.wiki/w/%E5%AD%98%E6%A1%A3%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F#%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)
+ * @param saveFile the save's folder
+ * @param levelDatFile the level.dat file
+ * @param worldGenDatFile the 26.1+ save format moved world-gen settings to /data/minecraft/world_gen_settings.dat
  */
 suspend fun parseLevelDatFile(
     saveFile: File,
@@ -61,32 +61,32 @@ suspend fun parseLevelDatFile(
         val data: CompoundTag = compound.asCompoundTag("Data")
             ?: error("{level.dat} Data entry not found in the NBT structure tree.")
 
-        //存档名称，不存在则为空
+        //Save name; empty when absent
         val levelName = data.asString("LevelName", "")
-        //存档的游戏版本
+        //The save's game version
         val levelMCVersion = data.asCompoundTag("Version")?.asString("Name", null)
-        //上次保存此存档的时间戳
-        val lastPlayed = data.asLong("LastPlayed", 0) ?: 0 //0则代表不存在
-        //游戏时长
-        val playTime = data.asLong("Time", 0) ?: 0 //0则代表不存在
-        //存档的游戏模式
-        val gameMode = data.asInt("GameType", 0) //默认为生存模式
+        //Timestamp of the save's last save
+        val lastPlayed = data.asLong("LastPlayed", 0) ?: 0 //0 means absent
+        //Play time
+        val playTime = data.asLong("Time", 0) ?: 0 //0 means absent
+        //The save's game mode
+        val gameMode = data.asInt("GameType", 0) //defaults to survival
             ?.let { levelCode -> GameMode.entries.find { it.levelCode == levelCode } }
-        //游戏难度
-        val difficulty = data.asInt("Difficulty", 2) //默认为普通
+        //Game difficulty
+        val difficulty = data.asInt("Difficulty", 2) //defaults to normal
             ?.let { levelCode -> Difficulty.entries.find { it.levelCode == levelCode } }
-        //是否锁定了游戏难度
+        //Whether the game difficulty is locked
         val difficultyLocked = data.asBooleanNotNull("DifficultyLocked", false)
-        //是否为极限模式
+        //Whether hardcore mode is on
         val hardcoreMode = data.asBooleanNotNull("hardcore", false)
-        //是否开启了命令（作弊）
+        //Whether commands (cheats) are enabled
         val allowCommands = if (data.contains("allowCommands")) {
             data.asBooleanNotNull("allowCommands", false)
         } else {
-            //如果不存在 allowCommands，则通过游戏模式判断
+            //When allowCommands is absent, judge by game mode
             gameMode == GameMode.CREATIVE
         }
-        //世界种子
+        //World seed
         val worldSeed = if (worldGenDatFile != null && worldGenDatFile.isFile && worldGenDatFile.exists()) {
             //26.1+
             runCatching {
@@ -102,7 +102,7 @@ suspend fun parseLevelDatFile(
         } else {
             data.asCompoundTag("WorldGenSettings")
                 ?.asLong("seed", null)
-            //如果不存在，则尝试获取 RandomSeed
+            //If absent, try reading RandomSeed
                 ?: data.asLong("RandomSeed", null)
         }
 
@@ -115,7 +115,7 @@ suspend fun parseLevelDatFile(
             lastPlayed = lastPlayed.takeIf { it != 0L },
             playTime = playTime.takeIf { it != 0L },
             gameMode = gameMode,
-            //关于极限模式：极限模式开启后，难度会被锁定为困难（尽管 level.dat 文件内并不会这样存储）
+            //Hardcore mode: once enabled, the difficulty locks to hard (even though level.dat doesn't store it that way)
             //https://zh.minecraft.wiki/w/%E6%9E%81%E9%99%90%E6%A8%A1%E5%BC%8F#%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E4%B8%96%E7%95%8C
             difficulty = if (hardcoreMode) Difficulty.HARD else difficulty,
             difficultyLocked = difficultyLocked,
@@ -126,7 +126,7 @@ suspend fun parseLevelDatFile(
     }.onFailure {
         Logger.warning(TAG, "An exception occurred while reading and parsing the level.dat file (${levelDatFile.absolutePath}).", it)
     }.getOrElse {
-        //读取出现异常，返回一个无效数据
+        //On read failure, return invalid data
         SaveData(
             saveFile = saveFile,
 //            saveSize = fileSize,

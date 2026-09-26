@@ -36,7 +36,7 @@ import org.jackhuang.hmcl.util.DigestUtils
 import java.io.File
 
 /**
- * MCBBS 整合包导出工具
+ * MCBBS modpack export utility
  */
 class MCBBSPackExporter: AbstractExporter(
     type = PackType.MCBBS

@@ -88,11 +88,11 @@ import io.ktor.client.plugins.ResponseException as KtorResponseException
 import kotlinx.coroutines.flow.combine as kotlinxCombine
 
 /**
- * 账号管理界面用户意图 (MVI Intent)
- * 封装了 UI 层发出的所有操作请求
+ * Account management screen user intents (MVI Intents)
+ * Encapsulates every action request the UI layer emits
  */
 sealed interface AccountManageIntent {
-    /** 呼出账号登录菜单 */
+    /** Summon the account login menu */
     data class UpdateLoginMenuOp(val operation: LoginMenuOperation) : AccountManageIntent
 
     data class UpdateMicrosoftLoginOp(val operation: MicrosoftLoginOperation) :
@@ -112,83 +112,83 @@ sealed interface AccountManageIntent {
     data object ResetAccountSkinDialogState : AccountManageIntent
 
 
-    /** 执行微软登录流程 */
+    /** Run the Microsoft login flow */
     data class PerformMicrosoftLogin(
         val toWeb: (url: String) -> Unit,
         val backToMain: () -> Unit,
         val checkIfInWebScreen: () -> Boolean
     ) : AccountManageIntent
 
-    /** 应用选中的皮肤 */
+    /** Apply the selected skin */
     data class ApplySkin(val account: Account, val file: File, val model: SkinModelType) : AccountManageIntent
 
-    /** 内部使用的 Intent，用于在文件导入后上传皮肤 */
+    /** Internal intent: upload a skin after file import */
     data class UploadMicrosoftSkin(
         val account: Account,
         val skinFile: File,
         val skinModel: SkinModelType
     ) : AccountManageIntent
 
-    /** 抓取该账号可用的微软披风列表 */
+    /** Fetch the Microsoft capes available to the account */
     data class FetchMicrosoftCapes(
         val account: Account,
     ) : AccountManageIntent
 
-    /** 应用选中的微软披风 */
+    /** Apply the selected Microsoft cape */
     data class ApplyMicrosoftCape(
         val account: Account,
         val cape: PlayerProfile.Cape
     ) : AccountManageIntent
 
-    /** 创建新的离线账号 */
+    /** Create a new offline account */
     data class CreateLocalAccount(val userName: String, val userUUID: String?) :
         AccountManageIntent
 
-    /** 使用第三方验证服务器进行登录 */
+    /** Log in via a third-party authentication server */
     data class LoginWithOtherServer(
         val server: AuthServer,
         val email: String,
         val pass: String
     ) : AccountManageIntent
 
-    /** 添加新的 Yggdrasil 验证服务器 */
+    /** Add a new Yggdrasil authentication server */
     data class AddServer(val url: String) : AccountManageIntent
 
-    /** 删除指定的验证服务器 */
+    /** Delete the given authentication server */
     data class DeleteServer(val server: AuthServer) : AccountManageIntent
 
-    /** 删除账号及其相关数据 */
+    /** Delete an account and its related data */
     data class DeleteAccount(val account: Account) : AccountManageIntent
 
-    /** Refreshes an account的登录凭据（Token） */
+    /** Refreshes an account's login credentials (Token) */
     data class RefreshAccount(val account: Account) : AccountManageIntent
 
-    /** 凭据失效后，使用新密码重新登录外置账号 */
+    /** Re-login of an offline account with the new password after credentials expire */
     data class ReloginOtherAccount(
         val account: Account,
         val password: String
     ) : AccountManageIntent
 
-    /** 将账号皮肤重置为默认状态 */
+    /** Reset the account's skin to default */
     data class ResetSkin(val account: Account) : AccountManageIntent
 }
 
 /**
- * 账号管理界面单次副作用 (MVI Effect)
- * 用于处理错误弹窗等瞬时事件
+ * Account management screen one-shot effects (MVI Effects)
+ * For transient events like error dialogs
  */
 sealed class AccountManageEffect {
-    /** 在 UI 层显示错误信息对话框 */
+    /** Show an error dialog on the UI layer */
     data class ShowError(val title: AndroidStringText, val message: AndroidStringText) : AccountManageEffect()
 }
 
 /**
- * 账号管理界面 ViewModel
+ * Account management screen ViewModel
  * 
- * 核心逻辑处理器，负责将 Intent 转化为状态更新或副作用。
- * 通过 ApplicationContext 避免了 Activity 生命周期导致的内存泄漏。
+ * The core logic handler, turning intents into state updates or side effects.
+ * Default {ApplicationContext} as the context avoids Activity lifecycle leaks.
  * 
- * @property context 全局应用上下文
+ * @property context the global application context
  */
 @HiltViewModel(assistedFactory = AccountManageViewModel.Factory::class)
 class AccountManageViewModel @AssistedInject constructor(
@@ -215,7 +215,7 @@ class AccountManageViewModel @AssistedInject constructor(
     val effect = _effect.receiveAsFlow()
 
     /**
-     * 登录相关操作状态流统一管理
+     * Unified state flows for login-related operations
      */
     val loginUiState: StateFlow<LoginUiState> = kotlinxCombine(
         _loginMenuOp,
@@ -243,7 +243,7 @@ class AccountManageViewModel @AssistedInject constructor(
     )
 
     /**
-     * 账号数据状态流统一管理
+     * Unified state flows for account data
      */
     val profileUiState: StateFlow<ProfileUiState> = kotlinxCombine(
         AccountsManager.accountsFlow,
@@ -274,10 +274,10 @@ class AccountManageViewModel @AssistedInject constructor(
     )
 
     /**
-     * 更改账号皮肤状态流
-     * @param pendingSkinData 将要更改的皮肤
-     * @param pendingCapeData 将要更改的披风
-     * @param importingSkin 是否正在导入皮肤文件，不交给onIntent处理
+     * State flow of the account skin change
+     * @param pendingSkinData the skin to apply
+     * @param pendingCapeData the cape to apply
+     * @param importingSkin whether a skin file is being imported; handled dialog-side rather than through onIntent
      */
     data class AccountSkinDialogState(
         val pendingSkinData: ChangeSkin = ChangeSkin.None,
@@ -286,7 +286,7 @@ class AccountManageViewModel @AssistedInject constructor(
     )
 
     /**
-     * 数据相关操作状态流统一管理
+     * Unified state flows for data-related operations
      */
     val operationUiState: StateFlow<OperationUiState> = kotlinxCombine(
         _serverOp,
@@ -309,7 +309,7 @@ class AccountManageViewModel @AssistedInject constructor(
     )
 
     /**
-     * 处理来自 UI 层的所有 Intent
+     * Handles every Intent from the UI layer
      */
     fun onIntent(intent: AccountManageIntent) {
         when (intent) {
@@ -371,7 +371,7 @@ class AccountManageViewModel @AssistedInject constructor(
     }
 
     /**
-     * 选中皮肤后，先在 VM 层做文件合法性校验，再推进后续 Dialog 流程状态
+     * After a skin is picked, the VM layer validates the file first, then advances the dialog flow state
      */
     private fun onSkinPicked(intent: AccountManageIntent.OnSkinPicked) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -422,14 +422,14 @@ class AccountManageViewModel @AssistedInject constructor(
         }
     }
 
-    /** 内部方法：发送错误通知 */
+    /** Internal: post an error notification */
     private fun emitError(title: AndroidStringText, message: AndroidStringText) {
         viewModelScope.launch(Dispatchers.Main) {
             _effect.send(AccountManageEffect.ShowError(title, message))
         }
     }
 
-    /** 内部方法：发送 Toast 消息 */
+    /** Internal: post a Toast message */
     private fun emitToast(
         text: AndroidStringText,
         duration: Int = Toast.LENGTH_SHORT
@@ -437,7 +437,7 @@ class AccountManageViewModel @AssistedInject constructor(
         eventViewModel.sendToast(text, duration)
     }
 
-    /** 执行微软登录流程 */
+    /** Run the Microsoft login flow */
     private fun performMicrosoftLogin(intent: AccountManageIntent.PerformMicrosoftLogin) {
         microsoftLogin(
             context,
@@ -451,7 +451,7 @@ class AccountManageViewModel @AssistedInject constructor(
         onIntent(AccountManageIntent.UpdateMicrosoftLoginOp(MicrosoftLoginOperation.None))
     }
 
-    /** 应用选中的皮肤 */
+    /** Apply the selected skin */
     private fun applySkin(account: Account, file: File, model: SkinModelType) {
         when {
             account.isLocalAccount() -> saveLocalSkin(account, file, model)
@@ -459,7 +459,7 @@ class AccountManageViewModel @AssistedInject constructor(
         }
     }
 
-    /** 处理皮肤文件导入 */
+    /** Handle skin file import */
     private fun importSkinFile(account: Account, file: File, model: SkinModelType) {
         TaskSystem.submitTask(
             Task.runTask(
@@ -493,7 +493,7 @@ class AccountManageViewModel @AssistedInject constructor(
         )
     }
 
-    /** 上传微软皮肤 */
+    /** Upload the Microsoft skin */
     private fun uploadMicrosoftSkin(intent: AccountManageIntent.UploadMicrosoftSkin) {
         val account = intent.account
         val skinFile = intent.skinFile
@@ -557,7 +557,7 @@ class AccountManageViewModel @AssistedInject constructor(
         )
     }
 
-    /** 获取微软披风列表 */
+    /** Fetch the Microsoft cape list */
     private fun fetchMicrosoftCapes(account: Account) {
         TaskSystem.submitTask(
             Task.runTask(
@@ -571,7 +571,7 @@ class AccountManageViewModel @AssistedInject constructor(
                         task.updateProgress(-1f)
                         task.updateMessage(androidText(R.string.account_change_cape_cache_all))
                         cacheAllCapes(profile)
-                        //同时更新本地的皮肤/披风
+                        //Also update the local skin/cape
                         account.downloadYggdrasil()
                         _accountCapeOpMap.update { it + (account.uniqueUUID to profile.capes) }
                     }, onRefreshRequest = {
@@ -597,7 +597,7 @@ class AccountManageViewModel @AssistedInject constructor(
         )
     }
 
-    /** 更改微软账号披风 */
+    /** Change the Microsoft account cape */
     private fun applyMicrosoftCape(intent: AccountManageIntent.ApplyMicrosoftCape) {
         val account = intent.account
         val cape = intent.cape
@@ -694,13 +694,13 @@ class AccountManageViewModel @AssistedInject constructor(
         )
     }
 
-    /** 创建离线账号 */
+    /** Create an offline account */
     private fun createLocalAccount(userName: String, userUUID: String?) {
         localLogin(userName, userUUID)
         onIntent(AccountManageIntent.UpdateLocalLoginOp(LocalLoginOperation.None))
     }
 
-    /** 第三方 Yggdrasil 服务器登录 */
+    /** Third-party Yggdrasil server login */
     private fun loginWithOtherServer(intent: AccountManageIntent.LoginWithOtherServer) {
         AuthServerHelper(intent.server, intent.email, intent.pass, onSuccess = { account, task ->
             task.updateMessage(androidText(R.string.account_logging_in_saving))
@@ -717,7 +717,7 @@ class AccountManageViewModel @AssistedInject constructor(
         }
     }
 
-    /** 添加自定义验证服务器 */
+    /** Add a custom authentication server */
     private fun addServer(url: String) {
         addOtherServer(url) {
             onIntent(AccountManageIntent.UpdateServerOp(ServerOperation.OnThrowable(it)))
@@ -735,7 +735,7 @@ class AccountManageViewModel @AssistedInject constructor(
         onIntent(AccountManageIntent.UpdateAccountOp(AccountOperation.None))
     }
 
-    /** 强制Refreshes an account凭据 */
+    /** Force-refresh the account's credentials */
     private fun refreshAccount(account: Account) {
         AccountsManager.refreshAccount(context, account) { th ->
             onIntent(
@@ -750,7 +750,7 @@ class AccountManageViewModel @AssistedInject constructor(
         }
     }
 
-    /** 凭据失效后，使用新密码重新登录外置账号 */
+    /** Re-login of an offline account with the new password after credentials expire */
     private fun reloginOtherAccount(intent: AccountManageIntent.ReloginOtherAccount) {
         val account = intent.account
         AuthServerHelper(
@@ -777,7 +777,7 @@ class AccountManageViewModel @AssistedInject constructor(
         }
     }
 
-    /** 保存离线账号皮肤到本地存储 */
+    /** Save the offline account skin locally */
     private fun saveLocalSkin(account: Account, file: File, model: SkinModelType) {
         val skinFile = account.getSkinFile()
 
@@ -817,7 +817,7 @@ class AccountManageViewModel @AssistedInject constructor(
         }))
     }
 
-    /** 重置皮肤数据 */
+    /** Reset skin data */
     private fun resetSkin(account: Account) {
         TaskSystem.submitTask(Task.runTask(dispatcher = Dispatchers.IO, task = {
             account.apply {
@@ -836,10 +836,10 @@ class AccountManageViewModel @AssistedInject constructor(
     }
 
     /**
-     * 将多种异常类型统一转化为用户可读的本地化字符串。
+     * Unifies many exception types into a user-readable localized string.
      *
-     * @param th 捕获的异常
-     * @return 格式化后的错误提示
+     * @param th the caught exception
+     * @return the formatted error message
      */
     fun formatAccountError(th: Throwable): AndroidStringText = accountErrorText(th)
 }

@@ -34,18 +34,18 @@ import com.endiq.turtlelauncher.ui.components.SimpleAlertDialog
 import com.endiq.turtlelauncher.utils.string.getMessageOrToString
 
 /**
- * 上传游戏崩溃日志操作流程
+ * Upload flow of a game crash log
  */
 sealed interface ShareLinkOperation {
     data object None : ShareLinkOperation
-    /** 提示对话框 */
+    /** Hint dialog */
     data object Tip : ShareLinkOperation
     /**
-     * 上传日志中
-     * @param apiRoot API 站点链接，仅作透明化展示
+     * Uploading the log
+     * @param apiRoot the API site link, shown for transparency
      */
     data class Uploading(val apiRoot: String) : ShareLinkOperation
-    /** 发生错误，展示对话框 */
+    /** On error, show a dialog */
     data class Error(val error: Throwable) : ShareLinkOperation
 }
 

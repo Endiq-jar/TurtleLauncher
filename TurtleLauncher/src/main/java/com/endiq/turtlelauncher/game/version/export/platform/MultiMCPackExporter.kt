@@ -42,7 +42,7 @@ import java.io.File
 import java.io.StringWriter
 
 /**
- * MultiMC 整合包导出器
+ * MultiMC modpack exporter
  */
 class MultiMCPackExporter: AbstractExporter(
     type = PackType.MultiMC
@@ -76,7 +76,7 @@ class MultiMCPackExporter: AbstractExporter(
             }
 
             val components = buildList {
-                //Minecraft 原版组件
+                //Minecraft vanilla component
                 add(
                     MultiMCManifest.Component(
                         cachedName = null,
@@ -115,7 +115,7 @@ class MultiMCPackExporter: AbstractExporter(
                 }
             }
 
-            //生成 mmc-pack.json
+            //Generate mmc-pack.json
             val manifest = MultiMCManifest(
                 formatVersion = 1,
                 components = components
@@ -124,7 +124,7 @@ class MultiMCPackExporter: AbstractExporter(
             val manifestJson = GSON.toJson(manifest)
             manifestFile.writeText(manifestJson)
 
-            //生成实例配置文件
+            //Generate the instance config file
             val configuration = MultiMCConfiguration(
                 instanceType = "OneSix",
                 name = "${info.name}-${info.version}",

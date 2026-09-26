@@ -31,7 +31,7 @@ class VersionInfoParser(private val version: Version) {
     private var skipIfNotExists: Boolean = false
 
     /**
-     * 设置预先加载的 [GameManifest]
+     * Sets a preloaded [GameManifest]
      */
     fun setManifest(manifest: GameManifest): VersionInfoParser {
         this.gameManifest = manifest
@@ -39,8 +39,8 @@ class VersionInfoParser(private val version: Version) {
     }
 
     /**
-     * 启用版本继承
-     * @param skipIfNotExists 若 [GameManifest.inheritsFrom] 对应的 JSON 文件不存在，则静默跳过继承
+     * Enables version inheritance
+     * @param skipIfNotExists silently skips inheritance when the inheritsFrom JSON is missing
      */
     fun setInheriting(skipIfNotExists: Boolean = false): VersionInfoParser {
         this.inherit = true
@@ -49,7 +49,7 @@ class VersionInfoParser(private val version: Version) {
     }
 
     /**
-     * 构建并返回最终合并后的 [GameManifest]
+     * Builds and returns the final merged [GameManifest]
      */
     fun build(): GameManifest {
         val manifest = gameManifest ?: GSON.fromJson(

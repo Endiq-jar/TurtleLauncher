@@ -30,8 +30,8 @@ import java.util.zip.ZipFile
 private const val TAG = "ResourcePackUtils"
 
 /**
- * 解析资源包文件，游戏内仅支持加载文件夹、文件后缀为zip的资源包
- * @param file 资源包文件
+ * Parses a resource pack; the game only loads folder packs or zip packs
+ * @param file the resource pack file
  */
 suspend fun parseResourcePack(file: File): ResourcePackInfo? = withContext(Dispatchers.IO) {
     runCatching {
@@ -40,25 +40,25 @@ suspend fun parseResourcePack(file: File): ResourcePackInfo? = withContext(Dispa
         var iconBytes: ByteArray? = null
         var fileSize: Long? = null
 
-        if (file.isDirectory) { //文件夹形式的资源包
-            //资源包元数据
+        if (file.isDirectory) { //Resource pack in folder form
+            //Resource pack metadata
             File(file, "pack.mcmeta").takeIf { it.exists() }?.let { metaFile ->
                 metaContent = metaFile.readText()
             }
-            //尝试读取资源包的图标
+            //Try reading the resource pack's icon
             File(file, "pack.png").takeIf { it.exists() }?.let { iconFile ->
                 iconBytes = iconFile.readBytes()
             }
-        } else if (file.extension == "zip") { //压缩包形式的资源包
-            //性能、速度考虑，仅压缩包形式的资源包可以计算文件大小
+        } else if (file.extension == "zip") { //Resource pack in archive form
+            //For performance, only archive resource packs get a computed file size
             fileSize = FileUtils.sizeOf(file)
 
             ZipFile(file).use { zip ->
-                //资源包元数据
+                //Resource pack metadata
                 zip.getEntry("pack.mcmeta")?.let { metaEntry ->
                     metaContent = zip.getInputStream(metaEntry).bufferedReader().readText()
                 }
-                //尝试读取资源包的图标
+                //Try reading the resource pack's icon
                 zip.getEntry("pack.png")?.let { iconEntry ->
                     iconBytes = zip.getInputStream(iconEntry).readBytes()
                 }
@@ -72,7 +72,7 @@ suspend fun parseResourcePack(file: File): ResourcePackInfo? = withContext(Dispa
                 Logger.warning(TAG, "Failed to parse the resource package metadata: ${file.absolutePath}", it)
             }.getOrNull()
         }?.also {
-            //解析成功，则代表其是一个有效的格式
+            //Successful parsing means a valid format
             isValid = true
         }
 

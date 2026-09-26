@@ -22,13 +22,13 @@ import com.endiq.turtlelauncher.game.download.modpack.platform.PackPlatform
 import com.endiq.turtlelauncher.game.download.modpack.platform.SimplePackParser
 
 /**
- * MultiMC 整合包解析器，尝试解析 mmc-pack.json 来解析这个整合包
+ * MultiMC modpack parser, trying mmc-pack.json
  */
 object MultiMCPackParser : SimplePackParser<MultiMCManifest>(
     indexFilePath = "mmc-pack.json",
     manifestClass = MultiMCManifest::class.java,
     buildPack = { root, manifest ->
-        //需要确保提供了 Minecraft 版本，兜底检查：组件不应该为空！
+        //Ensure a Minecraft version is provided; sanity check: components must not be empty!
         if (manifest.getMinecraftVersion() == null || manifest.components.isEmpty()) {
             error("This MMC modpack does not provide game version information and cannot be installed!")
         }

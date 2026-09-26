@@ -86,9 +86,9 @@ import com.endiq.turtlelauncher.viewmodel.EditorViewModel
 import java.io.File
 
 /**
- * 控制布局编辑器主要UI，用于编辑控制布局
- * @param exit 保存后执行的退出
- * @param menuExit 通过菜单直接调用的“直接退出”
+ * Main UI of the control layout editor, used to edit control layouts
+ * @param exit exit performed after saving
+ * @param menuExit "exit directly" invoked straight from the menu
  */
 @Composable
 fun BoxWithConstraintsScope.ControlEditor(
@@ -101,11 +101,11 @@ fun BoxWithConstraintsScope.ControlEditor(
     val styles by viewModel.observableLayout.styles.collectAsStateWithLifecycle()
     val joystickStyles by viewModel.observableLayout.joystickStyles.collectAsStateWithLifecycle()
 
-    /** 默认新建的控件层的名称 */
+    /** Default name of a newly created widget layer */
     val defaultLayerName = stringResource(R.string.control_editor_edit_layer_default)
-    /** 默认新建的按键的名称 */
+    /** Default name of a newly created button */
     val defaultButtonName = stringResource(R.string.control_editor_edit_button_default)
-    /** 默认新建的文本框的名称 */
+    /** Default name of a newly created text box */
     val defaultTextName = stringResource(R.string.control_editor_edit_text_default)
 
     val density = LocalDensity.current
@@ -126,16 +126,16 @@ fun BoxWithConstraintsScope.ControlEditor(
                 val current = viewModel.selectedWidget?.data
                 viewModel.selectedWidget = SelectedWidgetData(data, layer)
                 if (current == data) {
-                    //选中后再点击一次，打开编辑菜单
+                    //Tap a selected widget again to open its edit menu
                     viewModel.editorOperation = EditorOperation.SelectButton
                 }
             },
             onBackgroundClick = {
-                //点击背景层时清除选中的控件
+                //Tapping the background layer clears the selected widget
                 viewModel.selectedWidget = null
             },
             floatingButtons = {
-                //设置属性
+                //Set properties
                 ActionButton(
                     painter = painterResource(R.drawable.ic_settings_filled),
                     text = stringResource(R.string.generic_setting),
@@ -145,7 +145,7 @@ fun BoxWithConstraintsScope.ControlEditor(
                         }
                     }
                 )
-                //复制控件
+                //Duplicate the widget
                 ActionButton(
                     painter = painterResource(R.drawable.ic_file_copy_filled),
                     text = stringResource(R.string.control_editor_edit_dialog_clone_widget),
@@ -158,7 +158,7 @@ fun BoxWithConstraintsScope.ControlEditor(
                         }
                     }
                 )
-                //删除
+                //Delete
                 ActionButton(
                     painter = painterResource(R.drawable.ic_delete_filled),
                     text = stringResource(R.string.generic_delete),
@@ -238,7 +238,7 @@ fun BoxWithConstraintsScope.ControlEditor(
                             buttonSize = createAdaptiveButtonSize(
                                 referenceLength = screenSize.height,
                                 density = density.density,
-                                type = ButtonSize.Type.WrapContent //文本框默认使用包裹内容
+                                type = ButtonSize.Type.WrapContent //text boxes default to wrap-content
                             ),
                             visibilityType = VisibilityType.ALWAYS
                         )
@@ -693,7 +693,7 @@ private fun EditorWidgetOperation(
         }
         is EditorWidgetOperation.SendText -> {
             val data = operation.data
-            //文本内容
+            //Text content
             var value by remember {
                 mutableStateOf(data.clickEvents.find { it.type == ClickEvent.Type.SendText }?.key ?: "")
             }
@@ -714,7 +714,7 @@ private fun EditorWidgetOperation(
                 },
                 singleLine = true,
                 onConfirm = {
-                    //清除所有发送文本事件，如果文本不为空则再添加
+                    //Clear all send-text events; re-add if the text is non-empty
                     data.onRemoveAllEvents(ClickEvent.Type.SendText)
                     if (value.isNotEmpty()) {
                         data.onAddEvent(ClickEvent(ClickEvent.Type.SendText, value))

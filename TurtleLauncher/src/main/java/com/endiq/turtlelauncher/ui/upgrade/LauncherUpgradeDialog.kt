@@ -90,9 +90,9 @@ fun UpgradeDialog(
                     text = stringResource(R.string.upgrade_new)
                 )
 
-                //版本号
+                //Version numbers
                 val versionStr = stringResource(R.string.upgrade_version_change, data.version)
-                //更新时间
+                //Update time
                 val dateStr = stringResource(
                     R.string.upgrade_version_create_at,
                     formatDate(
@@ -120,7 +120,7 @@ fun UpgradeDialog(
                     )
                 }
 
-                //按钮
+                //Button
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -135,10 +135,10 @@ fun UpgradeDialog(
                         FilledTonalButton(
                             onClick = {
                                 if (cloudDrive.links.isEmpty()) {
-                                    //未配置多网盘链接，使用默认链接（旧版兼容，必定会有）
+                                    //No multi-drive links configured: use the default link (legacy compat, always present)
                                     onLinkClick(cloudDrive.link)
                                 } else if (cloudDrive.links.size == 1) {
-                                    //只有一个网盘链接，则直接访问链接
+                                    //A single drive link: visit it directly
                                     onLinkClick(cloudDrive.links[0].link)
                                 } else {
                                     onCloudDriveClick(cloudDrive)

@@ -32,10 +32,10 @@ import androidx.compose.ui.draw.clipToBounds
 import com.endiq.turtlelauncher.ui.screens.TitledNavKey
 
 /**
- * 单层级基础屏幕，根据 `currentKey` 判断当前屏幕是否可见
- * @param screenKey 当前屏幕的Key
- * @param currentKey 当前屏幕正在展示的Key
- * @param useClassEquality 是否使用类相等判断
+ * Single-level base screen: visibility judged from `currentKey`
+ * @param screenKey this screen's key
+ * @param currentKey the key currently shown
+ * @param useClassEquality whether to use class equality
  */
 @Composable
 fun BaseScreen(
@@ -48,10 +48,10 @@ fun BaseScreen(
         isTagVisible(screenKey, currentKey, useClassEquality)
     }
 
-    //初始不可见，用于触发首次的 false -> true 动画
+    //Initially invisible, triggering the first false -> true animation
     val visibleState = remember { mutableStateOf(false) }
 
-    //仅在 composition 完成后，才允许更新可见状态
+    //Visible state updates only after composition completes
     LaunchedEffect(targetVisible) {
         visibleState.value = targetVisible
     }
@@ -63,8 +63,8 @@ fun BaseScreen(
 }
 
 /**
- * 多层级基础屏幕，根据层级列表中的每个层级Key判断当前屏幕是否可见
- * @param levels 层级列表，每个层级包含（Key、当前Key、是否启用引用相等）
+ * Multi-level base screen: visibility judged per key in the level list
+ * @param levels level list, each level holding (key, current key, reference equality flag)
  */
 @Composable
 fun BaseScreen(
@@ -77,10 +77,10 @@ fun BaseScreen(
         }
     }
 
-    //初始不可见，用于触发首次的 false -> true 动画
+    //Initially invisible, triggering the first false -> true animation
     val visibleState = remember { mutableStateOf(false) }
 
-    //仅在 composition 完成后，才允许更新可见状态
+    //Visible state updates only after composition completes
     LaunchedEffect(targetVisible) {
         visibleState.value = targetVisible
     }
@@ -92,7 +92,7 @@ fun BaseScreen(
 }
 
 /**
- * 多层级基础屏幕，根据层级列表中的每个层级Key判断当前屏幕是否可见
+ * Multi-level base screen: visibility judged per key in the level list
  */
 @Composable
 fun BaseScreen(
@@ -110,10 +110,10 @@ fun BaseScreen(
         v1 && v2
     }
 
-    //初始不可见，用于触发首次的 false -> true 动画
+    //Initially invisible, triggering the first false -> true animation
     val visibleState = remember { mutableStateOf(false) }
 
-    //仅在 composition 完成后，才允许更新可见状态
+    //Visible state updates only after composition completes
     LaunchedEffect(targetVisible) {
         visibleState.value = targetVisible
     }
@@ -156,7 +156,7 @@ private fun isTagVisible(key: Class<out TitledNavKey>, current: TitledNavKey?): 
 }
 
 /**
- * @param useClassEquality 是否使用类相等判断
+ * @param useClassEquality whether to use class equality
  */
 private fun isTagVisible(key: TitledNavKey, current: TitledNavKey?, useClassEquality: Boolean): Boolean {
     return when {

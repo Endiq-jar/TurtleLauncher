@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.game.sdl;
 
 /**
- * 游戏请求 GLFW direct gamepad 输入时的回调
+ * Callback when the game requests GLFW direct gamepad input
  */
 public interface DirectGamepadEnableHandler {
     void onDirectGamepadEnabled();

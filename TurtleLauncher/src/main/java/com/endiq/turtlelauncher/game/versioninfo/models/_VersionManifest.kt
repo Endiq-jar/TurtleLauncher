@@ -22,10 +22,10 @@ import com.endiq.turtlelauncher.game.versioninfo.MinecraftVersion
 import com.endiq.turtlelauncher.game.versioninfo.allAprilFools
 
 /**
- * 简易的版本类型过滤器，过滤版本：正式版、快照版、远古版
- * @param release 是否保留正式版
- * @param snapshot 是否保留快照版
- * @param old 是否保留远古版
+ * Simple version type filter: release, snapshot, ancient
+ * @param release whether to keep releases
+ * @param snapshot whether to keep snapshots
+ * @param old whether to keep ancient versions
  */
 fun List<VersionManifest.Version>.filterType(
     release: Boolean,
@@ -36,17 +36,17 @@ fun List<VersionManifest.Version>.filterType(
 }
 
 /**
- * 将 [VersionManifest.Version] 列表映射为 [MinecraftVersion] 列表
+ * Maps a [VersionManifest.Version] list into a [MinecraftVersion] list
  */
 fun List<VersionManifest.Version>.mapVersion(): List<MinecraftVersion> {
     return this.map { version ->
-        //检查其是否为愚人节版
+        //Check whether it's an April Fools version
         val aprilFoolsVersion = allAprilFools.find { it.version.equals(version.id, ignoreCase = true) }
 
         MinecraftVersion(
             version = version,
             type = if (aprilFoolsVersion != null) {
-                //确认为愚人节版本
+                //Confirmed April Fools version
                 MinecraftVersion.Type.AprilFools
             } else {
                 when (version.type) {
@@ -57,18 +57,18 @@ fun List<VersionManifest.Version>.mapVersion(): List<MinecraftVersion> {
                     else -> MinecraftVersion.Type.Unknown
                 }
             },
-            summary = aprilFoolsVersion?.type?.summary, //暂时仅为愚人节版提供描述
+            summary = aprilFoolsVersion?.type?.summary, //Only April Fools versions get a description for now
             urlSuffix = aprilFoolsVersion?.type?.urlSuffix
         )
     }
 }
 
 /**
- * 检查版本类型是否匹配给定的类型
- * @param release 如果该版本为正式版，则返回它的值
- * @param snapshot 如果该版本为快照版，则返回它的值
- * @param aprilFools 如果该版本为愚人节版，则返回它的值
- * @param old 如果该版本为远古版，则返回它的值
+ * Checks whether the version type matches the given types
+ * @param release returned when the version is a release
+ * @param snapshot returned when the version is a snapshot
+ * @param aprilFools returned when the version is an April Fools version
+ * @param old returned when the version is ancient
  */
 fun MinecraftVersion.isType(
     release: Boolean,
@@ -81,14 +81,14 @@ fun MinecraftVersion.isType(
     MinecraftVersion.Type.OldBeta -> old
     MinecraftVersion.Type.OldAlpha -> old
     MinecraftVersion.Type.AprilFools -> aprilFools
-    MinecraftVersion.Type.Unknown -> old //未知版本，默认归类到远古版
+    MinecraftVersion.Type.Unknown -> old //Unknown versions default to ancient
 }
 
 /**
- * 检查版本类型是否匹配给定的类型
- * @param release 如果该版本为正式版，则返回它的值
- * @param snapshot 如果该版本为快照版，则返回它的值
- * @param old 如果该版本为远古版，则返回它的值
+ * Checks whether the version type matches the given types
+ * @param release returned when the version is a release
+ * @param snapshot returned when the version is a snapshot
+ * @param old returned when the version is ancient
  */
 fun VersionManifest.Version.isType(
     release: Boolean,

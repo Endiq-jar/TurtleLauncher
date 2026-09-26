@@ -56,13 +56,13 @@ class MultiMCManifest(
     )
 
     /**
-     * 尝试获取 Minecraft 版本
+     * Tries to get the Minecraft version
      */
     fun getMinecraftVersion(): String? =
         components.find { it.uid == UID_MINECRAFT && it.isImportant }?.version
 
     /**
-     * 匹配模组加载器与版本
+     * Matches mod loaders and versions
      */
     fun Component.retrieveLoader(): Pair<ModLoader, String>? {
         return when (uid) {

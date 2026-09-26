@@ -28,18 +28,18 @@ import java.nio.file.Files
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 
-/** CurseForge 指纹计算时需要剔除的空白字节：\t、\n、\r、空格 */
+/** Whitespace bytes CurseForge fingerprinting must strip: \\t, \\n, \\r and space */
 val CURSEFORGE_FINGERPRINT_SKIP_BYTES = listOf(0x9, 0xa, 0xd, 0x20)
 
-/** 空白字节的剔除查找表，逐字节判断时避免装箱与线性查找 */
+/** Whitespace-stripping lookup table; avoids boxing and linear scans in per-byte checks */
 private val CURSEFORGE_FINGERPRINT_SKIP_TABLE = BooleanArray(256).also { table ->
     CURSEFORGE_FINGERPRINT_SKIP_BYTES.forEach { table[it] = true }
 }
 
 /**
- * 本地模组文件的指纹
- * @param sha1 文件的 SHA-1 值（Modrinth）
- * @param murmur2 文件按 CurseForge 规则剔除空白字节后的 MurmurHash2 值（CurseForge）
+ * Fingerprints of a local mod file
+ * @param sha1 the file's SHA-1 (Modrinth)
+ * @param murmur2 the file's MurmurHash2 after whitespace stripping per CurseForge rules (CurseForge)
  */
 class ModFingerprints(
     val sha1: String,
@@ -47,9 +47,9 @@ class ModFingerprints(
 )
 
 /**
- * 指纹的进程级内存缓存，以文件绝对路径为键
+ * Process-level in-memory cache of fingerprints, keyed by absolute file path
  *
- * 附带文件大小与最后修改时间校验，文件变化时视为失效，避免重复读盘计算
+ * Validated against file size and mtime; changed files are treated as stale, avoiding repeat disk reads
  */
 private object ModFingerprintMemoryCache {
     private class Entry(
@@ -72,10 +72,10 @@ private object ModFingerprintMemoryCache {
 }
 
 /**
- * 一次性计算模组文件的平台指纹，相同文件直接复用内存缓存
+ * Computes a mod file's platform fingerprints in one pass; identical files reuse the in-memory cache directly
  *
- * CurseForge 指纹算法要求预先得知剔除空白字节后的总长度，
- * 因此第一遍扫描同时计算 SHA-1 与过滤长度，第二遍仅计算 MurmurHash2
+ * The CurseForge fingerprint algorithm needs the whitespace-stripped total length upfront,
+ * so the first scan pass computes SHA-1 plus the filtered length, and the second pass computes only MurmurHash2
  */
 suspend fun computeModFingerprints(file: File): ModFingerprints = withContext(Dispatchers.IO) {
     ModFingerprintMemoryCache.get(file)?.let { return@withContext it }

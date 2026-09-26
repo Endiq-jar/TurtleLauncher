@@ -19,15 +19,15 @@
 package com.endiq.turtlelauncher.setting.enums
 
 /**
- * 背景内容模糊效果类型
+ * Background content blur type
  */
 enum class BackgroundBlur {
     /**
-     * 背景模糊
+     * Background blur
      */
     Background,
     /**
-     * 前景毛玻璃模糊
+     * Foreground frosted-glass blur
      */
     Foreground;
 

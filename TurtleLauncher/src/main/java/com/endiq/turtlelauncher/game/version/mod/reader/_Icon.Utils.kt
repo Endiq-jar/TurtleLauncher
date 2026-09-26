@@ -27,7 +27,7 @@ fun JDKZipFile.tryGetIcon(iconPath: String?): ByteArray? {
     return try {
         getInputStream(getEntry(iconPath))?.readBytes()
     } catch (_: Exception) {
-        null //Ignored图标读取错误
+        null //ignore icon read errors
     }
 }
 
@@ -39,6 +39,6 @@ fun ZipFile.tryGetIcon(iconPath: String?): ByteArray? {
             getInputStream(entry).use { it.readBytes() }
         }
     } catch (_: Exception) {
-        null //Ignored图标读取错误
+        null //ignore icon read errors
     }
 }

@@ -25,7 +25,7 @@ import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.viewmodel.influencedByBackground
 
 /**
- * 降低颜色的饱和度
+ * Desaturates a color
  */
 fun Color.desaturate(factor: Float): Color {
     val hsv = FloatArray(3)
@@ -35,8 +35,8 @@ fun Color.desaturate(factor: Float): Color {
 }
 
 /**
- * 受背景内容影响的颜色，设置背景内容时，支持调整不透明度用于适配背景内容画面
- * @param influencedAlpha 受影响时，调整的 alpha 值
+ * Color influenced by background content; opacity adapts when such content is set
+ * @param influencedAlpha the alpha applied while influenced
  */
 @Composable
 fun influencedByBackgroundColor(

@@ -22,7 +22,7 @@ import android.os.Parcelable
 import com.endiq.turtlelauncher.setting.launcherMMKV
 
 /**
- * Parcelable 设置单元，将 Parcelable 保存到设置配置文件中
+ * Parcelable setting unit, persisting the Parcelable to the settings file
  */
 class ParcelableSettingUnit<E: Parcelable>(
     key: String,

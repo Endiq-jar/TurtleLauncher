@@ -33,7 +33,7 @@ enum class Festival(
     val textRes: Int
 ) {
     /**
-     * 新年
+     * New Year
      */
     NEW_YEAR(
         isChinese = true,
@@ -49,7 +49,7 @@ enum class Festival(
     },
 
     /**
-     * 春节
+     * Chinese New Year (Spring Festival)
      */
     SPRING_FESTIVAL(
         isChinese = true,
@@ -65,7 +65,7 @@ enum class Festival(
     },
 
     /**
-     * 清明节
+     * Qingming Festival
      */
     QING_MING(
         isChinese = true,
@@ -81,7 +81,7 @@ enum class Festival(
     },
 
     /**
-     * 端午节
+     * Dragon Boat Festival
      */
     DRAGON_BOAT(
         isChinese = true,
@@ -97,7 +97,7 @@ enum class Festival(
     },
 
     /**
-     * 中秋节
+     * Mid-Autumn Festival
      */
     MID_AUTUMN(
         isChinese = true,
@@ -113,7 +113,7 @@ enum class Festival(
     },
 
     /**
-     * 国庆节
+     * National Day
      */
     NATIONAL_DAY(
         isChinese = true,
@@ -129,7 +129,7 @@ enum class Festival(
     },
 
     /**
-     * 愚人节
+     * April Fools' Day
      */
     APRIL_FOOLS(
         isChinese = false,
@@ -145,7 +145,7 @@ enum class Festival(
     },
 
     /**
-     * 圣诞节
+     * Christmas
      */
     CHRISTMAS(
         isChinese = false,
@@ -165,8 +165,8 @@ enum class Festival(
 
 
 /**
- * 获取今天的节日列表
- * @param containsChinese 是否包含中国节日
+ * Gets today's festivals
+ * @param containsChinese whether to include Chinese festivals
  */
 fun getTodayFestivals(
     date: LocalDate = LocalDate.now(),

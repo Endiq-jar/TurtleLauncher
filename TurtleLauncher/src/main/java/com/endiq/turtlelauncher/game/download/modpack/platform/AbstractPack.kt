@@ -34,18 +34,18 @@ abstract class AbstractPack(
 ) {
     /**
      * Returns the final installed client version name (edited by the user)
-     * 在安装结束后会尝试直接设定为这个版本
+     * After the install ends, it tries to switch directly to this version
      */
     abstract fun getFinalClientName(): String
 
     /**
-     * 构建安装任务阶段，在这里下载依赖文件、解压整合包内部的文件等
+     * Builds the install task phase, where dependency files are downloaded and modpack-internal files unpacked
      * @param scope the lifecycle-managed scope the install task runs in
-     * @param versionFolder 临时游戏版本文件夹，用于安装游戏文件
-     * @param waitForVersionName 等待用户输入Version name
-     * @param addPhases 添加下一安装阶段
-     * @param onClearTemp 已完成安装，开始清理缓存
-     * @param logOutputHolder 安装 JVM 日志输出的容器
+     * @param versionFolder temp game version folder, for installing game files
+     * @param waitForVersionName waits for the user to enter the version name
+     * @param addPhases adds the next install phase
+     * @param onClearTemp install finished, start cleaning caches
+     * @param logOutputHolder holder of the install JVM log output
      */
     abstract fun buildTaskPhases(
         context: Context,

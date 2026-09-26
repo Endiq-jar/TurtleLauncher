@@ -25,7 +25,7 @@ import java.io.File
 private const val TAG = "VideoUtils"
 
 /**
- * 尝试判断文件是否为一则视频
+ * Tries telling whether a file is a video
  */
 fun File.isVideoFile(): Boolean {
     if (!exists()) return false

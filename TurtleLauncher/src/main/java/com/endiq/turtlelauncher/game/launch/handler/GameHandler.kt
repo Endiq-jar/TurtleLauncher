@@ -82,7 +82,7 @@ class GameHandler(
     private var showGameInfo by mutableStateOf(true)
 
     /**
-     * 日志展示状态
+     * Log display state
      */
     private var logState by mutableStateOfLog()
 
@@ -99,15 +99,15 @@ class GameHandler(
             set("fullscreen", "false")
             set("touchscreen", "false")
 
-//            //关闭文本转语音功能
+//            //Disable the text-to-speech feature
 //            set("options.narrator", "0")
 //            set("narrator", "0")
 
             if (version.getVersionInfo()!!.minecraftVersion.isLowerVer("1.13")) {
-                //fix: 牢版本按键事件
-                //shift + w -> 87 错误的触发了F11，切换全屏
+                //fix: key events of ancient versions
+                //shift + w -> 87 wrongly triggered F11, toggling fullscreen
                 set("key_key.fullscreen", "0")
-                //输入字符@ -> 64 错误的触发了F6，触发“开始/停止直播”
+                //typing @ -> 64 wrongly triggered F6, "start/stop streaming"
                 set("key_key.streamStartStop", "0")
                 set("key_key.streamPauseUnpause", "0")
             }
@@ -149,7 +149,7 @@ class GameHandler(
         if (!isGameRendering) {
             isGameRendering = true
             showGameInfo = false
-            //游戏已经开始渲染，如果日志状态为渲染前显示，则在这里关闭日志
+            //The game has started rendering; if the log state is "show before render", close the log here
             if (logState == LogState.SHOW_BEFORE_LOADING) {
                 logState = LogState.CLOSE
             }
@@ -162,38 +162,38 @@ class GameHandler(
 
         if (event.isGamepadKeyEvent()) {
             if (AllSettings.gamepadControl.state && gamepadViewModel.checkModePrompt()) {
-                //模式选择询问完成前，吞掉所有手柄按键输入
+                //Before the mode-selection prompt resolves, swallow all gamepad key input
                 return false
             }
             if (AllSettings.gamepadControl.state && AllSettings.gamepadInputMode.state == GamepadInputMode.SdlDirect) {
-                //SDL 直通模式下，按键原样交给 SDL native
+                //In SDL passthrough mode, keys are handed verbatim to SDL native
                 if (SdlBridge.sdlEnabled) {
-                    //让控制布局等注册方感知到手柄使用中
+                    //Let control layouts and other registrants sense the gamepad is in use
                     gamepadViewModel.notifyActivity()
                     handleGamepadKeyEvent(event)
                     try {
                         SDLActivity.handleKeyEvent(null, event.keyCode, event, null)
                     } catch (_: UnsatisfiedLinkError) {
-                        //SDL native 未就绪时忽略
+                        //Ignored while SDL native isn't ready
                     }
                 }
                 return false
             }
             return if (AllSettings.gamepadControl.state) {
-                //开启时，提前发送事件，在UI层处理（或重映射）
+                //When enabled, send events early for the UI layer to handle (or remap)
                 gamepadViewModel.sendKeyEvent(event)
                 false
             } else {
-                //已禁用手柄控制，避免继续向下被当作键盘事件进行处理
+                //Gamepad control is disabled; keep it from being treated as a keyboard event further down
                 if (AllSettings.showMenuBall.state) {
-                    //开启游戏菜单悬浮窗时，完全无响应
+                    //Fully unresponsive while the game-menu overlay is open
                     false
                 } else {
                     true
                 }
             }
         }
-        //已在VMActivity绑定onBackPressedDispatcher，这里不应该继续向下处理
+        //VMActivity already binds onBackPressedDispatcher; don't continue handling here
         if (event.keyCode == KeyEvent.KEYCODE_BACK) return true
 
         if ((event.flags and KeyEvent.FLAG_SOFT_KEYBOARD) == KeyEvent.FLAG_SOFT_KEYBOARD) {

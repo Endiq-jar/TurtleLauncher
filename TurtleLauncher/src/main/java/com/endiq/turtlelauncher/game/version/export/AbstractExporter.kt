@@ -27,7 +27,7 @@ abstract class AbstractExporter(
     val type: PackType
 ) {
     /**
-     * 构建所需的导出任务
+     * Builds the needed export tasks
      */
     abstract fun MutableList<TitledTask>.buildTasks(
         context: Context,
@@ -37,7 +37,7 @@ abstract class AbstractExporter(
     )
 
     /**
-     * 整合包文件后缀
+     * Modpack file suffix
      */
     abstract val fileSuffix: String
 
@@ -50,7 +50,7 @@ abstract class AbstractExporter(
     }
 
     /**
-     * 获取一个文件的相对路径
+     * Returns a file's relative path
      */
     protected fun relativePath(
         file: File,

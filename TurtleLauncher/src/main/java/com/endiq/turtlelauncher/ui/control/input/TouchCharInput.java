@@ -37,9 +37,9 @@ public class TouchCharInput extends androidx.appcompat.widget.AppCompatEditText 
     private InputListener mListener;
 
     public void enableKeyboard() {
-        // 仅当游戏运行在 SDL 渲染路径（MC 26.3+）时由 SDL 输入框接管；
-        // 仅手柄子系统初始化 SDL 时（如 MC 26.2 挂 Controlify）游戏输入仍走 GLFW 桥，
-        // 委托给 SDL 通道只会被拒绝，须回落到启动器侧输入
+        // Only when the game runs on the SDL render path (MC 26.3+) does the SDL text field take over;
+        // when only the gamepad subsystem initialized SDL (e.g. MC 26.2 with Controlify), game input still crosses the GLFW bridge,
+        // delegating to the SDL channel only gets rejected; fall back to launcher-side input
         if (SdlBridge.getSdlEnabled() && SdlBridge.isSdlRenderActive()) {
             SDLActivity.enableSDLEditKeyboard();
             return;
@@ -59,15 +59,15 @@ public class TouchCharInput extends androidx.appcompat.widget.AppCompatEditText 
     }
 
     /**
-     * 当前是否存在活跃的输入栏编辑器
+     * Whether an input bar editor is currently active
      */
     public static boolean isActive() {
         return sActiveInput != null;
     }
 
     public void disableKeyboard() {
-        // 与 enableKeyboard 同条件分流：非 SDL 渲染路径时输入走的是启动器侧编辑器，
-        // 此时把关闭动作委托给 SDL 通道只会落空
+        // Same split condition as enableKeyboard: on non-SDL render paths, input goes through the launcher-side editor,
+        // so delegating the close action to the SDL channel would miss
         if (SdlBridge.getSdlEnabled() && SdlBridge.isSdlRenderActive()) {
             SDLActivity.disableSDLEditKeyboard();
             if (sActiveInput == this) {

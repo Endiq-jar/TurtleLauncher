@@ -104,7 +104,7 @@ private const val ContentWeight = 7f
 private const val ActionMenuWeight = 3f
 
 /**
- * 操作菜单停泊槽位与屏幕边缘的间距
+ * Spacing between the action menu docking slots and the screen edge
  */
 private val ActionMenuOuterPadding = 12.dp
 
@@ -128,7 +128,7 @@ fun LauncherScreen(
         dragState.isRtl = isRtl
 
         LaunchedEffect(isVisible) {
-            //屏幕切走时打断进行中的拖拽
+            //Break an ongoing drag when the screen switches away
             if (!isVisible) dragState.onDragCancel()
         }
 
@@ -144,10 +144,10 @@ fun LauncherScreen(
             dragState.outerPaddingPx = with(LocalDensity.current) { ActionMenuOuterPadding.toPx() }
             dragState.menuSpanPx = parentWidthPx * (ActionMenuWeight / (ActionMenuWeight + ContentWeight))
 
-            //拖拽期间以预览侧为准
+            //During drag, follow the preview side
             val effectiveSide = dragState.previewSide ?: dockedSide
 
-            //卡片尺寸与停泊槽内容区保持一致
+            //Card size matches the dock slot's content area
             val cardWidth = maxWidth * (ActionMenuWeight / (ActionMenuWeight + ContentWeight)) - ActionMenuOuterPadding
             val cardHeight = maxHeight - ActionMenuOuterPadding * 2
 
@@ -168,9 +168,9 @@ fun LauncherScreen(
                 }
             }
 
-            // 内容区域
+            // Content area
             Row(modifier = Modifier.fillMaxSize()) {
-                // ActionMenu 对接到了 Start，留出空位
+                // ActionMenu docked to Start; leave the slot open
                 if (dockedSide == ActionMenuSide.START) {
                     Spacer(modifier = Modifier.weight(ActionMenuWeight))
                 }
@@ -194,7 +194,7 @@ fun LauncherScreen(
                     )
                 }
 
-                // ActionMenu 对接到了 End，留出空位
+                // ActionMenu docked to End; leave the slot open
                 if (dockedSide == ActionMenuSide.END) {
                     Spacer(modifier = Modifier.weight(ActionMenuWeight))
                 }

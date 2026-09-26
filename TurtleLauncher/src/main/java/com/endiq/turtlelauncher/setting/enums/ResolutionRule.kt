@@ -21,15 +21,15 @@ package com.endiq.turtlelauncher.setting.enums
 import com.endiq.turtlelauncher.R
 
 /**
- * 游戏分辨率的计算规则
+ * Game resolution computation rule
  */
 enum class ResolutionRule(val nameRes: Int) {
     /**
-     * 基于屏幕真实宽高按百分比缩放
+     * Scales from the screen's real width/height by percentage
      */
     PERCENTAGE(R.string.settings_renderer_resolution_rule_percentage),
     /**
-     * 精确指定渲染宽高
+     * Precisely specifies the render width/height
      */
     CUSTOM(R.string.generic_custom)
 }

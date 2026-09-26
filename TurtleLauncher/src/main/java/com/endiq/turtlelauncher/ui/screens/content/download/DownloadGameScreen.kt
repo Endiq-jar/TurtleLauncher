@@ -80,35 +80,35 @@ import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 import java.util.concurrent.TimeoutException
 
-/** 游戏安装状态操作 */
+/** Game install state operations */
 private sealed interface GameInstallOperation {
     data object None : GameInstallOperation
-    /** 开始安装 */
+    /** Install started */
     data object Install : GameInstallOperation
-    /** 警告通知权限，可以无视，并直接开始安装 */
+    /** Notification permission warning; may be ignored to install directly */
     data class WarningForNotification(val info: GameDownloadInfo) : GameInstallOperation
-    /** 警告正在使用流量 */
+    /** Warning about active mobile data use */
     data class WarningForMobileData(val info: GameDownloadInfo) : GameInstallOperation
-    /** 游戏安装出现异常 */
+    /** Exception during game install */
     data class Error(val th: Throwable) : GameInstallOperation
-    /** 游戏已成功安装 */
+    /** The game installed successfully */
     data object Success : GameInstallOperation
 }
 
 private class GameDownloadViewModel(): ViewModel() {
     /**
-     * 用于刷新游戏下载页面Version name的检查
+     * Refreshes the version name check on the game download page
      */
     var versionNameErrorCheck by mutableStateOf(false)
     var installOperation by mutableStateOf<GameInstallOperation>(GameInstallOperation.None)
 
     /**
-     * 游戏安装器
+     * Game installer
      */
     var installer by mutableStateOf<GameInstaller?>(null)
 
     /**
-     * 刷新游戏下载页面内的Version name检查
+     * Refreshes the version name check inside the game download page
      */
     private fun refreshVersionNameCheck() {
         versionNameErrorCheck = !versionNameErrorCheck
@@ -137,10 +137,10 @@ private class GameDownloadViewModel(): ViewModel() {
                     onStop()
                 },
                 onGameAlreadyInstalled = {
-                    //很有可能发生在刚安装完成，再次点击安装按钮时
-                    //Resets the state，避免无法发起新的安装的问题
+                    //Likely when install is tapped again right after an install
+                    //State reset avoids blocking a fresh install
                     installOperation = GameInstallOperation.None
-                    //保险起见，再次刷新Version name错误检查
+                    //Re-run the version name check to be safe
                     refreshVersionNameCheck()
                     onStop()
                 }
@@ -248,15 +248,15 @@ fun DownloadGameScreen(
                         refreshErrorCheck = viewModel.versionNameErrorCheck
                     ) { info ->
                         if (viewModel.installOperation !is GameInstallOperation.None) {
-                            //不是待安装状态，拒绝此次安装
+                            //Not in pending-install state; refuse this install
                             return@DownloadGameWithAddonScreen
                         }
                         if (!NotificationManager.checkNotificationEnabled(context)) {
-                            //警告通知权限
+                            //Warn about notification permission
                             viewModel.installOperation = GameInstallOperation.WarningForNotification(info)
                         } else {
                             if (isUsingMobileData(context)) {
-                                //警告正在使用流量
+                                //Warn about mobile data
                                 viewModel.installOperation = GameInstallOperation.WarningForMobileData(info)
                             } else {
                                 viewModel.install(
@@ -294,11 +294,11 @@ private fun GameInstallOperation(
             NotificationCheck(
                 text = stringResource(R.string.notification_data_jvm_service_message),
                 onGranted = {
-                    //权限被授予，开始安装
+                    //Permission granted; start installing
                     onInstall(gameInstallOperation.info)
                 },
                 onIgnore = {
-                    //用户不想授权，但是支持继续进行安装
+                    //The user declined, but install may continue anyway
                     onInstall(gameInstallOperation.info)
                 },
                 onDismiss = {
@@ -315,7 +315,7 @@ private fun GameInstallOperation(
                     updateOperation(GameInstallOperation.None)
                 },
                 onConfirm = {
-                    //用户坚持使用移动网络
+                    //The user insists on mobile data
                     onInstall(gameInstallOperation.info)
                 }
             )
@@ -325,7 +325,7 @@ private fun GameInstallOperation(
                 val installGame = installer.tasksFlow.collectAsStateWithLifecycle()
                 val installLog = installer.logOutput.collectAsStateWithLifecycle()
                 if (installGame.value.isNotEmpty()) {
-                    //安装游戏流程对话框
+                    //Game install flow dialog
                     TitleTaskFlowDialog(
                         title = stringResource(R.string.download_game_install_title),
                         tasks = installGame.value,

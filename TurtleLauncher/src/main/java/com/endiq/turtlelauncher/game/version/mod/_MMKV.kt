@@ -21,14 +21,14 @@ package com.endiq.turtlelauncher.game.version.mod
 import com.tencent.mmkv.MMKV
 
 /**
- * 模组项目缓存 MMKV，文件 HASH 值对应项目
+ * Mod project cache MMKV: file HASH -> project
  */
 fun modProjectCache(): MMKV = MMKV.mmkvWithID("ModProjectHashMapper", MMKV.MULTI_PROCESS_MODE)
 /**
- * 模组版本文件缓存 MMKV，文件 HASH 值对应平台文件
+ * Mod version file cache MMKV: file HASH -> platform file
  */
 fun modFileCache(): MMKV = MMKV.mmkvWithID("ModFileHashMapper", MMKV.MULTI_PROCESS_MODE)
 /**
- * 本地模组安装信息缓存 MMKV，平台:指纹 值对应安装信息
+ * Local mod install info cache MMKV: platform:fingerprint -> install info
  */
 fun installedModCache(): MMKV = MMKV.mmkvWithID("InstalledModHashMapper", MMKV.MULTI_PROCESS_MODE)

@@ -21,6 +21,6 @@ package com.endiq.turtlelauncher.game.plugin.renderer_v2.data
 import com.tencent.mmkv.MMKV
 
 /**
- * 渲染器插件环境变量配置 MMKV，按包名隔离存储各可配置环境变量的值
+ * MMKV for renderer plugin env config, storing each configurable env var's value isolated by package name
  */
 fun rendererEnvMMKV(): MMKV = MMKV.mmkvWithID("RendererEnvConfig", MMKV.MULTI_PROCESS_MODE)

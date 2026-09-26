@@ -23,31 +23,31 @@ import com.endiq.turtlelauncher.game.path.GamePathManager
 import com.endiq.turtlelauncher.game.version.installed.Version
 
 /**
- * 卡片版本所在的Game directories
+ * Game directory holding the card's version
  */
 sealed interface VersionCardDir {
-    /** 解析为实际的Game directories路径 */
+    /** Resolves to the actual game directory path */
     fun resolveGameHome(): String
 
-    /** 启动器默认Game directories */
+    /** Launcher default game directory */
     data object Default : VersionCardDir {
         override fun resolveGameHome(): String = GamePathManager.getDefaultPath()
     }
 
-    /** 用户自定义Game directories */
+    /** User custom game directories */
     data class Custom(val path: String) : VersionCardDir {
         override fun resolveGameHome(): String = path
     }
 
     companion object {
-        /** 依据实际Game directories路径推导目录类型 */
+        /** Derives the directory type from the actual game directory path */
         fun fromGameHome(gameHome: String): VersionCardDir =
             if (gameHome == GamePathManager.getDefaultPath()) Default else Custom(gameHome)
     }
 }
 
 /**
- * 版本卡片的持久化记录
+ * Persistent record of a version card
  */
 data class VersionCardRecord(
     @SerializedName("cardId")
@@ -58,19 +58,19 @@ data class VersionCardRecord(
     val dir: VersionCardDir
 )
 
-/** 版本卡片的可用性状态 */
+/** Version card availability state */
 sealed interface VersionCardStatus {
-    /** 尚未完成首次检查 */
+    /** First check not finished yet */
     data object Loading : VersionCardStatus
-    /** 版本可用 */
+    /** Version available */
     data class Available(val version: Version) : VersionCardStatus
-    /** Game directories可访问，但版本已不存在（被删除或文件夹损坏） */
+    /** Game directory accessible, but the version is gone (deleted or folder corrupted) */
     data object Deleted : VersionCardStatus
-    /** 路径不可访问：无存储权限，或Game directories已不存在 */
+    /** Path inaccessible: no storage permission, or the game directory is gone */
     data object Inaccessible : VersionCardStatus
 }
 
-/** 版本卡片的完整状态 */
+/** Full state of a version card */
 data class VersionCardState(
     val record: VersionCardRecord,
     val status: VersionCardStatus

@@ -65,10 +65,10 @@ import com.endiq.turtlelauncher.utils.logging.Logger
 private const val TAG = "ColorPicker"
 
 /**
- * 一个简易的颜色选择器
- * @param onChangeFinished 颜色完成变更
- * @param showAlpha 是否使用透明度调节器
- * @param showHue 是否使用色相调节器
+ * A simple color picker
+ * @param onChangeFinished fired when the color change settles
+ * @param showAlpha whether an alpha slider is shown
+ * @param showHue whether a hue slider is shown
  */
 @Composable
 fun ColorPickerDialog(
@@ -85,7 +85,7 @@ fun ColorPickerDialog(
     }
 
     /**
-     * 是否开启编辑Hex对话框
+     * Whether the Hex edit dialog is open
      */
     var editHex by remember {
         mutableStateOf(false)
@@ -177,13 +177,13 @@ fun ColorPickerDialog(
                                     }
                                 }
 
-                                //颜色预览
+                                //Color preview
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     val originalColor = remember {
                                         colorController.getOriginalColor()
                                     }
 
-                                    //初始颜色
+                                    //Initial color
                                     Text(
                                         text = originalColor.toHex(),
                                         style = MaterialTheme.typography.labelMedium
@@ -213,7 +213,7 @@ fun ColorPickerDialog(
                                                 .height(30.dp)
                                                 .background(color = selectedColor)
                                         )
-                                        //手动编辑Hex
+                                        //Manual Hex editing
                                         IconButton(
                                             modifier = Modifier.size(36.dp),
                                             onClick = { editHex = true }
@@ -261,7 +261,7 @@ fun ColorPickerDialog(
             mutableStateOf(selectedHex)
         }
         val newColor = remember(value) {
-            //尝试转换为颜色对象
+            //Try converting to a color
             value.toColorOrNull()
         }
 
@@ -291,7 +291,7 @@ fun ColorPickerDialog(
 }
 
 /**
- * 将颜色转换为Hex字符串
+ * Converts a color to a Hex string
  */
 fun Color.toHex(): String {
     val alpha = (alpha * 255).toInt().toString(16).padStart(2, '0')
@@ -302,10 +302,10 @@ fun Color.toHex(): String {
 }
 
 /**
- * 将Hex字符串转换为颜色对象
- * 若无法转换，则返回null
+ * Converts a Hex string to a color
+ * null when unconvertible
  *
- * 支持格式 AARRGGBB 或 RRGGBB
+ * Supports AARRGGBB or RRGGBB
  */
 fun String.toColorOrNull(): Color? {
     val hex = this.removePrefix("#")

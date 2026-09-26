@@ -21,9 +21,9 @@ package com.endiq.turtlelauncher.library
 import com.endiq.turtlelauncher.R
 
 /**
- * 库使用的协议信息
- * @param name 名称
- * @param raw 协议文本
+ * License info used by a library
+ * @param name the name
+ * @param raw the license text
  */
 data class License(
     val name: String,

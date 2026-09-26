@@ -21,15 +21,15 @@ package com.endiq.turtlelauncher.game.version.saves
 import com.endiq.turtlelauncher.R
 
 /**
- * @param levelCode 在 level.dat 中存储的值
+ * @param levelCode the value stored in level.dat
  */
 enum class GameMode(val levelCode: Int, val nameRes: Int) {
-    /** 生存模式 */
+    /** Survival mode */
     SURVIVAL(0, R.string.saves_manage_gamemode_survival),
-    /** 创造模式 */
+    /** Creative mode */
     CREATIVE(1, R.string.saves_manage_gamemode_creative),
-    /** 冒险模式 */
+    /** Adventure mode */
     ADVENTURE(2, R.string.saves_manage_gamemode_adventure),
-    /** 旁观模式 */
+    /** Spectator mode */
     SPECTATOR(3, R.string.saves_manage_gamemode_spectator)
 }

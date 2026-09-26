@@ -52,7 +52,7 @@ fun UpgradeFilesDialog(
     onDismissRequest: () -> Unit,
     onFileSelected: (RemoteData.RemoteFile) -> Unit
 ) {
-    //当前设备的架构信息
+    //The current device's architecture info
     val currentArch: RemoteData.RemoteFile.Arch = remember(data) {
         val arch = Architecture.getDeviceArchitecture()
         when (arch) {
@@ -85,7 +85,7 @@ fun UpgradeFilesDialog(
                 currentArch = currentArch,
                 selected = isCurrent,
                 onClick = onClick,
-                //根据设备架构决定哪些安装包不能选择，避免下载到错误架构的安装包（允许选择全架构）
+                //Decide by device architecture which packages are unselectable, avoiding wrong-architecture downloads (all-arch allowed)
                 enabled = item.arch == RemoteData.RemoteFile.Arch.ALL || item.arch == currentArch
             )
         },
@@ -120,7 +120,7 @@ private fun UpgradeFileLayout(
             modifier = Modifier.alpha(if (enabled) 1.0f else DisabledAlpha),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            //文件名
+            //File name
             MarqueeText(
                 text = file.fileName,
                 style = MaterialTheme.typography.labelMedium
@@ -144,12 +144,12 @@ private fun UpgradeFileLayout(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    //架构信息
+                    //Architecture info
                     Text(
                         text = file.arch.getDisplayString(),
                         style = MaterialTheme.typography.labelSmall
                     )
-                    //大小
+                    //Size
                     val sizeString = remember(file) {
                         formatFileSize(file.size)
                     }

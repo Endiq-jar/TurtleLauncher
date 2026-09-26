@@ -54,7 +54,7 @@ private const val TAG = "FileUtils"
 fun File.ifExists() = this.takeIf { it.exists() }
 
 fun compareSHA1(file: File, sourceSHA: String?, default: Boolean = false): Boolean {
-    if (!file.exists()) return false //文件不存在
+    if (!file.exists()) return false //missing file
 
     val computedSHA = runCatching {
         FileInputStream(file).use { fis ->
@@ -91,7 +91,7 @@ fun formatFileSize(bytes: Long): String {
     val units = arrayOf("B", "KB", "MB", "GB")
     var unitIndex = 0
     var value = bytes.toDouble()
-    //循环获取合适的单位
+    //Cycle to the right unit
     while (value >= 1024 && unitIndex < units.size - 1) {
         value /= 1024.0
         unitIndex++
@@ -103,7 +103,7 @@ fun sortWithFileName(o1: File, o2: File): Int {
     val isDir1 = o1.isDirectory
     val isDir2 = o2.isDirectory
 
-    //目录排在前面，文件排在后面
+    //Folders first, files after
     if (isDir1 && !isDir2) return -1
     if (!isDir1 && isDir2) return 1
 
@@ -121,7 +121,7 @@ fun checkFilenameValidity(str: String) {
         .distinct()
         .toMutableSet()
 
-    //防止路径穿越
+    //Path traversal guard
     if (str.contains("..")) {
         throw InvalidFilenameException("Filename contains path traversal sequence '..'", "..")
     }
@@ -147,8 +147,8 @@ fun checkFilenameValidity(str: String) {
 }
 
 /**
- * 在字符串中查找其不安全的Unicode字符（作为文件名使用时）
- * @return 找到的所有不安全的字符
+ * Finds unsafe Unicode characters in a string (when used as a file name)
+ * @return all unsafe characters found
  */
 fun findAllUnsafeUnicodeChars(name: String?): List<String> {
     if (name.isNullOrEmpty()) return emptyList()
@@ -225,7 +225,7 @@ fun shareFile(
     }
 
     val chooserIntent = Intent.createChooser(shareIntent, file.name)
-    // 兼容非 Activity 上下文发起分享
+    // Supports sharing from a non-Activity context
     chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     try {
         context.startActivity(chooserIntent)
@@ -235,8 +235,8 @@ fun shareFile(
 }
 
 /**
- * 读取压缩包内文件的文本内容
- * @param readSource 使用指定方式读取文本，比如使用 UTF-8 读取
+ * Reads the text content of a file inside the archive
+ * @param readSource reads the text in a specified way, e.g. with UTF-8
  */
 fun ZipFile.readText(
     entryPath: String,
@@ -247,8 +247,8 @@ fun ZipFile.readText(
     .readText(zip = this, readSource = readSource)
 
 /**
- * 读取压缩包内文件的文本内容
- * @param readSource 使用指定方式读取文本，比如使用 UTF-8 读取
+ * Reads the text content of a file inside the archive
+ * @param readSource reads the text in a specified way, e.g. with UTF-8
  */
 fun ZipEntry.readText(
     zip: ZipFile,
@@ -265,11 +265,11 @@ fun ZipEntry.readText(
 }
 
 /**
- * 从ZIP文件中提取指定内部路径下的所有条目到输出目录，保持相对路径结构
- * @param internalPath ZIP文件中的路径前缀（类似目录），留空则解压整个压缩包
- * @param outputDir 目标输出目录（必须为目录）
- * @throws IllegalArgumentException 如果路径不存在或参数无效
- * @throws SecurityException 如果检测到路径穿越攻击
+ * Extracts every entry under the given internal path from a ZIP into the output directory, preserving relative structure
+ * @param internalPath a path prefix inside the ZIP (like a directory); empty extracts the whole archive
+ * @param outputDir the target output directory (must be a directory)
+ * @throws IllegalArgumentException if the path doesn't exist or the parameters are invalid
+ * @throws SecurityException if a path traversal attack is detected
  */
 suspend fun ZipFile.extractFromZip(internalPath: String, outputDir: File) {
     val e = entries()
@@ -288,11 +288,11 @@ suspend fun ZipFile.extractFromZip(internalPath: String, outputDir: File) {
 }
 
 /**
- * 从ZIP文件中提取指定内部路径下的所有条目到输出目录，保持相对路径结构
- * @param internalPath ZIP文件中的路径前缀（类似目录），留空则解压整个压缩包
- * @param outputDir 目标输出目录（必须为目录）
- * @throws IllegalArgumentException 如果路径不存在或参数无效
- * @throws SecurityException 如果检测到路径穿越攻击
+ * Extracts every entry under the given internal path from a ZIP into the output directory, preserving relative structure
+ * @param internalPath a path prefix inside the ZIP (like a directory); empty extracts the whole archive
+ * @param outputDir the target output directory (must be a directory)
+ * @throws IllegalArgumentException if the path doesn't exist or the parameters are invalid
+ * @throws SecurityException if a path traversal attack is detected
  */
 suspend fun CompressZipFile.extractFromZip(internalPath: String, outputDir: File) {
     val entriesEnum = entries
@@ -312,7 +312,7 @@ suspend fun CompressZipFile.extractFromZip(internalPath: String, outputDir: File
 }
 
 /**
- * 抽象核心提取逻辑，适用于任何类型的 ZIP 条目
+ * Abstract core extraction logic, fit for any ZIP entry kind
  */
 private suspend fun <T : ZipEntryBase> extractZipEntries(
     entriesIter: Iterator<T>,
@@ -341,13 +341,13 @@ private suspend fun <T : ZipEntryBase> extractZipEntries(
             val entry = entriesIter.next()
             val name = entry.name
 
-            //Ignored非目标目录
+            //Ignore non-target directories
             if (!name.startsWith(prefix)) continue
 
             val relative = name.removePrefix(prefix)
             if (relative.isEmpty()) continue
 
-            //防止路径穿越
+            //Path traversal guard
             if (relative.contains("../") || relative.contains("..\\")) {
                 throw SecurityException("Illegal path traversal detected: $name")
             }
@@ -383,11 +383,11 @@ private suspend fun <T : ZipEntryBase> extractZipEntries(
 }
 
 /**
- * 提取指定ZIP条目到独立文件
- * @param entryPath ZIP文件中的完整条目路径
- * @param outputFile 目标输出文件路径
- * @throws IllegalArgumentException 如果条目不存在或是目录
- * @throws SecurityException 如果输出文件路径不合法
+ * Extracts the given ZIP entry into a standalone file
+ * @param entryPath the full entry path inside the ZIP
+ * @param outputFile the target output file path
+ * @throws IllegalArgumentException if the entry is missing or a directory
+ * @throws SecurityException if the output file path is invalid
  */
 fun ZipFile.extractEntryToFile(entryPath: String, outputFile: File) {
     val entry = getEntry(entryPath) ?: throw IllegalArgumentException("ZIP entry does not exist: $entryPath")
@@ -395,10 +395,10 @@ fun ZipFile.extractEntryToFile(entryPath: String, outputFile: File) {
 }
 
 /**
- * 提取指定ZIP条目到独立文件
- * @param outputFile 目标输出文件路径
- * @throws IllegalArgumentException 如果条目是目录
- * @throws SecurityException 如果输出文件路径不合法
+ * Extracts the given ZIP entry into a standalone file
+ * @param outputFile the target output file path
+ * @throws IllegalArgumentException if the entry is a directory
+ * @throws SecurityException if the output file path is invalid
  */
 fun ZipFile.extractEntryToFile(entry: ZipEntry, outputFile: File) {
     require(!entry.isDirectory) { "Cannot extract directory to file: ${entry.name}" }
@@ -418,9 +418,9 @@ fun ZipFile.extractEntryToFile(entry: ZipEntry, outputFile: File) {
 }
 
 /**
- * 压缩指定目录内的文件到压缩包
- * @param outputZipFile 指定压缩包
- * @param preserveFileTime 是否保留原始文件的修改时间
+ * Compresses files of the given directory into an archive
+ * @param outputZipFile the target archive
+ * @param preserveFileTime whether to keep original modification times
  */
 suspend fun zipDirectory(
     sourceDir: File,
@@ -448,7 +448,7 @@ suspend fun zipDirectory(
 }
 
 /**
- * 复制目录下的所有内容到目标目录
+ * Copies every item of a directory into the target directory
  */
 suspend fun copyDirectoryContents(
     from: File,
@@ -492,8 +492,8 @@ suspend fun copyDirectoryContents(
 }
 
 /**
- * 以递归的方式，收集一个文件夹内的全部文件
- * @param summitFile 提交获取到的文件
+ * Recursively collects every file inside a folder
+ * @param summitFile submits each collected file
  */
 fun collectFiles(
     folder: File,
@@ -510,7 +510,7 @@ fun collectFiles(
 }
 
 /**
- * 在[sourceFiles]中找出[targetFiles]中不存在的文件
+ * Finds files present in [sourceFiles] but missing from [targetFiles]
  */
 suspend fun findRedundantFiles(sourceFiles: List<File>, targetFiles: List<File>): List<File> {
     return withContext(Dispatchers.IO) {
@@ -532,9 +532,9 @@ suspend fun findRedundantFiles(sourceFiles: List<File>, targetFiles: List<File>)
 }
 
 /**
- * 定位解压后压缩包的真正根目录
- * @param directory 解压后的初始目录
- * @return 真正的根目录
+ * Locates the archive's real root directory after extraction
+ * @param directory the initial extracted directory
+ * @return the real root directory
  */
 fun locateRealRoot(directory: File): File {
     require(directory.exists() && directory.isDirectory) { "The directory does not exist or is not a folder" }
@@ -544,26 +544,26 @@ fun locateRealRoot(directory: File): File {
 
     while (shouldContinue) {
         val files = currentDir.listFiles()
-        //如果目录为空，直接返回当前目录
+        //Empty directory: return it as-is
         if (files.isNullOrEmpty()) {
             shouldContinue = false
             continue
         }
 
-        //如果目录下有多个项目，说明当前已经是根目录
+        //Multiple items underneath: the current directory is already the root
         if (files.size > 1) {
             shouldContinue = false
             continue
         }
 
-        val file = files[0] //检查当前目录唯一的项目
-        //如果唯一的项目不是文件夹，说明当前已经是根目录
+        val file = files[0] //inspect the directory's only item
+        //The only item isn't a folder: the current directory is already the root
         if (!file.isDirectory) {
             shouldContinue = false
             continue
         }
 
-        //如果唯一的项目是文件夹，继续深入
+        //The only item is a folder: keep descending
         currentDir = file
     }
 
@@ -571,7 +571,7 @@ fun locateRealRoot(directory: File): File {
 }
 
 /**
- * @return 检查文件是否为 zip jar 压缩包，以是否能够读取为判断标准
+ * @return whether the file is a zip/jar archive, judged by readability
  */
 fun checkZip(file: File): Boolean {
     return runCatching {
@@ -585,7 +585,7 @@ fun checkZip(file: File): Boolean {
                 val entry = entries.nextElement()
                 zip.getInputStream(entry).use { input ->
                     while (input.read(buffer) != -1) {
-                        // 触发 CRC 校验
+                        // Forces a CRC check
                     }
                 }
             }
@@ -595,7 +595,7 @@ fun checkZip(file: File): Boolean {
 }
 
 /**
- * @return 检查文件是否为 7z 压缩包，以是否能够读取为判断标准
+ * @return whether the file is a 7z archive, judged by readability
  */
 fun check7z(file: File): Boolean {
     return runCatching {
@@ -607,7 +607,7 @@ fun check7z(file: File): Boolean {
             var entry = sevenZ.nextEntry
             while (entry != null) {
                 while (sevenZ.read(buffer) > 0) {
-                    // 仅流式读取
+                    // Streaming read only
                 }
                 entry = sevenZ.nextEntry
             }
@@ -617,7 +617,7 @@ fun check7z(file: File): Boolean {
 }
 
 /**
- * 检查文件后缀是否符合要求，不符合则抛出异常
+ * Checks the file suffix against expectations, throwing on mismatch
  */
 fun File.checkExtensionOrThrow(extensions: List<String>) {
     if (extension !in extensions) {
@@ -626,7 +626,7 @@ fun File.checkExtensionOrThrow(extensions: List<String>) {
 }
 
 /**
- * 检查文件后缀是否符合要求，不符合则抛出异常
+ * Checks the file suffix against expectations, throwing on mismatch
  */
 fun String.checkExtensionOrThrow(extensions: List<String>) {
     val extension = substringAfterLast(".")

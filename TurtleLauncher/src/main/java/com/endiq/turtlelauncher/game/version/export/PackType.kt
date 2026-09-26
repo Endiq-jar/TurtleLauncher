@@ -19,11 +19,11 @@
 package com.endiq.turtlelauncher.game.version.export
 
 /**
- * 打包的类型
+ * Pack types
  */
 enum class PackType(val options: PackEditOptions) {
     /**
-     * MCBBS 导出格式
+     * MCBBS export format
      */
     MCBBS(
         PackEditOptions.Builder()
@@ -37,7 +37,7 @@ enum class PackType(val options: PackEditOptions) {
     ),
 
     /**
-     * Modrinth 标准导出格式
+     * Modrinth standard export format
      */
     Modrinth(
         PackEditOptions.Builder()
@@ -56,7 +56,7 @@ enum class PackType(val options: PackEditOptions) {
     ),
 
     /**
-     * MultiMC 导出格式
+     * MultiMC export format
      */
     MultiMC(
         PackEditOptions.Builder()

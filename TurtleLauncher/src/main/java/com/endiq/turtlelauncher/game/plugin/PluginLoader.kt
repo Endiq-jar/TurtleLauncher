@@ -31,7 +31,7 @@ import com.endiq.turtlelauncher.game.renderer.Renderers
 import com.endiq.turtlelauncher.utils.logging.Logger
 
 /**
- * 统一插件的加载，保证仅获取一次应用列表
+ * Centralizes plugin loading, ensuring the app list is fetched only once
  */
 object PluginLoader {
     private var isInitialized: Boolean = false
@@ -39,7 +39,7 @@ object PluginLoader {
         PackageManager.GET_META_DATA or PackageManager.GET_SHARED_LIBRARY_FILES
 
     /**
-     * 所有已加载的应用插件
+     * All loaded app plugins
      */
     var allPlugins: List<ApkPlugin> = emptyList()
         private set
@@ -75,7 +75,7 @@ object PluginLoader {
         }
         FFmpegPluginManager.loadPlugin(context) { apkPluginList.add(it) }
 
-        // 加载旧架构渲染器插件
+        // Load old-architecture renderer plugins
         RendererPluginManager.getRendererList().filter { plugin ->
             !Renderers.addRenderer(plugin)
         }.takeIf {
@@ -83,7 +83,7 @@ object PluginLoader {
         }?.let { failedToLoadList ->
             RendererPluginManager.removeRenderer(failedToLoadList)
         }
-        // 加载新架构渲染器插件
+        // Load new-architecture renderer plugins
         RendererV2PluginManager.getRendererList().filter { plugin ->
             !Renderers.addRenderer(plugin)
         }.takeIf {
@@ -92,11 +92,11 @@ object PluginLoader {
             RendererV2PluginManager.removeRenderer(failedToLoadList)
         }
 
-        // 去重已加载的插件
+        // Deduplicate loaded plugins
         val seenPackages = mutableSetOf<String>()
         apkPluginList.removeAll { !seenPackages.add(it.packageName) }
 
-        //全部已加载的插件
+        //All loaded plugins
         allPlugins = apkPluginList.sortedBy { it.appName }
     }
 }

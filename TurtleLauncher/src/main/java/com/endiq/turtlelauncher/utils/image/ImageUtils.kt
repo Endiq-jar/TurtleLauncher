@@ -31,9 +31,9 @@ import java.io.File
 private const val TAG = "ImageUtils"
 
 /**
- * 将 [Drawable] 转换为 [Bitmap]
- * 如果该 Drawable 已经是 [BitmapDrawable] 且其内部 Bitmap 不为 null，则直接返回该 Bitmap
- * 否则渲染到一个新的 Bitmap 上
+ * Converts a [Drawable] into a [Bitmap]
+ * If the Drawable already is a [BitmapDrawable] with a non-null Bitmap, return it directly
+ * Otherwise render onto a new Bitmap
  */
 fun Drawable.toBitmap(): Bitmap {
     if (this is BitmapDrawable && this.bitmap != null) {
@@ -52,13 +52,13 @@ fun Drawable.toBitmap(): Bitmap {
 }
 
 /**
- * 遍历 Bitmap 的指定区域并执行谓词判断
+ * Iterates the given Bitmap region, evaluating a predicate
  *
- * @param xRange X 轴坐标范围
- * @param yRange Y 轴坐标范围
- * @param predicate 谓词函数，参数为 (颜色值, x, y)
- * @param requireAll 是否要求所有像素都满足谓词，默认为 false (任一满足即返回 true)
- * @return 是否满足条件
+ * @param xRange the X coordinate range
+ * @param yRange the Y coordinate range
+ * @param predicate predicate taking (color, x, y)
+ * @param requireAll whether every pixel must satisfy the predicate; false means any hit returns true
+ * @return whether the condition holds
  */
 inline fun Bitmap.isColorMatch(
     xRange: IntRange,
@@ -85,7 +85,7 @@ inline fun Bitmap.isColorMatch(
 }
 
 /**
- * 如果 Bitmap 大于指定阈值，则回收它
+ * Recycles the Bitmap when larger than the threshold
  */
 fun Bitmap?.recycleIfLarge(thresholdBytes: Int = 8 * 1024 * 1024) {
     this ?: return
@@ -96,7 +96,7 @@ fun Bitmap?.recycleIfLarge(thresholdBytes: Int = 8 * 1024 * 1024) {
 }
 
 /**
- * 尝试判断文件是否为一个图片
+ * Tries telling whether a file is an image
  */
 fun File.isImageFile(): Boolean {
     if (!this.exists()) return false

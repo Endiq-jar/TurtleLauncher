@@ -45,11 +45,11 @@ import androidx.media3.ui.PlayerView
 import com.endiq.turtlelauncher.R
 
 /**
- * 简单的沉浸式视频播放层
- * @param autoPlay 准备好后，是否立即播放视频
- * @param loop 是否循环播放视频
- * @param muted 是否开启静音
- * @param volume 音量
+ * Simple immersive video player layer
+ * @param autoPlay whether to start playing once ready
+ * @param loop whether to loop the video
+ * @param muted whether to start muted
+ * @param volume playback volume
  */
 @OptIn(UnstableApi::class)
 @Composable
@@ -66,7 +66,7 @@ fun VideoPlayer(
     val context = LocalContext.current
     val player = remember {
         val renderersFactory = DefaultRenderersFactory(context)
-            .setEnableDecoderFallback(true) //开启解码器 fallback
+            .setEnableDecoderFallback(true) //enable decoder fallback
 
         ExoPlayer.Builder(context, renderersFactory).build().apply {
             val audioAttr = AudioAttributes.Builder()

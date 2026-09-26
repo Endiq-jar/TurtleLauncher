@@ -28,29 +28,29 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 /**
- * 普通的屏幕
+ * Plain screens
  */
 sealed interface NormalNavKey : TitledNavKey {
     @Contextual override val title: AndroidStringText?
         get() = null
 
-    /** 解压依赖内容屏幕（启动屏幕） */
+    /** Dependency unpacking screen (launch screen) */
     @Serializable data object UnpackDeps: NormalNavKey
-    /** 启动器主页屏幕 */
+    /** Launcher home screen */
     @Serializable data object LauncherMain : NormalNavKey
-    /** 账号管理屏幕 */
+    /** Account management screen */
     @Serializable data class AccountManager(
         val loginMenu: FirstLoginMenu = FirstLoginMenu.NONE
     ) : NormalNavKey {
         @Contextual override val title: AndroidStringText = androidText(R.string.page_title_account_list)
     }
-    /** Web屏幕 */
+    /** Web screen */
     @Serializable data class WebScreen(val url: String) : NormalNavKey
-    /** 版本管理屏幕 */
+    /** Version management screen */
     @Serializable data object VersionsManager : NormalNavKey {
         @Contextual override val title: AndroidStringText = androidText(R.string.page_title_version_list)
     }
-    /** 文件选择屏幕 */
+    /** File selector screen */
     @Serializable data class FileSelector(
         val startPath: String,
         val selectFile: Boolean,
@@ -59,132 +59,132 @@ sealed interface NormalNavKey : TitledNavKey {
     ) : NormalNavKey {
         @Contextual override val title: AndroidStringText = androidText(R.string.page_title_select_files)
     }
-    /** 多人联机屏幕 */
+    /** Multiplayer screen */
     @Serializable data object Multiplayer: NormalNavKey {
         @Contextual override val title: AndroidStringText = androidText(R.string.terracotta_terracotta)
     }
 
-    /** 查看日志屏幕 */
+    /** Log viewer screen */
     @Serializable data class LogView(
         val logPath: String
     ) : NormalNavKey {
         @Contextual override val title: AndroidStringText = androidText(R.string.versions_overview_log)
     }
 
-    /** 设置嵌套子屏幕 */
+    /** Settings nested sub-screens */
     sealed interface Settings : NormalNavKey {
-        /** 渲染器设置屏幕 */
+        /** Renderer settings screen */
         @Serializable data object Renderer : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_renderer)
         }
-        /** 游戏设置屏幕 */
+        /** Game settings screen */
         @Serializable data object Game : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_game)
         }
-        /** 控制设置屏幕 */
+        /** Control settings screen */
         @Serializable data object Control : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_control)
         }
-        /** 手柄设置屏幕 */
+        /** Gamepad settings screen */
         @Serializable data object Gamepad : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_gamepad)
         }
-        /** 启动器设置屏幕 */
+        /** Launcher settings screen */
         @Serializable data object Launcher : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_launcher)
         }
-        /** Java管理屏幕 */
+        /** Java management screen */
         @Serializable data object JavaManager : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_java_manage)
         }
-        /** 控制管理屏幕 */
+        /** Control management screen */
         @Serializable data object ControlManager : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_control_manage)
         }
-        /** 关于屏幕 */
+        /** About screen */
         @Serializable data object AboutInfo : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_info_about)
         }
     }
 
-    /** 版本详细设置嵌套子屏幕 */
+    /** Version detail settings nested sub-screens */
     sealed interface Versions : NormalNavKey {
-        /** 版本概览屏幕 */
+        /** Version overview screen */
         @Serializable data object OverView : Versions {
             @Contextual override val title: AndroidStringText = androidText(R.string.versions_settings_overview)
         }
-        /** 版本配置屏幕 */
+        /** Version configuration screen */
         @Serializable data object Config : Versions {
             @Contextual override val title: AndroidStringText = androidText(R.string.versions_settings_config)
         }
-        /** 更新版本的模组加载器 */
+        /** Update the version's mod loader */
         @Serializable data object UpdateLoader : Versions {
             @Contextual override var title: AndroidStringText = androidText(R.string.versions_update_loader)
         }
-        /** 模组管理屏幕 */
+        /** Mods management screen */
         @Serializable data object ModsManager : Versions {
             @Contextual override var title: AndroidStringText = androidText(R.string.mods_manage)
         }
-        /** 存档管理屏幕 */
+        /** Saves management screen */
         @Serializable data object SavesManager : Versions {
             @Contextual override var title: AndroidStringText = androidText(R.string.saves_manage)
         }
-        /** 资源包管理屏幕 */
+        /** Resource-pack management screen */
         @Serializable data object ResourcePackManager : Versions {
             @Contextual override var title: AndroidStringText = androidText(R.string.resource_pack_manage)
         }
-        /** 光影包管理屏幕 */
+        /** Shader-pack management screen */
         @Serializable data object ShadersManager : Versions {
             @Contextual override var title: AndroidStringText = androidText(R.string.shader_pack_manage)
         }
-        /** 截屏管理屏幕 */
+        /** Screenshot management screen */
         @Serializable data object ScreenshotsManager : Versions {
             @Contextual override var title: AndroidStringText = androidText(R.string.screenshots_manage)
         }
-        /** 服务器列表屏幕 */
+        /** Server list screen */
         @Serializable data object ServerList : Versions {
             @Contextual override val title: AndroidStringText = androidText(R.string.servers_list)
         }
     }
 
-    /** 导出整合包屏幕 */
+    /** Modpack export screen */
     sealed interface VersionExports : NormalNavKey {
-        /** 选择导出格式 */
+        /** Pick the export format */
         @Serializable data object SelectType : VersionExports
-        /** 编辑整合包导出配置 */
+        /** Edit the modpack export configuration */
         @Serializable data object EditInfo : VersionExports
-        /** 选择要导出的文件 */
+        /** Pick the files to export */
         @Serializable data object SelectFiles : VersionExports
     }
 
-    /** 下载游戏嵌套子屏幕 */
+    /** Game download nested sub-screens */
     sealed interface DownloadGame : NormalNavKey {
-        /** 选择游戏版本屏幕 */
+        /** Pick game version screen */
         @Serializable data object SelectGameVersion : Versions
-        /** 选择附加内容屏幕 */
+        /** Pick addons screen */
         @Serializable data class Addons(val gameVersion: String) : Versions
     }
 
-    /** 搜索整合包屏幕 */
+    /** Search modpacks screen */
     @Serializable data object SearchModPack : NormalNavKey
-    /** 搜索模组屏幕 */
+    /** Search mods screen */
     @Serializable data object SearchMod : NormalNavKey
-    /** 搜索资源包屏幕 */
+    /** Search resource packs screen */
     @Serializable data object SearchResourcePack : NormalNavKey
-    /** 搜索存档屏幕 */
+    /** Search saves screen */
     @Serializable data object SearchSaves : NormalNavKey
-    /** 搜索光影包屏幕 */
+    /** Search shader packs screen */
     @Serializable data object SearchShaders : NormalNavKey
-    /** 搜索ID屏幕 */
+    /** Search by ID screen */
     @Serializable data object SearchId : NormalNavKey {
         @Contextual override val title: AndroidStringText = androidText(R.string.download_category_by_id)
     }
-    /** 收藏屏幕 */
+    /** Favorites screen */
     @Serializable data object Favorites : NormalNavKey {
         @Contextual override val title: AndroidStringText = androidText(R.string.download_category_favorites)
     }
 
-    /** 下载资源屏幕 */
+    /** Resource download screen */
     @Serializable data class DownloadAssets(
         val platform: Platform,
         val projectId: String,
@@ -192,7 +192,7 @@ sealed interface NormalNavKey : TitledNavKey {
         val iconUrl: String? = null
     ) : NormalNavKey
 
-    /** 协议展示屏幕 */
+    /** Agreement display screen */
     @Serializable data class License(
         val raw: Int
     ): NormalNavKey

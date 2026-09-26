@@ -42,7 +42,7 @@ object RendererV2PluginManager : ApkPluginManager() {
     }
 
     /**
-     * 识别插件并暂存[ApplicationInfo]，不做加载
+     * Recognizes plugins and stashes their [ApplicationInfo] without loading
      */
     override fun parseApkPlugin(
         context: Context,
@@ -52,21 +52,21 @@ object RendererV2PluginManager : ApkPluginManager() {
         if (info.flags and ApplicationInfo.FLAG_SYSTEM != 0) return
         val metaData = info.metaData ?: return
 
-        // 读取启动器配置资源
+        // Read the launcher config asset
         val configRes = metaData.getStringRes("fclPlugin_V2") ?: return
         val configString = context.getString(info, configRes) ?: return
 
         val pm = context.packageManager
         val packageName = info.packageName
 
-        // 反序列化渲染器配置信息
+        // Deserialize the renderer config
         val config = runCatching {
             GLOBAL_JSON.decodeFromString<RendererConfig>(configString)
         }.onFailure { e ->
             Logger.error(TAG, "Failed to parse config JSON from $packageName", e)
         }.getOrNull() ?: return
 
-        // 获取插件应用信息
+        // Fetch the plugin's application info
         val appLabel = info.loadLabel(pm).toString()
         val appVersion = runCatching {
             pm.getPackageInfo(packageName, 0).versionName ?: ""
@@ -83,7 +83,7 @@ object RendererV2PluginManager : ApkPluginManager() {
             }
         )
 
-        // 已成功加载目标插件
+        // The target plugin loaded successfully
         runCatching {
             cacheAppIcon(context, info)
             ApkPlugin(
@@ -115,7 +115,7 @@ object RendererV2PluginManager : ApkPluginManager() {
     }
 
     /**
-     * 移除加载失败的渲染器
+     * Removes renderers that failed to load
      */
     fun removeRenderer(failedToLoadList: List<RendererV2Data>) {
         rendererPluginList.removeAll { it in failedToLoadList }

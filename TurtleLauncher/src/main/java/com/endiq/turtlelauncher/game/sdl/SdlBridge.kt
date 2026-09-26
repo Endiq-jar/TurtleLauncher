@@ -49,10 +49,10 @@ object SdlBridge {
     private var currentSurface: Surface? = null
 
 
-    /** 当前注册 Surface 的来源 */
+    /** Source of the currently registered Surface */
     private var currentSource: Any? = null
 
-    /** 每次注册新 Surface 递增，供生命周期观测 */
+    /** Increments each time a new Surface is registered, for lifecycle observation */
     private var surfaceGeneration = 0L
     private var jniReady = false
     private var sdlInitialized = false
@@ -91,7 +91,7 @@ object SdlBridge {
         }
 
     /**
-     * SDL 请求唤起输入法时，启动器侧是否响应
+     * Whether the launcher responds when SDL requests the input method
      */
     @JvmStatic
     fun getSdlImeAutoShowEnabled(): Boolean = AllSettings.sdlAutoShowIme.state
@@ -163,17 +163,17 @@ object SdlBridge {
     external fun initializeControllerSubsystems()
 
     /**
-     * 游戏是否运行在 SDL 渲染路径（SDL 窗口已创建，MC 26.3+）
-     * 仅手柄子系统使用 SDL 时（如 MC 26.2 挂 Controlify）返回 false，
-     * 此时游戏输入仍走 GLFW 桥，启动器不应把键盘切换委托给 SDL 输入通道
+     * Whether the game runs on the SDL render path (SDL window created, MC 26.3+)
+     * Returns false when only the gamepad subsystem uses SDL (e.g. MC 26.2 with Controlify),
+     * since game input still flows through the GLFW bridge and keyboard switching shouldn't be delegated to the SDL input channel
      */
     @JvmStatic
     external fun isSdlRenderActive(): Boolean
 
     /**
-     * 激活/关闭 native 侧 SDL 文本输入通道
-     * 游戏侧通道被模组（自绘输入界面）关闭时，启动器显式唤起输入法需代为激活，
-     * 否则输入法提交的文本会在 native 层被丢弃
+     * Activates/deactivates the native-side SDL text input channel
+     * When a mod (with a self-drawn input UI) closed the game-side channel, an explicit IME request must activate the launcher's own,
+     * otherwise IME-committed text gets dropped at the native layer
      */
     @JvmStatic
     external fun setNativeTextInputActive(active: Boolean): Boolean

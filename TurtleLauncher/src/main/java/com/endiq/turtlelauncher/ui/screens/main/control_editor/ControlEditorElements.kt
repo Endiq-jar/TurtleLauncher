@@ -87,71 +87,71 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /**
- * 控制布局编辑器操作状态
+ * Control layout editor operation states
  */
 sealed interface EditorOperation {
     data object None : EditorOperation
-    /** 选择了一个控件进行编辑 */
+    /** A widget was selected for editing */
     data object SelectButton : EditorOperation
-    /** 编辑控件层属性 */
+    /** Edit widget layer properties */
     data class EditLayer(val layer: ObservableControlLayer) : EditorOperation
-    /** 删除控件层 */
+    /** Delete the widget layer */
     data class DeleteLayer(val layer: ObservableControlLayer) : EditorOperation
-    /** 打开控件外观列表 */
+    /** Open the widget style list */
     data object OpenStyleList : EditorOperation
-    /** 创建控件外观 */
+    /** Create a widget style */
     data object CreateStyle : EditorOperation
-    /** 编辑控件外观 */
+    /** Edit a widget style */
     data object EditButtonStyle : EditorOperation
-    /** 删除控件外观 */
+    /** Delete a widget style */
     data class DeleteButtonStyle(val style: ObservableButtonStyle) : EditorOperation
-    /** 编辑摇杆样式 */
+    /** Edit a joystick style */
     data object EditJoystickStyle : EditorOperation
-    /** 删除摇杆样式 */
+    /** Delete a joystick style */
     data class DeleteJoystickStyle(val style: ObservableJoystickStyle) : EditorOperation
-    /** 打开摇杆样式列表 */
+    /** Open the joystick style list */
     data object OpenJoystickStyleList : EditorOperation
-    /** 创建摇杆样式 */
+    /** Create a joystick style */
     data object CreateJoystickStyle : EditorOperation
-    /** 控制布局正在保存中 */
+    /** Control layout is being saved */
     data object Saving : EditorOperation
-    /** 控制布局保存失败 */
+    /** Control layout save failed */
     data class SaveFailed(val error: Throwable) : EditorOperation
 }
 
 /**
- * 控制布局编辑器对控件的操作状态
+ * Control layout editor widget operation states
  */
 sealed interface EditorWidgetOperation {
     data object None : EditorWidgetOperation
-    /** 选择了一个控件, 并询问用户将其复制到哪些控制层 */
+    /** A widget was selected; ask the user which widget layers to copy it into */
     data class CloneButton(val data: ObservableWidget, val layer: ObservableControlLayer) : EditorWidgetOperation
-    /** 删除一个控件 */
+    /** Delete a widget */
     data class DeleteButton(val data: ObservableWidget, val layer: ObservableControlLayer) : EditorWidgetOperation
-    /** 编辑控件的显示文本 */
+    /** Edit the widget's display text */
     data class EditWidgetText(val string: ObservableTranslatableString) : EditorWidgetOperation
-    /** 编辑切换控件层可见性事件 */
+    /** Edit the widget-layer visibility switching click event */
     data class SwitchLayersVisibility(
         val data: ObservableClickEventsProvider,
         val type: ClickEvent.Type
     ) : EditorWidgetOperation
-    /** 编辑发送的文本 */
+    /** Edit the text to send */
     data class SendText(val data: ObservableClickEventsProvider) : EditorWidgetOperation
 }
 
 /**
- * 控制布局编辑器的一些警告的操作状态
+ * Warning-style operation states of the control layout editor
  */
 sealed interface EditorWarningOperation {
     data object None : EditorWarningOperation
-    /** 没有控件层，提醒用户添加 */
+    /** No widget layers; remind the user to add one */
     data object WarningNoLayers : EditorWarningOperation
-    /** 没有选择控件层，提醒用户选择 */
+    /** No widget layer selected; remind the user to pick one */
     data object WarningNoSelectLayer : EditorWarningOperation
 }
 
 /**
- * 预览控制布局的场景
+ * Control layout preview scenarios
  */
 enum class PreviewScenario(
     val textRes: Int,
@@ -280,7 +280,7 @@ fun EditorMenu(
                 text = stringResource(R.string.control_editor_layers_title),
                 style = MaterialTheme.typography.titleMedium
             )
-            //切换控件层聚焦
+            //Switch widget layer focus
             IconButton(
                 modifier = Modifier.align(Alignment.CenterEnd),
                 onClick = {
@@ -347,7 +347,7 @@ private fun EditorMenuContent(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        //添加按钮
+        //Add a button
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -359,7 +359,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //添加文本框
+        //Add a text box
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -371,7 +371,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //添加摇杆
+        //Add a joystick
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -383,7 +383,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //控件外观列表
+        //Widget style list
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -398,7 +398,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //摇杆样式列表
+        //Joystick style list
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -417,7 +417,7 @@ private fun EditorMenuContent(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //预览控制布局
+        //Preview the control layout
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -429,7 +429,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //预览场景
+        //Preview scenarios
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -446,7 +446,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //正在使用实体鼠标
+        //A physical mouse is in use
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -464,7 +464,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //正在使用手柄
+        //A gamepad is in use
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -486,7 +486,7 @@ private fun EditorMenuContent(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //控件吸附
+        //Widget snapping
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -498,7 +498,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //所有控制层范围吸附
+        //Snap across all widget layers
         item {
             MenuSwitchButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -510,7 +510,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //控件Snap mode
+        //Widget snap mode
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),
@@ -534,7 +534,7 @@ private fun EditorMenuContent(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        //保存
+        //Save
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -545,7 +545,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //保存并退出
+        //Save and exit
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -556,7 +556,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //直接退出
+        //Exit directly
         item {
             MenuTextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -599,7 +599,7 @@ private fun ColumnScope.ControlLayerMenu(
         }
     }
 
-    //检查列表新增情况，自动滚动到顶部
+    //Scroll to the top on new list entries
     var previousSize by remember { mutableIntStateOf(0) }
     val currentSize = layers.size
     LaunchedEffect(currentSize) {

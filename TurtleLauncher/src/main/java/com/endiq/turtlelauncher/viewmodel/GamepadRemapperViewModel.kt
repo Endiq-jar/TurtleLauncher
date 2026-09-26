@@ -39,22 +39,22 @@ class GamepadRemapperViewModel: ViewModel() {
     val events = _events.asSharedFlow()
 
     /**
-     * 所有设备对应的映射
+     * Mappings per device
      */
     val allRemappers = mutableMapOf<String, GamepadRemapper>()
 
     /**
-     * Whether a save is in progress映射
+     * Whether a save is in progress
      */
     var isSavingMapping by mutableStateOf(false)
 
     /**
-     * 可视化操作流程
+     * Visual operation flow
      */
     var uiOperation by mutableStateOf<GamepadRemapOperation>(GamepadRemapOperation.None)
 
     /**
-     * 发送一个事件
+     * Posts an event
      */
     fun sendEvent(event: Event) {
         viewModelScope.launch {
@@ -75,7 +75,7 @@ class GamepadRemapperViewModel: ViewModel() {
     }
 
     /**
-     * 应用一个设备的映射
+     * Applies one device's mapping
      */
     fun applyMapping(
         deviceName: String,
@@ -95,7 +95,7 @@ class GamepadRemapperViewModel: ViewModel() {
     private fun loadByDeviceName(deviceName: String): GamepadRemapper? {
         val mmkv = remapperMMKV()
         return mmkv.decodeParcelable(deviceName, GamepadRemapper::class.java)?.takeIf { remapper ->
-            //检查版本号，如果过旧则不能使用
+            //Check the version number; reject stale data
             !remapper.isOldVersion()
         }
     }
@@ -103,7 +103,7 @@ class GamepadRemapperViewModel: ViewModel() {
     private val saveMutex = Mutex()
 
     /**
-     * 保存所有设备的重映射数据
+     * Saves every device's remap data
      */
     fun save() {
         viewModelScope.launch {
@@ -120,12 +120,12 @@ class GamepadRemapperViewModel: ViewModel() {
 
     sealed interface Event {
         /**
-         * 手柄按键事件
+         * Gamepad key event
          */
         data class Button(val code: Int, val event: KeyEvent) : Event
 
         /**
-         * 手柄运动事件
+         * Gamepad motion event
          */
         data class Axis(val event: MotionEvent) : Event
     }

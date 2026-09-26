@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * 更新模组需用到的清单
- * @param new 获取到的新模组版本信息
+ * Manifest needed for updating mods
+ * @param new the fetched new mod version info
  */
 data class ModManifest(
     val data: ModData,
@@ -15,7 +15,7 @@ data class ModManifest(
 )
 
 /**
- * 获取清单中全部的模组新版本信息
+ * Returns all new mod version info in the manifest
  */
 fun List<ModManifest>.allNews() = map { it.new }
 
@@ -27,9 +27,9 @@ fun List<ModManifest>.toSelectableList() = map { manifest ->
 }
 
 /**
- * 可记录选择状态的更新模组清单
+ * An update mod manifest that can record selection state
  * @see ModManifest
- * @property selected 是否选中该清单
+ * @property selected whether this entry is selected
  */
 class SelectableModManifest(
     val data: ModData,

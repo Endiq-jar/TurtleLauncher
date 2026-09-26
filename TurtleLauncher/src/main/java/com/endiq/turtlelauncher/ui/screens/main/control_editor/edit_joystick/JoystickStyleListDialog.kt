@@ -64,7 +64,7 @@ import com.endiq.turtlelauncher.ui.theme.onCardColor
 import com.endiq.turtlelauncher.utils.string.isNotEmptyOrBlank
 
 /**
- * 摇杆样式列表展示对话框
+ * Joystick style list dialog
  */
 @Composable
 fun JoystickStyleListDialog(

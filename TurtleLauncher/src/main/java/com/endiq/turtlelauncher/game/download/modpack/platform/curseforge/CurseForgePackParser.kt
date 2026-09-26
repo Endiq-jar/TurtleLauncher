@@ -31,29 +31,29 @@ import java.io.File
 private const val TAG = "CurseForgePackParser"
 
 /**
- * CurseForge 整合包解析器，用于尝试以 CurseForge 的格式解析整合包
+ * CurseForge modpack parser, trying the CurseForge format
  */
 object CurseForgePackParser : SimplePackParser<CurseForgeManifest>(
     indexFilePath = "manifest.json",
     manifestClass = CurseForgeManifest::class.java,
     extraProcess = extraProcess@{ root ->
-        //排除 MultiMC 整合包误判
+        //Rule out MultiMC misidentification
         val mccManifest = File(root, MultiMCPackParser.indexFilePath)
         if (mccManifest.exists()) {
             try {
                 GSON.fromJson(mccManifest.readText(), MultiMCManifest::class.java)
-                //成功识别为 MultiMC 整合包，则说明是误判为 CurseForge 整合包
+                //Recognized as a MultiMC pack: it was misidentified as CurseForge
                 return@extraProcess false
             } catch (th: Throwable) {
                 Logger.warning(TAG, "An exception occurred while trying to exclude the MultiMC modpack.", th)
             }
         }
-        //排除 MCBBS 整合包误判
+        //Rule out MCBBS misidentification
         val mcbbsMeta = File(root, MCBBSPackMetaParser.indexFilePath)
         if (mcbbsMeta.exists()) {
             try {
                 GSON.fromJson(mcbbsMeta.readText(), MCBBSManifest::class.java)
-                //成功识别为 MCBBS 整合包，则说明是误判为 CurseForge 整合包
+                //Recognized as an MCBBS pack: it was misidentified as CurseForge
                 return@extraProcess false
             } catch (th: Throwable) {
                 Logger.warning(TAG, "An exception occurred while trying to exclude the MCBBS modpack.", th)

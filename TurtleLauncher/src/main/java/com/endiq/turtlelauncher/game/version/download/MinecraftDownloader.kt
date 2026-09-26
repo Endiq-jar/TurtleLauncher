@@ -36,13 +36,13 @@ import java.io.IOException
 
 private const val TAG = "MinecraftDownloader"
 
-/** 单个安装流程的最大并发下载连接数 */
+/** Max concurrent download connections of a single install flow */
 const val DEFAULT_DOWNLOAD_THREADS = 64
 
 /**
- * Minecraft 安装器：装配版本 JSON、client jar、assets 与 libraries 的下载任务，
- * 并交由批量下载引擎执行
- * 分块并发、自动换源、失败整轮重试
+ * Minecraft installer: assembles download tasks for the version JSON, client jar, assets and libraries,
+ * and hands them to the batch download engine
+ * Chunked concurrency, automatic source switching, whole-round retries on failure
  */
 class MinecraftDownloader(
     private val context: Context,
@@ -68,7 +68,7 @@ class MinecraftDownloader(
         }
 
     /**
-     * 自定义 client 目录 ->client<-/versions/..
+     * Custom client directory ->client<-/versions/..
      */
     fun getDownloadTask(
         clientName: String = this.customName,
@@ -129,7 +129,7 @@ class MinecraftDownloader(
     }
 
     /**
-     * 仅将 Jar、Json 文件安装到自定义版本目录中
+     * Installs only Jar and Json files into the custom version directory
      */
     private suspend fun progressNewDownloadTasks(
         clientName: String,
@@ -151,7 +151,7 @@ class MinecraftDownloader(
             gameManifest.inheritsFrom != null
         }?.findVersion(gameManifest.inheritsFrom)
 
-        //优先尝试解析原版
+        //Try parsing as vanilla first
         inheritsFrom?.let {
             downloader.createVersionJson(it)
         }?.let { gameManifest1 ->

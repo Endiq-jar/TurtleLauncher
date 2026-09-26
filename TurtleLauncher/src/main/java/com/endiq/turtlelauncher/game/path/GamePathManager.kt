@@ -43,14 +43,14 @@ import kotlin.io.path.exists
 private const val TAG = "GamePathManager"
 
 /**
- * Game directories管理，为支持将游戏文件保存至不同的路径
+ * Game directory management, supporting saving game files to different paths
  */
 object GamePathManager {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val mutex = Mutex()
     private val defaultGamePath = File(PathManager.DIR_FILES_EXTERNAL, ".minecraft").absolutePath
     /**
-     * 默认Game directories的ID
+     * Default game directory ID
      */
     const val DEFAULT_ID = "default"
 
@@ -58,16 +58,16 @@ object GamePathManager {
     val gamePathData = _gamePathData.asStateFlow()
 
     private val _currentPath = MutableStateFlow(defaultGamePath)
-    /** 当前选择的路径 */
+    /** Currently selected path */
     val currentPath = _currentPath.asStateFlow()
 
     /**
-     * 启动器默认Game directories
+     * Launcher default game directory
      */
     fun getDefaultPath(): String = defaultGamePath
 
     /**
-     * 当前用户路径
+     * Current user path
      */
     fun getUserPath(): String = File(_currentPath.value).parentFile!!.absolutePath
 
@@ -85,11 +85,11 @@ object GamePathManager {
                 _gamePathData.update { emptyList() }
 
                 val newValue = mutableListOf<GamePath>()
-                //添加默认Game directories
+                //Add the default game directory
                 newValue.add(0, GamePath(DEFAULT_ID, "", defaultGamePath))
 
                 run parseConfig@{
-                    //从数据库中加载Game directories
+                    //Load game directories from the database
                     val paths = gamePathDao.getAllPaths()
                     newValue.addAll(paths.sortedBy { it.title })
                 }
@@ -110,7 +110,7 @@ object GamePathManager {
     }
 
     /**
-     * 执行在路径列表刷新完成后可执行的任务
+     * Runs tasks gated on the path list finishing its refresh
      */
     suspend fun waitForRefresh() {
         mutex.withLock {}
@@ -128,18 +128,18 @@ object GamePathManager {
     }
 
     /**
-     * 查找是否存在指定id的项
+     * Checks whether an entry with the given ID exists
      */
     fun containsId(id: String): Boolean = _gamePathData.value.any { it.id == id }
 
     /**
-     * 查找是否存在指定path的项
+     * Checks whether an entry with the given path exists
      */
     fun containsPath(path: String): Boolean = _gamePathData.value.any { it.path == path }
 
     /**
-     * 修改并保存指定目录的标题
-     * @throws IllegalArgumentException 未找到匹配项
+     * Changes and saves the title of the given directory
+     * @throws IllegalArgumentException when no matching entry is found
      */
     fun modifyTitle(path: GamePath, modifiedTitle: String) {
         if (!containsId(path.id)) throw IllegalArgumentException("Item with ID ${path.id} not found, unable to rename.")
@@ -148,8 +148,8 @@ object GamePathManager {
     }
 
     /**
-     * 添加新的路径并保存
-     * @throws IllegalArgumentException 当前添加的路径与现有项冲突
+     * Adds a new path and saves it
+     * @throws IllegalArgumentException when the added path conflicts with existing entries
      */
     fun addNewPath(title: String, path: String) {
         if (containsPath(path)) throw IllegalArgumentException("The path conflicts with an existing item!")
@@ -159,7 +159,7 @@ object GamePathManager {
     }
 
     /**
-     * 删除路径并保存
+     * Deletes a path and saves
      */
     fun removePath(path: GamePath) {
         if (!containsId(path.id)) return
@@ -167,16 +167,16 @@ object GamePathManager {
     }
 
     /**
-     * 保存为默认的Game directories
+     * Saves it as the default game directory
      */
     fun saveDefaultPath(reloadVersions: Boolean = true) {
         saveCurrentPathUncheck(DEFAULT_ID, reloadVersions)
     }
 
     /**
-     * 保存当前选择的路径
-     * @throws IllegalStateException 未授予存储/管理所有文件权限
-     * @throws IllegalArgumentException 未找到匹配项
+     * Saves the currently selected path
+     * @throws IllegalStateException when storage / all-files permission isn't granted
+     * @throws IllegalArgumentException when no matching entry is found
      */
     fun saveCurrentPath(id: String, reloadVersions: Boolean = true) {
         if (canHandlePermission && !hasStoragePermission) throw IllegalStateException("Storage permissions are not granted")
@@ -193,7 +193,7 @@ object GamePathManager {
     private fun refreshCurrentPath(reloadVersions: Boolean) {
         val id = currentGamePathId.getValue()
         _gamePathData.value.find { it.id == id }?.let { item ->
-            if (_currentPath.value == item.path) return //避免重复刷新
+            if (_currentPath.value == item.path) return //avoid duplicate refreshes
             val path = item.path
             _currentPath.update { path }
             path.createNoMediaFile()

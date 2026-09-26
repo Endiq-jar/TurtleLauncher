@@ -94,8 +94,8 @@ public class TerracottaVPNService extends VpnService {
         }
 
         if (!isStopping) {
-            //经 startForegroundService 启动后必须及时进入前台，否则系统将抛出
-            //ForegroundServiceDidNotStartInTimeException 导致进程崩溃
+            //A service started via startForegroundService must enter foreground promptly, or the system throws
+            //ForegroundServiceDidNotStartInTimeException and crashes the process
             try {
                 startForeground0(buildVpnNotification());
             } catch (Exception e) {
@@ -110,7 +110,7 @@ public class TerracottaVPNService extends VpnService {
         }
 
         if (intent == null) {
-            //系统重建服务时不会重新下发联机请求，没有可建立的隧道
+            //System-recreated services receive no fresh multiplayer request, so no tunnel can be established
             stopSelf();
             return Service.START_NOT_STICKY;
         }
@@ -132,7 +132,7 @@ public class TerracottaVPNService extends VpnService {
         try {
             request = TerracottaAndroidAPI.getPendingVpnServiceRequest();
         } catch (IllegalStateException e) {
-            //原生侧已无挂起的联机请求（如等待授权超时），无需建立隧道
+            //No pending multiplayer request remains (e.g. the authorization wait timed out), so no tunnel is needed
             stopSelf();
             return Service.START_NOT_STICKY;
         }
@@ -181,7 +181,7 @@ public class TerracottaVPNService extends VpnService {
         String contentText;
         Terracotta.Mode mode = Terracotta.INSTANCE.getMode();
         if (mode == null) {
-            //联机模式尚未确定，此时通知不展示身份信息
+            //Multiplayer mode isn't determined yet; the notification shows no identity then
             contentText = getString(R.string.terracotta_notification_state_preparing);
         } else {
             String modeText = mode == Terracotta.Mode.Host ? getString(R.string.terracotta_player_kind_host) : getString(R.string.terracotta_player_kind_guest);

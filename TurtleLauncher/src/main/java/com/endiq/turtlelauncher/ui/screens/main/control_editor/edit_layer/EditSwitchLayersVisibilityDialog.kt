@@ -60,8 +60,8 @@ import com.endiq.turtlelauncher.ui.theme.onCardColor
 import com.endiq.turtlelauncher.ui.theme.onItemColor
 
 /**
- * 编辑点击事件：切换控件层可见性
- * @param type 控制控件层的类型
+ * Editing a click event: toggle widget layer visibility
+ * @param type the widget layer control type
  */
 @Composable
 fun EditSwitchLayersVisibilityDialog(
@@ -75,14 +75,14 @@ fun EditSwitchLayersVisibilityDialog(
     }
 
     /**
-     * 缓存哪些控件层被选中
+     * Caches which widget layers are selected
      */
     val layerSelected = remember { mutableStateListOf<ObservableControlLayer>() }
 
     LaunchedEffect(data.clickEvents) {
         val layerUuids = layers.map { it.uuid }.toSet()
         val unsafeEvents = data.clickEvents.filter { event ->
-            event.isAboutLayers() && event.key !in layerUuids //控件层已不存在
+            event.isAboutLayers() && event.key !in layerUuids //the widget layer no longer exists
         }
 
         if (unsafeEvents.isNotEmpty()) {

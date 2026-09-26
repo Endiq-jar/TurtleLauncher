@@ -59,7 +59,7 @@ object LiteModMetadataReader : ModMetadataReader {
                             description = metadata.description,
                             version = metadata.version,
                             authors = parseAuthors(metadata.author),
-                            icon = null //LiteLoader 通常没有图标
+                            icon = null //LiteLoader usually has no icon
                         )
                     }
                 } catch (e: Exception) {
@@ -95,7 +95,7 @@ object LiteModMetadataReader : ModMetadataReader {
                     description = metadata.description,
                     version = metadata.version,
                     authors = parseAuthors(metadata.author),
-                    icon = null //LiteLoader 通常没有图标
+                    icon = null //LiteLoader usually has no icon
                 )
             }
         }

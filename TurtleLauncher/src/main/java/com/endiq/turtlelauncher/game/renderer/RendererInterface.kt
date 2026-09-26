@@ -19,66 +19,66 @@
 package com.endiq.turtlelauncher.game.renderer
 
 /**
- * 启动器渲染器实现
+ * Launcher renderer implementation
  */
 interface RendererInterface {
     /**
-     * 获取渲染器的ID
+     * Returns the renderer's ID
      */
     fun getRendererId(): String
 
     /**
-     * 获取渲染器的唯一标识ID
+     * Returns the renderer's unique identifier ID
      */
     fun getUniqueIdentifier(): String
 
     /**
-     * 获取渲染器的名称
+     * Returns the renderer's name
      */
     fun getRendererName(): String
 
     /**
-     * 获取渲染器的描述
+     * Returns the renderer's description
      */
     fun getRendererSummary(): String? = null
 
     /**
-     * 获取渲染器最低兼容版本
+     * Returns the renderer's minimum compatible version
      */
     fun getMinMCVersion(): String? = null
 
     /**
-     * 获取渲染器最高兼容版本
+     * Returns the renderer's maximum compatible version
      */
     fun getMaxMCVersion(): String? = null
 
     /**
-     * 获取渲染器最低兼容版本的展示用版本号
+     * Returns the display version number of the minimum compatible version
      */
     fun getDisplayMinMCVersion(): String? = getMinMCVersion()
 
     /**
-     * 获取渲染器最高兼容版本的展示用版本号
+     * Display version number of the renderer's maximum compatible version
      */
     fun getDisplayMaxMCVersion(): String? = getMaxMCVersion()
 
     /**
-     * 获取渲染器的环境变量
+     * Returns the renderer's environment variables
      */
     fun getRendererEnv(): Lazy<Map<String, String>>
 
     /**
-     * 获取需要dlopen的库
+     * Returns the libraries needing dlopen
      */
     fun getDlopenLibrary(): Lazy<List<String>>
 
     /**
-     * 获取渲染器的库
+     * Returns the renderer's library
      */
     fun getRendererLibrary(): String
 
     /**
-     * 获取EGL名称
+     * Returns the EGL name
      */
     fun getRendererEGL(): String? = null
 }

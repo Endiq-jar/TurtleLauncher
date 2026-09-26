@@ -143,20 +143,20 @@ private class ShadersManageViewModel(
         private set
 
     /**
-     * 已选择的文件
+     * Selected files
      */
     val selectedPacks = mutableStateListOf<ShaderPackInfo>()
 
     /**
-     * 删除所有已选择文件的操作流程
+     * Operation flow deleting all selected files
      */
     var deleteAllOperation by mutableStateOf<DeleteAllOperation>(DeleteAllOperation.None)
 
-    /** 临时记录的光影包数量 */
+    /** Temporarily recorded shader pack count */
     private var packCount = FolderFileCounter(shadersDir)
 
     /**
-     * 全选所有文件
+     * Selects all files
      */
     fun selectAllFiles() {
         filteredShaders?.forEach { pack ->
@@ -172,7 +172,7 @@ private class ShadersManageViewModel(
 
     private var job: Job? = null
     /**
-     * @param checkCount 刷新目录内文件数量记录
+     * @param checkCount recounts files in the directory
      */
     fun refresh(
         checkCount: Boolean = true
@@ -185,7 +185,7 @@ private class ShadersManageViewModel(
             withContext(Dispatchers.IO) {
                 try {
                     val list = shadersDir.listFiles()?.filter {
-                        //光影包只能是后缀为.zip的压缩包
+                        //Shader packs must be .zip archives
                         it.isFile && it.extension.equals("zip", true)
                     }?.map { file ->
                         ensureActive()
@@ -608,8 +608,8 @@ private fun ShadersList(
                 }
             }
         } else {
-            //如果列表是空的，则是由搜索导致的
-            //展示“无匹配项”文本
+            //An empty list here comes from searching
+            //Show the "no matches" text
             Box(modifier = Modifier.fillMaxSize()) {
                 ScalingLabel(
                     modifier = Modifier.align(Alignment.Center),
@@ -618,7 +618,7 @@ private fun ShadersList(
             }
         }
     } ?: run {
-        //如果为null，则代表本身就没有光影包可以展示
+        //null means there are simply no shader packs to show
         Box(modifier = Modifier.fillMaxSize()) {
             ScalingLabel(
                 modifier = Modifier.align(Alignment.Center),
@@ -679,7 +679,7 @@ private fun ShaderPackItem(
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 1
                 )
-                //文件大小
+                //File size
                 Text(
                     modifier = Modifier.alpha(0.7f),
                     text = stringResource(

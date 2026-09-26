@@ -20,19 +20,19 @@ package com.endiq.turtlelauncher.ui.screens.content.versions.elements
 
 import com.endiq.turtlelauncher.game.version.resource_pack.ResourcePackInfo
 
-/** 资源包操作状态 */
+/** Resource pack operation states */
 sealed interface ResourcePackOperation {
     data object None : ResourcePackOperation
-    /** 执行任务中 */
+    /** Running a task */
     data object Progress : ResourcePackOperation
-    /** 重命名资源包输入对话框 */
+    /** Rename resource pack input dialog */
     data class RenamePack(val packInfo: ResourcePackInfo) : ResourcePackOperation
-    /** 删除资源包输入对话框 */
+    /** Delete resource pack dialog */
     data class DeletePack(val packInfo: ResourcePackInfo) : ResourcePackOperation
 }
 
 /**
- * 简易的资源包过滤器
+ * A simple resource pack filter
  */
 data class ResourcePackFilter(
     val onlyShowValid: Boolean,
@@ -40,12 +40,12 @@ data class ResourcePackFilter(
 )
 
 /**
- * 简易过滤器，过滤指定名称的资源包
+ * A simple filter matching resource packs by name
  */
 fun List<ResourcePackInfo>.filterPacks(filter: ResourcePackFilter) = this.filter {
     val valid = !filter.onlyShowValid || it.isValid
     val nameMatched = filter.filterName.isEmpty() ||
-            //用清除了格式化代码的名称进行判断
+            //Judge by the format-code-stripped name
             it.rawName.contains(filter.filterName, true)
     valid && nameMatched
 }

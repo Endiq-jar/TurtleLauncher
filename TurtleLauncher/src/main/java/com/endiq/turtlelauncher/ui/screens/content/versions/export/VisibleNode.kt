@@ -31,7 +31,7 @@ sealed interface VisibleNode {
         override val key: String get() = data.file.absolutePath
     }
 
-    /** 仅展示空目录提示文本 */
+    /** Show only the empty-directory hint text */
     data class EmptyNode(
         private val key0: String,
         private val indentation0: Int,

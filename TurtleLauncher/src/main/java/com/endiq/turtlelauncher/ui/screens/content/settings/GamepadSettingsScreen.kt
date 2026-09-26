@@ -83,15 +83,15 @@ import kotlinx.coroutines.launch
 
 private sealed interface BindKeyOperation {
     data object None : BindKeyOperation
-    /** 展示键值绑定对话框，开始绑定键值 */
+    /** Show the key binding dialog and start binding */
     data class OnBind(val map: GamepadMap) : BindKeyOperation
 }
 
 private sealed interface CreateNewConfigOperation {
     data object None : CreateNewConfigOperation
-    /** 创建新的映射配置 */
+    /** Create a new mapping config */
     data object Create : CreateNewConfigOperation
-    /** 删除当前映射配置 */
+    /** Delete the current mapping config */
     data object Delete : CreateNewConfigOperation
 }
 
@@ -110,12 +110,12 @@ fun GamepadSettingsScreen(
     }
 
     /**
-     * 编辑手柄按键绑定：true为游戏内，false为菜单内
+     * Gamepad key binding editor: true = in-game, false = in-menu
      */
     var editKeyInGame by remember { mutableStateOf(true) }
 
     /**
-     * 用于更新列表
+     * Used to update the list
      */
     var refreshed by remember { mutableStateOf(false) }
 
@@ -123,7 +123,7 @@ fun GamepadSettingsScreen(
         viewModel.currentMapping
     }
     /**
-     * 根据当前是否拥有配置，决定是否可以展示绑定页
+     * Whether the binding page shows depends on having a config
      */
     val canShowBind = remember(currentMapping) {
         currentMapping != null
@@ -170,7 +170,7 @@ BaseScreen(
         Triple(key, mainScreenKey, false),
         Triple(NormalNavKey.Settings.Gamepad, settingsScreenKey, false)
     ) { isVisible ->
-        //重映射相关设置仅在映射模式下可用
+        //Remap settings apply only in mapping mode
         val remapEnabled = AllSettings.gamepadControl.state &&
             AllSettings.gamepadInputMode.state == GamepadInputMode.Mapped
 
@@ -363,7 +363,7 @@ BaseScreen(
                             .offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        //游戏内
+                        //In-game
                         CheckChip(
                             selected = editKeyInGame,
                             label = {
@@ -375,7 +375,7 @@ BaseScreen(
                             enabled = remapEnabled
                         )
 
-                        //菜单内
+                        //In-menu
                         CheckChip(
                             selected = editKeyInGame.not(),
                             label = {

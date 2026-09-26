@@ -109,22 +109,22 @@ import java.nio.channels.UnresolvedAddressException
 
 private const val TAG = "SelectGameVersion"
 
-/** 版本列表加载状态 */
+/** Version list loading states */
 private sealed interface VersionState {
-    /** 加载中 */
+    /** Loading */
     data object Loading : VersionState
-    /** 加载完成 */
+    /** Loading finished */
     data class None(val versions: List<MinecraftVersion>) : VersionState
-    /** 加载出现异常 */
+    /** Loading hit an exception */
     data class Failure(val message: AndroidStringText) : VersionState
 }
 
 /**
- * 版本过滤条件
- * @param release 是否保留正式版本
- * @param snapshot 是否保留快照版本
- * @param old 是否保留旧版本
- * @param id 搜索并过滤版本ID
+ * Version filter criteria
+ * @param release whether to keep releases
+ * @param snapshot whether to keep snapshots
+ * @param old whether to keep old versions
+ * @param id searches and filters version IDs
  */
 private data class VersionFilter(
     val release: Boolean = true,
@@ -138,7 +138,7 @@ private class VersionsViewModel: ViewModel() {
     var versionState by mutableStateOf<VersionState>(VersionState.Loading)
         private set
 
-    //简易版本类型过滤器
+    //Simple version type filter
     var versionFilter by mutableStateOf(VersionFilter())
         private set
 
@@ -177,7 +177,7 @@ private class VersionsViewModel: ViewModel() {
     }
 
     init {
-        //初始化后，刷新版本列表
+        //Refresh the version list after init
         refresh()
     }
 
@@ -280,7 +280,7 @@ fun SelectGameVersionScreen(
 }
 
 /**
- * 简易过滤器，过滤特定类型的版本
+ * A simple filter matching versions by type
  */
 private fun List<MinecraftVersion>.filterVersions(
     versionFilter: VersionFilter
@@ -292,7 +292,7 @@ private fun List<MinecraftVersion>.filterVersions(
         old = versionFilter.old
     )
 }.filter { version ->
-    //Fix：单独过滤Version name
+    //Fix: filter version names separately
     val versionId = versionFilter.id
     versionId.isEmptyOrBlank() || version.version.id.contains(versionId)
 }
@@ -324,7 +324,7 @@ private fun VersionHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    //版本筛选条件
+                    //Version filter criteria
                     VersionTypeItem(
                         selected = versionFilter.release,
                         onClick = {
@@ -355,7 +355,7 @@ private fun VersionHeader(
                     )
                 }
 
-                //搜索、刷新
+                //Search, refresh
                 Row(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,

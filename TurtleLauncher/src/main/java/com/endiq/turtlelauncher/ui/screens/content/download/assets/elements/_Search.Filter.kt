@@ -89,21 +89,21 @@ import com.endiq.turtlelauncher.ui.theme.onCardColor
 import com.endiq.turtlelauncher.utils.animation.getAnimateTween
 
 /**
- * 搜索资源过滤器UI
- * @param enablePlatform 是否允许更改目标平台
- * @param searchPlatform 目标平台
- * @param searchName 搜索名称
- * @param searchedMcMods 搜索得到的 MCMOD 项目
- * @param searchedVersions 搜索得到的Minecraft版本号
- * @param gameVersion 游戏版本
+ * Resource search filter UI
+ * @param enablePlatform whether the target platform may change
+ * @param searchPlatform the target platform
+ * @param searchName the search name
+ * @param searchedMcMods MCMOD projects found by search
+ * @param searchedVersions Minecraft versions found by search
+ * @param gameVersion the game version
  * @param sortField Sort order
- * @param allCategories 可用资源类别列表
- * @param categories 已选择的资源类别
- * @param enableModLoader 是否启用Mod loader filter
- * @param modloaders 可用模组加载器列表
- * @param modloader 模组加载器
- * @param onModLoaderChange 模组加载器变更时
- * @param extraFilter 额外的过滤器UI
+ * @param allCategories available resource categories
+ * @param categories selected resource categories
+ * @param enableModLoader whether the mod loader filter is on
+ * @param modloaders available mod loaders
+ * @param modloader the mod loader
+ * @param onModLoaderChange on mod loader change
+ * @param extraFilter additional filter UI
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,7 +148,7 @@ fun SearchFilter(
                         item.name,
                         style = MaterialTheme.typography.labelMedium
                     )
-                    //英文名/次要名称
+                    //English/secondary names
                     if (item.subname.isNotBlank()) {
                         Text(
                             modifier = Modifier.alpha(0.7f),
@@ -261,12 +261,12 @@ fun SearchFilter(
 
 enum class FilterSelectionMode {
     /**
-     * 一次性只能选择一个项
+     * Only one item selectable at a time
      */
     Single,
 
     /**
-     * 支持选择更多项
+     * Multiple items selectable
      */
     Multiple
 }
@@ -364,7 +364,7 @@ private fun <E> SuggestionsText(
 }
 
 /**
- * 基础过滤器UI，已经配置好合适的颜色和形状
+ * Base filter UI with proper colors and shapes preset
  */
 @Composable
 fun BaseFilterLayout(
@@ -403,7 +403,7 @@ fun BaseFilterLayout(
 }
 
 /**
- * 列表过滤器UI
+ * List filter UI
  */
 @Composable
 fun <E> FilterListLayout(

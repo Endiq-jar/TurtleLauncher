@@ -19,11 +19,11 @@
 package com.endiq.turtlelauncher.library
 
 /**
- * 依赖库信息
- * @param name 库显示名称
- * @param copyrightInfo 库版权信息
- * @param license 库协议信息
- * @param webUrl 库项目链接
+ * Dependency library info
+ * @param name the library's display name
+ * @param copyrightInfo the library's copyright info
+ * @param license the library's license info
+ * @param webUrl the library's project link
  */
 data class LibraryInfo(
     val name: String,

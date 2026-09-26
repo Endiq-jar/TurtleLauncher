@@ -49,7 +49,7 @@ open class MultiMCPack(
 ): AbstractPack(platform = PackPlatform.MultiMC) {
 
     /**
-     * 内部解析使用的 MultiMC 实例配置
+     * MultiMC instance configuration used by internal parsing
      */
     private var configuration: MultiMCConfiguration? = null
 
@@ -78,19 +78,19 @@ open class MultiMCPack(
     ): List<TaskFlowExecutor.TaskPhase> {
         return listOf(
             buildPhase {
-                //解析 MultiMC 实例配置
+                //Parse the MultiMC instance configuration
                 addTask(
                     id = "ImportModpack.ParseMMCCfg",
                     title = androidText(R.string.import_modpack_task_parse),
                     icon = R.drawable.ic_build_outlined
                 ) { task ->
                     task.updateProgress(-1f)
-                    //MMC 实例配置文件
+                    //MMC instance config file
                     configuration = loadMMCConfigFromPack(root)?.also { configuration ->
                         Logger.debug(TAG, "Successfully read the MultiMC instance configuration: $configuration")
                     }
 
-                    //成功识别后，开始提取整合包游戏文件
+                    //Once recognized, start extracting the modpack's game files
                     val minecraftDir = File(root, ".minecraft")
                     if (minecraftDir.exists() && minecraftDir.isDirectory) {
                         task.updateMessage(androidText(R.string.import_modpack_task_extract_files))
@@ -102,7 +102,7 @@ open class MultiMCPack(
                             }
                         )
 
-                        //迁移图标（如果有）
+                        //Migrate the icon (if any)
                         task.updateProgress(-1f)
                         val iconKey = configuration?.iconKey ?: "icon"
                         val iconFile = File(minecraftDir, "$iconKey.png").takeIf { file ->
@@ -111,7 +111,7 @@ open class MultiMCPack(
                         
                         if (iconFile.exists() && iconFile.isFile) {
                             iconFile.copyTo(getVersionIconFile(versionFolder))
-                            //成功复制后，原本有的图标应该被删除
+                            //After a successful copy, the pre-existing icon should be removed
                             iconFile.delete()
                         }
                     }
@@ -141,7 +141,7 @@ open class MultiMCPack(
                         customVersionName = targetVersionName
                     )
 
-                    //构建模组加载器安装信息
+                    //Build mod loader install info
                     manifest.components.forEach { component ->
                         with(manifest) { component.retrieveLoader() }?.let { pair ->
                             pair.retrieveLoader(
@@ -212,9 +212,9 @@ open class MultiMCPack(
 
             //Create version info
             VersionConfig.createIsolation(targetClientDir).apply {
-                //Jvm启动参数
+                //JVM launch arguments
                 configuration?.jvmArgs?.let { this.jvmArgs = it }
-                //启动时自动加入服务器
+                //Auto-join a server on launch
                 configuration?.joinServerOnLaunch?.let { this.serverIp = it }
             }.save()
 

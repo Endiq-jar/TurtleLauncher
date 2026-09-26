@@ -27,7 +27,7 @@ import com.endiq.turtlelauncher.game.plugin.cacheAppIcon
 import com.endiq.turtlelauncher.setting.AllSettings
 
 /**
- * FCL 驱动器插件
+ * FCL driver plugin
  * [FCL DriverPlugin.kt](https://github.com/FCL-Team/FoldCraftLauncher/blob/main/FCLauncher/src/main/java/com/tungsten/fclauncher/plugins/DriverPlugin.kt)
  */
 object DriverPluginManager: ApkPluginManager() {
@@ -39,7 +39,7 @@ object DriverPluginManager: ApkPluginManager() {
         driverList.find { it.id == driverId } ?: driverList[0]
 
     /**
-     * 初始化驱动器
+     * Initializes drivers
      */
     fun initDriver(context: Context) {
         driverList.clear()
@@ -57,7 +57,7 @@ object DriverPluginManager: ApkPluginManager() {
     }
 
     /**
-     * 通用 FCL 插件
+     * Generic FCL plugin
      */
     override fun parseApkPlugin(
         context: Context,

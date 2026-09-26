@@ -41,7 +41,7 @@ class GameService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        //确保服务处于前台
+        //Ensure the service stays in the foreground
         startForegroundNotification()
         return START_NOT_STICKY
     }
@@ -67,7 +67,7 @@ class GameService : Service() {
                 startForeground(NOTIFICATION_ID_GAME_SERVICE, notification)
             }
         } catch (e: Exception) {
-            //提升期间应用退至后台时系统会拒绝前台身份，此时保活已无意义
+            //If the app recedes during promotion, the system refuses foreground status and keep-alive becomes moot
             Logger.error(TAG, "Failed to start foreground notification", e)
         }
     }

@@ -54,8 +54,8 @@ object LWJGLCharSender : CharacterSenderStrategy {
     }
 
     override fun sendChar(character: Char) {
-        // 按键与字符成对发送：lwjglx 系 LWJGL2 兼容层将字母等 keydown 暂存，
-        // 待 charMods 事件合并后才投给游戏，只发字符无法驱动按键绑定
+        // Send keys and characters in pairs: lwjglx's LWJGL2 compat layer buffers letter keydowns,
+        // delivering them only after charMods merge — characters alone can't drive keybinds
         val index = EfficientAndroidLWJGLKeycode.getIndexByKey(
             EfficientAndroidLWJGLKeycode.getAndroidKeycode(character)
         )
@@ -105,7 +105,7 @@ object LWJGLCharSender : CharacterSenderStrategy {
     }
 
     /**
-     * 获取 LWJGL 鼠标点击事件
+     * Returns an LWJGL mouse click event
      */
     fun getMouseButton(button: Int): Short? {
         return when (button) {

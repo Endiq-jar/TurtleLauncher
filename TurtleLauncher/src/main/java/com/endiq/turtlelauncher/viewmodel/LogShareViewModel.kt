@@ -25,19 +25,19 @@ import androidx.lifecycle.ViewModel
 import java.io.File
 
 /**
- * 游戏日志分享菜单状态管理 ViewModel
+ * Game log share menu state ViewModel
  */
 class LogShareViewModel : ViewModel() {
-    /** 当前待分享的日志文件 */
+    /** The log file currently pending share */
     var currentLogFile by mutableStateOf<File?>(null)
         private set
 
-    /** 是否显示日志操作菜单 */
+    /** Whether the log action menu is shown */
     var showMenu by mutableStateOf(false)
         private set
 
     /**
-     * 打开日志分享菜单
+     * Opens the log share menu
      */
     fun openMenu(logFile: File) {
         currentLogFile = logFile
@@ -45,7 +45,7 @@ class LogShareViewModel : ViewModel() {
     }
 
     /**
-     * 关闭日志分享菜单
+     * Closes the log share menu
      */
     fun closeMenu() {
         showMenu = false

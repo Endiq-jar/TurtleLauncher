@@ -67,8 +67,8 @@ fun DownloadModScreen(
 
     LaunchedEffect(stackTopKey) {
         onCurrentKeyChange(stackTopKey)
-        // 进入模组搜索页或项目详情页时，重新扫描当前版本已安装的模组
-        // 同版本重复扫描会直接复用内存与持久缓存，且不会清除已有的标注数据
+        // Entering the mod search page or a project detail rescans the version's installed mods
+        // Rescanning the same version reuses in-memory and persistent caches without dropping annotations
         if (stackTopKey is NormalNavKey.SearchMod || stackTopKey is NormalNavKey.DownloadAssets) {
             installedViewModel.scan(VersionsManager.currentVersion.value)
         }
@@ -76,13 +76,13 @@ fun DownloadModScreen(
 
     val context = LocalContext.current
 
-    //当前版本本地已安装的模组项目，用于依赖项的已安装标注与默认勾选
+    //The version's locally installed mods, for dependency installed-marks and default selection
     val installedByProject = installedViewModel.installedByProject
     val installedProjects = remember(installedByProject, installedViewModel.currentPlatform) {
         mapOf(installedViewModel.currentPlatform to installedByProject.keys.toSet())
     }
 
-    //下载资源操作
+    //Resource download operations
     var operation by remember { mutableStateOf<DownloadSingleOperation>(DownloadSingleOperation.None) }
     DownloadSingleOperation(
         operation = operation,

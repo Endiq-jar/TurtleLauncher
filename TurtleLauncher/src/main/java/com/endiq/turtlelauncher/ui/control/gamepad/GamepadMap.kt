@@ -26,12 +26,12 @@ import com.endiq.inputmap.keycodes.ControlEventKeycode
 import com.endiq.turtlelauncher.R
 
 /**
- * 特殊键值：鼠标滚轮上移一次
+ * Special key: scroll the wheel up once
  */
 const val SPECIAL_KEY_MOUSE_SCROLL_UP = "SPECIAL_KEY_MOUSE_SCROLL_LEFT"
 
 /**
- * 特殊键值：鼠标滚轮下移一次
+ * Special key: scroll the wheel down once
  */
 const val SPECIAL_KEY_MOUSE_SCROLL_DOWN = "SPECIAL_KEY_MOUSE_SCROLL_RIGHT"
 

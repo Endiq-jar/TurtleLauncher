@@ -24,27 +24,27 @@ import com.endiq.turtlelauncher.utils.string.stripColorCodes
 
 sealed interface SavesOperation {
     data object None : SavesOperation
-    /** 执行任务中 */
+    /** Running a task */
     data object Progress : SavesOperation
-    /** 快速启动 */
+    /** Quick launch */
     data class QuickPlay(val saveData: SaveData) : SavesOperation
-    /** 重命名存档输入对话框 */
+    /** Rename save input dialog */
     data class RenameSave(val saveData: SaveData) : SavesOperation
-    /** 备份存档输入对话框 */
+    /** Backup save input dialog */
     data class BackupSave(val saveData: SaveData) : SavesOperation
-    /** 删除存档对话框 */
+    /** Delete save dialog */
     data class DeleteSave(val saveData: SaveData) : SavesOperation
 }
 
 /**
- * 存档过滤器
+ * Save filter
  */
 data class SavesFilter(val onlyShowCompatible: Boolean, val saveName: String = "")
 
 /**
- * 简易过滤器，过滤特定的存档
- * @param minecraftVersion 当前 MC 的版本，用于比较版本兼容性
- * @param savesFilter 存档过滤器
+ * A simple filter matching specific saves
+ * @param minecraftVersion the current MC version, used for compatibility comparison
+ * @param savesFilter the save filter
  */
 fun List<SaveData>.filterSaves(
     minecraftVersion: String,
@@ -53,8 +53,8 @@ fun List<SaveData>.filterSaves(
     val isCompatible = !savesFilter.onlyShowCompatible || it.isCompatible(minecraftVersion)
 
     val nameMatches = savesFilter.saveName.isEmpty() ||
-            //存档名、存档文件夹名均可参与搜索
-            //自动过滤掉颜色占位符
+            //Both save names and folder names are searchable
+            //Color placeholders are stripped automatically
             it.levelName?.stripColorCodes()?.contains(savesFilter.saveName, true) == true ||
             it.saveFile.name.stripColorCodes().contains(savesFilter.saveName, true)
 

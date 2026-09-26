@@ -95,10 +95,10 @@ import com.endiq.turtlelauncher.ui.theme.onItemColor
 import com.endiq.turtlelauncher.utils.formatNumberByLocale
 
 /**
- * 下载对话框中的依赖项
- * @param dependency 依赖信息
- * @param project 依赖项目信息，为null代表信息获取失败
- * @param notFound 依赖项目在平台上不存在
+ * Dependencies in the download dialog
+ * @param dependency dependency info
+ * @param project dependency project info; null when the fetch failed
+ * @param notFound the dependency doesn't exist on the platform
  */
 class DependencyEntry(
     val dependency: PlatformVersion.PlatformDependency,
@@ -107,23 +107,23 @@ class DependencyEntry(
 )
 
 /**
- * 操作状态：下载单个资源文件
+ * Operation state: downloading a single resource file
  */
 sealed interface DownloadSingleOperation {
     data object None : DownloadSingleOperation
-    /** 警告用户正在使用移动网络 */
+    /** Warn the user about mobile data use */
     data class WarningForMobileData(
         val classes: PlatformClasses,
         val version: PlatformVersion,
         val dependencyEntries: List<DependencyEntry>
     ) : DownloadSingleOperation
-    /** 选择版本 */
+    /** Pick a version */
     data class SelectVersion(
         val classes: PlatformClasses,
         val version: PlatformVersion,
         val dependencyEntries: List<DependencyEntry>
     ) : DownloadSingleOperation
-    /** 安装 */
+    /** Install */
     data class Install(
         val classes: PlatformClasses,
         val version: PlatformVersion,
@@ -151,7 +151,7 @@ fun DownloadSingleOperation(
                     changeOperation(DownloadSingleOperation.None)
                 },
                 onConfirm = {
-                    //用户坚持使用移动网络
+                    //The user insists on mobile data
                     changeOperation(
                         DownloadSingleOperation.SelectVersion(
                             classes = operation.classes,
@@ -224,10 +224,10 @@ private fun DownloadDialog(
             onDismiss = onDismiss
         )
     } else {
-        //当前选择的版本，将会把资源安装到该版本
+        //The chosen version: resources install into it
         val selectedVersions = remember { mutableStateListOf(version0) }
 
-        //拆分依赖项目、可选项目
+        //Split required and optional dependencies
         val dependencies = remember(dependencyEntries) {
             dependencyEntries.filter { it.dependency.type == PlatformDependencyType.REQUIRED }
         }
@@ -236,7 +236,7 @@ private fun DownloadDialog(
         }
         val hasDeps = dependencies.isNotEmpty() || optionals.isNotEmpty()
 
-        //用户是否手动修改过依赖的勾选状态
+        //Whether the user manually changed dependency selection
         var userChangedDependencies by remember(dependencyEntries) { mutableStateOf(false) }
 
         val selectedDependencyKeys = remember(dependencyEntries) { mutableStateListOf<String>() }
@@ -249,8 +249,8 @@ private fun DownloadDialog(
             }
         }
 
-        // 默认勾选必装依赖，本地已安装的模组依赖默认不勾选
-        // 已安装信息可能晚于对话框到达，用户未手动修改过时重新套用默认状态
+        // Required dependencies check by default; locally installed ones don't
+        // Install info may arrive after the dialog; reapply defaults unless the user changed them
         LaunchedEffect(dependencyEntries, installedProjects, userChangedDependencies) {
             if (userChangedDependencies) return@LaunchedEffect
             selectedDependencyKeys.clear()
@@ -362,7 +362,7 @@ private fun DownloadDialog(
                                     }
                                 }
 
-                                //选择游戏版本
+                                //Pick a game version
                                 ChoseGameVersionLayout(
                                     modifier = Modifier.fadeEdge(state = listState),
                                     versions = versions,
@@ -517,12 +517,12 @@ private fun LazyListScope.dependencyLayout(
             style = MaterialTheme.typography.labelLarge
         )
     }
-    //前置项目列表
+    //Dependency project list
     items(list) { entry ->
         val dependency = entry.dependency
         val project = entry.project
         if (project == null) {
-            //依赖项目信息获取失败，展示占位项且不可选
+            //Failed dependency info shows an unselectable placeholder
             AssetsUnavailableDependencyItem(
                 modifier = Modifier.fillMaxWidth(),
                 title = dependency.projectId ?: dependency.versionId.orEmpty(),
@@ -553,12 +553,12 @@ private fun LazyListScope.dependencyLayout(
 }
 
 /**
- * 是否可安装：依赖项目信息获取成功的才能被选中安装
+ * Installability: only dependencies with fetched info may be selected
  */
 private fun DependencyEntry.isInstallable(): Boolean = project != null
 
 /**
- * 该依赖是否为本地已安装的模组项目
+ * Whether the dependency is a locally installed mod project
  */
 private fun DependencyEntry.isModInstalled(
     installedProjects: Map<Platform, Set<String>>,
@@ -570,7 +570,7 @@ private fun DependencyEntry.isModInstalled(
 }
 
 /**
- * 依赖项目信息获取失败时的占位项
+ * Placeholder for a dependency whose info failed to load
  */
 @Composable
 private fun AssetsUnavailableDependencyItem(
@@ -644,7 +644,7 @@ private fun AssetsVersionDependencyItem(
     color: Color = itemColor(false),
     contentColor: Color = onItemColor(),
 ) {
-    //项目基本信息
+    //Project basic info
     val platform = remember { project.platform() }
     val title = remember { project.platformTitle() }
     val summary = remember { project.platformSummary() }
@@ -692,14 +692,14 @@ private fun AssetsVersionDependencyItem(
                 ProjectTitleHead(
                     platform = platform,
                     title = title,
-                    author = null //ui太小，展示不下
+                    author = null //the UI is too small to show it
                 )
                 summary?.let { summary ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        //描述
+                        //Description
                         Text(
                             modifier = Modifier.weight(1f),
                             text = summary,
@@ -717,7 +717,7 @@ private fun AssetsVersionDependencyItem(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                //加载器标签与已安装标注
+                //Loader tags and installed marks
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -728,7 +728,7 @@ private fun AssetsVersionDependencyItem(
                         modLoaders = modLoaders
                     )
                     if (summary == null) {
-                        //没有摘要时，计数移到底部行展示
+                        //Without a summary, counts move to the bottom row
                         AssetsDependencyCounts(
                             downloads = downloads,
                             follows = follows
@@ -745,7 +745,7 @@ private fun AssetsVersionDependencyItem(
 }
 
 /**
- * 依赖项目支持的模组加载器标签
+ * Mod loader tags the dependency supports
  */
 @Composable
 private fun AssetsDependencyTags(
@@ -768,7 +768,7 @@ private fun AssetsDependencyTags(
 }
 
 /**
- * 依赖项目的下载量与收藏量
+ * The dependency's downloads and favorites
  */
 @Composable
 private fun AssetsDependencyCounts(

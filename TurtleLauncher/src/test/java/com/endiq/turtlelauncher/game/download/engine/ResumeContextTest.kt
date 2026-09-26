@@ -25,7 +25,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URL
 
-/** Range 续传资格的逐字段校验语义 */
+/** Per-field validation semantics of Range resume eligibility */
 class ResumeContextTest {
 
     private val url = URL("https://example.test/file.bin")
@@ -67,7 +67,7 @@ class ResumeContextTest {
                 )
             )
         )
-        //弱 ETag 且无 Last-Modified：没有可用验证器
+        //Weak ETag and no Last-Modified: no usable validator
         assertNull(
             ResumeContext.of(
                 response(
@@ -82,7 +82,7 @@ class ResumeContextTest {
                 )
             )
         )
-        //强 ETag + Last-Modified + 全部资格条件：建立成功
+        //Strong ETag + Last-Modified + all conditions: establishment succeeds
         val established = ResumeContext.of(
             response(
                 headers = mapOf(
@@ -110,27 +110,27 @@ class ResumeContextTest {
         val context = established()
         context.addBytes(4)
 
-        //非 206 拒绝
+        //Non-206 rejected
         assertFalse(
             context.canResume(200, response(headers = partialHeaders(6)))
         )
-        //编码非 identity 拒绝
+        //Non-identity encoding rejected
         assertFalse(
             context.canResume(
                 206, response(code = 206, headers = partialHeaders(6) + ("Content-Encoding" to "gzip"))
             )
         )
-        //总长度对不上拒绝
+        //Mismatched total length rejected
         assertFalse(
             context.canResume(206, response(code = 206, headers = partialHeaders(100)))
         )
-        //ETag 不一致拒绝
+        //Inconsistent ETag rejected
         assertFalse(
             context.canResume(
                 206, response(code = 206, headers = partialHeaders(6) + ("ETag" to "\"b\""))
             )
         )
-        //Content-Range 起点不等于已收字节拒绝
+        //Content-Range start ≠ received bytes rejected
         assertFalse(
             context.canResume(
                 206,
@@ -143,7 +143,7 @@ class ResumeContextTest {
                 )
             )
         )
-        //Content-Range 结束值与响应长度不符拒绝
+        //Content-Range end mismatching response length rejected
         assertFalse(
             context.canResume(
                 206,
@@ -156,7 +156,7 @@ class ResumeContextTest {
                 )
             )
         )
-        //完全匹配放行
+        //Full match allowed
         assertTrue(
             context.canResume(
                 206,
@@ -181,7 +181,7 @@ class ResumeContextTest {
         )
         context.addBytes(4)
 
-        //同 URL + 同 Last-Modified：放行
+        //Same URL + same Last-Modified: allowed
         assertTrue(
             context.canResume(
                 206,
@@ -194,7 +194,7 @@ class ResumeContextTest {
                 )
             )
         )
-        //URL 不同：拒绝
+        //Different URL: rejected
         assertFalse(
             context.canResume(
                 206,
@@ -208,7 +208,7 @@ class ResumeContextTest {
                 )
             )
         )
-        //Last-Modified 不同：拒绝
+        //Different Last-Modified: rejected
         assertFalse(
             context.canResume(
                 206,

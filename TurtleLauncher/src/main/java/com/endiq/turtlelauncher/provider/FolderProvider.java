@@ -84,14 +84,14 @@ public class FolderProvider extends DocumentsProvider {
     }
 
     /**
-     * 返回null表示在根目录
+     * Returning null means the root directory
      */
     private File getFileForDocId(String docId) throws FileNotFoundException {
         return getFileForDocId(docId, true);
     }
 
     /**
-     * 返回null表示在根目录
+     * Returning null means the root directory
      */
     private File getFileForDocId(String docId, boolean checkExists) throws FileNotFoundException {
         String filename = docId;
@@ -125,7 +125,7 @@ public class FolderProvider extends DocumentsProvider {
         }
         if (checkExists) {
             try {
-                Os.lstat(f.getPath()); // 不能用File.exists: 如果file是个link，且目标无法访问，则exists返回false
+                Os.lstat(f.getPath()); // Can't use File.exists: if the file is a link whose target is unreachable, exists returns false
             } catch (Exception e) {
                 throw new FileNotFoundException(docId + " not found");
             }

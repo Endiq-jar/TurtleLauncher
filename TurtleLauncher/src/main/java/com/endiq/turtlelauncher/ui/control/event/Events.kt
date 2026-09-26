@@ -22,7 +22,7 @@ import com.endiq.inputmap.keycodes.ControlEventKeycode
 import org.lwjgl.glfw.CallbackBridge
 
 /**
- * 点击按键时，处理LWJGL按键事件
+ * Handles LWJGL key events when buttons are tapped
  */
 fun lwjglEvent(
     eventKey: String,
@@ -39,23 +39,23 @@ fun lwjglEvent(
     }
 }
 
-//启动器点击事件
+//Launcher click event
 
-/** 切换输入法 */
+/** Switch the IME */
 const val LAUNCHER_EVENT_SWITCH_IME = "launcher.event.switch_ime"
-/** 切换菜单 */
+/** Toggle the menu */
 const val LAUNCHER_EVENT_SWITCH_MENU = "launcher.event.switch_menu"
-/** 控制虚拟鼠标滚轮上-长按一直触发 */
+/** Virtual mouse wheel up: repeat while held */
 const val LAUNCHER_EVENT_SCROLL_UP = "launcher.event.scroll_up"
-/** 控制虚拟鼠标滚轮上-单次点击 */
+/** Virtual mouse wheel up: single tap */
 const val LAUNCHER_EVENT_SCROLL_UP_SINGLE = "launcher.event.scroll_up.single"
-/** 控制虚拟鼠标滚轮下-长按一直触发 */
+/** Virtual mouse wheel down: repeat while held */
 const val LAUNCHER_EVENT_SCROLL_DOWN = "launcher.event.scroll_down"
-/** 控制虚拟鼠标滚轮下-单次点击 */
+/** Virtual mouse wheel down: single tap */
 const val LAUNCHER_EVENT_SCROLL_DOWN_SINGLE = "launcher.event.scroll_down.single"
 
 /**
- * 点击按键时，处理启动器事件
+ * Handles launcher events when buttons are tapped
  */
 fun launcherEvent(
     eventKey: String,
@@ -70,7 +70,7 @@ fun launcherEvent(
     onLongScrollDownCancel: () -> Unit
 ) {
     if (eventKey.startsWith("GLFW_MOUSE_", false)) {
-        //处理鼠标事件
+        //Handle mouse events
         lwjglEvent(eventKey = eventKey, isMouse = true, isPressed = isPressed)
     } else {
         if (isPressed) {

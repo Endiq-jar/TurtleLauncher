@@ -30,25 +30,25 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
- * 容灾 DNS 解析器
+ * Fallback DNS resolver
  *
- * 优先使用系统 DNS 解析；当系统 DNS 失败（DNS 污染、运营商 DNS 故障、
- * 私人 DNS 不可达等）时，回退到公共 DNS-over-HTTPS 服务解析，
- * 避免单纯的解析失败导致整个网络请求不可用。
+ * Uses system DNS first; on failure (DNS pollution, ISP DNS outage,
+ * private DNS unreachable, etc.), it falls back to public DNS-over-HTTPS,
+ * preventing a mere resolution failure from taking the entire network request down.
  *
- * 所有 DoH 服务均通过 IP 字面量访问，其 TLS 证书包含对应 IP SAN，因此
- * 回退解析本身不依赖系统 DNS。
+ * All DoH services are accessed via IP literals whose TLS certificates carry matching IP SANs, so
+ * fallback resolution never depends on system DNS.
  */
 object ResilientDns : Dns {
     private const val TAG = "ResilientDns"
 
-    /** DoH 解析结果的缓存时长 */
+    /** Cache duration for DoH results */
     private const val CACHE_TTL_MILLIS = 10 * 60 * 1000L
 
-    /** 缓存已成功通过 DoH 解析的结果（系统 DNS 结果由系统自行缓存，不在此处缓存） */
+    /** Caches successful DoH results (system DNS results stay cached by the system) */
     private val cache = ConcurrentHashMap<String, Pair<List<InetAddress>, Long>>()
 
-    /** 用于 DoH 查询的引导客户端，全部使用 IP 字面量地址，无需预先解析域名 */
+    /** Bootstrap client for DoH queries: IP literals only, no pre-resolution needed */
     private val dohClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
@@ -57,8 +57,8 @@ object ResilientDns : Dns {
     }
 
     /**
-     * 公共 DoH 服务的查询地址模板（均为 dns-json 响应格式）
-     * 按优先级排序，靠前的优先尝试
+     * URL templates of public DoH services (all dns-json response format)
+     * Sorted by priority; earlier entries are tried first
      */
     private val dohProviders = listOf(
         "https://1.1.1.1/dns-query?name=%s&type=A", //Cloudflare
@@ -73,7 +73,7 @@ object ResilientDns : Dns {
             Logger.warning(TAG, "System DNS resolution failed for $hostname, falling back to DoH: ${e.message}")
         }
 
-        //命中缓存，避免对同一域名频繁发起 DoH 查询
+        //Cache hit: avoids frequent DoH queries against the same domain
         cache[hostname]?.let { (addresses, timestamp) ->
             if (System.currentTimeMillis() - timestamp < CACHE_TTL_MILLIS) {
                 return addresses
@@ -105,8 +105,8 @@ object ResilientDns : Dns {
     }
 
     /**
-     * 通过 dns-json 格式的 DoH 服务解析域名
-     * @return 解析出的地址列表，无有效记录时返回空列表
+     * Resolves a domain via a dns-json DoH service
+     * @return the resolved addresses, or an empty list when no valid records exist
      */
     private fun dohLookup(url: String): List<InetAddress> {
         val request = Request.Builder()
@@ -124,10 +124,10 @@ object ResilientDns : Dns {
             val answers = json.optJSONArray("Answer") ?: return emptyList()
             return (0 until answers.length())
                 .mapNotNull { answers.optJSONObject(it) }
-                .filter { it.optInt("type") == 1 || it.optInt("type") == 28 } //A 与 AAAA 记录
+                .filter { it.optInt("type") == 1 || it.optInt("type") == 28 } //A and AAAA records
                 .mapNotNull { record ->
                     record.optString("data").takeIf { it.isNotBlank() }?.let { ip ->
-                        //IP 字面量不会触发额外的 DNS 查询
+                        //IP literals never trigger extra DNS queries
                         runCatching { InetAddress.getByName(ip) }.getOrNull()
                     }
                 }

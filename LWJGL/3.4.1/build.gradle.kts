@@ -28,8 +28,8 @@ configurations {
     }
 }
 
-// JSound（javax.sound → OpenAL 桥接）源码由所有 lwjgl 版本共享，修改只需改 shared 一处的代码。
-// 注意：公共代码必须保持 Java 8 兼容，因为 3.3.3 以 Java 8 编译。
+// JSound (javax.sound -> OpenAL bridge) sources are shared by every lwjgl version; edit only the shared copy.
+// Note: shared code must stay Java 8 compatible since 3.3.3 compiles with Java 8.
 sourceSets {
     main {
         java {
@@ -55,8 +55,8 @@ dependencies {
 }
 
 tasks.jar {
-    // 被排除的模块只经 doLast 复制、不参与合并，需显式声明为输入，
-    // 否则更新这些 jar 后任务会误判 UP-TO-DATE，导致 copy 与 version 不更新
+    // Excluded modules are copied only by doLast and skip merging, so declare them explicitly as inputs,
+    // otherwise updating those jars would misjudge UP-TO-DATE, leaving copy and version stale
     inputs.files(configurations["lwjglModules"])
 
     // Modules to copy over to the components directory instead of patching and merging

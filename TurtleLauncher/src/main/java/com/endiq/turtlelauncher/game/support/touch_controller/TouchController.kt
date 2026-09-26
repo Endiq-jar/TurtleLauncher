@@ -684,7 +684,7 @@ private class TouchControllerInputModifierNode(
 }
 
 /**
- * 提供文本输入处理，为TouchController模组的控制代理提供信息
+ * Provides text input handling, feeding the TouchController mod's control proxy
  */
 @Composable
 fun Modifier.touchControllerInputModifier(
@@ -694,7 +694,7 @@ fun Modifier.touchControllerInputModifier(
 ) = this then TouchControllerInputModifier(screenSize, onCursorRectUpdated, onInputAreaRectUpdated)
 
 /**
- * 单独捕获触摸事件，为TouchController模组的控制代理提供信息
+ * Captures touch events separately, feeding the TouchController mod's control proxy
  */
 @Composable
 fun Modifier.touchControllerTouchModifier(

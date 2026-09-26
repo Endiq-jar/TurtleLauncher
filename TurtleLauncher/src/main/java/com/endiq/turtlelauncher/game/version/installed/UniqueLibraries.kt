@@ -28,9 +28,9 @@ import com.endiq.turtlelauncher.utils.GSON
 import org.jackhuang.hmcl.util.versioning.VersionNumber
 
 /**
- * 去重启动依赖库
- * 同一坐标且规则相同时只保留最新版本
- * 规则不同或坐标不同的声明全部保留
+ * Deduplicates launch dependency libraries
+ * Identical coordinates and rules: keep only the newest version
+ * Declarations with differing rules or coordinates are all kept
  */
 fun uniqueLibraries(manifest: GameManifest): GameManifest {
     val libraries = manifest.libraries ?: return manifest
@@ -52,11 +52,11 @@ fun uniqueLibraries(manifest: GameManifest): GameManifest {
         var duplicate = false
         for (otherIndex in existing) {
             val other = unique[otherIndex]
-            // 规则不同
-            // 平台特定变体
+            // Different rules
+            // Platform-specific variants
             if (rulesHash(library) != rulesHash(other)) continue
 
-            // 保留最新版本
+            // Keep the newest version
             val comparison = VersionNumber.compare(
                 components.version,
                 parseLibraryComponents(other.name).version
@@ -66,12 +66,12 @@ fun uniqueLibraries(manifest: GameManifest): GameManifest {
                 unique[otherIndex] = library
             } else if (comparison == 0) {
                 if (library.name == other.name && library.isNative == other.isNative) {
-                    // 坐标完全相同
+                    // Identical coordinates
                     if (GSON.toJson(library).length > GSON.toJson(other).length) {
                         unique[otherIndex] = library
                     }
                 } else {
-                    // 版本相同但坐标不同，如 jar 与 natives 变体
+                    // Same version but different coordinates, e.g. jar vs natives variants
                     continue
                 }
             }

@@ -114,90 +114,90 @@ class MainActivity : BaseAppCompatActivity() {
     override fun isIgnoreNotch(): Boolean = AllSettings.launcherFullScreen.getValue()
 
     /**
-     * 屏幕堆栈管理ViewModel
+     * Screen stack management ViewModel
      */
     private val screenBackStackModel: ScreenBackStackViewModel by viewModels()
 
     /**
-     * 启动游戏ViewModel
+     * Launches the gameViewModel
      */
     private val launchGameViewModel: LaunchGameViewModel by viewModels()
 
     /**
-     * 错误信息ViewModel
+     * Error info ViewModel
      */
     private val errorViewModel: ErrorViewModel by viewModels()
 
     /**
-     * 与Compose交互的事件ViewModel
+     * Compose interaction event ViewModel
      */
     val eventViewModel: EventViewModel by viewModels()
 
     /**
-     * 启动器背景内容管理 ViewModel
+     * Launcher background content management ViewModel
      */
     val backgroundViewModel: BackgroundViewModel by viewModels()
 
     /**
-     * 整合包导入 ViewModel
+     * pack import ViewModel
      */
     val modpackImportViewModel: ModpackImportViewModel by viewModels()
 
     /**
-     * 启动器更新状态 ViewModel
+     * Launcher update state ViewModel
      */
     val launcherUpgradeViewModel: LauncherUpgradeViewModel by viewModels()
 
     /**
-     * 游戏日志分享菜单 ViewModel
+     * Game log share menu ViewModel
      */
     private val logShareViewModel: LogShareViewModel by viewModels()
 
     /**
-     * 游戏日志上传 ViewModel
+     * Game log upload ViewModel
      */
     private val logsUploadViewModel: LogsUploadViewModel by viewModels()
 
     /**
-     * Vulkan检测状态 ViewModel
+     * Vulkan detection state ViewModel
      */
     private val vulkanCheckerViewModel: VulkanCheckerViewModel by viewModels()
 
     /**
-     * 是否开启捕获按键模式
+     * Whether key-capture mode is enabled
      */
     private var isCaptureKey = false
 
     /**
-     * 文件管理器事件监听
+     * File manager event listener
      */
     private var fmEventRegistrar: FileManagerEventRegistrar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //处理外部导入
+        //Handle external imports
         val isImporting = handleImportIfNeeded(intent)
 
-        //加载渲染器
+        //Load renderers
         Renderers.init()
-        //加载插件
+        //Load plugins
         PluginLoader.loadAllPlugins(this, false)
         refreshData()
 
-        //注册文件管理器事件监听
+        //Register the file manager event listener
         fmEventRegistrar = FileManagerEventRegistrar(this, ::onFileManagerEvent).also { it.start() }
 
-        //初始化通知管理（创建渠道）
+        //Initialize notification management (create channels)
         NotificationManager.initManager(this)
 
-        //检查更新
+        //Check for updates
         if (!isImporting && launcherUpgradeViewModel.operation == LauncherUpgradeOperation.None) {
             lifecycleScope.launch {
                 launcherUpgradeViewModel.checkOnAppStart()
             }
         }
 
-        //错误信息展示
+        //Error info display
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 errorViewModel.errorEvents.collect { tm ->
@@ -209,7 +209,7 @@ class MainActivity : BaseAppCompatActivity() {
             }
         }
 
-        //事件处理
+        //Event handling
         lifecycleScope.launch {
             eventViewModel.events.collect { event ->
                 when (event) {
@@ -307,13 +307,13 @@ class MainActivity : BaseAppCompatActivity() {
                         }
                     )
 
-                    //节日彩蛋效果层
+                    //Holiday easter-egg effect layer
                     FestivalEffects(
                         modifier = Modifier.fillMaxSize(),
                         festivals = festivals
                     )
 
-                    //启动游戏操作流程
+                    //Game-launch operation flow
                     LaunchGameOperation(
                         activity = this@MainActivity,
                         eventViewModel = eventViewModel,
@@ -347,7 +347,7 @@ class MainActivity : BaseAppCompatActivity() {
                         }
                     )
 
-                    //启动游戏流程展示
+                    //Game-launch flow display
                     val launchFlow by launchGameViewModel.launchFlow.collectAsStateWithLifecycle()
                     val flow = launchFlow
                     if (flow != null) {
@@ -362,7 +362,7 @@ class MainActivity : BaseAppCompatActivity() {
                     }
                 }
 
-                //显示赞助支持的小弹窗
+                //Show the sponsorship support popup
 
 
                 ModpackImportOperation(
@@ -377,7 +377,7 @@ class MainActivity : BaseAppCompatActivity() {
                     }
                 )
 
-                //用户确认Version name 操作流程
+                //User version-name confirmation flow
                 ModpackVersionNameOperation(
                     operation = modpackImportViewModel.versionNameOperation,
                     onConfirmVersionName = { name ->
@@ -388,7 +388,7 @@ class MainActivity : BaseAppCompatActivity() {
                     }
                 )
 
-                //用户确认使用移动网络 操作流程
+                //User mobile-data confirmation flow
                 ModpackConfirmUseMobileDataOperation(
                     operation = modpackImportViewModel.confirmMobileDataOperation,
                     onConfirmUse = { use ->
@@ -396,7 +396,7 @@ class MainActivity : BaseAppCompatActivity() {
                     }
                 )
 
-                //游戏日志分享菜单
+                //Game log share menu
                 val logFile = logShareViewModel.currentLogFile
                 if (logShareViewModel.showMenu && logFile != null) {
                     LogShareMenu(
@@ -438,7 +438,7 @@ class MainActivity : BaseAppCompatActivity() {
                     }
                 )
 
-                //检查更新操作流程
+                //Update-check operation flow
                 LauncherUpgradeOperation(
                     operation = launcherUpgradeViewModel.operation,
                     onChanged = { launcherUpgradeViewModel.operation = it },
@@ -470,9 +470,9 @@ class MainActivity : BaseAppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleImportIfNeeded(intent)
-        // 重载渲染器
+        // Reload renderers
         Renderers.init(true)
-        // 重载插件
+        // Reload plugins
         PluginLoader.loadAllPlugins(this, true)
     }
 
@@ -483,7 +483,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * File change event of the file manager处理
+     * Handles the file manager's file change events
      */
     private fun onFileManagerEvent(event: FileManagerEvent) {
         val versionsHome = File(getVersionsHome()).absolutePath
@@ -497,7 +497,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 检查设备 Vulkan 支持情况
+     * Checks the device's Vulkan support
      */
     private suspend fun checkVulkan(version: Version) {
         withContext(Dispatchers.Main) {
@@ -507,7 +507,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 检查启动器更新
+     * Checks for launcher updates
      */
     private fun checkUpdate() {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -526,7 +526,7 @@ class MainActivity : BaseAppCompatActivity() {
                 )
                 if (!success) throw RuntimeException()
             } catch (_: TooFrequentOperationException) {
-                //太频繁了
+                //Too frequent
                 return@launch
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
@@ -538,7 +538,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 是否保持屏幕不熄屏
+     * Whether to keep the screen awake
      */
     private suspend fun keepScreen(on: Boolean) {
         withContext(Dispatchers.Main) {
@@ -553,10 +553,10 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 弹出下载插件的链接提示对话框
+     * Pops the dialog with plugin download links
      */
     private suspend fun showDownloadPlugins(link: EventViewModel.Event.DownloadPlugins.Links) {
-        //匹配当前系统语言可见的网盘链接
+        //Pick the netdisk link visible for the current system language
         val locale = Locale.getDefault()
         val cloudDrive = link.cloudDrives.sortedByDescending {
             it.language.contains("_")
@@ -585,7 +585,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 导入控制布局
+     * Imports a control layout
      */
     private fun importControlFiles(uris: List<Uri>) {
         fun showError(
@@ -644,8 +644,8 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * 处理外部导入
-     * @return 是否有导入任务正在进行中
+     * Handles external imports
+     * @return whether an import task is in progress
      */
     private fun handleImportIfNeeded(intent: Intent?): Boolean {
         if (intent == null) return false
@@ -663,7 +663,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * @return 是否已经触发了整合包导入程序
+     * @return whether the pack import flow has triggered
      */
     private fun handleModpackImport(intent: Intent): Boolean {
         val uri: Uri? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -692,7 +692,7 @@ class MainActivity : BaseAppCompatActivity() {
     }
 
     /**
-     * @return 是否已经触发了控制布局导入程序
+     * @return whether the control layout import flow has triggered
      */
     private fun handleControlsImport(intent: Intent): Boolean {
         val uri: Uri? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

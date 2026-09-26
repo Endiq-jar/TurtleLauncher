@@ -24,21 +24,21 @@ import com.endiq.turtlelauncher.game.version.installed.VersionType.UNKNOWN
 import com.endiq.turtlelauncher.game.version.installed.VersionType.VANILLA
 
 /**
- * 版本类型，区分原版、模组加载器
+ * Version type: distinguishes vanilla from mod loaders
  */
 enum class VersionType {
     /**
-     * 原版
+     * Vanilla
      */
     VANILLA,
 
     /**
-     * 带有模组加载器
+     * With a mod loader
      */
     MODLOADERS,
 
     /**
-     * 不清楚，无法判断
+     * Unknown, cannot determine
      */
     UNKNOWN
 }
@@ -46,7 +46,7 @@ enum class VersionType {
 private val loaders = ModLoader.entries.filter { it.isLoader }
 
 /**
- * 通过版本信息，尝试识别版本类型
+ * Tries to determine the version type from version info
  */
 fun VersionInfo?.getVersionType(): VersionType {
     return when {

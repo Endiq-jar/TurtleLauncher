@@ -48,7 +48,7 @@ object ForgeNewModMetadataReader : ModMetadataReader {
     override suspend fun fromLocal(modFile: File): LocalMod = withContext(Dispatchers.IO) {
         try {
             JDKZipFile(modFile).use { zip ->
-                //尝试 Forge
+                //Try Forge
                 runCatching {
                     readFromToml(
                         zip = zip,
@@ -59,7 +59,7 @@ object ForgeNewModMetadataReader : ModMetadataReader {
                     )
                 }.onSuccess { return@withContext it }
 
-                //尝试 NeoForge
+                //Try NeoForge
                 runCatching {
                     readFromToml(
                         zip = zip,
@@ -221,9 +221,9 @@ object ForgeNewModMetadataReader : ModMetadataReader {
     }
 
     /**
-     * 修复作者列表
-     * 有的模组作者名称只是单个字符串；
-     * 有的模组则是作者名称列表
+     * Fixes the author list
+     * Some mods give the author as a single string;
+     * others give a list of author names
      */
     @Suppress("UNCHECKED_CAST")
     private fun fixAuthorsField(map: MutableMap<String, Any?>) {
@@ -247,7 +247,7 @@ object ForgeNewModMetadataReader : ModMetadataReader {
     }
 
     /**
-     * 分析模组加载器类型
+     * Determines the ModLoader type
      */
     private fun analyzeLoader(
         toml: Toml,
@@ -260,7 +260,7 @@ object ForgeNewModMetadataReader : ModMetadataReader {
         }.getOrNull()
 
         val dependencies: List<Map<String, Any>>? = when (depsArray) {
-            null -> { //尝试 dependencies.{modID}
+            null -> { //Try dependencies.{modID}
                 val depsTable = toml.getTable("dependencies")
                 val modDepsArray = depsTable?.getTables(modID)
                 modDepsArray?.map { it.toMap() as Map<String, Any> }

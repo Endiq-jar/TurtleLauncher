@@ -21,7 +21,7 @@ package com.endiq.turtlelauncher.setting.unit
 import com.endiq.turtlelauncher.setting.launcherMMKV
 
 /**
- * 枚举设置单元，将枚举保存到设置配置文件中
+ * Enum setting unit, persisting the enum to the settings file
  */
 class EnumSettingUnit<E : Enum<E>>(
     key: String,

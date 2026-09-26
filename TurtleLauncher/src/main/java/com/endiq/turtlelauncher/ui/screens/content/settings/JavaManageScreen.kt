@@ -397,7 +397,7 @@ private fun JavaRuntimeItem(
                     text = runtime.name,
                     style = MaterialTheme.typography.titleSmall
                 )
-                //环境标签
+                //Runtime tag
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -437,7 +437,7 @@ private fun JavaRuntimeItem(
             }
             if (onDeleteClick != null) {
                 IconButton(
-                    //内置环境（未损坏）无法删除
+                    //Built-in runtimes (intact), cannot be removed
                     enabled = !runtime.isProvidedByLauncher || !runtime.isCompatible(),
                     onClick = onDeleteClick
                 ) {

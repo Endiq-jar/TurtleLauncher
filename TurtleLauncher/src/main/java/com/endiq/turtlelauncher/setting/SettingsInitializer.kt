@@ -27,8 +27,8 @@ import com.endiq.turtlelauncher.utils.string.splitPreservingQuotes
 private const val LWJGL_LIB_NAME_ARG = "-Dorg.lwjgl.opengl.libname="
 
 /**
- * 初始化处理所有设置项
- * @param reloadAll 是否重新加载全部设置项
+ * Initializes and processes all settings items
+ * @param reloadAll whether to reload all settings items
  */
 fun loadAllSettings(context: Context, reloadAll: Boolean = false) {
     if (reloadAll) AllSettings.reloadAll()

@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.upgrade
 
 /**
- * 更新检查太频繁
+ * Update checked too frequently
  */
 class TooFrequentOperationException : RuntimeException(
     "Update check too frequent"

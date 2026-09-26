@@ -54,11 +54,11 @@ import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
 
 /**
- * 编辑器内容状态
+ * Editor content state
  */
 sealed interface EditorState {
     data object Loading : EditorState
-    /** 编辑器内容加载完成 */
+    /** Editor content finished loading */
     data class Success(val content: Content) : EditorState
 }
 
@@ -71,15 +71,15 @@ fun SoraEditor(
     language: Language? = null,
     scheme: EditorColorScheme = SchemeGitHub(),
     onSaveClick: () -> Unit,
-    /** 内容变化回调（用户编辑时触发，用于追踪未保存修改） */
+    /** Content-change callback (fires on user edits, tracking unsaved changes) */
     onTextChange: (() -> Unit)? = null,
-    /** 编辑器实例创建完成回调（供外部执行菜单操作等） */
+    /** Editor instance creation callback (for external menu operations, etc.) */
     onEditorCreated: ((CodeEditor) -> Unit)? = null,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     floatingActionButtonPosition: FabPosition = FabPosition.End,
-    /** 自定义浮动操作按钮；为 null 时显示内置保存按钮 */
+    /** Custom floating action button; the built-in save button shows when null */
     floatingActionButton: (@Composable () -> Unit)? = null,
     containerColor: Color = Color.Transparent,
     contentColor: Color = onBackgroundColor(),

@@ -31,7 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import kotlin.math.abs
 
 /**
- * 检查陀螺仪是否可以使用，一些设备并不具备陀螺仪传感器
+ * Checks whether the gyroscope is usable; some devices lack a gyroscope sensor
  */
 fun isGyroscopeAvailable(context: Context): Boolean {
     val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -40,16 +40,16 @@ fun isGyroscopeAvailable(context: Context): Boolean {
 }
 
 /**
- * 读取陀螺仪传感器数据
+ * Reads gyroscope sensor data
  *
- * @param xEvent x轴偏移量回调
- * @param yEvent y轴偏移量回调
- * @param zEvent z轴偏移量回调
- * @param sampleRate 采样率
- * @param smoothing 是否平滑数据
- * @param smoothingWindow 平滑窗口大小，越大越平滑
- * @param threshold 低通阈值，避免微小抖动
- * @param sensitivity 灵敏度倍数，控制放大倍数
+ * @param xEvent x-axis offset callback
+ * @param yEvent y-axis offset callback
+ * @param zEvent z-axis offset callback
+ * @param sampleRate the sampling rate
+ * @param smoothing whether to smooth data
+ * @param smoothingWindow smoothing window size; larger = smoother
+ * @param threshold low-pass threshold, suppressing tiny jitters
+ * @param sensitivity multiplier, the scaling amplification factor
  */
 @Composable
 fun GyroscopeReader(
@@ -94,7 +94,7 @@ private fun GyroscopeReaderMain(
     val sensorManager = remember {
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
-    //陀螺仪传感器
+    //Gyroscope sensor
     val gyroscopeSensor = remember {
         sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     }
@@ -142,7 +142,7 @@ private fun GyroscopeReaderMain(
                     z = zTotal / angleBuffer.size
                 }
 
-                //阈值过滤，避免微小抖动
+                //Threshold filtering to ignore tiny jitters
                 if (abs(x) > threshold) xEvent(x)
                 if (abs(y) > threshold) yEvent(y)
                 if (abs(z) > threshold) zEvent(z)

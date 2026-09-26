@@ -35,7 +35,7 @@ private const val GLFW_GAMEPAD_BUTTON_LEFT_BUMPER: Int = 4
 private const val GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER: Int = 5
 private const val GLFW_GAMEPAD_BUTTON_BACK: Int = 6
 private const val GLFW_GAMEPAD_BUTTON_START: Int = 7
-// Home 键，未被使用，因为 Android 会自己响应 Home 键事件
+// Home key, unused because Android responds to Home events itself
 private const val GLFW_GAMEPAD_BUTTON_GUIDE: Int = 8
 private const val GLFW_GAMEPAD_BUTTON_LEFT_THUMB: Int = 9
 private const val GLFW_GAMEPAD_BUTTON_RIGHT_THUMB: Int = 10

@@ -21,34 +21,34 @@ package com.endiq.turtlelauncher.game.version.saves
 import java.io.File
 
 /**
- * 存档解析后的信息类
+ * Parsed save info class
  */
 data class SaveData(
-    /** 存档文件夹 */
+    /** Saves folder */
     val saveFile: File,
-// 性能、速度考虑，不再计算存档的大小
-//    /** 提前计算好的存档大小 */
+// For performance, save size is no longer computed
+//    /** Precomputed save size */
 //    val saveSize: Long,
-    /** 该存档是否有效 */
+    /** Whether this save is valid */
     val isValid: Boolean,
-    /** 存档真正的名字 */
+    /** The save's real name */
     val levelName: String? = null,
-    /** 游戏的Version name */
+    /** The game's version name */
     val levelMCVersion: String? = null,
-    /** 上次保存此存档的时间戳 */
+    /** Timestamp of this save's last save */
     val lastPlayed: Long? = null,
-    /** 游戏时长 */
+    /** Total play time */
     val playTime: Long? = null,
-    /** 存档游戏模式 */
+    /** The save's game mode */
     val gameMode: GameMode? = null,
-    /** 存档难度等级 */
+    /** The save's difficulty level */
     val difficulty: Difficulty? = null,
-    /** 难度是否被锁定 */
+    /** Whether the difficulty is locked */
     val difficultyLocked: Boolean? = null,
-    /** 是否为极限模式 */
+    /** Whether hardcore mode is on */
     val hardcoreMode: Boolean? = null,
-    /** 存档是否启用命令(作弊) */
+    /** Whether commands (cheats) are enabled */
     val allowCommands: Boolean? = null,
-    /** 世界种子 */
+    /** The world seed */
     val worldSeed: Long? = null
 )

@@ -69,8 +69,8 @@ import com.endiq.turtlelauncher.ui.screens.TitledNavKey
 import com.endiq.turtlelauncher.utils.animation.swapAnimateDpAsState
 
 /**
- * 选择要导出的文件
- * @param onFinish 完成文件选择
+ * Picking the files to export
+ * @param onFinish completes file selection
  */
 @Composable
 fun ExportSelectFilesScreen(
@@ -107,7 +107,7 @@ fun ExportSelectFilesScreen(
                 .offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
             contentAlignment = Alignment.BottomEnd
         ) {
-            //文件选择区域
+            //File selection area
             FileSelectorList(
                 modifier = Modifier.fillMaxSize(),
                 list = allFiles,
@@ -153,7 +153,7 @@ private fun FileSelectorList(
     modifier: Modifier = Modifier
 ) {
     var refreshExpand by remember { mutableStateOf(false) }
-    //实际文件选择区域
+    //Actual file selection area
     val visibleNodes = rememberVisibleNodes(list, refreshExpand)
 
     CompositionLocalProvider(
@@ -253,7 +253,7 @@ private fun FileNodeItem(
                             )
                         }
                     } else {
-                        //仅用于视觉上的对齐
+                        //Visual alignment only
                         Spacer(Modifier.size(48.dp))
                     }
 
@@ -276,7 +276,7 @@ private fun FileNodeItem(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        //文件别名
+                        //File aliases
                         data.alias?.let { alias ->
                             Text(
                                 modifier = Modifier.alpha(0.7f),
@@ -284,7 +284,7 @@ private fun FileNodeItem(
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }
-                        //文件名
+                        //File name
                         Text(
                             text = data.file.name,
                             style = MaterialTheme.typography.labelMedium

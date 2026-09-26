@@ -79,13 +79,13 @@ public class CallbackBridge {
     public static final int ACTION_INIT_LAUNCHER_INTEGRATION = 0;
     public static final int ACTION_SEND_TEXTBOX_RECT = 1;
 
-    // org.lwjgl.sdl.SDLInit 通过这两个常量调用 nativeNotifyLauncher
+    // org.lwjgl.sdl.SDLInit calls nativeNotifyLauncher via these two constants
     public static final int SDL = NOTIF_TYPE_SDL;
     public static final int INIT = ACTION_INIT_LAUNCHER_INTEGRATION;
 
     /**
-     * 由 JRE 侧（sdl_hook JNI）调用的通知入口。
-     * @return 通知是否处理成功
+     * Notification entry called by the JRE side (sdl_hook JNI).
+     * @return whether the notification was handled
      */
     @SuppressWarnings("unused")
     @Keep
@@ -127,15 +127,15 @@ public class CallbackBridge {
                     }
                 }
                 if (action[0] == ACTION_SEND_TEXTBOX_RECT) {
-                    // TODO: 输入框位置同步（后续接入）
+                    // TODO: input-box position sync (wire up later)
                 }
         }
         return false;
     }
 
     /**
-     * org.lwjgl.sdl.SDLInit（LWJGL 3.4.1 的 SDL Java 绑定）调用的入口，转发到 {@link #notifyLauncher}。
-     * 注意：LWJGL 组件内声明为 native，运行时以本实现为准（避免依赖额外 C 符号）。
+     * Entry called by org.lwjgl.sdl.SDLInit (LWJGL 3.4.1 SDL Java bindings); forwarded to {@link #notifyLauncher}.
+     * Note: declared native inside LWJGL's component; this implementation stands at runtime (no extra C symbols needed).
      */
     @SuppressWarnings("unused")
     @Keep
@@ -150,7 +150,7 @@ public class CallbackBridge {
     public volatile static boolean holdingAlt, holdingCapslock, holdingCtrl,
             holdingNumlock, holdingShift;
 
-    // GLFW direct gamepad 共享缓冲
+    // GLFW direct-gamepad shared buffer
     public static final ByteBuffer sGamepadButtonBuffer;
     public static final FloatBuffer sGamepadAxisBuffer;
     public static boolean sGamepadDirectInput = false;
@@ -196,10 +196,10 @@ public class CallbackBridge {
         if (keycode > LwjglGlfwKeycode.GLFW_KEY_UNKNOWN && keycode <= LwjglGlfwKeycode.GLFW_KEY_LAST) {
             nativeSendKey(keycode, scancode, isDown ? 1 : 0, modifiers);
         }
-        // 补齐桌面键盘 keydown 与字符事件成对到达的语义：lwjglx 系 LWJGL2 兼容层
-        // 参考 Display.keyCallback（https://github.com/CleanroomMC/LWJGLXX/blob/master/src/main/java/org/lwjglx/opengl/Display.java）
-        // 将字母/数字/标点的 keydown 暂存，等 charMods 事件合并后才投给游戏；
-        // 虚拟按键等来源不携带字符，按键位反查补发，否则按键无法驱动绑定
+        // Completing desktop keyboard semantics where keydown and char events arrive in pairs: the lwjglx LWJGL2 compatibility layer
+        // Reference: Display.keyCallback (https://github.com/CleanroomMC/LWJGLXX/blob/master/src/main/java/org/lwjglx/opengl/Display.java)
+        // stash letter/digit/punct keydowns, delivering to the game only once merged with the charMods event;
+        // sources like virtual keys carry no chars, so chars are reverse-looked up by keycode, else bindings misfire
         char charToSend = keychar;
         if (isDown && charToSend == '\u0000'
                 && keycode > LwjglGlfwKeycode.GLFW_KEY_SPACE && keycode <= LwjglGlfwKeycode.GLFW_KEY_GRAVE_ACCENT) {
@@ -215,7 +215,7 @@ public class CallbackBridge {
         try {
             if (isDown) {
                 SDLActivity.onNativeKeyDown(androidKeycode);
-                // 游戏只在 SDL_EVENT_TEXT_INPUT 里插入字符，仅 KEYDOWN 不会有任何输入
+                // The game inserts chars only on SDL_EVENT_TEXT_INPUT; KEYDOWN alone inputs nothing
                 if (isTextEventChar(charToSend, modifiers) && SDLActivity.isSDLTextInputActive()) {
                     SDLActivity.onNativeTextInput(String.valueOf(charToSend));
                 }
@@ -233,7 +233,7 @@ public class CallbackBridge {
 
     private static final KeyCharacterMap sKeyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
 
-    /** 按键位与修饰键反查字符，键位无字符时返回 '\0' */
+    /** Reverse-lookup of the char by key+modifiers; '\0' when the key has none */
     private static char getUnicodeChar(int androidKeycode, int glfwMods) {
         int meta = 0;
         if ((glfwMods & LwjglGlfwKeycode.GLFW_MOD_SHIFT) != 0) meta |= KeyEvent.META_SHIFT_ON;
@@ -275,7 +275,7 @@ public class CallbackBridge {
     public static void sendMouseKeycode(int button, int modifiers, boolean isDown) {
         // if (isGrabbing()) DEBUG_STRING.append("MouseGrabStrace: " + android.util.Log.getStackTraceString(new Throwable()) + "\n");
         nativeSendMouseButton(button, isDown ? 1 : 0, modifiers);
-        // SDL 输入双路（按键状态累积后一次性上报，SDL 需要 MotionEvent.getButtonState()）
+        // SDL input dual-path (button state accumulated, then reported in one go; SDL needs MotionEvent.getButtonState())
         if (!SdlBridge.getSdlEnabled()) return;
         int aKey = -1;
         switch (button) {
@@ -313,7 +313,7 @@ public class CallbackBridge {
     
     public static void sendScroll(double xoffset, double yoffset) {
         nativeSendScroll(xoffset, yoffset);
-        // SDL 输入双路
+        // SDL input dual-path
         if (!SdlBridge.getSdlEnabled()) return;
         SDLActivity.onNativeMouse(0, MotionEvent.ACTION_SCROLL, (float) xoffset, (float) yoffset, false);
     }

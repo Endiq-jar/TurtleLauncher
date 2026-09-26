@@ -56,72 +56,72 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * 控制布局编辑器
+ * Control layout editor
  */
 class EditorViewModel : ViewModel() {
     lateinit var observableLayout: ObservableControlLayout
         private set
 
     /**
-     * 当前选中的控件层
+     * Currently selected widget layer
      */
     var selectedLayer by mutableStateOf<ObservableControlLayer?>(null)
 
     /**
-     * 当前选中的组件（仅用于编辑组件对话框）
+     * Currently selected component (edit component dialog only)
      */
     var selectedWidget by mutableStateOf<SelectedWidgetData?>(null)
 
     /**
-     * 当前选中的控件样式（仅用于样式编辑对话框）
+     * Currently selected widget style (style edit dialog only)
      */
     var selectedStyle by mutableStateOf<ObservableButtonStyle?>(null)
 
     /**
-     * 当前选中的摇杆样式（仅用于摇杆样式编辑对话框）
+     * Currently selected joystick style (joystick style dialog only)
      */
     var selectedJoystickStyle by mutableStateOf<ObservableJoystickStyle?>(null)
 
     /**
-     * 编辑器菜单状态
+     * Editor menu state
      */
     var editorMenu by mutableStateOf(MenuState.HIDE)
 
-    /** 编辑器菜单悬浮球当前的位置 */
+    /** The editor menu floating ball's current position */
     var editorBallPosition by mutableStateOf(Offset.Zero)
 
     /**
-     * 编辑器各种操作项
+     * Editor operation items
      */
     var editorOperation by mutableStateOf<EditorOperation>(EditorOperation.None)
 
     /**
-     * 编辑器对于控件的操作项
+     * Editor widget operation items
      */
     var editorWidgetOperation by mutableStateOf<EditorWidgetOperation>(EditorWidgetOperation.None)
 
     /**
-     * 编辑器的一些警告状态项
+     * Editor warning state items
      */
     var editorWarningOperation by mutableStateOf<EditorWarningOperation>(EditorWarningOperation.None)
 
     /**
-     * 是否开启控件层聚焦模式
+     * Whether widget layer focus mode is on
      */
     var isLayerFocus by mutableStateOf(false)
 
     /**
-     * 是否为预览控制布局模式
+     * Whether it's control layout preview mode
      */
     var isPreviewMode by mutableStateOf(false)
 
     /**
-     * 预览控制布局的场景
+     * Control layout preview scenarios
      */
     var previewScenario by mutableStateOf(PreviewScenario.InMenu)
 
     /**
-     * 预览控制布局时根据设备隐藏控制层
+     * Hide widget layers by device in layout preview
      */
     var previewHideLayerWhen by mutableStateOf(HideLayerWhen.None)
 
@@ -136,7 +136,7 @@ class EditorViewModel : ViewModel() {
 
 
     /**
-     * 切换编辑器菜单
+     * Toggles the editor menu
      */
     fun switchMenu() {
         editorMenu = editorMenu.next()
@@ -151,7 +151,7 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 为控件层添加控件
+     * Adds a widget to a widget layer
      */
     fun addWidget(layers: List<ObservableControlLayer>, addToLayer: (ObservableControlLayer) -> Unit) {
         val layer = selectedLayer
@@ -165,7 +165,7 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 在控件层移除控件
+     * Removes a widget from a widget layer
      */
     fun removeWidget(layer: ObservableControlLayer, widget: ObservableWidget) {
         when (widget) {
@@ -176,7 +176,7 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 将控件复制到控件层
+     * Copies a widget into a widget layer
      */
     fun cloneWidgetToLayers(widget: ObservableWidget, layers: List<ObservableControlLayer>) {
         when (widget) {
@@ -202,7 +202,7 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 创建一个新的控件外观
+     * Creates a new widget style
      */
     fun createNewStyle(name: String) {
         observableLayout.addStyle(
@@ -211,28 +211,28 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 复制控件外观
+     * Duplicates a widget style
      */
     fun cloneStyle(style: ObservableButtonStyle) {
         observableLayout.cloneStyle(style)
     }
 
     /**
-     * 删除一个控件外观
+     * Deletes a widget style
      */
     fun removeStyle(style: ObservableButtonStyle) {
         observableLayout.removeStyle(style.uuid)
     }
 
     /**
-     * 移除一个摇杆样式
+     * Removes a joystick style
      */
     fun removeJoystickStyle(style: ObservableJoystickStyle) {
         observableLayout.removeJoystickStyle(style.uuid)
     }
 
     /**
-     * 创建一个新的摇杆样式
+     * Creates a new joystick style
      */
     fun createNewJoystickStyle(name: String) {
         observableLayout.addJoystickStyle(
@@ -256,7 +256,7 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 保存控制布局
+     * Saves the control layout
      */
     fun save(
         targetFile: File,
@@ -280,7 +280,7 @@ class EditorViewModel : ViewModel() {
         context: Context,
         onExit: () -> Unit
     ) {
-        //检查并退出编辑控件对话框、编辑控件样式对话框
+        //Check and leave the edit widget/style dialogs
         if (editorOperation is EditorOperation.SelectButton || editorOperation is EditorOperation.EditButtonStyle) {
             editorOperation = EditorOperation.None
         } else {
@@ -292,13 +292,13 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 用于检查控制布局是否被修改过
+     * Checks whether the control layout was modified
      */
     private val checkModified = Mutex()
 
     /**
-     * 弹出退出控制布局编辑器的对话框
-     * @param onExit 用户点击确认，退出编辑器
+     * Pops the dialog for leaving the control layout editor
+     * @param onExit the user confirmed; exit the editor
      */
     fun showExitEditorDialog(
         context: Context,
@@ -314,7 +314,7 @@ class EditorViewModel : ViewModel() {
                     onExit = onExit
                 )
             } else {
-                //未被修改，可以直接退出
+                //Unmodified: exit directly
                 onExit()
             }
         }

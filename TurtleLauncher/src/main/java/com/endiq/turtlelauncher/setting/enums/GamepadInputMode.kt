@@ -21,11 +21,11 @@ package com.endiq.turtlelauncher.setting.enums
 import com.endiq.turtlelauncher.R
 
 /**
- * 手柄输入模式
+ * Gamepad input mode
  */
 enum class GamepadInputMode(val titleRes: Int, val summaryRes: Int) {
     /**
-     * 映射模式：手柄按键/摇杆映射为虚拟键盘鼠标事件（旧版本游戏、无手柄支持的游戏）
+     * Mapping mode: gamepad buttons/sticks map onto virtual keyboard/mouse events (old games, games without gamepad support)
      */
     Mapped(
         titleRes = R.string.settings_gamepad_input_mode_mapped,
@@ -33,7 +33,7 @@ enum class GamepadInputMode(val titleRes: Int, val summaryRes: Int) {
     ),
 
     /**
-     * SDL 直通模式：手柄输入原样交给 SDL/GLFW gamepad API（Minecraft 26.3+ 原生手柄）
+     * SDL passthrough mode: gamepad input goes verbatim to the SDL/GLFW gamepad API (Minecraft 26.3+ native gamepad)
      */
     SdlDirect(
         titleRes = R.string.settings_gamepad_input_mode_sdl,

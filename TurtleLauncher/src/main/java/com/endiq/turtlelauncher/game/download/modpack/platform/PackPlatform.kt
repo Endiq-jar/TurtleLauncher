@@ -25,8 +25,8 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.game.download.assets.platform.Platform
 
 /**
- * 启动器支持的整合包格式
- * @param identifier 内部使用的标识名称
+ * Modpack formats supported by the launcher
+ * @param identifier identifier name used internally
  */
 enum class PackPlatform(val identifier: String) {
     CurseForge(Platform.CURSEFORGE.displayName) {
@@ -55,13 +55,13 @@ enum class PackPlatform(val identifier: String) {
     };
 
     /**
-     * 获取 UI 层使用的格式名称
+     * Returns the format name used by the UI
      */
     @Composable
     open fun getText(): String = this.identifier
 
     /**
-     * 获取 UI 层使用的格式图标
+     * Returns the format icon used by the UI
      */
     @Composable
     abstract fun getIcon(): Painter

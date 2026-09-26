@@ -58,7 +58,7 @@ import com.endiq.turtlelauncher.viewmodel.ScreenBackStackViewModel
 import org.apache.commons.io.FileUtils
 
 /**
- * 导航至WebViewScreen并访问特定网址
+ * Navigates to WebViewScreen with a specific URL
  */
 fun NavBackStack<TitledNavKey>.navigateToWeb(webUrl: String) = this.navigateTo(
     screenKey = NormalNavKey.WebScreen(webUrl),
@@ -111,7 +111,7 @@ fun WebViewScreen(
                     )
                 }
 
-                //网址，可供用户复制
+                //The URL, for users to copy
                 AnimatedVisibility(
                     visible = webUrl.isNotEmptyOrBlank()
                 ) {
@@ -152,7 +152,7 @@ fun WebViewScreen(
                         }
                     },
                     update = {
-                        //不在此处重复加载 url
+                        //Don't reload the URL here
                     }
                 )
             }

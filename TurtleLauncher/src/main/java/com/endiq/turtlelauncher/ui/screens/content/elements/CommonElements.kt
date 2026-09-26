@@ -136,26 +136,26 @@ data class CategoryItem(
 )
 
 /**
- * Sort order枚举
+ * SortOrder enum
  */
 enum class SortByEnum(val textRes: Int) {
-    /** 按照名称排序 */
+    /** Sort by name */
     Name(R.string.sort_by_name),
-    /** 按照File name排序 */
+    /** Sort by file name */
     FileName(R.string.sort_by_file_name),
-    /** 按照文件上次修改时间排序 */
+    /** Sort by file modification time */
     FileModifiedTime(R.string.sort_by_last_modified),
-    /** 按照上次游玩时间排序 */
+    /** Sort by last-played time */
     LastPlayed(R.string.sort_by_last_played)
 }
 
 /**
- * 通用的Sort order下来菜单
- * @param enums 当前菜单支持的Sort order
- * @param currentEnum 当前的Sort order
- * @param onEnumChanged 变更当前的Sort order
- * @param isAscending 当前是否为升序
- * @param onToggleSortOrder 切换当前的排序顺序
+ * Generic SortOrder dropdown menu
+ * @param enums the menu's supported SortOrders
+ * @param currentEnum the current SortOrder
+ * @param onEnumChanged changes the current SortOrder
+ * @param isAscending whether sorting is ascending
+ * @param onToggleSortOrder toggles the sort direction
  */
 @Composable
 fun SortByDropdownMenu(
@@ -200,8 +200,8 @@ fun SortByDropdownMenu(
 }
 
 /**
- * 多 Uri 导入文件任务构建器
- * @param checkExtension 检查被选中的文件后缀是否符合要求
+ * Multi-Uri file import task builder
+ * @param checkExtension validates the picked files' extensions
  */
 @Composable
 fun rememberMultipleUriImportTaskBuilder(
@@ -240,7 +240,7 @@ fun rememberMultipleUriImportTaskBuilder(
                                     outputFile.checkExtensionOrThrow(checkExtension)
                                 }
                                 context.copyLocalFile(uri, outputFile)
-                                //成功复制，如调用者有额外操作，可使用回调运行
+                                //Copy succeeded; callers may run extra work via the callback
                                 cOnFileCopied(task, outputFile)
                             } catch (e: Exception) {
                                 val eString = e.getMessageOrToString()
@@ -514,7 +514,7 @@ private fun InstallingTaskItem(
                         )
                     }
                 }
-                if (taskProgress < 0) { //负数则代表不确定
+                if (taskProgress < 0) { //negative means indeterminate
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -552,10 +552,10 @@ private fun InstallingTaskItem(
 }
 
 /**
- * 内存显示（已使用、内存预览、总内存）
- * 可以直观的展示当前设备的运行内存可用情况
- * @param delay 计算内存信息频率间隔时间
- * @param preview 需要预览的内存，将展示在所有可用内存中的占用情况（单位:MB）
+ * Memory display (used, preview, total)
+ * Shows device RAM availability at a glance
+ * @param delay interval between memory reads
+ * @param preview memory to preview, shown against available memory (MB)
  */
 @Composable
 fun MemoryPreview(
@@ -572,33 +572,33 @@ fun MemoryPreview(
 ) {
     val context = LocalContext.current
 
-    //总内存、已使用内存（单位：MB）
+    //Total and used memory (MB)
     var totalMemory by remember { mutableDoubleStateOf(0.0) }
     var usedMemory by remember { mutableDoubleStateOf(0.0) }
 
     LaunchedEffect(Unit) {
         infinityCancellableBlock(delay = delay) {
-            //总内存
+            //Total memory
             totalMemory = getTotalMemory(context).bytesToMB()
-            //已使用内存
+            //Used memory
             usedMemory = getUsedMemory(context).bytesToMB()
         }
     }
 
-    //计算已使用内存比例（基于总内存计算）
+    //Used-memory ratio (of total memory)
     val usedRatio by animateFloatAsState(
         targetValue = if (totalMemory > 0) usedMemory.toFloat() / totalMemory.toFloat() else 0f
     )
-    //预览内存比例（基于可用内存计算）
+    //Preview-memory ratio (of available memory)
     val previewRatio = remember(preview, totalMemory, usedMemory) {
         if (preview != null && totalMemory > 0) {
-            //可用内存，这里不使用getFreeMemory函数
+            //Available memory; not using getFreeMemory here
             val availableMemory = totalMemory.toFloat() - usedMemory.toFloat()
             if (availableMemory > 0) preview.toFloat() / availableMemory else 0f
         } else 0f
     }
 
-    //内存进度条直观展示
+    //A progress bar visualization
     Box(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -641,7 +641,7 @@ fun MemoryPreview(
         }
 
         Row(modifier = Modifier.fillMaxWidth()) {
-            //已使用内存部分
+            //The used part
             if (usedRatio > 0) {
                 Box(
                     modifier = Modifier
@@ -675,7 +675,7 @@ fun MemoryPreview(
             }
 
             Row(modifier = Modifier.weight(1f)) {
-                //预览内存部分
+                //The preview part
                 if (preview != null && previewRatio > 0f) {
                     Box(
                         modifier = Modifier

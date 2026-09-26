@@ -60,46 +60,46 @@ class TerracottaViewModel(
     var operation by mutableStateOf<TerracottaOperation>(TerracottaOperation.None)
 
     /**
-     * 联机菜单状态
+     * Multiplayer menu state
      */
     var dialogState by mutableStateOf<TerracottaState.Ready?>(null)
 
     /**
-     * 联机菜单日志展示状态
+     * Multiplayer menu log display state
      */
     var dialogLogOperation by mutableStateOf<TerracottaLogOperation>(TerracottaLogOperation.None)
         private set
 
     /**
-     * 陶瓦联机核心版本号，在Initialization complete后非null
+     * Terracotta core version; non-null once initialization completes
      */
     var terracottaVer by mutableStateOf<String?>(null)
 
     /**
-     * EasyTier版本号，在Initialization complete后非null
+     * EasyTier version; non-null once initialization completes
      */
     var easyTierVer by mutableStateOf<String?>(null)
 
     /**
-     * VPN权限申请，由TerracottaOperation设置
+     * VPN permission request, set by TerracottaOperation
      */
     var vpnLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>? = null
 
     /**
-     * 在等待状态页面中是否允许进行交互
+     * Whether interaction is allowed on the waiting page
      */
     var isWaitingInteractive by mutableStateOf(false)
 
     private val _profiles = MutableStateFlow<List<TerracottaProfile>>(emptyList())
     /**
-     * 陶瓦联机当前房间的玩家列表
+     * Player list of the current Terracotta room
      */
     val profiles = _profiles.asStateFlow()
 
     private val allJobs: MutableList<Job> = mutableListOf()
 
     /**
-     * 打开陶瓦联机菜单
+     * Opens the Terracotta menu
      */
     fun openMenu() {
         if (operation !is TerracottaOperation.None) return
@@ -112,7 +112,7 @@ class TerracottaViewModel(
 
     private val logMutex = Mutex()
     /**
-     * 在联机菜单中显示当前核心的日志
+     * Shows the current core's logs inside the menu
      */
     fun showLog() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -126,33 +126,33 @@ class TerracottaViewModel(
 
             val finalState = Terracotta.collectLogs()?.let { logString ->
                 TerracottaLogOperation.EnableLog(logString)
-            } ?: TerracottaLogOperation.None //收集失败，回退到正常状态
+            } ?: TerracottaLogOperation.None //collection failed: fall back to normal state
 
             dialogLogOperation = finalState
         }
     }
 
     /**
-     * 让联机菜单退出日志状态
+     * Makes the menu leave log state
      */
     fun hideLog() {
         dialogLogOperation = TerracottaLogOperation.None
     }
 
     /**
-     * 复制房间邀请码到系统剪贴板
+     * Copies the room invite code to the clipboard
      */
     fun copyInviteCode(
         state: TerracottaState.HostOK
     ) {
-        val code = state.code ?: return //理论上不会是null
+        val code = state.code ?: return //never null in theory
         copyText(label = COPY_LABEL_TERRACOTTA_INVITE_CODE, text = code) {
             it.getString(R.string.terracotta_status_host_ok_code_copy_toast)
         }
     }
 
     /**
-     * 复制房间备用链接到系统剪贴板
+     * Copies the room fallback link to the clipboard
      */
     fun copyServerAddress(
         state: TerracottaState.GuestOK
@@ -179,17 +179,17 @@ class TerracottaViewModel(
     }
 
     /**
-     * 更新当前陶瓦联机的玩家列表
+     * Updates the current Terracotta player list
      */
     private fun updateProfiles(profiles: List<TerracottaProfile>?) {
-        //在这里仅更新玩家列表，为避免频繁更新dialogState造成大面积重组
+        //Update only the player list here, avoiding constant dialogState churn and mass recompositions
         _profiles.update {
             profiles ?: emptyList()
         }
     }
 
     /**
-     * 初始化陶瓦联机
+     * Initializes Terracotta
      */
     private fun initialize() {
         Terracotta.initialize(viewModelScope, eventViewModel)
@@ -208,15 +208,15 @@ class TerracottaViewModel(
                 when (new) {
                     is TerracottaState.Waiting -> {
                         if (old !is TerracottaState.Waiting) {
-                            //首次或再次进入等待大厅
+                            //Entering the waiting lobby, first time or again
                             isWaitingInteractive = true
                         }
                     }
                     is TerracottaState.HostOK -> {
                         if (old !is TerracottaState.HostOK) {
-                            //刚切换到这个状态，默认复制一次邀请码
+                            //Freshly entered this state: copy the invite code once by default
                             copyInviteCode(new)
-                            //然后首次更新玩家列表状态
+                            //Then update the player list state for the first time
                             updateProfiles(new.profiles)
                         }
                         if (new.isForkOf(old)) {
@@ -235,7 +235,7 @@ class TerracottaViewModel(
                     }
                     else -> {
                         if (_profiles.value.isNotEmpty()) {
-                            //当前已经不在房间内，所以需要清空所有玩家配置
+                            //No longer in a room: clear all player profiles
                             updateProfiles(emptyList())
                         }
                     }
@@ -264,8 +264,8 @@ class TerracottaViewModel(
                         is EventViewModel.Event.Terracotta.VPNUpdateState -> {
                             withContext(Dispatchers.Main) {
                                 if (TerracottaVPNService.isRunning()) {
-                                    //服务已在前台运行，仅投递状态文本即可；
-                                    //服务未运行时直接跳过，避免经由 startForegroundService 拉起一个无法及时进入前台的服务
+                                    //The service already runs in foreground: just post the status text;
+                                    //when it isn't running, skip, never spawning via startForegroundService a service that can't reach foreground in time
                                     activity.startService(
                                         Intent(activity, TerracottaVPNService::class.java)
                                             .setAction(TerracottaVPNService.ACTION_UPDATE_STATE)
@@ -278,7 +278,7 @@ class TerracottaViewModel(
                             withContext(Dispatchers.Main) {
                                 val activity = gameHandler.activity
                                 if (TerracottaVPNService.isRunning()) {
-                                    //必须用 stopService 下发停止指令，避免 FGS 启动时限崩溃
+                                    //Stop via stopService only, avoiding the FGS start-timeout crash
                                     activity.stopService(
                                         Intent(activity, TerracottaVPNService::class.java)
                                     )

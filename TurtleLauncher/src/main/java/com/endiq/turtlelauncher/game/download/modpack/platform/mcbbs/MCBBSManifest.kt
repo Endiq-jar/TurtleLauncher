@@ -106,13 +106,13 @@ data class MCBBSManifest(
     )
 
     /**
-     * 尝试获取 Minecraft 版本
+     * Tries to get the Minecraft version
      */
     fun getMinecraftVersion(): String? =
         addons.find { it.id == "game" }?.version
 
     /**
-     * 匹配模组加载器与版本
+     * Matches mod loaders and versions
      */
     fun Addon.retrieveLoader(): Pair<ModLoader, String>? {
         return when (id) {

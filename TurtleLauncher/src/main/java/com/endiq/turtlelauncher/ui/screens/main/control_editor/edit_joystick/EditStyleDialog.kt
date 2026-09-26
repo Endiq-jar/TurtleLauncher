@@ -76,8 +76,8 @@ import com.endiq.turtlelauncher.ui.theme.onItemColor
 private data class TabItem(val titleRes: Int)
 
 /**
- * 摇杆样式编辑对话框
- * **不再真正使用Dialog，真的会有性能问题！**
+ * Joystick style edit dialog
+ * **No longer a real Dialog - it genuinely had performance problems!**
  */
 @Composable
 fun EditJoystickStyleDialog(
@@ -111,7 +111,7 @@ fun EditJoystickStyleDialog(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            //作为背景层，被点击时关闭Dialog
+            //Backdrop layer; clicking it closes the dialog
             if (visible) {
                 Box(
                     modifier = Modifier
@@ -151,7 +151,7 @@ fun EditJoystickStyleDialog(
                                 style = style,
                                 isDarkMode = !style.commonStyle && selectedTabIndex == 1
                             )
-                            // 不区分暗色主题
+                            // Not split by dark theme
                             InfoLayoutSwitchItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 title = stringResource(R.string.control_editor_edit_style_config_common_style),
@@ -238,7 +238,7 @@ private fun StyleConfigEditor(
             .fillMaxWidth()
             .padding(end = 12.dp)
 
-        //整体不透明度
+        //Overall opacity
         item(key = "opacity") {
             InfoLayoutSliderItem(
                 modifier = itemModifier.animateItem(),
@@ -258,7 +258,7 @@ private fun StyleConfigEditor(
             Spacer(Modifier)
         }
 
-        //背景颜色
+        //Background color
         item(key = "background_color") {
             InfoLayoutColorItem(
                 modifier = itemModifier.animateItem(),
@@ -270,7 +270,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //摇杆颜色
+        //Joystick color
         item(key = "joystick_color") {
             InfoLayoutColorItem(
                 modifier = itemModifier.animateItem(),
@@ -282,7 +282,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //摇杆颜色（可锁定时）
+        //Joystick color (unlocked)
         item(key = "joystick_color_can_lock") {
             InfoLayoutColorItem(
                 modifier = itemModifier.animateItem(),
@@ -294,7 +294,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //摇杆颜色（锁定时）
+        //Joystick color (locked)
         item(key = "joystick_color_locked") {
             InfoLayoutColorItem(
                 modifier = itemModifier.animateItem(),
@@ -306,7 +306,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //前进锁定标记颜色
+        //Forward-lock marker color
         item(key = "lock_mark_color") {
             InfoLayoutColorItem(
                 modifier = itemModifier.animateItem(),
@@ -318,7 +318,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //边框颜色
+        //Border color
         item(key = "border_color") {
             InfoLayoutColorItem(
                 modifier = itemModifier.animateItem(),
@@ -334,7 +334,7 @@ private fun StyleConfigEditor(
             Spacer(Modifier)
         }
 
-        //背景层圆角
+        //Background layer corner radius
         item(key = "background_shape") {
             InfoLayoutSliderItem(
                 modifier = itemModifier,
@@ -350,7 +350,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //边框粗细
+        //Border thickness
         item(key = "border_width") {
             InfoLayoutSliderItem(
                 modifier = itemModifier.animateItem(),
@@ -366,7 +366,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //摇杆圆角
+        //Joystick corner radius
         item(key = "joystick_shape") {
             InfoLayoutSliderItem(
                 modifier = itemModifier,
@@ -382,7 +382,7 @@ private fun StyleConfigEditor(
             )
         }
 
-        //摇杆大小
+        //Joystick size
         item(key = "joystick_size") {
             InfoLayoutSliderItem(
                 modifier = itemModifier,
@@ -399,7 +399,7 @@ private fun StyleConfigEditor(
 }
 
 /**
- * 渲染摇杆样式预览
+ * Renders a joystick style preview
  */
 @Composable
 private fun RenderBox(

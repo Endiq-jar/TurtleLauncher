@@ -48,7 +48,7 @@ open class BaseAppCompatActivity : FullScreenAppCompatActivity() {
     }
 
     /**
-     * @return 该 Activity 在最近任务中显示的标题
+     * @return the title this Activity shows in the recent tasks list
      */
     protected open fun getTaskDescriptionTitle(): String? = null
 
@@ -65,7 +65,7 @@ open class BaseAppCompatActivity : FullScreenAppCompatActivity() {
     }
 
     private fun checkStoragePermissions() {
-        //检查所有文件管理权限
+        //Check all-file management permissions
         checkStoragePermissionsForInit(this)
     }
 

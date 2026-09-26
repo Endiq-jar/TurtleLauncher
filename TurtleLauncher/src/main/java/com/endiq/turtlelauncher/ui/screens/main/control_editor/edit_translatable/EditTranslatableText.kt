@@ -74,11 +74,11 @@ import com.endiq.turtlelauncher.ui.theme.onItemColor
 import com.endiq.turtlelauncher.utils.string.isEmptyOrBlank
 
 /**
- * 编辑可翻译文本
- * @param onDismissRequest 由Dialog主动调用的关闭请求回调
- * @param onClose 由用户主动点击关闭按钮调用的关闭请求回调
- * @param title 对话框标题
- * @param take 限制输入文本的字数
+ * Edits translatable text
+ * @param onDismissRequest close request called by the dialog itself
+ * @param onClose close request called when the user taps the close button
+ * @param title the dialog title
+ * @param take character limit for the input text
  */
 @Composable
 fun EditTranslatableTextDialog(
@@ -158,7 +158,7 @@ fun EditTranslatableTextDialog(
                             )
                         }
 
-                        //默认文本
+                        //Default text
                         OwnOutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = text.default,
@@ -227,7 +227,7 @@ fun EditTranslatableTextDialog(
 }
 
 /**
- * 可翻译项
+ * Translatable item
  */
 @Composable
 private fun LocalizedStringItem(

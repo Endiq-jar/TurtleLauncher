@@ -42,7 +42,7 @@ import java.io.IOException
 
 private const val TAG = "JvmLauncher"
 
-/** 安装器等轻量任务的内存上限 */
+/** Memory cap for light tasks like installers */
 private const val INSTALL_RAM_ALLOCATION = 512
 
 open class JvmLauncher(
@@ -149,7 +149,7 @@ private fun finalErrorDialog(
 private val DEFAULT_LAUNCHER_PROFILES = """{"profiles":{"default":{"lastVersionId":"latest-release"}},"selectedProfile":"default"}""".trimIndent()
 
 /**
- * 写入一个默认的 launcher_profiles.json 文件，不存在将会导致 Forge、NeoForge 等无法正常安装
+ * Writes a default launcher_profiles.json file; its absence breaks Forge/NeoForge installs
  */
 private fun generateLauncherProfiles(userHome: String?) {
     runCatching {

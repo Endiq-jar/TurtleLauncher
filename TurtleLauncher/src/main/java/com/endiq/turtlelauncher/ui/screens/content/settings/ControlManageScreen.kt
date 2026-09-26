@@ -143,19 +143,19 @@ import java.util.Locale
 
 private sealed interface ControlOperation {
     data object None : ControlOperation
-    /** 创建新布局弹窗 */
+    /** Create new layout dialog */
     data object CreateNew : ControlOperation
-    /** 删除控制布局 */
+    /** Delete the control layout */
     data class Delete(val data: ControlData) : ControlOperation
-    /** 编辑普通的文本 */
+    /** Edit plain text */
     data class EditText(
         val data: ControlData,
         val string: ObservableTranslatableString,
         val type: EditTextType
     ) : ControlOperation
-    /** 编辑描述 */
+    /** Edit the description */
     data class EditDescription(val data: ControlData) : ControlOperation
-    /** 编辑Version name */
+    /** Edit the version name */
     data class EditVersion(val data: ControlData) : ControlOperation
 }
 
@@ -335,7 +335,7 @@ fun ControlManageScreen(
 }
 
 /**
- * 控制布局相关操作
+ * Control layout operations
  */
 @Composable
 private fun ControlOperation(
@@ -436,7 +436,7 @@ private fun ControlOperation(
 }
 
 /**
- * 左侧：控制布局展示列表
+ * Left: control layout display list
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -510,7 +510,7 @@ private fun ControlLayoutList(
 }
 
 /**
- * 左侧：控制布局列表顶部操作栏
+ * Left: top action bar of the control layout list
  */
 @Composable
 private fun ControlListHeader(
@@ -560,7 +560,7 @@ private fun ControlListHeader(
 }
 
 /**
- * 控制布局单项外观
+ * Single control layout item appearance
  */
 @Composable
 private fun ControlLayoutItem(
@@ -634,7 +634,7 @@ private fun ControlLayoutItem(
                     )
                 }
             }
-            //复制
+            //Copy
             IconButton(
                 onClick = onCopy
             ) {
@@ -643,7 +643,7 @@ private fun ControlLayoutItem(
                     contentDescription = stringResource(R.string.generic_copy)
                 )
             }
-            //删除
+            //Delete
             IconButton(
                 onClick = onDelete
             ) {
@@ -657,7 +657,7 @@ private fun ControlLayoutItem(
 }
 
 /**
- * 右侧：控制布局详细信息
+ * Right: control layout details
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -870,7 +870,7 @@ private fun ControlInfoItem(
 
 
 /**
- * 创建新控制布局对话框
+ * Create new control layout dialog
  */
 @Composable
 private fun CreateNewLayoutDialog(
@@ -959,7 +959,7 @@ private fun CreateNewLayoutDialog(
                             onSingleLined = { name = it }
                         )
 
-                        //名称
+                        //Name
                         OwnOutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = name,
@@ -992,7 +992,7 @@ private fun CreateNewLayoutDialog(
                             onSingleLined = { author = it }
                         )
 
-                        //作者
+                        //Author
                         OwnOutlinedTextField(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1027,7 +1027,7 @@ private fun CreateNewLayoutDialog(
                             onSingleLined = { versionName = it }
                         )
 
-                        //版本
+                        //Versions
                         OwnOutlinedTextField(
                             modifier = Modifier
                                 .fillMaxWidth()

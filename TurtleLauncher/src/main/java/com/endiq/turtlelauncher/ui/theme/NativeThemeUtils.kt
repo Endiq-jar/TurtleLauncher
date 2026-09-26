@@ -76,7 +76,7 @@ data class NativeColorScheme(
 )
 
 /**
- * 判断当前是否为暗色主题
+ * Checks whether the current theme is dark
  */
 fun isDarkTheme(context: Context): Boolean {
     return when (AllSettings.launcherDarkMode.state) {
@@ -90,7 +90,7 @@ fun isDarkTheme(context: Context): Boolean {
 }
 
 /**
- * 从当前主题设置生成原生主题配色调色板
+ * Builds the native theme palette from current theme settings
  */
 fun getColorScheme(context: Context): NativeColorScheme {
     val darkTheme = isDarkTheme(context)

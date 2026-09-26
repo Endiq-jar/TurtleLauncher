@@ -56,7 +56,7 @@ import com.endiq.turtlelauncher.ui.theme.cardColor
 import com.endiq.turtlelauncher.ui.theme.onCardColor
 
 /**
- * 手柄输入模式选择对话框
+ * Gamepad input mode selection dialog
  */
 @Composable
 fun GamepadModePromptDialog(
@@ -102,7 +102,7 @@ fun GamepadModePromptDialog(
                         style = MaterialTheme.typography.headlineSmall
                     )
 
-                    // 内容区域
+                    // Content area
                     Column(
                         modifier = Modifier
                             .weight(1f, fill = false)
@@ -155,7 +155,7 @@ fun GamepadModePromptDialog(
                         horizontalArrangement = Arrangement.End
                     ) {
                         FilledTonalButton(
-                            //确认按钮不参与焦点导航，手柄输入也已在更上游被吞掉，避免误触
+                            //The confirm button skips focus navigation; gamepad input is already swallowed upstream, preventing stray presses
                             modifier = Modifier.focusProperties { canFocus = false },
                             onClick = { onConfirm(selected) }
                         ) {

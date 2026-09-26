@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.ui.control.joystick
 
 /**
- * 摇杆、方向键通用方向
+ * Shared direction for joysticks and d-pads
  */
 enum class JoystickDirection {
     East,
@@ -31,7 +31,7 @@ enum class JoystickDirection {
     South,
     SouthEast,
     /**
-     * 无方向
+     * No direction
      */
     None
 }

@@ -62,20 +62,20 @@ import kotlinx.coroutines.Dispatchers
 import org.apache.commons.io.FileUtils
 import java.io.File
 
-/** 加载状态 */
+/** Loading states */
 sealed interface LoadingState {
     data object None : LoadingState
-    /** 正在加载 */
+    /** Loading */
     data object Loading : LoadingState
 }
 
 sealed interface DeleteAllOperation {
     data object None : DeleteAllOperation
-    /** 警告用户是否真的要批量删除资源 */
+    /** Warn the user about the batch delete */
     data class Warning(val files: List<File>): DeleteAllOperation
-    /** 开始删除所有选中的资源 */
+    /** Started deleting all selected resources */
     data class Delete(val files: List<File>): DeleteAllOperation
-    /** 已成功删除所有选中的资源 */
+    /** All selected resources deleted */
     data object Success : DeleteAllOperation
 }
 
@@ -107,7 +107,7 @@ fun DeleteAllOperation(
             SimpleTaskDialog(
                 title = stringResource(R.string.manage_delete_all),
                 task = {
-                    //开始删除所有文件
+                    //Start deleting all files
                     operation.files.forEach { file ->
                         FileUtils.delete(file)
                     }
@@ -143,9 +143,9 @@ fun DeleteAllOperation(
 }
 
 /**
- * Minecraft 颜色占位符、样式占位符格式化后的 Text
- * 像 Minecraft 一样，渲染两层文本，底层作为背景层，顶层作为前景层
- * 若输入字符串内不存在 `§`，则使用普通的 Text
+ * Text formatted with Minecraft color/style placeholders
+ * Like Minecraft, render two text layers: background below, foreground above
+ * Uses a plain Text when the input has no `§`
  */
 @Composable
 fun MinecraftColorTextNormal(
@@ -178,14 +178,14 @@ fun MinecraftColorTextNormal(
     }
 }
 
-/** 格式化类型：只渲染前景层 */
+/** Format type: render the foreground layer only */
 private const val FORMAT_TYPE_FOREGROUND = 0
-/** 格式化类型：只渲染背景层 */
+/** Format type: render the background layer only */
 private const val FORMAT_TYPE_BACKGROUND = 1
 
 /**
- * Minecraft 颜色占位符、样式占位符格式化后的 Text
- * 像 Minecraft 一样，渲染两层文本，底层作为背景层，顶层作为前景层
+ * Text formatted with Minecraft color/style placeholders
+ * Like Minecraft, render two text layers: background below, foreground above
  */
 @Composable
 fun MinecraftColorText(
@@ -227,7 +227,7 @@ private fun MinecraftColorText(
         (style.fontSize.toPx() * 1.1f).toSp()
     }
 
-    //计算出合适的偏移量
+    //Compute the right offset
     val offsetFactor = 1f / 16f
     val offsetDp = with(density) {
         (style.fontSize.toPx() * offsetFactor).toDp()
@@ -236,7 +236,7 @@ private fun MinecraftColorText(
     Box(
         modifier = modifier
     ) {
-        //背景层
+        //Background layer
         Text(
             text = background,
             fontSize = fontSize,
@@ -246,7 +246,7 @@ private fun MinecraftColorText(
             softWrap = softWrap,
             style = style,
         )
-        //前景层
+        //Foreground layer
         Text(
             text = foreground,
             fontSize = fontSize,
@@ -278,7 +278,7 @@ private fun parseSegments(input: String): List<Pair<String, TextStyleState>> {
     var buffer = StringBuilder()
 
     while (index < input.length) {
-        //判断是否是格式代码
+        //Is it a format code?
         if (input[index] == '§' && index + 1 < input.length) {
             if (buffer.isNotEmpty()) {
                 segments.add(buffer.toString() to currentStyle)
@@ -294,12 +294,12 @@ private fun parseSegments(input: String): List<Pair<String, TextStyleState>> {
                         background = colors.background
                     )
                 }
-                'r' -> TextStyleState() //重置样式
+                'r' -> TextStyleState() //reset style
                 'l' -> currentStyle.copy(bold = true)
                 'o' -> currentStyle.copy(italic = true)
                 'n' -> currentStyle.copy(underline = true)
                 'm' -> currentStyle.copy(strikethrough = true)
-                else -> currentStyle //Ignored未知或不支持的格式代码（如k）
+                else -> currentStyle //ignore unknown or unsupported format codes (like k)
             }
 
             index += 2
@@ -327,8 +327,8 @@ private fun parseTextWithStyle(input: ComponentDescription) =
     )
 
 /**
- * 拼接单节点所有文本组件
- * @param description 文本组件节点
+ * Concatenates all text components of one node
+ * @param description the text component node
  */
 private fun flattenComponents(
     description: ComponentDescription,
@@ -358,7 +358,7 @@ private fun parseComponentSegments(
 }
 
 /**
- * 模仿 Minecraft 原版对于文本组件的渲染
+ * Mimics vanilla Minecraft's text component rendering
  */
 @Composable
 fun ComponentText(
@@ -403,12 +403,12 @@ fun ComponentText(
 }
 
 /**
- * @param color 前景颜色
- * @param background 背景颜色，默认为深灰色
- * @param bold 加粗
- * @param italic 斜体
- * @param underline 下划线
- * @param strikethrough 删除线
+ * @param color foreground color
+ * @param background background color; dark gray by default
+ * @param bold bold
+ * @param italic italic
+ * @param underline underline
+ * @param strikethrough strikethrough
  */
 private data class TextStyleState(
     val color: Color? = WHITE.foreground,

@@ -24,8 +24,8 @@ import androidx.compose.runtime.setValue
 import com.endiq.turtlelauncher.setting.unit.AbstractSettingUnit
 
 /**
- * 渲染器可配置环境变量的设置单元（sealed）
- * @param summary 该配置项的描述文本，由插件提供
+ * Setting units (sealed) for renderer-configurable environment variables
+ * @param summary description text of the entry, provided by the plugin
  */
 sealed class EnvSettingUnit(
     mmkvKey: String,
@@ -44,9 +44,9 @@ sealed class EnvSettingUnit(
     }
 
     /**
-     * 选项式环境变量：从预设列表中选择一个值
-     * @param rawEnv 原始环境变量配置
-     * @param values 所有可选值（含默认值）
+     * Option-style env var: pick one value from the preset list
+     * @param rawEnv raw env var config
+     * @param values all selectable values (default included)
      */
     class Selectable(
         mmkvKey: String,
@@ -58,7 +58,7 @@ sealed class EnvSettingUnit(
         private val checkKey = "${mmkvKey}:check"
 
         /**
-         * 当前是否启用此环境变量
+         * Whether this env var is currently enabled
          */
         var isEnabled by mutableStateOf(rawEnv.check != false)
             private set
@@ -83,8 +83,8 @@ sealed class EnvSettingUnit(
     }
 
     /**
-     * 自由填写式环境变量：用户可自行输入任意值
-     * @param rawEnv 原始环境变量配置
+     * Free-form env var: the user can enter any value
+     * @param rawEnv raw env var config
      */
     class Customizable(
         mmkvKey: String,
@@ -94,10 +94,10 @@ sealed class EnvSettingUnit(
     ) : EnvSettingUnit(mmkvKey, defaultValue, summary)
 
     /**
-     * 开关式环境变量：启用/禁用该环境变量
-     * 启用时环境变量值为 [RendererConfig.Env.ToggleableEnv.value]，禁用时不设置
-     * @param rawEnv 原始环境变量配置
-     * @param envValue 该环境变量的实际值（toggle=true 时使用）
+     * Toggle-style env var: enable/disable the variable
+     * Enabled sets the value [RendererConfig.Env.ToggleableEnv.value]; disabled sets nothing
+     * @param rawEnv raw env var config
+     * @param envValue the env var's actual value (used when toggle=true)
      */
     class Toggleable(
         mmkvKey: String,
@@ -106,7 +106,7 @@ sealed class EnvSettingUnit(
         val envValue: String,
         summary: String? = null,
     ) : EnvSettingUnit(mmkvKey, defaultValue, summary) {
-        /** 当前开关是否启用 */
+        /** Whether the toggle is currently on */
         val isEnabled: Boolean get() = state.isNotEmpty()
     }
 }

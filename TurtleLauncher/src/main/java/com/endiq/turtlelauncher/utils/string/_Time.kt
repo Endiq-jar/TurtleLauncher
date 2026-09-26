@@ -42,10 +42,10 @@ private val ISO_DATE_TIME: DateTimeFormatter = DateTimeFormatterBuilder()
     .toFormatter()
 
 /**
- * 将字符串解析为 Instant
- * @param string 日期时间字符串
- * @return 解析后的 Instant 对象
- * @throws IllegalArgumentException 当字符串无法被任何支持的格式解析时抛出
+ * Parses a string into an Instant
+ * @param string the date-time string
+ * @return the parsed Instant
+ * @throws IllegalArgumentException when the string matches no supported format
  */
 fun parseInstant(string: String): Instant {
     val parsers = listOf<(String) -> Instant>(
@@ -66,10 +66,10 @@ fun parseInstant(string: String): Instant {
 }
 
 /**
- * 将 Instant 序列化为字符串
- * @param instant 要转换的 Instant 对象
- * @param zone 时区，默认为系统默认时区
- * @return 格式化的日期时间字符串
+ * Serializes an Instant into a string
+ * @param instant the Instant to convert
+ * @param zone the timezone; defaults to the system default
+ * @return the formatted date-time string
  */
 fun formatInstant(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String {
     return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(
@@ -78,19 +78,19 @@ fun formatInstant(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): Stri
 }
 
 /**
- * 将 Instant 序列化为字符串（使用指定时区ID）
- * @param instant 要转换的 Instant 对象
- * @param zoneId 时区ID字符串，如 "Asia/Shanghai"
- * @return 格式化的日期时间字符串
+ * Serializes an Instant using the given timezone ID
+ * @param instant the Instant to convert
+ * @param zoneId a timezone ID, e.g. "Asia/Shanghai"
+ * @return the formatted date-time string
  */
 fun formatInstant(instant: Instant, zoneId: String): String {
     return formatInstant(instant, ZoneId.of(zoneId))
 }
 
 /**
- * 安全解析 Instant，解析失败时返回 null
- * @param string 日期时间字符串
- * @return 解析后的 Instant 对象，解析失败时返回 null
+ * Safely parses an Instant, returning null on failure
+ * @param string the date-time string
+ * @return the parsed Instant, or null on failure
  */
 fun parseInstantOrNull(string: String): Instant? {
     return try {

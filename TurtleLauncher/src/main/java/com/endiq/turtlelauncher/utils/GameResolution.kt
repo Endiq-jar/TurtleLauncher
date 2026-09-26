@@ -32,7 +32,7 @@ private const val CUSTOM_RESOLUTION_MIN_SCALE = 0.2f    // 20%
 private const val CUSTOM_RESOLUTION_MAX_SCALE = 3f      // 300%
 
 /**
- * 自定义分辨率的合法范围
+ * Legal range of custom resolutions
  */
 fun customResolutionRange(screenSide: Int): IntRange {
     val min = getDisplayFriendlyRes(
@@ -44,10 +44,10 @@ fun customResolutionRange(screenSide: Int): IntRange {
 }
 
 /**
- * 游戏画面的显示布局与坐标换算
- * @param renderSize 游戏渲染分辨率
- * @param displaySize 游戏画面在屏幕上的显示尺寸
- * @param offset 显示区域相对屏幕左上角的偏移（等比缩放居中时的黑边）
+ * Display layout and coordinate mapping of the game view
+ * @param renderSize the game render resolution
+ * @param displaySize the on-screen display size of the game view
+ * @param offset the display area's offset from the top-left corner (letterboxing of aspect-fit centering)
  */
 data class GameDisplayLayout(
     val renderSize: IntSize,
@@ -55,7 +55,7 @@ data class GameDisplayLayout(
     val offset: IntOffset
 ) {
     /**
-     * 将全屏布局坐标换算为游戏渲染坐标
+     * Maps fullscreen layout coordinates into game render coordinates
      */
     fun mapToGame(position: Offset): Offset {
         val scaleX = renderSize.width / displaySize.width.toFloat()
@@ -68,9 +68,9 @@ data class GameDisplayLayout(
 }
 
 /**
- * 根据规则计算游戏的渲染分辨率
- * 自定义规则下，宽高限制在屏幕真实尺寸的 20%–300% 以内，
- * 非正数视为未初始化，回退为屏幕尺寸
+ * Computes the game render resolution by rules
+ * With the custom rule, width/height clamp within 20%–300% of the real screen size,
+ * non-positive values count as uninitialized, falling back to screen size
  */
 fun computeGameRenderSize(
     screenSize: IntSize,
@@ -98,7 +98,7 @@ fun computeGameRenderSize(
 }
 
 /**
- * 读取当前设置，计算游戏的渲染分辨率
+ * Reads current settings, computing the game render resolution
  */
 fun computeGameRenderSize(screenSize: IntSize): IntSize = computeGameRenderSize(
     screenSize = screenSize,
@@ -109,7 +109,7 @@ fun computeGameRenderSize(screenSize: IntSize): IntSize = computeGameRenderSize(
 )
 
 /**
- * 可观察版本：任意相关设置变化时重新计算游戏的渲染分辨率
+ * Observable form: recomputes the game render resolution when any related setting changes
  */
 @Composable
 fun rememberGameRenderSize(screenSize: IntSize): IntSize {
@@ -123,9 +123,9 @@ fun rememberGameRenderSize(screenSize: IntSize): IntSize {
 }
 
 /**
- * 依据当前设置计算游戏画面的显示布局
- * 百分比规则铺满全屏
- * 自定义规则等比缩放至屏幕可容纳的最大尺寸并居中
+ * Computes the game view's display layout from current settings
+ * The percentage rule fills the screen
+ * The custom rule scales aspect-fit to the largest screen-fitting size, centered
  */
 fun currentGameDisplayLayout(screenSize: IntSize): GameDisplayLayout {
     val renderSize = computeGameRenderSize(screenSize)
@@ -141,7 +141,7 @@ fun currentGameDisplayLayout(screenSize: IntSize): GameDisplayLayout {
 }
 
 /**
- * 计算自定义分辨率的显示布局
+ * Computes the custom resolution's display layout
  */
 fun computeGameDisplayLayout(screenSize: IntSize, renderSize: IntSize): GameDisplayLayout {
     val scale = minOf(
@@ -163,7 +163,7 @@ fun computeGameDisplayLayout(screenSize: IntSize, renderSize: IntSize): GameDisp
 }
 
 /**
- * 获取设备屏幕的真实宽高（px）
+ * Gets the device's real screen width/height (px)
  */
 fun getRealScreenSize(context: Context): IntSize {
     val metrics = context.resources.displayMetrics
@@ -171,7 +171,7 @@ fun getRealScreenSize(context: Context): IntSize {
 }
 
 /**
- * 自定义分辨率尚未初始化时，以设备屏幕真实宽高填充
+ * Before custom resolution init, fill with the real screen size
  */
 fun ensureCustomResolutionInitialized(context: Context) {
     if (AllSettings.customResolutionWidth.getValue() > 0 &&

@@ -50,20 +50,20 @@ import androidx.compose.ui.unit.dp
 import com.endiq.turtlelauncher.ui.screens.content.elements.DisabledAlpha
 
 /**
- * 导航栏item组件，可包含图标与文字。当item被选中时，
- * 会触发一个从中心向外扩展的胶囊形背景动画。
+ * Navigation rail item with icon and text. When the item is selected,
+ * a capsule background animation expands outward from the center.
  *
- * @param text 用于定义item中文字内容的可组合函数
- * @param onClick 当该item被点击时调用的回调函数
- * @param selected 指示该item当前是否处于选中状态
- *                 选中动画的播放由此状态控制
- * @param icon 用于定义显示图标的可组合函数，图标显示在文字之前。
- * @param selectedPadding item被选中时，其内部内容的内边距
- * @param unSelectedPadding item未被选中时，其内部内容的内边距
- * @param shape 定义item裁剪边界与点击区域的形状。
- * @param backgroundColor item被选中时，显示的动画背景颜色。
- * @param selectedContentColor item被选中时，图标与文字的颜色。
- * @param unselectedContentColor item未被选中时，图标与文字的颜色。
+ * @param text composable defining the item's text content
+ * @param onClick callback when the item is clicked
+ * @param selected whether the item is currently selected;
+ *                 the selection animation is driven by this state
+ * @param icon composable defining the displayed icon, shown before the text.
+ * @param selectedPadding inner padding of the item while selected
+ * @param unSelectedPadding inner padding of the item while unselected
+ * @param shape shape defining the item's clipping and click area.
+ * @param backgroundColor animated background color of the selection.
+ * @param selectedContentColor icon and text color while selected.
+ * @param unselectedContentColor icon and text color while unselected.
  */
 @Composable
 fun TextRailItem(
@@ -92,7 +92,7 @@ fun TextRailItem(
             .clickable(enabled = enabled, onClick = onClick)
             .alpha(if (enabled) 1f else DisabledAlpha)
     ) {
-        //背景扩散动画
+        //Background expanding animation
         Canvas(
             modifier = Modifier
                 .matchParentSize()
@@ -104,7 +104,7 @@ fun TextRailItem(
 
             val left = (maxWidth - currentWidth) / 2
 
-            //绘制胶囊形状背景
+            //Draw the capsule-shaped background
             drawRoundRect(
                 color = backgroundColor,
                 topLeft = Offset(left, 0f),

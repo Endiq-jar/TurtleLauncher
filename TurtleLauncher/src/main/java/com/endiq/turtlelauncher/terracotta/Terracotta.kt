@@ -44,9 +44,9 @@ object Terracotta {
     const val TERRACOTTA_USER_NOTICE_VERSION = 1
 
     enum class Mode {
-        /** 房主模式 */
+        /** Host mode */
         Host,
-        /** 房客模式 */
+        /** Guest mode */
         Guest
     }
 

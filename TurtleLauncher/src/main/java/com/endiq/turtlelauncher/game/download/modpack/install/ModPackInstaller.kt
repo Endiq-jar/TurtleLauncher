@@ -57,7 +57,7 @@ private const val TAG = "ModPackInstaller"
  * @param version version info of the selected modpack
  * @param iconUrl the modpack's icon URL
  * @param scope the lifecycle-managed scope the install task runs in
- * @param waitForVersionName 等待用户输入Version name
+ * @param waitForVersionName waits for the user to enter the version name
  * @param waitForConfirmMobileData waits for the user to confirm mobile-data use
  */
 class ModPackInstaller(
@@ -76,7 +76,7 @@ class ModPackInstaller(
     val logOutput: StateFlow<TaskLogOutput?> = _logOutput.asStateFlow()
 
     /**
-     * 整合包文件解析出的信息
+     * Info parsed from the modpack file
      */
     private lateinit var modpackInfo: ModPackInfo
 
@@ -91,11 +91,11 @@ class ModPackInstaller(
     private lateinit var gameDownloadInfo: GameDownloadInfo
 
     /**
-     * 开始安装整合包
-     * @param isRunning 正在运行中，拒绝这次安装时
-     * @param onInstalled 完成安装时
+     * Starts installing the modpack
+     * @param isRunning called when the install is refused because one is running
+     * @param onInstalled when the install completes
      * @param onCancelled on internal cancellation
-     * @param onError 安装时遇到异常
+     * @param onError when the install throws
      */
     fun installModPack(
         isRunning: () -> Unit = {},
@@ -104,7 +104,7 @@ class ModPackInstaller(
         onError: (Throwable) -> Unit
     ) {
         if (taskExecutor.isRunning()) {
-            //正在安装中，阻止这次安装请求
+            //An install is already running; block this request
             isRunning()
             return
         }
@@ -319,7 +319,7 @@ class ModPackInstaller(
                 task.updateProgress(percentage = percentage)
             }
 
-            //复制整合包icon
+            //Copy the modpack icon
             if (tempIconFile.exists() && tempIconFile.isFile) {
                 val iconFile = getVersionIconFile(targetClientDir)
                 if (iconFile.exists()) FileUtils.deleteQuietly(iconFile)

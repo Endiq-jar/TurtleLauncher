@@ -50,7 +50,7 @@ import java.io.File
 import java.io.RandomAccessFile
 
 /**
- * 导航到日志查看器
+ * Navigates to the log viewer
  */
 fun NavBackStack<TitledNavKey>.navigateToLogView(
     logPath: String,
@@ -59,7 +59,7 @@ fun NavBackStack<TitledNavKey>.navigateToLogView(
     useClassEquality = true
 )
 
-/** 日志查看器加载的日志体积上限，超过则只读取末尾部分 */
+/** Log size cap for the viewer; larger logs read their tail only */
 private const val MAX_LOG_VIEW_SIZE: Long = 8L * 1024 * 1024
 
 private fun readLog(file: File): String {
@@ -70,11 +70,11 @@ private fun readLog(file: File): String {
         val bytes = ByteArray(MAX_LOG_VIEW_SIZE.toInt())
         raf.readFully(bytes)
         val text = String(bytes, Charsets.UTF_8)
-            // 截断位置可能留下不完整的字符，解码成替换字符后去掉
+            // Truncation may leave partial characters; decoded replacement chars get dropped
             .trimStart('\uFFFD')
 
-        // 从首个换行处开始，避免截断处留下半个字符导致首行乱码
-        // 窗口内没有换行时（超长单行）则不截断，保留内容
+        // Start at the first newline so a half character can't garble the first line
+        // Without any newline in the window (a giant single line), don't truncate
         val firstNewline = text.indexOf('\n')
         return if (firstNewline >= 0 && firstNewline < text.length - 1) {
             text.substring(firstNewline + 1)

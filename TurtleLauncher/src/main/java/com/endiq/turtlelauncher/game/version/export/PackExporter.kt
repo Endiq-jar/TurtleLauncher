@@ -45,8 +45,8 @@ import java.io.File
 private const val TAG = "PackExporter"
 
 /**
- * 整合包导出器
- * @param exportInfo 要导出的整合包的必要信息
+ * Modpack exporter
+ * @param exportInfo required info of the modpack to export
  * @param scope the lifecycle-managed scope the install task runs in
  */
 class PackExporter(
@@ -65,7 +65,7 @@ class PackExporter(
     }
 
     /**
-     * 开始导出整合包
+     * Starts exporting the modpack
      */
     fun startExport(
         outputUri: Uri,
@@ -76,7 +76,7 @@ class PackExporter(
     ) {
         if (taskExecutor.isRunning()) {
             isRunning()
-            return //正在运行中，拒绝导出
+            return //already running; refuse the export
         }
 
         taskExecutor.executePhasesAsync(
@@ -103,7 +103,7 @@ class PackExporter(
 
         listOf(
             buildPhase {
-                //清除上一次导出的缓存
+                //Clear the previous export's cache
                 addTask(
                     id = "ExportModpack.Cleanup",
                     title = androidText(R.string.download_install_clear_temp),
@@ -152,7 +152,7 @@ class PackExporter(
     }
 
     /**
-     * 清理临时整合包导出目录
+     * Cleans up the temporary modpack export directory
      */
     private suspend fun clearTempModPackDir() = withContext(Dispatchers.IO) {
         PathManager.DIR_CACHE_MODPACK_EXPORTER.takeIf { it.exists() }?.let { folder ->

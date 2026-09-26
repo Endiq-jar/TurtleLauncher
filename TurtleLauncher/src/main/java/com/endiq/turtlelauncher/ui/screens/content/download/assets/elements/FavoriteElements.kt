@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.endiq.turtlelauncher.R
 
 /**
- * 收藏状态文本
+ * Favorite state text
  */
 @Composable
 fun favoriteStateText(isFavorite: Boolean): String = stringResource(
@@ -51,7 +51,7 @@ fun favoriteStateText(isFavorite: Boolean): String = stringResource(
 )
 
 /**
- * 收藏开关标签，图标与文本跟随收藏状态切换
+ * Favorite toggle label; icon and text follow the favorite state
  */
 @Composable
 fun FavoriteToggleLabel(
@@ -93,7 +93,7 @@ fun FavoriteToggleLabel(
 }
 
 /**
- * 收藏状态标识元素
+ * Favorite state badge element
  */
 @Composable
 fun FavoriteIdentifier(

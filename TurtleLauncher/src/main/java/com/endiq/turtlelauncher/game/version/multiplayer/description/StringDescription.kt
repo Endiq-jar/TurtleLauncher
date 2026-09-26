@@ -21,8 +21,8 @@ package com.endiq.turtlelauncher.game.version.multiplayer.description
 import com.endiq.turtlelauncher.utils.string.stripColorCodes
 
 /**
- * 以文本形式独立存储的服务器描述
- * @param value 文本信息
+ * Server description stored standalone as plain text
+ * @param value the text content
  */
 data class StringDescription(
     val value: String

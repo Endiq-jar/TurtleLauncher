@@ -133,7 +133,7 @@ fun RendererSettingsScreen(
                             RendererSummaryLayout(it)
                         },
                         trailingIcon = {
-                            //选中新一代渲染器插件且存在可配置项时，提供配置入口
+                            //Offer a config entry when a new-gen renderer plugin with options is selected
                             if (v2PluginEnvUnits != null) {
                                 IconButton(
                                     onClick = { showV2ConfigDialog = true }
@@ -165,7 +165,7 @@ fun RendererSettingsScreen(
                         }
                     )
 
-                    //新一代渲染器插件的环境变量配置对话框
+                    //New-gen renderer plugin env var config dialog
                     if (showV2ConfigDialog && v2PluginEnvUnits != null) {
                         RendererV2ConfigDialog(
                             units = v2PluginEnvUnits,
@@ -235,7 +235,7 @@ fun RendererSettingsScreen(
                     Column(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // 分辨率规则
+                        // Resolution rule
                         val resolutionRule = AllSettings.resolutionRule.state
                         ListSettingsCard(
                             modifier = Modifier.fillMaxWidth(),
@@ -246,14 +246,14 @@ fun RendererSettingsScreen(
                             summary = stringResource(R.string.settings_renderer_resolution_rule_summary),
                             getItemText = { stringResource(it.nameRes) },
                             onValueChange = { rule ->
-                                // 自定义分辨率尚未初始化时，以屏幕真实宽高填充
+                                //Before custom resolution init, fill with real screen size
                                 if (rule == ResolutionRule.CUSTOM) {
                                     ensureCustomResolutionInitialized(context)
                                 }
                             }
                         )
 
-                        // 百分比分辨率
+                        // Percentage resolution
                         AnimatedVisibility(
                             visible = resolutionRule == ResolutionRule.PERCENTAGE,
                             enter = fadeIn(animationSpec = getAnimateTween()) +
@@ -275,7 +275,7 @@ fun RendererSettingsScreen(
                             )
                         }
 
-                        // 自定义分辨率
+                        // Custom resolution
                         AnimatedVisibility(
                             visible = resolutionRule == ResolutionRule.CUSTOM,
                             enter = fadeIn(animationSpec = getAnimateTween()) +

@@ -45,11 +45,11 @@ import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.CardPosition
 import com.endiq.turtlelauncher.ui.screens.content.settings.layouts.rememberSettingsCardShape
 
 /**
- * 一个简单的警告/提示卡片，用于将信息以醒目的方式展示给用户看
- * @param title 这个卡片的标题
- * @param text 这个卡片的实际内容
- * @param position 卡片在UI组中的位置，用于控制卡片的四个角的圆角度
- * @param influencedByBackground 背景颜色是否受到启动器自定义背景影响
+ * A simple warning/hint card presenting info prominently
+ * @param title the card's title
+ * @param text the card's actual content
+ * @param position the card's position in its UI group, controlling its four corner radii
+ * @param influencedByBackground whether its background follows the custom launcher background
  */
 @Composable
 fun WarningCard(
@@ -95,7 +95,7 @@ fun WarningCard(
                 .padding(all = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            //标题部分
+            //Title section
             Row(
                 modifier = Modifier
                     .height(IntrinsicSize.Min)
@@ -115,7 +115,7 @@ fun WarningCard(
                 )
             }
 
-            //实际自定义的警告内容部分
+            //The custom warning content section
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 content = text

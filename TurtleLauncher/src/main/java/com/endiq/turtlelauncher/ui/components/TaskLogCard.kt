@@ -45,7 +45,7 @@ import com.endiq.turtlelauncher.coroutine.TaskLogOutput
 import com.endiq.turtlelauncher.ui.AndroidStringText
 
 /**
- * 任务流对话框的实时日志卡片
+ * Live log card of the task-flow dialog
  */
 @Composable
 fun TaskLogCard(
@@ -56,7 +56,7 @@ fun TaskLogCard(
     val listState = rememberLazyListState()
     var followScroll by remember { mutableStateOf(true) }
 
-    // 用户向上翻阅时暂停自动滚动，重新滚到底部后恢复跟随
+    // Keep a scroll anchor while the user reads above; resume follow when scrolled back to the bottom
     LaunchedEffect(listState) {
         var previousIndex = 0
         snapshotFlow { listState.firstVisibleItemIndex }.collect { index ->

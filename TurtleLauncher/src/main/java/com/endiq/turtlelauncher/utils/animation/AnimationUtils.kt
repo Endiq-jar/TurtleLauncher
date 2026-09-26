@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.endiq.turtlelauncher.setting.AllSettings
 
 /**
- * 获取动画的持续时长
+ * Gets the animation duration
  */
 fun getAnimateSpeed(): Int = calculateAnimationTime(
     AllSettings.launcherAnimateSpeed.state,
@@ -40,7 +40,7 @@ fun getAnimateSpeed(): Int = calculateAnimationTime(
 )
 
 /**
- * 获取根据动画倍速调整后的 delayMillis
+ * Gets delayMillis adjusted by the animation speed factor
  */
 fun getAdjustedDelayMillis(baseDelayMillis: Int): Int {
     if (baseDelayMillis == 0) return 0
@@ -52,7 +52,7 @@ fun getAdjustedDelayMillis(baseDelayMillis: Int): Int {
 }
 
 /**
- * 页面切换动画是否关闭
+ * Whether page transition animations are disabled
  */
 fun isSwapAnimateClosed() = AllSettings.launcherSwapAnimateType.state == TransitionAnimationType.CLOSE
 
@@ -104,7 +104,7 @@ fun <E> getAnimateTweenJellyBounce(
 )
 
 /**
- * 获取页面切换动画
+ * Gets the page transition animation
  */
 fun <E> getSwapAnimateTween(
     swapIn: Boolean,
@@ -124,12 +124,12 @@ fun <E> getSwapAnimateTween(
 }
 
 /**
- * 计算动画的幅度（计算targetValue）
- * 以5为基准，5对应targetValue本身
+ * Computes the animation magnitude (targetValue)
+ * Base 5: magnitude 5 maps to targetValue itself
  *
- * 幅度0，大小为 targetValue * 0.5
- * 幅度5，大小为 targetValue * 1.0
- * 幅度10，大小为 targetValue * 1.5
+ * Magnitude 0: targetValue * 0.5
+ * Magnitude 5: targetValue * 1.0
+ * Magnitude 10: targetValue * 1.5
  */
 fun getTargetValueByAmplitude(
     targetValue: Dp,
@@ -196,9 +196,9 @@ fun swapAnimateDpAsState(
 }
 
 /**
- * 计算根据倍速调整后的时间（毫秒）
- * @param minFactor 最快时相对于 baseTime 的缩放比例（0.25 = 最快时是 1/4 时间）
- * @return 根据倍速调整后的时间
+ * Computes the time adjusted by the speed multiplier (ms)
+ * @param minFactor the multiplier applied at maximum speed (0.25 = quarter time)
+ * @return the speed-adjusted time
  */
 fun calculateAnimationTime(speed: Int, baseTime: Int, minFactor: Float = 0.25f): Int {
     val factor = 1f - (speed / 10f) * (1f - minFactor)

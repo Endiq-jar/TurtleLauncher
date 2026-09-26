@@ -56,7 +56,7 @@ import com.endiq.turtlelauncher.ui.theme.itemColor
 import com.endiq.turtlelauncher.ui.theme.onItemColor
 
 /**
- * 按键事件编辑
+ * Key event editing
  */
 @Composable
 fun KeyEventEdit(

@@ -33,10 +33,10 @@ import com.endiq.turtlelauncher.ui.components.SimpleEditDialog
 import com.endiq.turtlelauncher.utils.string.isEmptyOrBlank
 import net.burningtnt.terracotta.TerracottaAndroidAPI
 
-/** 等待中：房客操作状态 */
+/** Waiting: guest operation states */
 sealed interface GuestWaitingOperation {
     data object None : GuestWaitingOperation
-    /** 被点击，开始输入邀请码 */
+    /** Clicked: start entering the invite code */
     data object OnClick : GuestWaitingOperation
 }
 
@@ -62,7 +62,7 @@ fun GuestWaitingOperation(
 }
 
 /**
- * 房客输入邀请码对话框
+ * Guest invite-code entry dialog
  */
 @Composable
 private fun InviteCodeInputDialog(
@@ -72,11 +72,11 @@ private fun InviteCodeInputDialog(
 ) {
     var code by remember { mutableStateOf("") }
 
-    /** 验证不通过时 */
+    /** When validation fails */
     var isError by remember { mutableStateOf(false) }
     val supportingText: AndroidStringText? = remember(code) {
         if (code.isEmpty()) {
-            //还未填写内容
+            //Nothing filled in yet
             isError = false
             return@remember null
         }
@@ -88,7 +88,7 @@ private fun InviteCodeInputDialog(
             TerracottaAndroidAPI.RoomType.SCAFFOLDING -> androidText(R.string.terracotta_status_waiting_guest_prompt_scaffolding)
             else -> null
         }.also { text ->
-            //根据是否检测出对应格式判断
+            //Judge by whether the expected format was detected
             isError = text == null
         } ?: androidText(R.string.terracotta_status_waiting_guest_prompt_invalid)
     }

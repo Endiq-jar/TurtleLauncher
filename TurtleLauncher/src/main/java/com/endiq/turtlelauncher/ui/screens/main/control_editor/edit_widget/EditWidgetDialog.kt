@@ -82,15 +82,15 @@ import com.endiq.turtlelauncher.ui.theme.cardColor
 import com.endiq.turtlelauncher.ui.theme.onCardColor
 
 private enum class EditWidgetDialogState(val alpha: Float, val buttonText: Int) {
-    /** 完全不透明 */
+    /** Fully opaque */
     OPAQUE(1.0f, R.string.control_editor_edit_dialog_open_preview) {
         override fun nextByUser(): EditWidgetDialogState = SEMI_TRANSPARENT_USER
     },
-    /** 半透明 */
+    /** Translucent */
     SEMI_TRANSPARENT(0.3f, R.string.control_editor_edit_dialog_close_preview) {
         override fun nextByUser(): EditWidgetDialogState = OPAQUE
     },
-    /** 半透明（用户主动选择） */
+    /** Translucent (user-chosen) */
     SEMI_TRANSPARENT_USER(0.3f, R.string.control_editor_edit_dialog_close_preview){
         override fun nextByUser(): EditWidgetDialogState = OPAQUE
     };
@@ -99,8 +99,8 @@ private enum class EditWidgetDialogState(val alpha: Float, val buttonText: Int) 
 }
 
 /**
- * 控件编辑对话框
- * **不再真正使用Dialog，真的会有性能问题！**
+ * Widget edit dialog
+ * **No longer a real Dialog - it genuinely had performance problems!**
  */
 @Composable
 fun EditWidgetDialog(
@@ -138,7 +138,7 @@ fun EditWidgetDialog(
                 .alpha(alpha),
             contentAlignment = Alignment.Center
         ) {
-            //防止底下的控件被点击
+            //Prevents taps from reaching widgets underneath
             if (visible) {
                 Box(
                     modifier = Modifier
@@ -213,7 +213,7 @@ fun EditWidgetDialog(
                                 }
                             )
                         }
-                        //底部操作栏
+                        //Bottom action bar
                         Row(
                             modifier = Modifier
                                 .padding(all = 8.dp)
@@ -230,7 +230,7 @@ fun EditWidgetDialog(
                                 }
                                 Spacer(Modifier.width(16.dp))
                             } else {
-                                //占位用，防止右侧按钮向左靠齐
+                                //Spacer keeping the right buttons right-aligned
                                 Spacer(Modifier)
                             }
 
@@ -334,7 +334,7 @@ private fun EditWidgetNavigation(
         NavDisplay(
             modifier = modifier,
             backStack = backStack,
-            onBack = { /* 忽略 */ },
+            onBack = { /* ignore */ },
             transitionSpec = rememberTransitionSpec(),
             popTransitionSpec = rememberTransitionSpec(),
             entryProvider = entryProvider {

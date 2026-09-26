@@ -81,7 +81,7 @@ fun ErrorScreen(
     onOrientationChanged: (Int) -> Unit = {},
     body: @Composable ColumnScope.() -> Unit
 ) {
-    //获取方向信息，展示两套不同的UI
+    //Get orientation info and show two distinct UIs
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -119,7 +119,7 @@ fun ErrorScreen(
 }
 
 /**
- * 崩溃页面（横屏页面）
+ * Crash page (landscape)
  */
 @Composable
 private fun ErrorScreenLandscape(
@@ -137,9 +137,9 @@ private fun ErrorScreenLandscape(
     Scaffold(
         topBar = {
             val text = when (crashType) {
-                //在启动器崩溃的时候，显示一个较为严重的标题
+                //On a launcher crash, show a more severe-looking title
                 CrashType.LAUNCHER_CRASH -> stringResource(R.string.crash_launcher_title, BuildKeys.LAUNCHER_NAME)
-                //游戏运行崩溃了，大概和启动器关系不大，仅展示应用标题
+                //A game runtime crash likely isn't the launcher's fault; just the app title
                 CrashType.GAME_CRASH -> BuildKeys.LAUNCHER_NAME
             }
             Box(
@@ -149,7 +149,7 @@ private fun ErrorScreenLandscape(
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = text)
-                //旋转竖屏
+                //Rotate to portrait
                 IconButton(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
@@ -200,7 +200,7 @@ private fun ErrorScreenLandscape(
 }
 
 /**
- * 崩溃页面（竖屏版本）
+ * Crash page (portrait)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -216,7 +216,7 @@ private fun ErrorScreenPortrait(
     onRotateClick: () -> Unit,
     body: @Composable ColumnScope.() -> Unit
 ) {
-    //控制下拉菜单的显示状态
+    //Controls the dropdown menu's visibility
     var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -228,11 +228,11 @@ private fun ErrorScreenPortrait(
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 title = {
-                    //应用标题
+                    //App title
                     Text(text = BuildKeys.LAUNCHER_NAME)
                 },
                 actions = {
-                    //旋转横屏
+                    //Rotate to landscape
                     IconButton(
                         onClick = onRotateClick
                     ) {
@@ -311,7 +311,7 @@ private fun ErrorScreenPortrait(
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            //崩溃类型
+            //Crash type
             Text(
                 text = stringResource(
                     R.string.crash_type,
@@ -320,7 +320,7 @@ private fun ErrorScreenPortrait(
             )
 
             if (crashType == CrashType.LAUNCHER_CRASH) {
-                //仅在启动器崩溃时，才显示这行略显严重的文本
+                //Only a launcher crash shows this notably severe line
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {

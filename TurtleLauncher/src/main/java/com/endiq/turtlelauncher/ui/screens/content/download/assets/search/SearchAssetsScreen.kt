@@ -73,9 +73,9 @@ import kotlinx.coroutines.withContext
 private const val TAG = "SearchAssetsScreen"
 
 /**
- * 资源搜索屏幕的 view model
- * @param initialPlatform 初始设定的平台
- * @param platformClasses 资源搜索的类型
+ * Resource search screen view model
+ * @param initialPlatform the initially set platform
+ * @param platformClasses the searchable resource types
  */
 private class SearchScreenViewModel(
     initialPlatform: Platform,
@@ -88,10 +88,10 @@ private class SearchScreenViewModel(
     var searchFilter by mutableStateOf(PlatformSearchFilter())
 
     private val _searchedMcMods = MutableStateFlow<List<ModTranslations.McMod>>(emptyList())
-    /** 搜索得到的所有 MCMOD 项目 */
+    /** All MCMOD projects found by search */
     val searchedMcMods = _searchedMcMods.asStateFlow()
     private val _searchedVersions = MutableStateFlow<List<String>>(emptyList())
-    /** 搜索得到的所有Minecraft版本 */
+    /** All Minecraft versions found by search */
     val searchedVersions = _searchedVersions.asStateFlow()
 
     var currentSearchJob: Job? = null
@@ -99,7 +99,7 @@ private class SearchScreenViewModel(
     var currentSearchVersionJob: Job? = null
 
     /**
-     * 仅更新搜索名称
+     * Updates the search name only
      */
     fun updateNameFilter(searchName: String) {
         searchFilter = searchFilter.copy(searchName = searchName)
@@ -109,7 +109,7 @@ private class SearchScreenViewModel(
                 searchName.searchMcMods(classes = platformClasses) ?: emptyList()
             } catch (_: CancellationException) {
                 emptyList()
-            }.take(20) //仅展示20个Search results
+            }.take(20) //show only 20 results
             withContext(Dispatchers.Main) {
                 _searchedMcMods.update { result }
             }
@@ -118,7 +118,7 @@ private class SearchScreenViewModel(
     }
 
     /**
-     * 仅更新Version name
+     * Updates the version name only
      */
     fun updateVersionFilter(version: String) {
         searchFilter = searchFilter.copy(gameVersion = version)
@@ -135,12 +135,12 @@ private class SearchScreenViewModel(
                 version.isEmpty() -> popularVersions
                 allVersions.isEmpty() -> popularVersions.filter { ver ->
                     ver.contains(version)
-                }.take(20) //仅展示20个Search results
+                }.take(20) //show only 20 results
                 else -> allVersions.filter {
                     it.version.id.contains(version) &&
-                            //CurseForge只能使用正式版进行过滤
+                            //CurseForge can only filter with full releases
                             (searchPlatform != Platform.CURSEFORGE || it.type == MinecraftVersion.Type.Release)
-                }.map { it.version.id }.take(20) //仅展示20个Search results
+                }.map { it.version.id }.take(20) //show only 20 results
             }
             withContext(Dispatchers.Main) {
                 _searchedVersions.update { result }
@@ -150,20 +150,20 @@ private class SearchScreenViewModel(
     }
 
     /**
-     * 重置并重新搜索
+     * Resets and searches again
      */
     fun resetSearch() {
         pages.clear()
-        searchFilter = searchFilter.copy(index = 0) //重置索引到起始处
+        searchFilter = searchFilter.copy(index = 0) //reset the index to the start
         search()
     }
 
     /**
-     * 更新过滤器时，重置已有结果，重新触发搜索
+     * Filter changes reset existing results and retrigger the search
      */
     fun researchWithFilter(filter: PlatformSearchFilter) {
         pages.clear()
-        searchFilter = filter.copy(index = 0) //重置索引到起始处
+        searchFilter = filter.copy(index = 0) //reset the index to the start
         search()
     }
 
@@ -174,7 +174,7 @@ private class SearchScreenViewModel(
             val targetIndex = page.pageNumber - 1
 
             if (pages.size > targetIndex) {
-                pages[targetIndex] = page //替换已有页
+                pages[targetIndex] = page //replace the existing page
             } else {
                 while (pages.size < targetIndex) {
                     pages += null
@@ -187,7 +187,7 @@ private class SearchScreenViewModel(
     }
 
     fun search() {
-        currentSearchJob?.cancel() //取消上一个搜索
+        currentSearchJob?.cancel() //cancel the previous search
 
         currentSearchJob = viewModelScope.launch {
             searchResult = SearchAssetsState.Searching
@@ -206,7 +206,7 @@ private class SearchScreenViewModel(
     }
 
     init {
-        //初始化后，执行一次搜索
+        //Run one search after init
         search()
         refreshVerSuggestions("")
         viewModelScope.launch {
@@ -239,21 +239,21 @@ private fun rememberSearchAssetsViewModel(
 }
 
 /**
- * @param parentScreenKey 父屏幕Key
- * @param parentCurrentKey 父屏幕当前Key
- * @param screenKey 屏幕的Key
- * @param currentKey 当前的Key
- * @param platformClasses 搜索资源的分类
- * @param initialPlatform 初始搜索平台
- * @param onPlatformChange 搜索平台变更
- * @param enablePlatform 是否允许更改平台
- * @param getCategories 根据平台获取可用的资源类别过滤器
- * @param enableModLoader 是否允许更改模组加载器
- * @param getModloaders 根据平台获取可用的Mod loader filter器
- * @param mapCategories 通过平台获取类别本地化信息
- * @param swapToDownload 跳转到下载详情页
- * @param installedInfo 查询项目本地是否已安装，键为平台与平台项目ID
- * @param extraFilter 额外的过滤器UI
+ * @param parentScreenKey the parent screen key
+ * @param parentCurrentKey the parent screen's current key
+ * @param screenKey the screen key
+ * @param currentKey the current key
+ * @param platformClasses the searchable resource categories
+ * @param initialPlatform the initial search platform
+ * @param onPlatformChange on search platform change
+ * @param enablePlatform whether the platform may change
+ * @param getCategories gets the category filters a platform offers
+ * @param enableModLoader whether the mod loader may change
+ * @param getModloaders gets the mod loader filters a platform offers
+ * @param mapCategories maps platform categories to localized text
+ * @param swapToDownload jumps to the download detail page
+ * @param installedInfo checks local install state, keyed by platform and project ID
+ * @param extraFilter additional filter UI
  */
 @Composable
 fun SearchAssetsScreen(
@@ -280,7 +280,7 @@ fun SearchAssetsScreen(
         platformClasses = platformClasses
     )
 
-    //跟随平台自动变更的内容
+    //Content auto-tracking the platform
     val categories = remember(viewModel.searchPlatform) {
         getCategories(viewModel.searchPlatform)
     }
@@ -320,7 +320,7 @@ fun SearchAssetsScreen(
                         },
                         onSearch = { newIndex ->
                             viewModel.searchFilter = viewModel.searchFilter.copy(index = newIndex)
-                            viewModel.search() //搜索上一页
+                            viewModel.search() //search the previous page
                         }
                     )
                 },

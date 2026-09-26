@@ -19,7 +19,7 @@
 package com.endiq.turtlelauncher.ui.control.gamepad
 
 /**
- * 方向键方向
+ * D-pad direction
  */
 enum class DpadDirection {
     Up, Down, Left, Right

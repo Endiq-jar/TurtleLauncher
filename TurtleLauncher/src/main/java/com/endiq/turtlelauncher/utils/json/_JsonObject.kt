@@ -25,15 +25,15 @@ import com.google.gson.JsonParser
 fun JsonObject.merge(other: JsonObject) {
     other.entrySet().forEach { (key, otherValue) ->
         when (val currentValue = this.get(key)) {
-            //当前存在同名对象属性：递归合并
+            //Same-named object present: merge recursively
             is JsonObject -> if (otherValue is JsonObject) {
                 currentValue.merge(otherValue)
             } else {
-                // 类型不同时直接覆盖
+                // Different types: overwrite directly
                 this.add(key, otherValue.deepCopy())
             }
 
-            //当前存在同名数组：追加元素
+            //Same-named array present: append elements
             is JsonArray -> if (otherValue is JsonArray) {
                 otherValue.forEach { element ->
                     currentValue.add(element.deepCopy())
@@ -42,7 +42,7 @@ fun JsonObject.merge(other: JsonObject) {
                 this.add(key, otherValue.deepCopy())
             }
 
-            //当前属性不存在或为简单类型：直接覆盖
+            //Missing or simple type: overwrite directly
             else -> this.add(key, otherValue.deepCopy())
         }
     }
@@ -53,6 +53,6 @@ fun JsonObject.safeGetMember(memberName: String): String {
 }
 
 /**
- * 快速解析为JsonObject
+ * Quickly parses into a JsonObject
  */
 fun String.parseToJson(): JsonObject = JsonParser.parseString(this).asJsonObject

@@ -95,27 +95,27 @@ import java.util.concurrent.TimeoutException
 
 sealed interface ModsOperation {
     data object None : ModsOperation
-    /** 执行任务中 */
+    /** Running a task */
     data object Progress : ModsOperation
-    /** 删除模组对话框 */
+    /** Delete mods dialog */
     data class Delete(val mod: LocalMod) : ModsOperation
 }
 
 sealed interface ModsUpdateOperation {
     data object None : ModsUpdateOperation
-    /** 警告用户更新模组的注意事项 */
+    /** Warn the user about mod update caveats */
     data class Warning(val mods: List<RemoteMod>) : ModsUpdateOperation
-    /** 开始更新模组 */
+    /** Mod update started */
     data object Update : ModsUpdateOperation
-    /** 更新模组时出现异常 */
+    /** Exception while updating mods */
     data class Error(val th: Throwable) : ModsUpdateOperation
-    /** 更新模组成功 */
+    /** Mod update succeeded */
     data object Success : ModsUpdateOperation
 }
 
 sealed interface ModsConfirmOperation {
     data object None : ModsConfirmOperation
-    /** 等待用户确认模组更新的信息 */
+    /** Waiting for the user to confirm mod updates */
     data class WaitingConfirm(val list: List<SelectableModManifest>) : ModsConfirmOperation
 }
 
@@ -158,7 +158,7 @@ fun ModsUpdateOperation(
     when (operation) {
         is ModsUpdateOperation.None -> {}
         is ModsUpdateOperation.Warning -> {
-            //警告更新模组可能带来问题
+            //Warn that updating mods may cause issues
             SimpleAlertDialog(
                 title = stringResource(R.string.generic_warning),
                 text = {
@@ -179,7 +179,7 @@ fun ModsUpdateOperation(
             if (modsUpdater != null) {
                 val tasks = modsUpdater.tasksFlow.collectAsStateWithLifecycle()
                 if (tasks.value.isNotEmpty()) {
-                    //更新模组流程对话框
+                    //Mod update flow dialog
                     TitleTaskFlowDialog(
                         title = stringResource(R.string.mods_update),
                         tasks = tasks.value,
@@ -268,7 +268,7 @@ fun ModsConfirmOperation(
 }
 
 /**
- * 模组更新：展示Needs an update的模组的详细信息
+ * Mod update: details of the mods needing updates
  */
 @Composable
 private fun ModsUpdateListDialog(
@@ -353,8 +353,8 @@ private fun ModsUpdateListDialog(
 }
 
 /**
- * 模组更新：单个模组更新详情展示
- * 展示旧版本与新版本对比
+ * Mod update: single mod update details
+ * Shows old versus new versions
  */
 @Composable
 private fun ModsUpdateEntryItem(
@@ -405,15 +405,15 @@ private fun ModsUpdateEntryItem(
                         text = displayTitle,
                         style = MaterialTheme.typography.titleSmall,
                     )
-                    //旧版本
+                    //Old version
                     MarqueeText(
                         modifier = Modifier.fillMaxWidth(),
-                        text = data.currentVersion ?: "???", //未知
+                        text = data.currentVersion ?: "???", //unknown
                         style = MaterialTheme.typography.labelSmall.copy(
                             textDecoration = TextDecoration.LineThrough
                         )
                     )
-                    //新版本
+                    //New version
                     MarqueeText(
                         modifier = Modifier.fillMaxWidth(),
                         text = newVersion.platformVersion(),
@@ -439,7 +439,7 @@ enum class ModStateFilter(val textRes: Int) {
 }
 
 /**
- * 根据名称，筛选模组
+ * Filters mods by name
  */
 fun List<RemoteMod>.filterMods(
     nameFilter: String,

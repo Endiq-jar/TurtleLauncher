@@ -33,7 +33,7 @@ import androidx.core.content.ContextCompat
 
 object NotificationManager {
     /**
-     * 初始化通知，初始化通知渠道（频道）
+     * Initializes notifications and their channels
      */
     fun initManager(context: Context) {
         NotificationChannelData.entries.forEach { data ->
@@ -42,15 +42,15 @@ object NotificationManager {
     }
 
     /**
-     * 尝试检查通知权限是否开启，安卓 13 以下可能没法 100% 确定
+     * Tries to check whether notification permission is on; below Android 13 this can't be 100% certain
      */
     fun checkNotificationEnabled(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            //对一些魔改系统可能有效，但不能100%确定
-            //所以在安卓 13 以下，尽量还是以默认不能使用通知对待
+            //May work on some heavily modded systems, but no guarantees
+            //So below Android 13, best treat notifications as unavailable by default
             NotificationManagerCompat.from(context).areNotificationsEnabled()
         } else {
-            //SDK 33 以上有统一规范，不过实在是遇到那种傻逼系统，也没办法了说是
+            //SDK 33+ has a unified spec, but some trash systems just can't be helped
             ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS
@@ -70,7 +70,7 @@ object NotificationManager {
     }
 
     /**
-     * 跳转到通知设置页，出现异常则仅跳转到详细设置页
+     * Jumps to the notification settings page, or only the app detail page on failure
      */
     fun openNotificationSettings(context: Context) {
         try {
@@ -80,7 +80,7 @@ object NotificationManager {
             intent.putExtra(Settings.EXTRA_CHANNEL_ID, context.applicationInfo.uid)
             context.startActivity(intent)
         } catch (e: Exception) {
-            //如果出现异常，跳转到应用的详细设置页面
+            //On failure, jump to the app's detail settings page
             val intent = Intent()
             intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
             intent.data = Uri.fromParts("package", context.packageName, null)

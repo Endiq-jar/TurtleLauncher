@@ -79,28 +79,28 @@ import com.endiq.turtlelauncher.ui.theme.onCardColor
 import com.endiq.turtlelauncher.ui.theme.onItemColor
 
 sealed interface TerracottaLogOperation {
-    /** 正常情况下，不展示日志内容，显示对话框 UI */
+    /** Normal mode: no logs, just the dialog UI */
     data object None : TerracottaLogOperation
-    /** 正在收集日志 */
+    /** Collecting logs */
     data object CollectingLog : TerracottaLogOperation
-    /** 切换到展示日志的模式 */
+    /** Switch to log display mode */
     data class EnableLog(val logString: String) : TerracottaLogOperation
 }
 
 /**
- * 多人联机菜单Dialog
- * @param logOperation 陶瓦联机核心日志展示状态
- * @param onShowLog 联机菜单请求切换到日志展示状态
- * @param onHideLog 联机菜单请求退出日志展示状态
- * @param isWaitingInteractive 在等待页面是否可以进行交互
- * @param terracottaVer 陶瓦联机核心版本号
- * @param easyTierVer EasyTier版本号
- * @param profiles 陶瓦联机当前房间所有玩家配置
- * @param onHostRoleClick 用户选择成为房主
- * @param onHostCopyCode 房主复制房间邀请码
- * @param onGuestPositive 房客正确输入邀请码
- * @param onGuestCopyUrl 房客复制备用链接
- * @param onBack 退出当前步骤
+ * Multiplayer menu dialog
+ * @param logOperation the Terracotta core log display state
+ * @param onShowLog the menu requests entering log display state
+ * @param onHideLog the menu requests leaving log display state
+ * @param isWaitingInteractive whether the waiting page accepts interaction
+ * @param terracottaVer the Terracotta core version
+ * @param easyTierVer the EasyTier version
+ * @param profiles all player profiles in the current Terracotta room
+ * @param onHostRoleClick the user chose to host
+ * @param onHostCopyCode the host copies the room invite code
+ * @param onGuestPositive the guest entered a valid invite code
+ * @param onGuestCopyUrl the guest copies the fallback link
+ * @param onBack leaves the current step
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -205,7 +205,7 @@ fun MultiplayerDialog(
                                 is TerracottaState.HostOK -> {
                                     OkRoomUI(
                                         modifier = commonModifier,
-                                        code = dialogState.code ?: "",//不会为null
+                                        code = dialogState.code ?: "",//never null
                                         profiles = profiles,
                                         onCopy = {
                                             onHostCopyCode(dialogState)
@@ -271,7 +271,7 @@ fun MultiplayerDialog(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        //版本号
+                        //Version numbers
                         Column(modifier = Modifier.weight(1f)) {
                             val terracottaVer0 = terracottaVer ?: stringResource(R.string.generic_loading)
                             val easyTierVer0 = easyTierVer ?: stringResource(R.string.generic_loading)
@@ -285,20 +285,20 @@ fun MultiplayerDialog(
                             )
                         }
 
-                        //查看日志
+                        //View logs
                         TextButton(
                             onClick = onShowLog,
                             enabled = logOperation !is TerracottaLogOperation.CollectingLog
                         ) {
                             if (logOperation is TerracottaLogOperation.EnableLog) {
-                                //切换文字到 -> 刷新
+                                //Switch the text to "Refresh"
                                 Text(text = stringResource(R.string.generic_refresh))
                             } else {
                                 Text(text = stringResource(R.string.terracotta_log))
                             }
                         }
 
-                        //关闭
+                        //Close
                         TextButton(
                             onClick = onClose
                         ) {
@@ -312,7 +312,7 @@ fun MultiplayerDialog(
 }
 
 /**
- * 等待选择角色
+ * Waiting for a role choice
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -334,7 +334,7 @@ private fun WaitingUI(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            //房主
+            //Host
             SimpleCardButton(
                 modifier = Modifier.fillMaxWidth(),
                 icon = painterResource(R.drawable.ic_home_filled),
@@ -344,7 +344,7 @@ private fun WaitingUI(
                 enabled = isInteractive
             )
 
-            //房客
+            //Guest
             SimpleCardButton(
                 modifier = Modifier.fillMaxWidth(),
                 icon = painterResource(R.drawable.ic_group_filled),
@@ -357,7 +357,7 @@ private fun WaitingUI(
             )
         }
 
-        //禁止交互时，提示用户正在加载中
+        //While interaction is blocked, say it is loading
         if (!isInteractive) {
             LoadingIndicator()
         }
@@ -382,7 +382,7 @@ private fun WaitingUIPreview() {
 }
 
 /**
- * 房客开始中
+ * Guest starting
  */
 @Composable
 private fun GuestStartingUI(
@@ -444,7 +444,7 @@ private fun GuestStartingUIPreview() {
 }
 
 /**
- * 已进入房间
+ * Room entered
  */
 @Composable
 private fun OkRoomUI(
@@ -468,7 +468,7 @@ private fun OkRoomUI(
         Column(
             modifier = Modifier.weight(1f),
         ) {
-            //文字部分
+            //Text part
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -487,11 +487,11 @@ private fun OkRoomUI(
                     style = MaterialTheme.typography.labelMedium
                 )
             }
-            //按钮部分
+            //Button part
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                //复制按钮
+                //Copy buttons
                 SimpleRowButton(
                     modifier = Modifier.fillMaxWidth(),
                     icon = painterResource(R.drawable.ic_copy_all_filled),
@@ -499,7 +499,7 @@ private fun OkRoomUI(
                     description = copyDesc,
                     onClick = onCopy
                 )
-                //退出按钮
+                //Exit button
                 SimpleRowButton(
                     modifier = Modifier.fillMaxWidth(),
                     icon = painterResource(R.drawable.ic_arrow_back),
@@ -510,7 +510,7 @@ private fun OkRoomUI(
             }
         }
 
-        //玩家列表
+        //Player list
         ProfileListPanel(
             modifier = Modifier.weight(1f),
             title = profilesLabel,
@@ -520,7 +520,7 @@ private fun OkRoomUI(
 }
 
 /**
- * 通用房间玩家列表
+ * Generic room player list
  */
 @Composable
 private fun ProfileListPanel(
@@ -567,9 +567,9 @@ private fun TerracottaProfileLayout(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             maxLines = 2
         ) {
-            //玩家名字
+            //Player names
             MarqueeText(text = profile.name ?: stringResource(R.string.terracotta_player_anonymous))
-            //身份/类别
+            //Role/type
             Text(text = stringResource(profile.type.textRes))
         }
         MarqueeText(
@@ -581,7 +581,7 @@ private fun TerracottaProfileLayout(
 }
 
 /**
- * 出现错误
+ * Error occurred
  */
 @Composable
 private fun ExceptionUI(
@@ -594,7 +594,7 @@ private fun ExceptionUI(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        //文字部分
+        //Text part
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -608,7 +608,7 @@ private fun ExceptionUI(
                 style = MaterialTheme.typography.labelMedium
             )
         }
-        //退出按钮
+        //Exit button
         SimpleRowButton(
             modifier = Modifier.fillMaxWidth(),
             icon = painterResource(R.drawable.ic_arrow_back),
@@ -620,7 +620,7 @@ private fun ExceptionUI(
 }
 
 /**
- * 展示日志
+ * Showing logs
  */
 @Composable
 private fun LogUI(
@@ -641,7 +641,7 @@ private fun LogUI(
         ) {
             Text(text = logString)
         }
-        //退出按钮
+        //Exit button
         SimpleRowButton(
             modifier = Modifier.fillMaxWidth(),
             icon = painterResource(R.drawable.ic_arrow_back),
@@ -666,7 +666,7 @@ private fun CommonProgressLayout(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        //文字部分
+        //Text part
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -677,7 +677,7 @@ private fun CommonProgressLayout(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             text?.invoke(this@c1)
         }
-        //退出按钮
+        //Exit button
         SimpleCardButton(
             modifier = Modifier.fillMaxWidth(),
             icon = painterResource(R.drawable.ic_arrow_left_rounded),
@@ -689,7 +689,7 @@ private fun CommonProgressLayout(
 }
 
 /**
- * 用Card实现的可点击按钮
+ * A clickable button built on Card
  */
 @Composable
 private fun SimpleCardButton(
@@ -727,13 +727,13 @@ private fun SimpleCardButton(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                //标题
+                //Title
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = title,
                     style = MaterialTheme.typography.titleMedium
                 )
-                //描述
+                //Description
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -747,7 +747,7 @@ private fun SimpleCardButton(
 }
 
 /**
- * 紧凑型可点击按钮，这个按钮的[description]描述被锁定为单行显示
+ * Compact clickable button; its [description] is locked to a single line
  */
 @Composable
 private fun SimpleRowButton(
@@ -774,13 +774,13 @@ private fun SimpleRowButton(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            //标题
+            //Title
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = title,
                 style = MaterialTheme.typography.titleSmall
             )
-            //描述
+            //Description
             MarqueeText(
                 modifier = Modifier
                     .fillMaxWidth()

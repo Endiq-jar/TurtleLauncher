@@ -22,19 +22,19 @@ import com.endiq.turtlelauncher.game.version.installed.Version
 import com.endiq.turtlelauncher.utils.device.VulkanCapabilities
 
 /**
- * Vulkan 检查器 UI 操作状态
+ * Vulkan checker UI operation state
  */
 sealed interface VCOperation {
     data object None: VCOperation
 
     /**
-     * Vulkan 检查提示对话框
+     * Vulkan check hint dialog
      */
     data class Tip(val version: Version): VCOperation
 
     /**
-     * @param data 检查结果
-     * @param useTurnip 是否使用了 Turnip
+     * @param data the check result
+     * @param useTurnip whether Turnip is used
      */
     data class Result(
         val data: VulkanCapabilities?,

@@ -32,7 +32,7 @@ import com.endiq.turtlelauncher.ui.screens.main.control_editor.edit_joystick.res
 import com.endiq.turtlelauncher.utils.string.isNotEmptyOrBlank
 
 /**
- * 为摇杆控件选择外观
+ * Picks a style for a joystick widget
  */
 @Composable
 fun EditJoystickStyle(

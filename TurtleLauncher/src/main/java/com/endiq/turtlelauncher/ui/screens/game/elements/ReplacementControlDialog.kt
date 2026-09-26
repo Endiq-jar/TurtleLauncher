@@ -36,7 +36,7 @@ import java.io.File
 
 sealed interface ReplacementControlState {
     data object None : ReplacementControlState
-    /** 显示更换控制布局的对话框 */
+    /** Show the switch control layout dialog */
     data object Show : ReplacementControlState
 }
 

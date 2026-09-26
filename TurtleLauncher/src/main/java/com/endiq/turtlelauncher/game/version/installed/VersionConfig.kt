@@ -273,7 +273,7 @@ class VersionConfig(
             return runCatching getConfig@{
                 when {
                     configFile.exists() -> {
-                        //读取此文件的内容，并解析为VersionConfig
+                        //Read this file's contents and parse as a VersionConfig
                         val config = GSON.fromJson(configFile.readText(), VersionConfig::class.java)
                         config.setVersionPath(versionPath)
                         config
@@ -313,16 +313,16 @@ enum class GraphicsApi(
     val displayName: String,
     val option: String
 ) {
-    /** 默认使用游戏设定 */
+    /** Use the game's setting by default */
     @SerializedName("DEFAULT")
     DEFAULT("", "\"default\""),
-    /** 强制切换到OpenGL，覆盖游戏原有设定 */
+    /** Force-switch to OpenGL, overriding the game's own setting */
     @SerializedName("OPENGL")
     OPENGL("OpenGL", "\"opengl\""),
-    /** 默认切换到OpenGL，如果游戏有设定过则不覆盖 */
+    /** Switch to OpenGL by default, without overriding an explicit game setting */
     @SerializedName("DEFAULT_OPENGL")
     DEFAULT_OPENGL(OPENGL.displayName, OPENGL.option),
-    /** 强制切换到Vulkan，覆盖游戏原有设定 */
+    /** Force-switch to Vulkan, overriding the game's own setting */
     @SerializedName("VULKAN")
     VULKAN("Vulkan", "\"vulkan\"")
 }

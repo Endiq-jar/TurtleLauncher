@@ -1295,7 +1295,7 @@ public class GLFW
     public static void internalWindowSizeChanged(long window) {
         try {
             GLFWWindowProperties win = internalGetWindow(window);
-            // 仅在尺寸真正变化时才重新触发回调
+            // Only re-trigger the callback when the size really changes
             if (win.lastDispatchedWidth == mGLFWWindowWidth && win.lastDispatchedHeight == mGLFWWindowHeight) {
                 return;
             }

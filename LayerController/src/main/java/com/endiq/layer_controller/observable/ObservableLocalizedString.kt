@@ -47,7 +47,7 @@ class ObservableLocalizedString(
 }
 
 /**
- * 尝试检查语言是否匹配
+ * Attempts to check whether the language matches
  */
 fun ObservableLocalizedString.check(
     locale: Locale = Locale.getDefault()

@@ -43,15 +43,15 @@ class GridEngineTest {
         height: Int
     ) = CardRect(id = id, x = x, y = y, width = width, height = height)
 
-    // ---------- 网格几何 ----------
+    // ---------- Grid geometry ----------
 
     @Test
     fun testGridColumnsAlwaysEven() {
-        // 500dp / 20dp = 25 → 取最近的偶数 26
+        // 500dp / 20dp = 25 → rounds to the nearest even number 26
         assertEquals(26, computeGridGeometry(500f).columns)
-        // 300dp / 20dp = 15 → 取最近的偶数 16
+        // 300dp / 20dp = 15 → rounds to the nearest even number 16
         assertEquals(16, computeGridGeometry(300f).columns)
-        // 199dp / 20dp ≈ 10 → 保持偶数
+        // 199dp / 20dp ≈ 10 → stays even
         assertEquals(10, computeGridGeometry(199f).columns)
     }
 
@@ -59,7 +59,7 @@ class GridEngineTest {
     fun testGridEdgesAlignToContainer() {
         val geometry = computeGridGeometry(500f)
         assertEquals(500f, geometry.columns * geometry.cellSize, 0.01f)
-        // 单元格边长保持在 20dp 附近
+        // Cell edge length stays near 20dp
         assertTrue(abs(geometry.cellSize - 20f) < 2f)
     }
 
@@ -70,12 +70,12 @@ class GridEngineTest {
         assertEquals(4, computeGridGeometry(-10f).columns)
     }
 
-    // ---------- 形态分类 ----------
+    // ---------- Form factor classification ----------
 
     @Test
     fun testDeriveSizeClassHeightBySpan() {
         val columns = 16
-        //高度：≤4 拥挤、=5 小、6..7 中、8..9 大、≥10 超大
+        //Height: ≤4 cramped, =5 small, 6..7 medium, 8..9 large, ≥10 extra large
         assertEquals(CardSizeClass.COMPACT, deriveSizeClass(10, 2, columns).height)
         assertEquals(CardSizeClass.COMPACT, deriveSizeClass(10, 4, columns).height)
         assertEquals(CardSizeClass.SMALL, deriveSizeClass(10, 5, columns).height)
@@ -90,25 +90,25 @@ class GridEngineTest {
     @Test
     fun testDeriveSizeClassWidthByFraction() {
         val columns = 16
-        //宽度按占网格宽度的比例划分：每档覆盖 16/5 列
+        //Width tiers split by share of grid width: each tier spans 16/5 columns
         assertEquals(CardSizeClass.COMPACT, deriveSizeClass(3, 8, columns).width)
         assertEquals(CardSizeClass.SMALL, deriveSizeClass(4, 8, columns).width)
         assertEquals(CardSizeClass.SMALL, deriveSizeClass(6, 8, columns).width)
         assertEquals(CardSizeClass.MEDIUM, deriveSizeClass(7, 8, columns).width)
         assertEquals(CardSizeClass.LARGE, deriveSizeClass(10, 8, columns).width)
         assertEquals(CardSizeClass.LARGE, deriveSizeClass(12, 8, columns).width)
-        //占比 ≥ 4/5 即为最高档
+        //A share of ≥ 4/5 lands in the top tier
         assertEquals(CardSizeClass.EXTRA_LARGE, deriveSizeClass(13, 8, columns).width)
-        //占满整行即为最高档
+        //Filling the whole row lands in the top tier
         assertEquals(CardSizeClass.EXTRA_LARGE, deriveSizeClass(16, 8, columns).width)
-        //高度仍按绝对跨度划分
+        //Height is still bucketed by absolute span
         assertEquals(CardSizeClass.MEDIUM, deriveSizeClass(16, 7, columns).height)
     }
 
     @Test
     fun testDeriveSizeClassDimensionsIndependent() {
         val columns = 16
-        //宽度与高度独立分级，互不影响
+        //Width and height are tiered independently
         val size = deriveSizeClass(width = 3, height = 10, columns = columns)
         assertEquals(CardSizeClass.COMPACT, size.width)
         assertEquals(CardSizeClass.EXTRA_LARGE, size.height)
@@ -118,11 +118,11 @@ class GridEngineTest {
         assertEquals(CardSizeClass.MEDIUM, square.height)
     }
 
-    // ---------- 最近空位搜索 ----------
+    // ---------- Nearest free spot search ----------
 
     @Test
     fun testFindNearestSlotPrefersSidewaysWhenBlockedBelow() {
-        // 原位与正下方均被占用，左侧 (0,0) 成为最近空位
+        // The origin and the spot right below are occupied, so (0,0) on the left becomes the nearest free spot
         val obstacles = listOf(
             card("block1", 8, 0, 8, 4),
             card("block2", 8, 4, 8, 4)
@@ -133,7 +133,7 @@ class GridEngineTest {
 
     @Test
     fun testFindNearestSlotFallsBelowFullRow() {
-        // 整行被占用，只能落到下一行
+        // The whole row is occupied, so it can only land on the next row
         val obstacles = listOf(card("block", 0, 0, 16, 4))
         val slot = GridEngine.findNearestFreeSlot(16, 4, IntOffset(0, 0), 16, obstacles)
         assertEquals(IntOffset(0, 4), slot)
@@ -141,7 +141,7 @@ class GridEngineTest {
 
     @Test
     fun testFindNearestSlotGuaranteedBelowAllObstacles() {
-        // 纵向堆满的障碍，解落在所有障碍物下方
+        // With obstacles stacked full vertically, the solution lands below all of them
         val obstacles = listOf(
             card("a", 0, 0, 4, 4),
             card("b", 0, 4, 4, 4)
@@ -157,20 +157,20 @@ class GridEngineTest {
         )
     }
 
-    // ---------- 挤压结算 ----------
+    // ---------- Squeeze computation ----------
 
     @Test
     fun testDisplacedCardSlidesSidewaysWithoutCascade() {
         val columns = 16
         val moving = card("A", 0, 0, 8, 4)
         val others = listOf(
-            card("B", 4, 0, 8, 4),   // 与 A 重叠，将被挤压
-            card("C", 0, 4, 8, 4)    // 未被重叠，不允许被级联影响
+            card("B", 4, 0, 8, 4),   // overlaps A and gets squeezed
+            card("C", 0, 4, 8, 4)    // not overlapped; must not be cascaded onto
         )
         val result = GridEngine.resolveDisplacements(moving, columns, others)
-        // B 滑到 A 右侧，尺寸不变
+        // B slides right of A, size unchanged
         assertEquals(card("B", 8, 0, 8, 4), result["B"])
-        // C 完全不受影响
+        // C is completely unaffected
         assertFalse(result.containsKey("C"))
     }
 
@@ -180,14 +180,14 @@ class GridEngineTest {
         val moving = card("A", 0, 0, 16, 4)
         val others = listOf(card("B", 0, 0, 8, 4))
         val result = GridEngine.resolveDisplacements(moving, columns, others)
-        // 行内无处可去，B 落到下一行
+        // No room in-row, so B lands on the next row
         assertEquals(card("B", 0, 4, 8, 4), result["B"])
     }
 
     @Test
     fun testDragOverlapsTwoCardsDisplacesBoth() {
         val columns = 16
-        // 拖动挤压同时压到左右两张卡
+        // The drag squeeze covers cards on both left and right at once
         val moving = card("B", 4, 0, 8, 4)
         val others = listOf(
             card("L", 0, 0, 6, 4),
@@ -201,46 +201,46 @@ class GridEngineTest {
 
     @Test
     fun testDisplacementDirectionPicksDominantSide() {
-        // 指针压到卡片中心的哪一侧，卡片就向相反方向让开
+        // Whichever side of the card center the pointer is on, the card yields the opposite way
         val b = card("B", 4, 4, 4, 4)
-        // 指针在中心左侧 → 向右让
+        // Pointer left of center → yields right
         assertEquals(IntOffset(1, 0), GridEngine.displacementDirection(IntOffset(3, 6), b))
-        // 指针在中心右侧 → 向左让
+        // Pointer right of center → yields left
         assertEquals(IntOffset(-1, 0), GridEngine.displacementDirection(IntOffset(9, 6), b))
-        // 指针在中心上方 → 向下让
+        // Pointer above center → yields down
         assertEquals(IntOffset(0, 1), GridEngine.displacementDirection(IntOffset(6, 3), b))
-        // 指针在中心下方 → 向上让
+        // Pointer below center → yields up
         assertEquals(IntOffset(0, -1), GridEngine.displacementDirection(IntOffset(6, 9), b))
-        // 主导轴并列时取横向
+        // On a dominant-axis tie, horizontal wins
         assertEquals(IntOffset(-1, 0), GridEngine.displacementDirection(IntOffset(8, 8), b))
     }
 
     @Test
     fun testDirectionalFreeSlotSlidesSidewaysFirst() {
-        // 竖向让步过于积极的回归：指针压在 B 左半 → B 向右横滑贴住拖动卡，而不是掉到下一行
+        // Regression for over-eager vertical yielding: pointer on B's left half → B slides right against the drag card instead of dropping a row
         val others = listOf(card("B", 4, 0, 4, 4))
         val result = GridEngine.resolveDisplacements(card("A", 0, 0, 6, 4), 16, others, IntOffset(5, 1))
         assertEquals(mapOf("B" to card("B", 6, 0, 4, 4)), result)
 
-        // 指针压在 B 上半 → B 向下滑让位
+        // Pointer on B's upper half → B yields by sliding down
         val downward = GridEngine.resolveDisplacements(card("A", 0, 0, 16, 6), 16, listOf(card("B", 0, 0, 4, 4)), IntOffset(2, 1))
         assertEquals(mapOf("B" to card("B", 0, 6, 4, 4)), downward)
     }
 
     @Test
     fun testDirectionalFreeSlotFallsBackWhenBlocked() {
-        // 让位方向被堵死时退化为最近空位
+        // When the yield direction is blocked, degrade to the nearest free spot
         val a = card("A", 0, 0, 4, 4)
         val others = listOf(
             card("B", 4, 0, 4, 4),
             card("C", 8, 0, 4, 4),
             card("D", 12, 0, 4, 4)
         )
-        // A 缩放扩到 8 宽压到 B；指针在 B 左半 → 向右，但 C/D 堵死右侧 → 退化最近空位
+        // A grows to 8 wide onto B; pointer on B's left half → right, but C/D block the right side → degrade to nearest free spot
         val result = GridEngine.resolveDisplacements(card("A", 0, 0, 8, 4), 16, others, IntOffset(5, 1))
         val settled = others.map { result[it.id] ?: it } + card("A", 0, 0, 8, 4)
         assertFalse(GridEngine.hasOverlap(settled))
-        // B 让位到下方（右侧无空位）
+        // B yields downward (no room on the right)
         assertTrue(result.getValue("B").y > 0)
     }
 
@@ -251,21 +251,21 @@ class GridEngineTest {
             card("B", 4, 0, 4, 4),
             card("C", 8, 0, 4, 4)
         )
-        // B 从 (4,0) 向右逐格扫描，(5,0) 撞 C、到 (12,0) 无阻挡
+        // B scans right from (4,0): hits C at (5,0), clear at (12,0)
         val slot = GridEngine.findDirectionalFreeSlot(card("B", 4, 0, 4, 4), IntOffset(1, 0), 16, obstacles)
         assertEquals(IntOffset(12, 0), slot)
-        // 向上越出网格顶部返回 null
+        // Going above the grid top returns null
         assertNull(GridEngine.findDirectionalFreeSlot(card("B", 4, 0, 4, 4), IntOffset(0, -1), 16, obstacles))
-        // 向下到障碍下方
+        // Downward it lands below the obstacle
         val down = GridEngine.findDirectionalFreeSlot(card("B", 4, 0, 4, 4), IntOffset(0, 1), 16, obstacles)
         assertEquals(IntOffset(4, 4), down)
     }
 
-    // ---------- 缩放结算 ----------
+    // ---------- Resize computation ----------
 
     @Test
     fun testResizeEndPushesOverlappedCard() {
-        // 扩张压到 B：B 被推至与前沿齐平，直到贴合网格右缘、推不动为止
+        // Growing onto B: B is pushed flush with the front until it hugs the grid's right edge and cannot move
         val a = card("A", 0, 0, 4, 4)
         val obstacles = listOf(card("B", 4, 0, 8, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.End, IntOffset(16, 0), 16, CardLimits.DEFAULT, obstacles)
@@ -275,7 +275,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeEndBlockedWhenSideFull() {
-        // B 占满 A 右侧并贴合网格右缘：完全推不动，跨度止步于原位
+        // B fills A's right side against the grid edge: totally stuck, the span stops in place
         val a = card("A", 0, 0, 4, 4)
         val obstacles = listOf(card("B", 4, 0, 12, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.End, IntOffset(16, 0), 16, CardLimits.DEFAULT, obstacles)
@@ -285,7 +285,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeEndGrowsIntoFreeSpaceWithLeftNeighbor() {
-        // 回归：同行的左侧卡片不在扩张路径上，右侧空旷时必须能一路扩到网格右缘
+        // Regression: left-side cards on the same row are not in the growth path, so it must grow all the way to the right edge when the right is empty
         val a = card("A", 4, 0, 3, 4)
         val obstacles = listOf(card("B", 0, 0, 4, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.End, IntOffset(10, 0), 10, CardLimits.DEFAULT, obstacles)
@@ -295,7 +295,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeBottomKeepsCardAbove() {
-        // 回归：纵向扩张不受上方卡片影响，上方卡片不得被瞬移
+        // Regression: vertical growth ignores cards above; they must not be teleported
         val a = card("A", 0, 4, 4, 4)
         val obstacles = listOf(card("B", 0, 0, 8, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.Bottom, IntOffset(0, 100), 16, CardLimits.DEFAULT, obstacles)
@@ -305,7 +305,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeEndPushesChainOfCards() {
-        // 推箱链条：B 被推开后联动顶开 C，直到 C 贴合网格右缘
+        // Push chain: B gets pushed and drags C along until C hugs the grid's right edge
         val a = card("A", 0, 0, 4, 4)
         val obstacles = listOf(
             card("B", 4, 0, 4, 4),
@@ -324,7 +324,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeStartPushesOverlappedCard() {
-        // 左缘扩张：B 被推向网格左缘
+        // Left-edge growth: B is pushed toward the grid's left edge
         val a = card("A", 4, 0, 4, 4)
         val obstacles = listOf(card("B", 2, 0, 2, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.Start, IntOffset(0, 0), 16, CardLimits.DEFAULT, obstacles)
@@ -334,7 +334,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeStartBlockedByFlushCard() {
-        // 左侧卡片贴合网格左缘：左缘无法扩张
+        // A card hugs the left edge: the left edge cannot grow
         val a = card("A", 4, 0, 4, 4)
         val obstacles = listOf(card("B", 0, 0, 4, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.Start, IntOffset(0, 0), 16, CardLimits.DEFAULT, obstacles)
@@ -344,7 +344,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeBottomPushesCardBelow() {
-        // 下方纵向不设限：B 一直被推到 A 的下缘之下
+        // Downward is unbounded: B keeps being pushed below A's bottom edge
         val a = card("A", 0, 0, 4, 4)
         val obstacles = listOf(card("B", 0, 8, 4, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.Bottom, IntOffset(0, 100), 16, CardLimits.DEFAULT, obstacles)
@@ -354,7 +354,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeTopPushesCardAbove() {
-        // 上缘扩张：B 被推向网格顶部，A 止步于 B 的原位
+        // Top-edge growth: B is pushed to the grid top; A stops at B's old spot
         val a = card("A", 0, 4, 4, 4)
         val obstacles = listOf(card("B", 0, 1, 4, 2))
         val result = GridEngine.resolveResize(a, ResizeEdge.Top, IntOffset(0, 0), 16, CardLimits.DEFAULT, obstacles)
@@ -364,7 +364,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeTopBlockedByGridEdge() {
-        // 无阻挡时上缘止步于网格顶部
+        // With nothing in the way, the top edge stops at the grid top
         val a = card("A", 0, 4, 4, 4)
         val result = GridEngine.resolveResize(a, ResizeEdge.Top, IntOffset(0, 0), 16, CardLimits.DEFAULT, emptyList())
         assertEquals(card("A", 0, 0, 4, 8), result.layout)
@@ -372,7 +372,7 @@ class GridEngineTest {
 
     @Test
     fun testResizeShrinkUnaffectedByPush() {
-        // 收缩方向不受推挤影响，仅受最小跨度约束
+        // Shrinking ignores pushing and is only bounded by the minimum span
         val a = card("A", 0, 0, 8, 4)
         val obstacles = listOf(card("B", 8, 0, 4, 4))
         val result = GridEngine.resolveResize(a, ResizeEdge.End, IntOffset(0, 0), 16, CardLimits.DEFAULT, obstacles)
@@ -382,7 +382,7 @@ class GridEngineTest {
 
     @Test
     fun testResizePushResolvesPerpendicularOverlap() {
-        // B 的行范围超出 A：被推开后会压到行范围之外的 C，C 需要联动让开
+        // B's row range exceeds A's: pushed, it covers C outside the row band, so C must yield along
         val a = card("A", 0, 0, 4, 4)
         val obstacles = listOf(
             card("B", 4, 0, 4, 6),
@@ -401,15 +401,15 @@ class GridEngineTest {
 
     @Test
     fun testResizeIgnoresCardsOutsideSpan() {
-        // 行范围不重叠的卡片不参与结算
+        // Cards outside the overlapping row range do not take part
         val a = card("A", 0, 0, 4, 4)
-        val obstacles = listOf(card("B", 6, 4, 4, 4))   // B 位于 A 下方
+        val obstacles = listOf(card("B", 6, 4, 4, 4))   // B sits below A
         val result = GridEngine.resolveResize(a, ResizeEdge.End, IntOffset(16, 0), 16, CardLimits.DEFAULT, obstacles)
         assertEquals(card("A", 0, 0, 16, 4), result.layout)
 
-        // 部分行重叠的卡片被推开而非构成阻挡
+        // A partially-overlapping card is pushed away instead of blocking
         val tall = card("A", 0, 0, 4, 8)
-        val partial = listOf(card("C", 6, 2, 4, 2))     // 与 A 的行范围 2..4 重叠
+        val partial = listOf(card("C", 6, 2, 4, 2))     // overlaps A's row range 2..4
         val partialResult = GridEngine.resolveResize(tall, ResizeEdge.End, IntOffset(16, 0), 16, CardLimits.DEFAULT, partial)
         assertEquals(card("A", 0, 0, 12, 8), partialResult.layout)
         assertEquals(mapOf("C" to card("C", 12, 2, 4, 2)), partialResult.pushed)
@@ -417,13 +417,13 @@ class GridEngineTest {
 
     @Test
     fun testResizeEndClampsToGridEdge() {
-        // 无阻挡卡片时，扩张止步于网格右缘
+        // With no blocking cards, growth stops at the grid's right edge
         val a = card("A", 0, 0, 4, 4)
         val result = GridEngine.resolveResize(a, ResizeEdge.End, IntOffset(16, 0), 6, CardLimits.DEFAULT, emptyList())
         assertEquals(card("A", 0, 0, 6, 4), result.layout)
     }
 
-    // ---------- 垂直压实 ----------
+    // ---------- Vertical compaction ----------
 
     @Test
     fun testCompactFillsVerticalGap() {
@@ -432,7 +432,7 @@ class GridEngineTest {
             card("B", 0, 8, 8, 4)
         )
         val compacted = GridEngine.compact(cards)
-        // B 上浮填补 A 与 B 之间的空隙
+        // B floats up to fill the gap between A and B
         assertEquals(4, compacted.first { it.id == "B" }.y)
     }
 
@@ -449,7 +449,7 @@ class GridEngineTest {
         val c = compacted.first { it.id == "C" }
         assertEquals(0, a.y)
         assertEquals(4, c.y)
-        // C 挡在中间，B 只能压在 C 下方
+        // C sits in between, so B can only rest on top of C
         assertEquals(8, b.y)
     }
 
@@ -470,7 +470,7 @@ class GridEngineTest {
         assertEquals(cards.sortedWith(compareBy({ it.y }, { it.x })), GridEngine.compact(cards))
     }
 
-    // ---------- 重排 ----------
+    // ---------- Repack ----------
 
     @Test
     fun testReflowScalesSpansProportionally() {
@@ -511,7 +511,7 @@ class GridEngineTest {
         assertFalse(GridEngine.hasOverlap(result))
     }
 
-    // ---------- 加载校验 ----------
+    // ---------- Load validation ----------
 
     @Test
     fun testValidateClampsOutOfBounds() {
@@ -567,7 +567,7 @@ class GridEngineTest {
         assertEquals(0, result.first().y)
     }
 
-    // ---------- 汇总 ----------
+    // ---------- Aggregation ----------
 
     @Test
     fun testTotalRowsAndOverlap() {
@@ -580,11 +580,11 @@ class GridEngineTest {
         assertTrue(GridEngine.hasOverlap(cards + card("C", 4, 2, 8, 4)))
     }
 
-    // ---------- 随机不变式 ----------
+    // ---------- Randomized invariants ----------
 
     /**
-     * 随机布局上执行大量随机拖动与缩放，
-     * 断言每次结算后布局不变式成立：互不重叠、横向不出界、纵向不越顶。
+     * Runs many random drags and resizes over random layouts,
+     * asserting the layout invariants after every computation: no overlap, no sideways overflow, nothing above the top.
      */
     @Test
     fun testRandomOperationsPreserveInvariants() {
@@ -614,7 +614,7 @@ class GridEngineTest {
                     val resized = GridEngine.resolveResize(mover, edge, pointer, columns, CardLimits.DEFAULT, others)
                     others.map { resized.pushed[it.id] ?: it } + resized.layout
                 } else {
-                    // 拖动挤压：预览落位加上被挤开的卡片
+                    // Drag squeeze: preview drop plus the squeezed cards
                     val target = IntOffset(random.nextInt(columns - mover.width + 1), random.nextInt(40))
                     val preview = mover.positionAt(target)
                     val displaced = GridEngine.resolveDisplacements(preview, columns, others)

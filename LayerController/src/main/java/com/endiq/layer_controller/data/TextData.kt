@@ -25,7 +25,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * @param text 按钮显示的文本
+ * @param text the text shown on the button
  */
 @Serializable
 data class TextData(
@@ -65,7 +65,7 @@ data class TextData(
 }
 
 /**
- * 克隆一个新的TextData对象（UUID、位置不同）
+ * Clones a new TextData (with a different UUID and position)
  */
 fun TextData.cloneNew(): TextData = TextData(
     text = this.text,

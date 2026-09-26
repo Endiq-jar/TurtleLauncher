@@ -25,12 +25,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 形状有效值范围
+ * Valid value range of a shape
  */
 val SHAPE_RANGE: ClosedFloatingPointRange<Float> = 0.0f..100.0f
 
 /**
- * 简易的描述按钮的各角的数据类，单位：Dp
+ * Simple data class describing each corner of a button, in Dp
  */
 @Serializable
 data class ButtonShape(
@@ -61,7 +61,7 @@ data class ButtonShape(
 }
 
 /**
- * 转换为 RoundedCornerShape
+ * Converts to RoundedCornerShape
  */
 fun ButtonShape.toAndroidShape() = RoundedCornerShape(
     topStart = topStart,

@@ -86,15 +86,15 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * 控制布局编辑器渲染层
- * @param selectedWidget 当前选中的控件，编辑器将会标注它
- * @param floatingButtons 选中控件后，在控件下方悬浮的按钮栏
- * @param enableSnap 是否开启吸附
- * @param snapInAllLayers 是否在全控制层范围内吸附
- * @param snapMode 吸附模式
- * @param focusedLayer 聚焦的层级，需要针对性对某一层级进行编辑时
- * @param localSnapRange 局部吸附范围（仅在Local模式下有效）
- * @param snapThresholdValue 吸附距离阈值
+ * Control layout editor render layer
+ * @param selectedWidget the currently selected widget, which the editor will highlight
+ * @param floatingButtons the button bar floating below the selected widget
+ * @param enableSnap whether snapping is enabled
+ * @param snapInAllLayers whether snapping spans all control layers
+ * @param snapMode the snap mode
+ * @param focusedLayer the focused layer, when one specific layer needs to be edited
+ * @param localSnapRange local snap range (only effective in Local mode)
+ * @param snapThresholdValue the snap distance threshold
  */
 @Composable
 fun ControlEditorLayer(
@@ -122,25 +122,25 @@ fun ControlEditorLayer(
 
         val renderingLayers = when (focusedLayer) {
             null -> layers
-                //仅渲染编辑器可见层
+                //Only render editor-visible layers
                 .filter { !it.editorHide }
-                //反转：将最后一层视为底层，逐步向上渲染
+                //Reversed: treat the last layer as the bottom one and render upwards
                 .reversed()
-            //开启聚焦模式
+            //Enable focus mode
             else -> listOf(focusedLayer)
         }
 
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize()
         ) {
-            //这里临时记录正在调整大小的状态，消除抖动
+            //Temporarily record the resizing state here to eliminate jitter
             var resizingWidget by remember { mutableStateOf<ObservableWidget?>(null) }
-            /** 拖动中的左上角的手柄位置 TopLeft */
+            /** Handle position of the dragged top-left corner TopLeft */
             var dragTL by remember { mutableStateOf(Offset.Zero) }
-            /** 拖动中的右下角的手柄位置 BottomRight */
+            /** Handle position of the dragged bottom-right corner BottomRight */
             var dragBR by remember { mutableStateOf(Offset.Zero) }
 
-            //空白可点击层，点击背景清除选中的按钮
+            //Empty clickable layer; tapping the background clears the selected widget
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -162,7 +162,7 @@ fun ControlEditorLayer(
                 }
             }
 
-            //计算选中控件的像素边界，优先使用拖拽中的实时坐标
+            //Compute the selected widget's pixel bounds, preferring live drag coordinates
             val selectedWidgetBounds by remember(
                 selectedWidget, resizingWidget, dragTL, dragBR, screenSize
             ) {
@@ -199,7 +199,7 @@ fun ControlEditorLayer(
                     guideLines.remove(data)
                 }
             )
-            //绘制参考线与选中框
+            //Draw guide lines and the selection box
             Canvas(modifier = Modifier.fillMaxSize()) {
                 guideLines.values.forEach { guidelines ->
                     guidelines.forEach { guideline ->
@@ -210,9 +210,9 @@ fun ControlEditorLayer(
                     }
                 }
 
-                //绘制选中控件的红色方框
+                //Draw the selected widget's red box
                 selectedWidgetBounds?.let { (drawTL, drawBR) ->
-                    //稍微留出点空隙
+                    //Leave a bit of breathing room
                     val padding = 4.dp.toPx()
                     drawRect(
                         color = primaryColor,
@@ -226,13 +226,13 @@ fun ControlEditorLayer(
                 }
             }
 
-            //绘制调整大小的手柄
+            //Draw the resize handles
             selectedWidget?.takeIf { widget ->
-                //控件的大小类型为包裹内容时，调整大小是无意义的
+                //Resizing is meaningless when the widget size type is wrap-content
                 widget.widgetSize.type != ButtonSize.Type.WrapContent
             }?.let { widget ->
                 selectedWidgetBounds?.let { (drawTL, drawBR) ->
-                    //获取尺寸约束的像素值
+                    //Get the pixel value of the size constraint
                     val isJoystick = widget is ObservableJoystickData
                     val effectiveMinDp = if (isJoystick) JOYSTICK_MIN_SIZE_DP else MIN_SIZE_DP
                     val minSizePx = with(density) { effectiveMinDp.dp.toPx() }
@@ -267,7 +267,7 @@ fun ControlEditorLayer(
                     }
 
                     /**
-                     * 拖动手柄时更新控件的位置和尺寸
+                     * Updates the widget position and size while a handle is dragged
                      */
                     val updateSizeAndPos = { newTopLeft: Offset, newSize: IntSize ->
                         val newPosPercentage = newTopLeft.toPercentagePosition(newSize, screenSize)
@@ -414,14 +414,14 @@ fun ControlEditorLayer(
                         )
                     }
 
-                    //左上角手柄
+                    //Top-left handle
                     ResizeHandle(isTopLeft = true, currentPos = drawTL)
-                    //右下角手柄
+                    //Bottom-right handle
                     ResizeHandle(isTopLeft = false, currentPos = drawBR)
                 }
             }
 
-            //悬浮功能按钮栏
+            //Floating action button bar
             selectedWidget?.let {
                 selectedWidgetBounds?.let { (drawTL, drawBR) ->
                     var barSize by remember { mutableStateOf(IntSize.Zero) }
@@ -429,7 +429,7 @@ fun ControlEditorLayer(
                     val centerX = (drawTL.x + drawBR.x) / 2
                     val targetY = drawBR.y + with(density) { 8.dp.toPx() }
 
-                    //居中显示，但不能超出屏幕左右边界
+                    //Centered, but never allowed past the left/right screen edges
                     val xPos = (centerX - barSize.width / 2)
                         .coerceIn(0f, maxOf(0f, screenSize.width.toFloat() - barSize.width))
                     val yPos = targetY
@@ -438,7 +438,7 @@ fun ControlEditorLayer(
                     Row(
                         modifier = Modifier
                             .onSizeChanged { barSize = it }
-                            //加载好位置之后再显示，否则有点影响体验
+                            //Show it only after the position is resolved; showing earlier hurts UX
                             .alpha(if (barSize != IntSize.Zero) 1f else 0f)
                             .offset {
                                 IntOffset(xPos.roundToInt(), yPos.roundToInt())
@@ -454,7 +454,7 @@ fun ControlEditorLayer(
 }
 
 /**
- * 根据吸附参考线绘制线条
+ * Draws lines according to the snap guides
  */
 private fun DrawScope.drawLine(
     guideline: GuideLine,
@@ -482,13 +482,13 @@ private fun DrawScope.drawLine(
 }
 
 /**
- * @param enableSnap 是否开启吸附功能
- * @param snapMode 吸附模式
- * @param snapInAllLayers 是否在全控制层范围内吸附
- * @param localSnapRange 局部吸附范围（仅在Local模式下有效）
- * @param snapThresholdValue 吸附距离阈值
- * @param drawLine 绘制吸附参考线
- * @param onLineCancel 取消吸附参考线
+ * @param enableSnap whether snapping is enabled
+ * @param snapMode the snap mode
+ * @param snapInAllLayers whether snapping spans all control layers
+ * @param localSnapRange local snap range (only effective in Local mode)
+ * @param snapThresholdValue the snap distance threshold
+ * @param drawLine draws the snap guide lines
+ * @param onLineCancel cancels the snap guide lines
  */
 @Composable
 private fun ControlWidgetRenderer(
@@ -543,7 +543,7 @@ private fun ControlWidgetRenderer(
 
     Layout(
         content = {
-            //按图层顺序渲染所有可见的控件
+            //Render all visible widgets in layer order
             renderingLayers.forEach { layer ->
                 val normalButtons by layer.normalButtons.collectAsStateWithLifecycle()
                 val textBoxes by layer.textBoxes.collectAsStateWithLifecycle()

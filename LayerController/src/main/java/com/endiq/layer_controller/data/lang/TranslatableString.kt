@@ -25,8 +25,8 @@ import kotlinx.serialization.Serializable
 import java.util.Locale
 
 /**
- * 多语言集合，可根据当前系统语言匹配指定的字符串
- * @param default 默认字符串，如果未找到匹配项，则使用它
+ * Multilingual set that picks the matching string by the current system language
+ * @param default the fallback string used when no match is found
  */
 @Serializable
 data class TranslatableString(

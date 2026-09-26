@@ -24,14 +24,14 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import com.endiq.layer_controller.event.EventHandler
 
 /**
- * 帧级触控事件处理器
+ * Frame-level touch event processor
  */
 class TouchProcessor(
     private val eventHandler: EventHandler,
     private val widgetPosition: (ObservableWidget) -> Offset,
 ) {
     /**
-     * 判断指针坐标是否在控件矩形区域内
+     * Checks whether the pointer coordinates fall inside a widget rect
      */
     private val hitTest: (widget: ObservableWidget, position: Offset) -> Boolean = { widget, position ->
         val size = widget.internalRenderSize
@@ -43,11 +43,11 @@ class TouchProcessor(
 
 
     /**
-     * 处理单帧指针事件
-     * @param visibleWidgets 预过滤后的可见控件列表
-     * @param allLayers 所有控件层
-     * @param consumeEvent 消费事件的回调
-     * @param markPointerAsMoveOnly 标记指针为仅移动的回调
+     * Processes one frame of pointer events
+     * @param visibleWidgets the pre-filtered visible widget list
+     * @param allLayers all control layers
+     * @param consumeEvent callback that consumes an event
+     * @param markPointerAsMoveOnly callback that marks a pointer as move-only
      */
     fun processFrame(
         session: PointerEventBus,
@@ -60,7 +60,7 @@ class TouchProcessor(
         val pointerId = change.id
         val position = change.position
 
-        //获取指针命中的目标控件
+        //Get the widgets hit by the pointer
         val targets = findTargets(visibleWidgets, position)
         handleOutOfBounds(session, pointerId, position, allLayers)
 
@@ -76,7 +76,7 @@ class TouchProcessor(
     }
 
     /**
-     * 从可见控件中找出当前指针命中的目标控件
+     * Finds the widgets hit by the current pointer among the visible ones
      */
     private fun findTargets(
         visibleWidgets: List<ObservableWidget>,
@@ -87,19 +87,19 @@ class TouchProcessor(
         }
         if (hitList.isEmpty()) return emptyList()
 
-        //找到第一个支持深度检测的控件
+        //Find the first widget that supports depth testing
         val firstDeepWidget = hitList
             .firstOrNull { it.supportsDeepTouchDetection() }
             ?: return hitList
 
         val topIndex = hitList.indexOf(firstDeepWidget)
-        //只保留该控件及其上方的可穿透控件
+        //Keep only that widget and the penetrable widgets above it
         return hitList.subList(0, topIndex + 1)
             .filter { !it.canProcess() }
     }
 
     /**
-     * 处理活跃控件的越界释放
+     * Handles out-of-bounds release of active widgets
      */
     private fun handleOutOfBounds(
         session: PointerEventBus,
@@ -121,7 +121,7 @@ class TouchProcessor(
                 widget.onReleaseEvent(eventHandler, allLayers)
                 removed.add(widget)
             } else {
-                //指针重新回到控件边界内
+                //Pointer returned inside the widget bounds
                 backInBounds.add(widget)
             }
         }
@@ -138,13 +138,13 @@ class TouchProcessor(
         val currentWidgets = session.activeWidgets(pointerId)
         if (
             currentWidgets.isEmpty() &&
-            //越界前存在可滑动控件
+            //A swipple widget existed before going out of bounds
             preSnapshot.any { it.behavior is InteractionBehavior.Swipable }
         ) {
             session.enterSwipeChain(pointerId)
         }
 
-        //指针回到了控件上，退出滑动链
+        //Pointer is back on a widget: leave the swipe chain
         if (currentWidgets.isNotEmpty() && session.isInSwipeChain(pointerId)) {
             session.exitSwipeChain(pointerId)
         }
@@ -167,7 +167,7 @@ class TouchProcessor(
         for (target in targets) {
             if (target.canProcess()) return
 
-            //只允许可滑动且非可切换的控件通过
+            //Only swipple and non-toggleable widgets may pass
             if (
                 session.isInSwipeChain(pointerId) &&
                 !target.behavior.canBeSwipedTo

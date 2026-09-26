@@ -29,7 +29,7 @@ import com.endiq.layer_controller.data.cloneNew
 import com.endiq.layer_controller.event.EventHandler
 
 /**
- * 可观察的TextData包装类
+ * Observable TextData wrapper
  */
 open class ObservableTextData(data: TextData) : ObservableWidget() {
     val text = ObservableTranslatableString(data.text)
@@ -44,7 +44,7 @@ open class ObservableTextData(data: TextData) : ObservableWidget() {
     var visibilityType by mutableStateOf(data.visibilityType)
 
     override val behavior: InteractionBehavior
-        get() = InteractionBehavior.Press //展示控件不参与触控
+        get() = InteractionBehavior.Press //display widgets never take part in touch
 
     override val internalRenderPosition: ButtonPosition
         get() = position
@@ -63,7 +63,7 @@ open class ObservableTextData(data: TextData) : ObservableWidget() {
     override val widgetSize: ButtonSize
         get() = buttonSize
 
-    override fun canTouch(): Boolean = false //不处理触摸事件
+    override fun canTouch(): Boolean = false //does not handle touch events
 
     override fun onCompositionStart(eventHandler: EventHandler?) {
 
@@ -78,11 +78,11 @@ open class ObservableTextData(data: TextData) : ObservableWidget() {
     }
 
     override fun supportsDeepTouchDetection(): Boolean {
-        return false //不处理触摸事件
+        return false //does not handle touch events
     }
 
     override fun canProcess(): Boolean {
-        return false //不处理触摸事件
+        return false //does not handle touch events
     }
 
     override fun onTouchEvent(
@@ -92,25 +92,25 @@ open class ObservableTextData(data: TextData) : ObservableWidget() {
         addThis: () -> Unit,
         consumeEvent: (Boolean) -> Unit
     ) {
-        //不处理触摸事件
+        //does not handle touch events
     }
 
     override fun isReleaseOnOutOfBounds(): Boolean {
-        return false //不处理触摸事件
+        return false //does not handle touch events
     }
 
     override fun onPointerBackInBounds(
         eventHandler: EventHandler,
         allLayers: List<ObservableControlLayer>
     ) {
-        //不处理触摸事件
+        //does not handle touch events
     }
 
     override fun onReleaseEvent(
         eventHandler: EventHandler,
         allLayers: List<ObservableControlLayer>
     ) {
-        //不处理触摸事件
+        //does not handle touch events
     }
 
     fun packText(): TextData {

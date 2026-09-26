@@ -20,7 +20,7 @@ package com.endiq.layer_controller.observable
 
 interface Modifiable<E> {
     /**
-     * @return 对象自上次检查以来是否被修改过，否则为`false`
+     * @return whether the object was modified since the last check, otherwise `false`
      */
     fun isModified(other: E): Boolean
 }

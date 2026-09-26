@@ -78,20 +78,20 @@ import kotlin.math.floor
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-/** 网格线以卡片矩形为基准向外淡化的范围 */
+/** How far the grid lines fade outward from the card rect */
 private val GridFadeExtent = 72.dp
-/** 网格线的最大不透明度（卡片矩形处） */
+/** Maximum grid-line opacity (at the card rect) */
 private const val GridLineMaxAlpha = 0.35f
 
-/** 调整态工具条的高度 */
+/** Height of the adjust-mode toolbar */
 private val ToolbarHeight = 40.dp
-/** 工具条与卡片边缘的间隙 */
+/** Gap between the toolbar and the card edge */
 private val ToolbarGap = 8.dp
 
 /**
- * 卡片网格容器
- * @param cardBackground 卡片内容的背景装饰，在卡片表面内部应用
- * @param adjustingBar 工具条 UI 组件
+ * Card grid container
+ * @param cardBackground background decoration of the card content, applied inside the card surface
+ * @param adjustingBar the toolbar UI component
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -163,18 +163,18 @@ private fun CardGridCanvas(
             }
             .height(animatedHeight)
             .pointerInput(Unit) {
-                // key 恒为 Unit：调整态通过 state.isAdjusting 在每次手势开始时动态读取，
-                // 若以此为 key 会在长按进入调整态时重启并取消进行中的会话
+                // key is constantly Unit: adjust mode is read dynamically from state.isAdjusting at each gesture start;
+                // using it as a key would restart on long-press and cancel the in-flight session
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
-                    // 已被子树交互组件（如调整态工具条）消费的手势不属于网格
+                    // Gestures already consumed by interactive subcomponents (like the adjust toolbar) do not belong to the grid
                     if (down.isConsumed) return@awaitEachGesture
                     val start = down.position
                     val slopPx = viewConfiguration.touchSlop
                     val longPressMillis = viewConfiguration.longPressTimeoutMillis
 
                     if (!state.isAdjusting) {
-                        // 非调整态：卡片上长按进入调整态并直接开始拖动
+                        // Outside adjust mode: long-pressing a card enters adjust mode and starts dragging right away
                         val hit = state.cardAt(start) ?: return@awaitEachGesture
                         val longPressed = awaitLongPressOrAbort(down.id, start, slopPx, longPressMillis)
                         if (!longPressed) return@awaitEachGesture
@@ -194,7 +194,7 @@ private fun CardGridCanvas(
                         val edgeHit = state.resizeEdgeAt(start)
                         val card = state.cardAt(start)
                         when {
-                            // 调整态：按到手柄直接进入缩放
+                            // In adjust mode: pressing a handle starts resizing immediately
                             edgeHit != null -> {
                                 val (hitCard, edge) = edgeHit
                                 state.onResizeStart(hitCard, edge, start)
@@ -207,7 +207,7 @@ private fun CardGridCanvas(
                                     onUp = { state.onResizeEnd() }
                                 )
                             }
-                            // 调整态：按到卡片直接拖动，无移动的松手视为点按
+                            // In adjust mode: pressing a card starts dragging; releasing without movement counts as a tap
                             card != null -> {
                                 state.onCardDragStart(card, start)
                                 runSession(
@@ -228,7 +228,7 @@ private fun CardGridCanvas(
                                     }
                                 )
                             }
-                            // 调整态：空白处点按退出调整态
+                            // In adjust mode: tapping empty space exits adjust mode
                             else -> {
                                 val tapped = awaitUpWithoutSlop(down.id, start, slopPx)
                                 if (tapped) state.exitAdjusting()
@@ -324,7 +324,7 @@ private fun CardSlot(
 }
 
 /**
- * 卡片表面的容器：交互态的抬升动画与调整态的选中手柄
+ * Container of the card surface: elevation animation for interaction and selection handles in adjust mode
  */
 @Composable
 private fun CardSurface(
@@ -366,9 +366,9 @@ private fun CardSurface(
 }
 
 /**
- * 消费落在自身范围内的全部指针事件：
- * 子节点先行处理，未被消费的事件在此标记为已消费，
- * 使手势在向上冒泡途中止于自身，不再触达祖先节点。
+ * Consumes all pointer events falling within itself:
+ * children handle first; unconsumed events get marked consumed here,
+ * so the gesture stops here while bubbling up and never reaches ancestors.
  */
 private fun Modifier.gestureGuard(): Modifier = pointerInput(Unit) {
     awaitEachGesture {
@@ -382,8 +382,8 @@ private fun Modifier.gestureGuard(): Modifier = pointerInput(Unit) {
 }
 
 /**
- * 拖动/缩放期间显示网格线：以吸附预览矩形为中心，
- * 网格线随所在位置到卡片的距离增加而逐格淡化消失，如光晕般收敛于卡片周围。
+ * Shows grid lines during drag/resize: centered on the snapped preview rect,
+ * the lines fade cell by cell with distance, converging like a glow around the card.
  */
 @Composable
 private fun CardGridGlowEffect(state: CardGridState, modifier: Modifier = Modifier) {
@@ -394,7 +394,7 @@ private fun CardGridGlowEffect(state: CardGridState, modifier: Modifier = Modifi
     val cell = state.cellPx
     val columns = state.geometry.columns
     Canvas(modifier = modifier.zIndex(0.1f)) {
-        // 吸附落点高亮
+        // Highlight the snapped drop spot
         drawRoundRect(
             color = primary.copy(alpha = 0.08f),
             topLeft = previewRect.topLeft,
@@ -408,7 +408,7 @@ private fun CardGridGlowEffect(state: CardGridState, modifier: Modifier = Modifi
         val startRow = floor((previewRect.top - fadePx) / cell).toInt().coerceAtLeast(0)
         val endRow = ceil((previewRect.bottom + fadePx) / cell).toInt()
 
-        // 线段到预览矩形的距离越远，透明度越低（smoothstep 衰减）
+        // The farther a line segment is from the preview rect, the lower its opacity (smoothstep falloff)
         fun segmentAlpha(seg: Rect): Float {
             val dx = maxOf(0f, previewRect.left - seg.right, seg.left - previewRect.right)
             val dy = maxOf(0f, previewRect.top - seg.bottom, seg.top - previewRect.bottom)
@@ -451,7 +451,7 @@ private fun CardGridGlowEffect(state: CardGridState, modifier: Modifier = Modifi
 }
 
 /**
- * 调整态选中节点，在包围盒四边中央绘制纯色手柄
+ * When a node is selected in adjust mode, draw solid handles at the center of each bounding-box edge
  */
 @SuppressLint("ModifierNodeInspectableProperties")
 private data class SelectionHandlesElement(
@@ -495,7 +495,7 @@ private class SelectionHandlesNode(
 }
 
 /**
- * 调整态选中手柄，绘制在节点包围盒四边中央
+ * Adjust-mode selection handles, drawn at the center of each bounding-box edge
  */
 private fun Modifier.selectionHandles(
     color: Color,
@@ -503,7 +503,7 @@ private fun Modifier.selectionHandles(
     handleThickness: Dp = 5.dp,
 ): Modifier = then(SelectionHandlesElement(color, handleLength, handleThickness))
 
-/** 以网格坐标矩形定位并定尺寸的修饰符，矩形变化时触发重新测量 */
+/** Modifier that positions and sizes by a grid-coordinate rect, re-measuring when the rect changes */
 private fun Modifier.cardBounds(rectProvider: () -> Rect): Modifier = this
     .absoluteOffset {
         val rect = rectProvider()
@@ -525,8 +525,8 @@ private fun Modifier.cardBounds(rectProvider: () -> Rect): Modifier = this
     }
 
 /**
- * 等待长按成立：指针在超时前移动超过 [slopPx] 或抬起则中止（返回 false，
- * 事件不被消费，滚动照常进行），长按成立返回 true。
+ * Waits for a long-press: aborts if the pointer moves beyond [slopPx] or lifts in time (returns false,
+ * leaving events unconsumed so scrolling continues); returns true once the long-press holds.
  */
 private suspend fun AwaitPointerEventScope.awaitLongPressOrAbort(
     pointerId: PointerId,
@@ -551,8 +551,8 @@ private suspend fun AwaitPointerEventScope.awaitLongPressOrAbort(
 }
 
 /**
- * 等待指针在未超过 [slopPx] 的前提下抬起（点按成立返回 true）；
- * 移动超限则返回 false，事件保持不消费，滚动照常进行。
+ * Waits for the pointer to lift without exceeding [slopPx] (a tap succeeds, returning true);
+ * if movement exceeds the limit, returns false with events unconsumed and scrolling unaffected.
  */
 private suspend fun AwaitPointerEventScope.awaitUpWithoutSlop(
     pointerId: PointerId,
@@ -568,8 +568,8 @@ private suspend fun AwaitPointerEventScope.awaitUpWithoutSlop(
 }
 
 /**
- * 会话拖动循环：消费全部指针事件并分发网格坐标，
- * 抬起时回调 [onUp]（是否发生了有效移动），会话被中断时取消结算。
+ * Session drag loop: consumes every pointer event and dispatches grid coordinates;
+ * on release it calls [onUp] (whether meaningful movement happened); an interrupted session cancels the computation.
  */
 private suspend fun AwaitPointerEventScope.runSession(
     pointerId: PointerId,

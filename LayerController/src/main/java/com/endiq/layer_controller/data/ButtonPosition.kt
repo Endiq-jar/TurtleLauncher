@@ -24,12 +24,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 按钮位置存储取值范围
+ * Stored value range of a button position
  */
 val POSITION_RANGE: IntRange = 0..10000
 
 /**
- * 按钮的位置
+ * Position of a button
  * @param x 0~10000
  * @param y 0~10000
  */
@@ -46,14 +46,14 @@ data class ButtonPosition(
     }
 
     /**
-     * 计算x坐标百分比
+     * Computes the x coordinate percentage
      */
     fun xPercentage(): Float {
         return (x / 10000f).coerceAtMost(1f).coerceAtLeast(0f)
     }
 
     /**
-     * 计算y坐标百分比
+     * Computes the y coordinate percentage
      */
     fun yPercentage(): Float {
         return (y / 10000f).coerceAtMost(1f).coerceAtLeast(0f)
@@ -66,26 +66,26 @@ data class ButtonPosition(
 }
 
 /**
- * 位于屏幕左上角
+ * Located at the screen's top-left corner
  */
 val TopStartPosition = ButtonPosition(0, 0)
 
 /**
- * 位于屏幕右上角
+ * Located at the screen's top-right corner
  */
 val TopEndPosition = ButtonPosition(10000, 0)
 
 /**
- * 位于屏幕中心
+ * Located at the screen center
  */
 val CenterPosition = ButtonPosition(5000, 5000)
 
 /**
- * 位于屏幕左下角
+ * Located at the screen's bottom-left corner
  */
 val BottomStartPosition = ButtonPosition(0, 10000)
 
 /**
- * 位于屏幕右下角
+ * Located at the screen's bottom-right corner
  */
 val BottomEndPosition = ButtonPosition(10000, 10000)

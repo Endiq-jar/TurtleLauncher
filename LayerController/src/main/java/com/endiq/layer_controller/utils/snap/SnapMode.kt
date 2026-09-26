@@ -19,11 +19,11 @@
 package com.endiq.layer_controller.utils.snap
 
 /**
- * 吸附模式
+ * Snap mode
  */
 enum class SnapMode {
-    /** 全屏查找吸附 */
+    /** Snap search across the whole screen */
     FullScreen,
-    /** 小范围查找吸附 */
+    /** Snap search within a small range */
     Local
 }

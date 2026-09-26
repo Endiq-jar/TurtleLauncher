@@ -20,17 +20,17 @@ package com.endiq.cardgrid.model
 
 import kotlin.math.roundToInt
 
-/** 网格的最小列数 */
+/** Minimum column count of the grid */
 const val MIN_GRID_COLUMNS = 4
 
-/** 单元格边长的设计目标值（dp） */
+/** Design target for the cell edge length (dp) */
 const val DEFAULT_TARGET_CELL_SIZE = 20f
 
 /**
- * 网格几何信息。
- * [columns] 列数恒为偶数，保证卡片可严格对齐半宽等对称分割；
- * [cellSize] 为单个正方形单元格的边长（dp），
- * 网格首尾两端与容器边缘严格对齐。
+ * Grid geometry information.
+ * [columns] is always even, so cards can align strictly to symmetric splits like half-width;
+ * [cellSize] is the edge length of one square cell (dp),
+ * and the grid edges align exactly with the container edges.
  */
 data class GridGeometry(
     val columns: Int,
@@ -38,9 +38,9 @@ data class GridGeometry(
 )
 
 /**
- * 依据容器宽度计算网格：
- * 以 [targetCellSize] 为目标细分出偶数列，宽度余数平摊进每个单元格，
- * 使单元格边长保持在目标值附近、网格边缘与容器边缘对齐。
+ * Computes the grid from the container width:
+ * subdivides into an even column count targeting [targetCellSize]; the width remainder is spread across all cells,
+ * keeping cell edges near the target and the grid edges aligned with the container.
  */
 fun computeGridGeometry(
     widthDp: Float,

@@ -31,7 +31,7 @@ import com.endiq.layer_controller.event.ClickEvent
 import com.endiq.layer_controller.event.EventHandler
 
 /**
- * 可观察的NormalData包装类
+ * Observable NormalData wrapper
  */
 class ObservableNormalData(data: NormalData) : ObservableWidget() {
     val text = ObservableTranslatableString(data.text)
@@ -56,13 +56,13 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
         )
 
     /**
-     * 当前是否处于按下状态
+     * Whether it is currently pressed
      */
     var isPressed by mutableStateOf(false)
         private set
 
     /**
-     * 开始触摸事件处理
+     * Starts touch event handling
      */
     private fun pressStart(
         eventHandler: EventHandler,
@@ -116,7 +116,7 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
 
     override fun onCompositionDispose(eventHandler: EventHandler?) {
         if (isPressed) {
-            //fix: 若本身未按下，不应该输出抬起事件
+            //fix: if it was never pressed, no release event should be emitted
             isPressed = false
             eventHandler?.onKeyPressed(clickEvents, isPressed)
         }
@@ -127,13 +127,13 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     }
 
     override fun supportsDeepTouchDetection(): Boolean {
-        //如果有不可穿透按钮，只保留最顶层的一个不可穿透按钮及其上层的所有可穿透按钮
+        //If there are impenetrable buttons, keep only the topmost one plus all penetrable buttons above it
         return !isSwipple || !(isSwipple && isPenetrable)
     }
 
     override fun canProcess(): Boolean {
-        //作为特性存在，筛除即可穿透又可滑动的按钮
-        //因为我发现我怎么都修不好:(
+        //As a deliberate feature, filter out buttons that are both penetrable and swipple
+        //because no matter how I tried, I could not fix it :(
         return isPenetrable && isSwipple
     }
 
@@ -145,13 +145,13 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
         consumeEvent: (Boolean) -> Unit
     ) {
         if (activeWidgets.isEmpty()) {
-            //新的按下事件
+            //New press event
             addThis()
             consumeEvent(!isPenetrable)
             pressStart(eventHandler, allLayers)
         } else if (this !in activeWidgets && behavior.canBeSwipedTo) {
-            //滑动联动
-            //该控件允许被滑入，且活跃控件中无阻止滑动链的类型
+            //Swipe linking
+            //This widget allows slide-in, and none of the active widgets blocks the swipe chain
             if (activeWidgets.none { it.behavior.blocksSwipeChain }) {
                 addThis()
                 pressStart(eventHandler, allLayers)
@@ -194,7 +194,7 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     }
 
     /**
-     * 移除所有匹配类型的点击事件
+     * Removes all click events of matching types
      */
     fun removeAllEvent(eventType: ClickEvent.Type) {
         clickEvents = clickEvents.filterNot { it.type == eventType }

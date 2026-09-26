@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * 可观察的ControlLayer包装类
+ * Observable ControlLayer wrapper
  */
 class ObservableControlLayer(
     private val layer: ControlLayer
@@ -55,28 +55,28 @@ class ObservableControlLayer(
     val joystickButtons = _joystickButtons.asStateFlow()
 
     /**
-     * 添加一个普通的按钮
+     * Adds a normal button
      */
     fun addNormalButton(button: NormalData) {
         addNormalButton(ObservableNormalData(button))
     }
 
     /**
-     * 添加一个普通的按钮
+     * Adds a normal button
      */
     fun addNormalButton(button: ObservableNormalData) {
         _normalButtons.update { it + button }
     }
 
     /**
-     * 批量添加普通的按钮
+     * Adds normal buttons in bulk
      */
     fun addAllNormalButton(buttons: List<ObservableNormalData>) {
         _normalButtons.update { it + buttons }
     }
 
     /**
-     * 移除一个普通的按钮
+     * Removes a normal button
      */
     fun removeNormalButton(uuid: String) {
         _normalButtons.update { oldList ->
@@ -85,28 +85,28 @@ class ObservableControlLayer(
     }
 
     /**
-     * 添加文本展示框
+     * Adds a text display box
      */
     fun addTextBox(textBox: TextData) {
         addTextBox(ObservableTextData(textBox))
     }
 
     /**
-     * 添加文本展示框
+     * Adds a text display box
      */
     fun addTextBox(textBox: ObservableTextData) {
         _textBoxes.update { it + textBox }
     }
 
     /**
-     * 批量添加文本展示框
+     * Adds text display boxes in bulk
      */
     fun addAllTextBox(textBoxes: List<ObservableTextData>) {
         _textBoxes.update { it + textBoxes }
     }
 
     /**
-     * 移除文本展示框
+     * Removes a text display box
      */
     fun removeTextBox(uuid: String) {
         _textBoxes.update { oldList ->
@@ -115,28 +115,28 @@ class ObservableControlLayer(
     }
 
     /**
-     * 添加摇杆控件
+     * Adds a joystick widget
      */
     fun addJoystickButton(joystick: JoystickData) {
         addJoystickButton(ObservableJoystickData(joystick))
     }
 
     /**
-     * 添加摇杆控件
+     * Adds a joystick widget
      */
     fun addJoystickButton(joystick: ObservableJoystickData) {
         _joystickButtons.update { it + joystick }
     }
 
     /**
-     * 批量添加摇杆控件
+     * Adds joystick widgets in bulk
      */
     fun addAllJoystickButton(joysticks: List<ObservableJoystickData>) {
         _joystickButtons.update { it + joysticks }
     }
 
     /**
-     * 移除摇杆控件
+     * Removes a joystick widget
      */
     fun removeJoystickButton(uuid: String) {
         _joystickButtons.update { oldList ->

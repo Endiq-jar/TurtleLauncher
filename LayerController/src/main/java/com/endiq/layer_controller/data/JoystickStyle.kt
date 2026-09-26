@@ -27,25 +27,25 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 圆角比例取值范围
+ * Valid range of the corner ratio
  */
 val SHAPE_PERCENT_RANGE: IntRange = 0..50
 
 /**
- * 大小比例计算取值范围
+ * Valid range for the size ratio
  */
 val SIZE_PERCENT_RANGE: ClosedFloatingPointRange<Float> = 0.0f..1.0f
 
 /**
- * 边框比例计算取值范围
+ * Valid range for the border ratio
  */
 val BORDER_RADIO_RANGE: IntRange = 0..50
 
 /**
- * @param name 样式显示名称
- * @param commonStyle 共用亮色主题
- * @param lightStyle 亮色模式样式
- * @param darkStyle 暗色模式样式
+ * @param name display name of the style
+ * @param commonStyle shared light theme
+ * @param lightStyle light mode style
+ * @param darkStyle dark mode style
  */
 @Serializable
 data class JoystickStyle(
@@ -61,17 +61,17 @@ data class JoystickStyle(
     val darkStyle: StyleConfig
 ): Modifiable<JoystickStyle> {
     /**
-     * @param alpha 整体不透明度
-     * @param backgroundColor 背景层的颜色
-     * @param joystickColor 摇杆的颜色
-     * @param joystickCanLockColor 摇杆移动到可以锁定的位置时，摇杆的颜色
-     * @param joystickLockedColor 摇杆锁定时的颜色
-     * @param lockMarkColor 锁定标记的颜色
-     * @param borderWidthRatio 边框粗细
-     * @param borderColor 边框颜色
-     * @param backgroundShape 背景层的形状：圆角百分比值 0.0f~50.0f
-     * @param joystickShape 摇杆的形状：圆角百分比值 0.0f~50.0f
-     * @param joystickSize 摇杆的大小：根据背景层的大小进行缩放 0.0f~1.0f
+     * @param alpha overall opacity
+     * @param backgroundColor color of the background layer
+     * @param joystickColor joystick color
+     * @param joystickCanLockColor joystick color when it reaches a lockable position
+     * @param joystickLockedColor joystick color while locked
+     * @param lockMarkColor lock mark color
+     * @param borderWidthRatio border width ratio
+     * @param borderColor border color
+     * @param backgroundShape background layer shape: corner percentage 0.0f~50.0f
+     * @param joystickShape joystick shape: corner percentage 0.0f~50.0f
+     * @param joystickSize joystick size: scaled by the background layer size, 0.0f~1.0f
      */
     @Serializable
     data class StyleConfig(

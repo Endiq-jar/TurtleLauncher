@@ -16,9 +16,9 @@ import com.endiq.colorpicker.ColorPickerController
 import com.endiq.colorpicker.getGradientColorAtPosition
 
 /**
- * 透明度条拾色器
- * @param controller [ColorPickerController] 的实例，用于控制和响应透明度变化
- * @param onChangeFinished 当滚动条结束拖动后的回调
+ * Alpha bar picker
+ * @param controller the [ColorPickerController] instance used to control and react to alpha changes
+ * @param onChangeFinished callback after the bar finishes being dragged
  */
 @Composable
 fun AlphaBarPicker(
@@ -36,10 +36,10 @@ fun AlphaBarPicker(
         }
     }
 
-    //当前颜色
+    //Current color
     val currentColor by controller.color
 
-    //透明 -> 当前颜色
+    //Transparent -> current color
     val colors by remember(currentColor) {
         derivedStateOf {
             listOf(

@@ -39,9 +39,9 @@ object ColorSerializer : KSerializer<Color> {
         val longValue = decoder.decodeLong()
         val high32 = (longValue ushr 32) and 0xFFFFFFFFL
         val argb = if (high32 != 0L) {
-            (longValue ushr 32).toInt()   // 历史格式：高 32 位 = ARGB
+            (longValue ushr 32).toInt()   // legacy format: high 32 bits = ARGB
         } else {
-            longValue.toInt()             // 新格式（或透明色）：低 32 位 = ARGB
+            longValue.toInt()             // new format (or transparent): low 32 bits = ARGB
         }
         return Color(argb)
     }

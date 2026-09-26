@@ -9,8 +9,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 
 /**
- * 进度条手势统一处理
- * @param onChangeFinished 当改变完成时
+ * Unified gesture handling for progress bars
+ * @param onChangeFinished called when the change completes
  */
 internal fun Modifier.progressBar(
     widthPx: Float,
@@ -47,8 +47,8 @@ internal fun Modifier.progressBar(
 
 
 /**
- * 方形拾色器手势统一处理
- * @param onChangeFinished 当改变完成时
+ * Unified gesture handling for the square picker
+ * @param onChangeFinished called when the change completes
  */
 internal fun Modifier.squarePicker(
     widthPx: Float,

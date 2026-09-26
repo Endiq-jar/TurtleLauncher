@@ -632,7 +632,7 @@ private fun CustomThemeDialog(
                                 }
 
                                 Column(modifier = Modifier.fillMaxWidth()) {
-                                    //当前颜色
+                                    //Current color
                                     Text(
                                         text = selectedHex,
                                         style = MaterialTheme.typography.labelMedium

@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * 可观察的ControlLayout包装类，用于监听变化
+ * Observable ControlLayout wrapper, used to watch changes
  */
 class ObservableControlLayout(
     private val layout: ControlLayout
@@ -45,18 +45,18 @@ class ObservableControlLayout(
     val joystickStyles = _joystickStyles.asStateFlow()
 
     /**
-     * 添加控件层
-     * @return 新添加的可观察控件层
+     * Adds a control layer
+     * @return the newly added observable control layer
      */
     fun addLayer(layer: ControlLayer): ObservableControlLayer {
         val newLayer = ObservableControlLayer(layer)
-        //               在顶部添加
+        //               Add at the top
         _layers.update { listOf(newLayer) + it }
         return newLayer
     }
 
     /**
-     * 移除控件层
+     * Removes a control layer
      */
     fun removeLayer(uuid: String) {
         _layers.update { oldLayers ->
@@ -65,7 +65,7 @@ class ObservableControlLayout(
     }
 
     /**
-     * 合并至下层
+     * Merges into the layer below
      */
     fun mergeDownward(layer: ObservableControlLayer) {
         _layers.update { oldLayers ->
@@ -101,7 +101,7 @@ class ObservableControlLayout(
     }
 
     /**
-     * 调换层级顺序
+     * Swaps the layer order
      */
     fun reorder(fromIndex: Int, toIndex: Int) {
         _layers.update { oldLayers ->
@@ -112,21 +112,21 @@ class ObservableControlLayout(
     }
 
     /**
-     * 添加新的按钮样式
+     * Adds a new button style
      */
     fun addStyle(style: ButtonStyle) {
         _styles.update { it + ObservableButtonStyle(style) }
     }
 
     /**
-     * 复制控件样式
+     * Duplicates a widget style
      */
     fun cloneStyle(style: ObservableButtonStyle) {
         _styles.update { it + style.cloneNew() }
     }
 
     /**
-     * 移除按钮样式
+     * Removes a button style
      */
     fun removeStyle(uuid: String) {
         _styles.update { oldStyles ->
@@ -147,21 +147,21 @@ class ObservableControlLayout(
     }
 
     /**
-     * 添加摇杆样式
+     * Adds a joystick style
      */
     fun addJoystickStyle(style: JoystickStyle) {
         _joystickStyles.update { it + ObservableJoystickStyle(style) }
     }
 
     /**
-     * 复制摇杆样式
+     * Duplicates a joystick style
      */
     fun cloneJoystickStyle(style: ObservableJoystickStyle) {
         _joystickStyles.update { it + style.cloneNew() }
     }
 
     /**
-     * 移除摇杆样式
+     * Removes a joystick style
      */
     fun removeJoystickStyle(uuid: String) {
         _joystickStyles.update { oldStyles ->
@@ -177,8 +177,8 @@ class ObservableControlLayout(
     }
 
     /**
-     * 将编辑器内层级隐藏状态同步到实际隐藏状态
-     * 供预览模式下使用正确的隐藏状态
+     * Syncs the editor-side hidden state of layers into the real hidden state
+     * so preview mode uses the correct hidden state
      */
     fun applyEditorHide() {
         layers.value.forEach { layer ->

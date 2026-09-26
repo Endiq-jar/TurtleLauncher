@@ -22,10 +22,10 @@ import androidx.annotation.Nullable;
 
 public class MinecraftKeyBindingMapper {
     /**
-     * Minecraft 绑定按键映射表
+     * Minecraft key binding mapping table
      *
-     * @param keybinding 绑定的按键
-     * @return 对应的GLFW按键
+     * @param keybinding the bound key
+     * @return the corresponding GLFW key
      */
     public static @Nullable Short getGlfwKeycode(String keybinding) {
         switch (keybinding) {
@@ -163,10 +163,10 @@ public class MinecraftKeyBindingMapper {
     }
 
     /**
-     * Minecraft 绑定按键映射表
+     * Minecraft key binding mapping table
      *
-     * @param keybinding 绑定的按键
-     * @return 对应的控制事件标识
+     * @param keybinding the bound key
+     * @return the corresponding control event identifier
      */
     public static @Nullable String getControlEvent(String keybinding) {
         switch (keybinding) {

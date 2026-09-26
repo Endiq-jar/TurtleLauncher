@@ -350,7 +350,7 @@ private class MouseScrollEvent(
     private var mouseScrollJob: Job? = null
 
     /**
-     * 取消滚动事件，并重置状态
+     * 取消滚动事件，并Resets the state
      */
     fun cancel() {
         mouseScrollJob?.cancel()
@@ -899,7 +899,7 @@ private fun PreviewGameInfoBox() {
  * @param isMoveOnlyPointer 检查指针是否被标记为仅处理滑动事件
  * @param onOccupiedPointer 标记指针已被占用
  * @param onReleasePointer 标记指针已被释放
- * @param onMouseMoved 实体鼠标操作时回调
+ * @param onMouseMoved While a physical mouse is in use回调
  * @param onTouch 手指触摸操作鼠标层时回调
  */
 @Composable

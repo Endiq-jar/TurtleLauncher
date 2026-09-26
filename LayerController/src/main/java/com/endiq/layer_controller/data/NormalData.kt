@@ -27,10 +27,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * @param clickEvents 点击事件组
- * @param isSwipple 滑动可与周围的按钮联动操作
- * @param isPenetrable 是否允许将触摸事件向下穿透
- * @param isToggleable 是否用开关的形式切换按下状态
+ * @param clickEvents the click events
+ * @param isSwipple whether swiping cascades onto neighboring buttons
+ * @param isPenetrable whether touch events may pass through
+ * @param isToggleable whether pressed state toggles like a switch
  */
 @Serializable
 data class NormalData(
@@ -88,7 +88,7 @@ data class NormalData(
 }
 
 /**
- * 过滤出有效的点击事件
+ * Filters out valid click events
  */
 internal fun List<ClickEvent>.filterValidEvent(): List<ClickEvent> {
     var foundValidSendText = false
@@ -107,7 +107,7 @@ internal fun List<ClickEvent>.filterValidEvent(): List<ClickEvent> {
 }
 
 /**
- * 克隆一个新的NormalData对象（UUID、位置不同）
+ * Clones a new NormalData (with a different UUID and position)
  */
 fun NormalData.cloneNew(): NormalData = NormalData(
     text = this.text,

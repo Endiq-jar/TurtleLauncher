@@ -169,7 +169,7 @@ fun EditControlLayerDialog(
                             }
                         )
 
-                        //在实体鼠标操作时隐藏
+                        //在While a physical mouse is in use隐藏
                         InfoLayoutSwitchItem(
                             modifier = Modifier.fillMaxWidth(),
                             title = stringResource(R.string.control_editor_layers_attribute_hide_when_mouse),
@@ -177,7 +177,7 @@ fun EditControlLayerDialog(
                             onValueChange = { layer.hideWhenMouse = it }
                         )
 
-                        //在手柄操作时隐藏
+                        //在While a gamepad is in use隐藏
                         InfoLayoutSwitchItem(
                             modifier = Modifier.fillMaxWidth(),
                             title = stringResource(R.string.control_editor_layers_attribute_hide_when_gamepad),

@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 在RoundedCornerShape之间创建动画
+ * Creates animations between RoundedCornerShapes
  */
 @Composable
 fun animateShapeAsState(
@@ -56,7 +56,7 @@ fun animateShapeAsState(
 }
 
 /**
- * 简化的动画函数，支持从当前值到目标圆角的动画
+ * Simplified animation function, animating from the current value to a target corner radius
  */
 @Composable
 fun animateShapeAsState(
@@ -71,7 +71,7 @@ fun animateShapeAsState(
 }
 
 /**
- * 简化的动画函数，支持独立控制四个角的圆角动画
+ * Simplified animation function, animating each of the four corner radii independently
  */
 @Composable
 fun animateShapeAsState(

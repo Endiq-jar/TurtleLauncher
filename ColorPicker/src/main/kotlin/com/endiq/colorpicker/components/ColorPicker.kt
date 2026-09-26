@@ -17,9 +17,9 @@ import androidx.compose.ui.graphics.Color
 import com.endiq.colorpicker.ColorPickerController
 
 /**
- * 颜色选择方形面板，用于选择饱和度与明度
- * @param controller [ColorPickerController] 的实例，用于控制和响应颜色变化
- * @param onChangeFinished 结束拖动后的回调
+ * Square color selection panel for picking saturation and brightness
+ * @param controller the [ColorPickerController] instance used to control and react to color changes
+ * @param onChangeFinished callback after dragging ends
  */
 @Composable
 fun ColorSquarePicker(
@@ -61,28 +61,28 @@ fun ColorSquarePicker(
                 onChangeFinished = onChangeFinished
             )
     ) {
-        //饱和度-明度色板
+        //Saturation-brightness palette
         val hueColor = Color.hsv(hue, 1f, 1f)
 
-        //横向饱和度渐变：白 -> 当前色调
+        //Horizontal saturation gradient: white -> current hue
         val satBrush = Brush.horizontalGradient(
             0f to Color.White,
             1f to hueColor
         )
 
-        //纵向明度渐变：透明 -> 黑色
+        //Vertical brightness gradient: transparent -> black
         val valBrush = Brush.verticalGradient(
             0f to Color.Transparent,
             1f to Color.Black
         )
 
-        //饱和度
+        //Saturation
         drawRect(
             brush = satBrush,
             size = size
         )
 
-        //明度叠加
+        //Brightness overlay
         drawRect(
             brush = valBrush,
             size = size,
@@ -97,7 +97,7 @@ fun ColorSquarePicker(
 }
 
 /**
- * 将触摸点坐标转换为饱和度与明度
+ * Converts touch coordinates into saturation and brightness
  */
 private fun pointToSatVal(x: Float, y: Float, widthPx: Float, heightPx: Float): Pair<Float, Float> {
     val sat = (x / widthPx).coerceIn(0f, 1f)
@@ -106,7 +106,7 @@ private fun pointToSatVal(x: Float, y: Float, widthPx: Float, heightPx: Float): 
 }
 
 /**
- * 将饱和度与明度转换为坐标
+ * Converts saturation and brightness into coordinates
  */
 private fun satValToOffset(s: Float, v: Float, widthPx: Float, heightPx: Float): Offset {
     val x = (s * widthPx).coerceIn(0f, widthPx)

@@ -26,17 +26,17 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.endiq.cardgrid.state.CardGridState
 
-/** 触发边缘自动滚动的带宽 */
+/** Width of the band that triggers edge auto-scroll */
 private val AutoScrollEdge = 56.dp
 
-/** 自动滚动的最大速度（dp/秒） */
+/** Maximum auto-scroll speed (dp/s) */
 private const val AutoScrollMaxSpeed = 900f
 
 /**
- * 拖动/缩放会话期间的边缘自动滚动：
- * 指针接近视口的首尾边缘时驱动 [scrollState] 滚动，
- * 滚动后重算指针位置使会话跟随。
- * 需放置在提供视口坐标的组合中，与 [CardGrid] 同处一个滚动容器。
+ * Edge auto-scrolling during drag/resize sessions:
+ * drives [scrollState] to scroll when the pointer nears the start/end of the viewport,
+ * and recomputes the pointer position after scrolling so the session follows.
+ * Must be placed in a composition that reports viewport coordinates, sharing the scroll container with [CardGrid].
  */
 @Composable
 fun CardGridAutoScroll(

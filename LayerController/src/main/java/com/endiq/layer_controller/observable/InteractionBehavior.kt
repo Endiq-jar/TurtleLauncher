@@ -19,29 +19,29 @@
 package com.endiq.layer_controller.observable
 
 /**
- * 控件的交互行为模型
+ * Interaction behavior model of a widget
  */
 sealed class InteractionBehavior {
     /**
-     * 手指移出控件边界时是否自动释放
+     * Whether the widget auto-releases when the finger leaves its bounds
      */
     abstract val releaseOnOutOfBounds: Boolean
 
     /**
-     * 是否允许其他控件的指针滑动进入本控件
+     * Whether pointers from other widgets may slide into this one
      */
     abstract val canBeSwipedTo: Boolean
 
     /**
-     * 当本控件处于活跃状态时，是否阻止滑动链向其他控件传播
+     * Whether this widget, while active, blocks the swipe chain from propagating to other widgets
      */
     abstract val blocksSwipeChain: Boolean
 
 
 
     /**
-     * 普通按钮
-     * 按下保持，松开释放，不参与滑动联动
+     * Normal button
+     * Holds while pressed, releases on lift, ignores swipe linking
      */
     data object Press : InteractionBehavior() {
         override val releaseOnOutOfBounds: Boolean get() = false
@@ -50,8 +50,8 @@ sealed class InteractionBehavior {
     }
 
     /**
-     * 可滑动按钮
-     * 移出边界自动释放，支持滑动联动
+     * Swipple button
+     * Auto-releases out of bounds, supports swipe linking
      */
     data object Swipable : InteractionBehavior() {
         override val releaseOnOutOfBounds: Boolean get() = true
@@ -60,8 +60,8 @@ sealed class InteractionBehavior {
     }
 
     /**
-     * 可切换按钮：
-     * 点击切换开/关，不可滑动联动,活跃时阻止滑动链传播
+     * Toggleable button:
+     * Tap toggles on/off; no swipe linking; blocks swipe-chain propagation while active
      */
     data object Toggle : InteractionBehavior() {
         override val releaseOnOutOfBounds: Boolean get() = false

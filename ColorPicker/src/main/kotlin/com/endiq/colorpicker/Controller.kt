@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.toArgb
 import android.graphics.Color as NativeColor
 
 /**
- * 创建颜色选择器控制器
- * @param initialColor 初始颜色
+ * Creates a color picker controller
+ * @param initialColor the initial color
  */
 @Composable
 fun rememberColorPickerController(
@@ -29,11 +29,11 @@ fun rememberColorPickerController(
 }
 
 /**
- * 创建颜色选择器控制器
- * @param initialHue 初始色调
- * @param initialSaturation 初始饱和度
- * @param initialValue 初始亮度
- * @param initialAlpha 初始透明度
+ * Creates a color picker controller
+ * @param initialHue the initial hue
+ * @param initialSaturation the initial saturation
+ * @param initialValue the initial brightness
+ * @param initialAlpha the initial alpha
  */
 @Composable
 fun rememberColorPickerController(
@@ -51,7 +51,7 @@ fun rememberColorPickerController(
 }
 
 /**
- * 颜色选择器核心控制器，用于记录当前颜色状态
+ * Core color picker controller, tracking the current color state
  */
 class ColorPickerController internal constructor(
     val initialHue: Float,
@@ -70,13 +70,13 @@ class ColorPickerController internal constructor(
     val alpha: Float get() = _alpha.floatValue
 
     /**
-     * 还原初始颜色并返回
+     * Restores the initial color and returns
      */
     fun getOriginalColor(): Color =
         Color.hsv(initialHue, initialSaturation, initialValue, initialAlpha)
 
     /**
-     * 当前颜色
+     * Current color
      */
     val color: State<Color> = derivedStateOf {
         Color.hsv(_hue.floatValue, _saturation.floatValue, _value.floatValue, _alpha.floatValue)

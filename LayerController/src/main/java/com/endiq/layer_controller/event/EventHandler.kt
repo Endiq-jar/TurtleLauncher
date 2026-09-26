@@ -21,15 +21,15 @@ package com.endiq.layer_controller.event
 import com.endiq.layer_controller.observable.ObservableControlLayer
 
 /**
- * 专用于处理控件触发事件的处理器
- * @param handle 处理事件
+ * Handler dedicated to widget-triggered events
+ * @param handle handles the event
  */
 class EventHandler(
     private val handle: (event: ClickEvent, pressed: Boolean) -> Unit = { _, _ -> }
 ) {
     /**
-     * 普通的按钮按下事件
-     * @param handle 决定是否处理该事件
+     * Normal button press event
+     * @param handle decides whether to handle the event
      */
     internal fun onKeyPressed(
         clickEvents: List<ClickEvent>,
@@ -42,7 +42,7 @@ class EventHandler(
     }
 
     /**
-     * 处理切换布局隐藏显示
+     * Handles toggling layout visibility
      */
     internal fun onSwitchLayer(
         clickEvent: ClickEvent,

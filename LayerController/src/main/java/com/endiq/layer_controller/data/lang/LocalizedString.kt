@@ -25,8 +25,8 @@ import kotlinx.serialization.Serializable
 import java.util.Locale
 
 /**
- * 本地化显示字符串
- * @param languageTag 语言标签
+ * Localized display string
+ * @param languageTag the language tag
  */
 @Serializable
 data class LocalizedString(
@@ -44,7 +44,7 @@ data class LocalizedString(
 val EmptyLocalizedString = LocalizedString(languageTag = "", value = "")
 
 /**
- * 尝试检查语言是否匹配
+ * Attempts to check whether the language matches
  */
 fun LocalizedString.check(
     locale: Locale = Locale.getDefault()

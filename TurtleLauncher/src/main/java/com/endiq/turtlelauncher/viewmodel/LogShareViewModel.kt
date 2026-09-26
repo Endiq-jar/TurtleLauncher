@@ -52,7 +52,7 @@ class LogShareViewModel : ViewModel() {
     }
 
     /**
-     * 重置状态
+     * Resets the state
      */
     fun reset() {
         showMenu = false

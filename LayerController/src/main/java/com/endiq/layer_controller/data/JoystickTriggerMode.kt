@@ -22,19 +22,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 摇杆操控方式
+ * Joystick trigger mode
  */
 @Serializable
 enum class JoystickTriggerMode {
     /**
-     * 拖动触发
-     * 手指需在摇杆上拖动才能使用
+     * Drag trigger
+     * The finger must drag on the joystick to use it
      */
     @SerialName("drag")
     DRAG,
     /**
-     * 触碰触发
-     * 手指碰到摇杆的可触摸范围即可触发并使用
+     * Touch trigger
+     * Merely touching the joystick's touchable area triggers and uses it
      */
     @SerialName("touch")
     TOUCH

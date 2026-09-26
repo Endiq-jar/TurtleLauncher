@@ -26,28 +26,28 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * 卡片网格布局引擎：全部结算均为无副作用的纯函数。
+ * Card grid layout engine: every computation is a pure function with no side effects.
  *
- * 缩放使用推箱式语义——沿被拖边把挡路的卡片推开成链，推不动时逐格收缩跨度；
- * 拖动使用挤压让位语义——被压住的卡片各自迁移到最近的空闲位置，不级联影响其他卡片；
- * 任何时刻布局都处于垂直压实状态。
+ * Resizing uses push-box semantics: blocking cards are pushed away along the dragged edge as a chain, and when the chain cannot move, the span shrinks cell by cell;
+ * Dragging uses squeeze-yield semantics: each covered card migrates to the nearest free spot without cascading onto other cards;
+ * The layout stays vertically compacted at all times.
  */
 object GridEngine {
 
-    /** 推挤运动的主导轴 */
+    /** The dominant axis of a pushing motion */
     internal enum class PushAxis { Horizontal, Vertical }
 
-    /** 缩放结算结果：缩放卡的布局与被推开的卡片（id -> 新布局） */
+    /** Resize result: the resized card's layout plus the pushed cards (id -> new layout) */
     data class ResizeResult(
         val layout: CardRect,
         val pushed: Map<String, CardRect>
     )
 
-    /** 卡片是否完全位于网格边界内（纵向不设限） */
+    /** Whether a card lies fully inside the grid bounds (vertically unbounded) */
     fun isInGrid(rect: CardRect, columns: Int): Boolean =
         rect.x >= 0 && rect.y >= 0 && rect.right <= columns
 
-    /** 一组卡片之间是否存在重叠 */
+    /** Whether any cards in the set overlap */
     fun hasOverlap(cards: List<CardRect>): Boolean {
         for (i in cards.indices) {
             for (j in i + 1 until cards.size) {
@@ -57,17 +57,17 @@ object GridEngine {
         return false
     }
 
-    /** 网格当前占用的总行数（无卡片时为 0） */
+    /** Total rows currently occupied by the grid (0 when empty) */
     fun totalRows(cards: List<CardRect>): Int = cards.maxOfOrNull { it.bottom } ?: 0
 
     /**
-     * 为尺寸 [width]×[height] 的卡片搜索距离 [origin] 最近的空闲位置。
+     * Searches for the free spot closest to [origin] that fits a [width]×[height] card.
      *
-     * 以卡片中心间欧氏距离度量远近，距离相同者优先取更靠上、更靠左的位置；
-     * [obstacles] 为需要避开的矩形集合，网格纵向无上限，
-     * 搜索行数以障碍物最大底边为界（其下方整行必然空闲，解必定存在）。
+     * Closeness is the Euclidean distance between card centers; ties prefer the higher, then lefter spot;
+     * [obstacles] is the set of rectangles to avoid; the grid is vertically unbounded,
+     * and the search stops at the deepest obstacle bottom (the row below is certainly free, so a solution always exists).
      *
-     * @return 最近的空闲位置，尺寸无法放入网格宽时返回 null
+     * @return the nearest free spot, or null if the size cannot fit the grid width
      */
     fun findNearestFreeSlot(
         width: Int,
@@ -99,10 +99,10 @@ object GridEngine {
     }
 
     /**
-     * 拖动结算：[moving] 为拖动中的卡片预览（或落位），
-     * 与其重叠的卡片按阅读顺序依次被重新安置，尺寸保持不变，
-     * 且不会级联影响未被直接重叠的卡片
-     * @return 被重新安置的卡片（id -> 新布局），不包含未受影响的卡片
+     * Drag computation: [moving] is the preview (or drop position) of the card being dragged,
+     * overlapping cards are relocated one by one in reading order without changing size,
+     * and cards not directly overlapped are never cascaded onto
+     * @return the relocated cards (id -> new layout), excluding unaffected ones
      */
     fun resolveDisplacements(
         moving: CardRect,
@@ -138,8 +138,8 @@ object GridEngine {
     }
 
     /**
-     * 依据指针相对被压卡片中心的主导方向决定让位方向
-     * 指针压到卡片的哪一侧，卡片就沿该轴向远离指针的一侧让开
+     * Decides the yield direction from the pointer's dominant direction relative to the covered card's center
+     * Whichever side of the card the pointer covers, the card yields along that axis away from the pointer
      */
     internal fun displacementDirection(pointer: IntOffset, card: CardRect): IntOffset {
         val dx = pointer.x - (card.x + card.width / 2f)
@@ -152,10 +152,10 @@ object GridEngine {
     }
 
     /**
-     * 从 [card] 当前位置沿 [direction]（单位向量）逐格搜索第一个
-     * 不与 [obstacles] 重叠的位置，与运动轴垂直的坐标保持不变，
-     * 网格横向钳制、纵向向下不设限。
-     * @return 让位空位，该方向上无空位时返回 null
+     * Scans cell by cell from [card]'s current position along [direction] (unit vector) for the first
+     * spot that does not overlap [obstacles]; the coordinate perpendicular to the motion axis stays fixed,
+     * the grid clamps horizontally and is unbounded downward.
+     * @return the yield spot, or null if none exists in that direction
      */
     fun findDirectionalFreeSlot(
         card: CardRect,
@@ -176,11 +176,11 @@ object GridEngine {
     }
 
     /**
-     * 缩放结算：依据指针所在的单元格 [pointer] 计算缩放布局，
-     * 锚定被拖动边 [edge] 的对侧，扩张方向上的网格边缘与 [limits] 为硬性界限。
+     * Resize computation: derives the resized layout from the cell under the pointer [pointer],
+     * anchoring the side opposite the dragged edge [edge]; the grid edge and [limits] are hard bounds along the growth direction.
      *
-     * 扩张压到的卡片沿被拖边方向被推至与前沿齐平，并联动推开链条上的其他卡片；
-     * 链条推不动时，跨度逐格回退至可推动的最远位置；收缩方向不受推挤影响。
+     * Cards covered by the growth are pushed flush with the front along the dragged edge, pushing more cards down the chain;
+     * when the chain cannot move, the span backs off cell by cell to the furthest movable position; shrinking is unaffected by pushing.
      */
     fun resolveResize(
         current: CardRect,
@@ -194,7 +194,7 @@ object GridEngine {
         val horizontal = edge == ResizeEdge.Start || edge == ResizeEdge.End
         val minSpan = if (horizontal) lim.minWidth else lim.minHeight
         val maxSpan = if (horizontal) lim.maxWidth else lim.maxHeight
-        // 硬性界限下被拖动边的最大跨度，与阻挡卡片无关
+        // Maximum span of the dragged edge under the hard bounds, regardless of blocking cards
         val hardMax = when (edge) {
             ResizeEdge.End -> columns - current.x
             ResizeEdge.Start -> current.right
@@ -225,11 +225,11 @@ object GridEngine {
     }
 
     /**
-     * 推挤求解：沿 [axis] 的 [forward] 方向把与 [mover] 实际重叠的卡片
-     * 依次推至与 mover 前沿齐平，被推入的新位压到的卡片随之联动。
-     * 任何一张卡片被推离网格（横向越界或反向越过网格边缘）即整条链条推不动。
+     * Push solver: pushes the cards that actually overlap [mover] along the [forward] direction of [axis]
+     * one after another until flush with mover's front; cards covered by the pushed positions are dragged along.
+     * If any card would be pushed off the grid (sideways or past the opposite edge), the whole chain cannot move.
      *
-     * @return 被推动的卡片（id -> 新布局），推不动时返回 null
+     * @return the pushed cards (id -> new layout), or null when the chain cannot move
      */
     internal fun push(
         mover: CardRect,
@@ -240,7 +240,7 @@ object GridEngine {
     ): Map<String, CardRect>? {
         val horizontal = axis == PushAxis.Horizontal
 
-        // 卡片朝向前沿的一侧
+        // The side of a card facing the front
         fun leading(card: CardRect): Int = when {
             horizontal && forward -> card.x
             horizontal -> card.right
@@ -255,7 +255,7 @@ object GridEngine {
             else -> card.copy(y = front - card.height)
         }
 
-        // 前沿从 mover 的推进侧出发，随推挤前进
+        // The front starts at mover's advancing side and moves with the push
         var front = when {
             horizontal && forward -> mover.right
             horizontal -> mover.x
@@ -263,14 +263,14 @@ object GridEngine {
             else -> mover.y
         }
         val pushed = mutableMapOf<String, CardRect>()
-        // 只有与 mover 实际重叠的卡片才会被推；被推入的矩形可能压到扩张带之外的卡片，待推队列随之动态增长
+        // Only cards actually overlapping mover get pushed; a pushed rectangle may cover cards outside the growth band, so the push queue grows dynamically
         val queue = obstacles
             .filter { it.id != mover.id && it.intersects(mover) }
             .toMutableList()
         while (queue.isNotEmpty()) {
             queue.sortBy { if (forward) leading(it) else -leading(it) }
             val card = queue.removeAt(0)
-            // 距前沿最近的卡片已被容纳到前沿之外，其后的卡片更远，推挤结束
+            // The card nearest the front already sits beyond it, and the rest are farther: pushing is done
             if (if (forward) leading(card) >= front else leading(card) <= front) break
             val placed = placedAt(card, front)
             front += if (forward) span(card) else -span(card)
@@ -303,7 +303,7 @@ object GridEngine {
     }
 
     /**
-     * 为尺寸 [width]×[height] 的卡片寻找最上、最左的空闲位置（贪心打包）。
+     * Finds the topmost-leftmost free spot for a [width]×[height] card (greedy packing).
      */
     fun findTopLeftFreeSlot(
         width: Int,
@@ -324,9 +324,9 @@ object GridEngine {
     }
 
     /**
-     * 垂直压实：按阅读顺序处理，每张卡片在保持横向位置不变的前提下
-     * 尽可能上浮，直到贴近网格顶部或压在已有卡片下方。
-     * 压实后任何卡片都无法再向上移动；行内与行尾的横向空位保留。
+     * Vertical compaction: processed in reading order; each card, keeping its horizontal position,
+     * floats up as far as possible until it hugs the grid top or rests on another card.
+     * After compaction no card can move further up; horizontal gaps within and at the end of rows are kept.
      */
     fun compact(cards: List<CardRect>): List<CardRect> {
         val sorted = cards.sortedWith(readingOrder())
@@ -344,9 +344,9 @@ object GridEngine {
     }
 
     /**
-     * 按阅读顺序（先上后下、先左后右）贪心重排，
-     * 用于网格宽度变化后的布局迁移：卡片宽高按新旧列数比例折算，
-     * 以 [limits] 声明的边界钳制，再逐个放入最上最左的空位。
+     * Greedy repack in reading order (top-to-bottom, left-to-right),
+     * used to migrate layouts after the grid width changed: card sizes are scaled by the old/new column ratio,
+     * clamped by the bounds declared in [limits], then placed one by one into the topmost-leftmost free spot.
      */
     fun reflow(
         cards: List<CardRect>,
@@ -368,8 +368,8 @@ object GridEngine {
     }
 
     /**
-     * 加载校验：钳制越界与非法的卡片、化解卡片间的重叠，
-     * 最后执行一次垂直压实。重复 id 的卡片仅保留最先出现的一个。
+     * Load validation: clamps out-of-bounds and invalid cards, resolves overlaps,
+     * then runs one final vertical compaction. Cards with duplicate ids keep only the first occurrence.
      */
     fun validate(
         cards: List<CardRect>,

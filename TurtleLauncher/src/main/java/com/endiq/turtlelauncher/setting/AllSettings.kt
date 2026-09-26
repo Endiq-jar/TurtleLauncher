@@ -566,7 +566,7 @@ object AllSettings : SettingsRegistry() {
     val editorSnapInAllLayers = boolSetting("editorSnapInAllLayers", false)
 
     /**
-     * 控制布局编辑器：控件吸附模式
+     * 控制布局编辑器：控件Snap mode
      */
     val editorWidgetSnapMode = enumSetting("editorWidgetSnapMode", SnapMode.FullScreen)
 

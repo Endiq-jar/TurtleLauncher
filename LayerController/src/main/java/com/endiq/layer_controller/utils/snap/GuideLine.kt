@@ -19,7 +19,7 @@
 package com.endiq.layer_controller.utils.snap
 
 /**
- * 吸附参考线数据
+ * Snap guide line data
  */
 internal data class GuideLine(
     val direction: LineDirection,

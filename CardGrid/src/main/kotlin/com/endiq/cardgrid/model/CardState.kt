@@ -21,12 +21,12 @@ package com.endiq.cardgrid.model
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/** 卡片与用户的交互状态 */
+/** Interaction state between a card and the user */
 enum class CardInteraction { Idle, Adjusting, Dragging, Resizing }
 
 /**
- * 提供给卡片内容的自身状态，
- * 卡片依据尺寸形态与交互状态切换不同的显示形态。
+ * The card's own state, provided to the card content,
+ * letting the card switch its presentation by size class and interaction state.
  */
 class CardState(
     val spanWidth: Int,
@@ -34,9 +34,9 @@ class CardState(
     val columns: Int,
     val interaction: CardInteraction
 ) {
-    /** 依据跨度推导的形态分类 */
+    /** Form-factor classification derived from the span */
     val sizeClass: CardSize = deriveSizeClass(spanWidth, spanHeight, columns)
 }
 
-/** 卡片矩形在单元格内向四边的内缩量 */
+/** Inset of the card rect within its cells, toward each edge */
 val CardSpacing: Dp = 6.dp

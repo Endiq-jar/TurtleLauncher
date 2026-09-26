@@ -30,9 +30,9 @@ import org.junit.Test
 import java.util.Random
 
 /**
- * 布局引擎压力测试：重度使用规模（上百张卡片）下热路径的耗时与结果正确性。
- * 耗时断言采用宽松预算，仅拦截复杂度退化（意外的指数级或死循环），
- * 真实耗时通过标准输出记录。
+ * Stress tests for the layout engine: hot-path timing and correctness at heavy scale (hundreds of cards).
+ * Timing assertions use a loose budget that only catches complexity regressions (accidental exponentiality or infinite loops);
+ * real timings are recorded to standard output.
  */
 class GridEnginePerfTest {
 
@@ -44,7 +44,7 @@ class GridEnginePerfTest {
         height: Int
     ) = CardRect(id = id, x = x, y = y, width = width, height = height)
 
-    /** 用引擎自身的贪心打包生成一张填满的网格，模拟重度自定义的用户主页 */
+    /** Builds a fully packed grid with the engine's own greedy packing, simulating a heavily customized user home page */
     private fun generateGrid(count: Int, columns: Int, seed: Long): List<CardRect> {
         val random = Random(seed)
         val placed = mutableListOf<CardRect>()
@@ -68,22 +68,22 @@ class GridEnginePerfTest {
         return (System.nanoTime() - start) / 1_000_000
     }
 
-    // ---------- 拖动热路径 ----------
+    // ---------- Drag hot path ----------
 
     @Test
     fun testResolveDisplacementsUnderLongDragPath() {
         val columns = 16
-        // 80 张卡 ≈ 2400+ 单元格，网格纵深约百行，远超正常使用规模
+        // 80 cards ≈ 2400+ cells, roughly a hundred rows deep — far beyond normal use
         val cards = generateGrid(count = 80, columns = columns, seed = 42L)
         val mover = cards[0]
         val others = cards.filter { it.id != mover.id }
 
-        // 预热 JIT
+        // Warm up the JIT
         repeat(50) {
             GridEngine.resolveDisplacements(mover, columns, others)
         }
 
-        // 模拟一次贯穿整张网格的拖动：从左上到右下逐步换格
+        // Simulate a drag crossing the whole grid: stepping cell by cell from top-left to bottom-right
         val steps = 300
         val maxY = GridEngine.totalRows(cards)
         val warm = measureMs {
@@ -100,11 +100,11 @@ class GridEnginePerfTest {
         }
         val perCallMs = warm.toDouble() / steps
         println("resolveDisplacements: ${warm}ms / $steps steps = ${"%.3f".format(perCallMs)}ms per call (80 cards, 16 cols)")
-        // 宽松预算：单次结算在桌面 JVM 上应远低于 10ms
+        // Loose budget: one computation should stay well under 10ms on a desktop JVM
         assertTrue("resolveDisplacements took too long: $perCallMs ms", perCallMs < 10.0)
     }
 
-    // ---------- 缩放热路径 ----------
+    // ---------- Resize hot path ----------
 
     @Test
     fun testResolveResizeUnderDenseGrid() {
@@ -138,7 +138,7 @@ class GridEnginePerfTest {
     fun testFindNearestFreeSlotDenseGrid() {
         val columns = 16
         val cards = generateGrid(count = 80, columns = columns, seed = 7L)
-        // 预热
+        // Warm-up
         repeat(50) {
             GridEngine.findNearestFreeSlot(8, 8, IntOffset(columns / 2, GridEngine.totalRows(cards) / 2), columns, cards)
         }
@@ -153,16 +153,16 @@ class GridEnginePerfTest {
         assertTrue("findNearestFreeSlot took too long: ${elapsed / 1000.0} ms", elapsed / 1000.0 < 10.0)
     }
 
-    // ---------- 冷路径 ----------
+    // ---------- Cold path ----------
 
     @Test
     fun testValidateOnLargeDirtyLayout() {
         val columns = 16
-        // 构造脏数据：越界、重叠、非法尺寸、重复 id
+        // Build dirty data: out-of-bounds, overlaps, invalid sizes, duplicate ids
         val random = Random(99L)
         val dirty = (0 until 120).map { index ->
             card(
-                id = "card${index % 100}", // 末尾 20 张与前 20 张 id 重复
+                id = "card${index % 100}", // the last 20 cards duplicate the ids of the first 20
                 x = random.nextInt(columns * 2) - columns / 2,
                 y = random.nextInt(60) - 10,
                 width = 1 + random.nextInt(columns),

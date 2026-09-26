@@ -22,8 +22,8 @@ import com.endiq.cardgrid.model.CardLimits.Companion.DEFAULT
 
 
 /**
- * 卡片的尺寸边界（单元格跨度），由卡片类型自行声明，
- * 未声明的卡片使用 [DEFAULT] 默认值。
+ * Size bounds of a card (in cell spans), declared by the card type itself;
+ * types that do not declare them fall back to [DEFAULT].
  */
 data class CardLimits(
     val minWidth: Int = DEFAULT_MIN_SPAN,
@@ -32,8 +32,8 @@ data class CardLimits(
     val maxHeight: Int = Int.MAX_VALUE
 ) {
     /**
-     * 依据实际网格宽度归一化边界：
-     * 最大跨度不超过网格，最小跨度不超过最大跨度。
+     * Normalizes the bounds against the actual grid width:
+     * max span no bigger than the grid, min span no bigger than the max.
      */
     fun clampedFor(columns: Int): CardLimits {
         val maxW = maxWidth.coerceAtMost(columns)
@@ -48,10 +48,10 @@ data class CardLimits(
     fun clampHeight(height: Int): Int = height.coerceIn(minHeight, maxHeight)
 
     companion object {
-        /** 默认最小跨度：4×4（约 80dp） */
+        /** Default minimum span: 4×4 (about 80dp) */
         const val DEFAULT_MIN_SPAN = 4
 
-        /** 默认最大高度跨度：12 行（约 240dp） */
+        /** Default maximum height span: 12 rows (about 240dp) */
         const val DEFAULT_MAX_HEIGHT = 12
 
         val DEFAULT = CardLimits(maxHeight = DEFAULT_MAX_HEIGHT)

@@ -7,10 +7,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 
 /**
- * 绘制透明棋盘格背景。
- * @param width 宽度
- * @param height 高度
- * @param gridSize 网格大小 Px
+ * Paints the transparent checkerboard background.
+ * @param width the width
+ * @param height the height
+ * @param gridSize checker size in px
  */
 internal fun DrawScope.transparentCheckerBackground(
     width: Float,

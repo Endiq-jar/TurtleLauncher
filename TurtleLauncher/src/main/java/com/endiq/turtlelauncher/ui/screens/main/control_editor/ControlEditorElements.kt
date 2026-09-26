@@ -510,7 +510,7 @@ private fun EditorMenuContent(
             )
         }
 
-        //控件吸附模式
+        //控件Snap mode
         item {
             MenuListLayout(
                 modifier = Modifier.fillMaxWidth(),

@@ -20,17 +20,17 @@ package com.endiq.layer_controller.data
 
 enum class HideLayerWhen {
     /**
-     * 实体鼠标操作时
+     * While a physical mouse is in use
      */
     WhenMouse,
 
     /**
-     * 手柄操作时
+     * While a gamepad is in use
      */
     WhenGamepad,
 
     /**
-     * 触摸操作时不隐藏
+     * Never hidden during touch
      */
     None
 }

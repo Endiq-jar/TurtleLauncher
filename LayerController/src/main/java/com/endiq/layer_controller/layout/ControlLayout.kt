@@ -38,10 +38,10 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 
 /**
- * 描述一个控制布局结构
- * @param info 控制布局基本信息
- * @param layers 控制层级列表
- * @param editorVersion 使用编辑器版本
+ * Describes a control layout structure
+ * @param info basic control layout info
+ * @param layers the control layer list
+ * @param editorVersion the editor version used
  */
 @Serializable
 data class ControlLayout(
@@ -104,7 +104,7 @@ val EmptyControlLayout = ControlLayout(
 )
 
 /**
- * 从文件加载控制布局配置（检查版本号，大于编辑器版本则抛出`IllegalArgumentException`）
+ * Loads a control layout from a file (checks the version; throws `IllegalArgumentException` if newer than the editor)
  */
 fun loadLayoutFromFile(file: File): ControlLayout {
     val jsonString = file.readText()
@@ -118,7 +118,7 @@ fun loadLayoutFromString(jsonString: String): ControlLayout {
     if (version <= EDITOR_VERSION) {
         val legacyJoystickStyle = if (version < 12) {
             jsonObject["special"]?.let { specialElement ->
-                //在反序列化前尝试提取旧版 special 字段
+                //Try to extract the legacy special field before deserialization
                 try {
                     layoutJson.decodeFromJsonElement(LegacySpecial.serializer(), specialElement).joystickStyle?.toJoystickStyle()
                 } catch (_: Exception) {
@@ -131,7 +131,7 @@ fun loadLayoutFromString(jsonString: String): ControlLayout {
         if (version < EDITOR_VERSION) layout = updateLayoutToNew(layout)
 
         if (legacyJoystickStyle != null) {
-            //迁移至新版摇杆样式列表
+            //Migrate to the new joystick style list
             layout = layout.copy(
                 joystickStyles = layout.joystickStyles + legacyJoystickStyle
             )
@@ -144,7 +144,7 @@ fun loadLayoutFromString(jsonString: String): ControlLayout {
 }
 
 /**
- * 从文件加载控制布局配置（不检查版本号）
+ * Loads a control layout from a file (without version checking)
  */
 fun loadLayoutFromFileUncheck(file: File): ControlLayout {
     val jsonString = file.readText()

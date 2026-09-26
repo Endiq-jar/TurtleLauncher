@@ -21,36 +21,36 @@ package com.endiq.layer_controller.observable
 import androidx.compose.ui.input.pointer.PointerId
 
 /**
- * 共享的多指针状态管理器
- * 管理每个指针的活跃控件列表和滑动链状态
+ * Shared multi-pointer state manager
+ * Manages each pointer's active widget list and swipe-chain state
  */
 class PointerEventBus {
     /**
-     * 指针 → 当前按压中的所有控件（按加入顺序）
+     * pointer → widgets currently pressed (in join order)
      */
     private val _activeWidgets = mutableMapOf<PointerId, MutableList<ObservableWidget>>()
 
     /**
-     * 处于滑动链中的指针集合
+     * Set of pointers currently inside a swipe chain
      */
     private val _swipeChainPointers = mutableSetOf<PointerId>()
 
     /**
-     * 检查已占用的指针（来自 MouseControlLayout / Hotbar 等外部层）
+     * Checks occupied pointers (from external layers like MouseControlLayout / Hotbar)
      */
     var checkOccupiedPointers: (PointerId) -> Boolean = { false }
 
     /**
-     * 标记指针为仅移动（不消费事件）
+     * Marks a pointer as move-only (without consuming events)
      */
     var markPointerAsMoveOnly: (PointerId) -> Unit = {}
 
     // ────────────────────────────────────────────────────────
-    // 生命周期
+    // Lifecycle
     // ────────────────────────────────────────────────────────
 
     /**
-     * 手指抬起：清理该指针的所有状态，返回需要释放的控件列表
+     * On finger lift: clears all state of that pointer and returns the widgets to release
      */
     fun endPointer(pointerId: PointerId): List<ObservableWidget> {
         _swipeChainPointers.remove(pointerId)
@@ -58,48 +58,48 @@ class PointerEventBus {
     }
 
     // ────────────────────────────────────────────────────────
-    // 活跃控件管理
+    // Active widget management
     // ────────────────────────────────────────────────────────
 
     /**
-     * 获取指定指针的当前活跃控件列表
+     * Returns the current active widget list of the given pointer
      */
     fun activeWidgets(pointerId: PointerId): List<ObservableWidget> {
         return _activeWidgets[pointerId]?.toList() ?: emptyList()
     }
 
     /**
-     * 将控件加入指定指针的活跃列表
+     * Adds a widget to the given pointer's active list
      */
     fun addActiveWidget(pointerId: PointerId, widget: ObservableWidget) {
         _activeWidgets.getOrPut(pointerId) { mutableListOf() }.add(widget)
     }
 
     /**
-     * 获取活跃控件快照
+     * Returns a snapshot of the active widgets
      */
     fun snapshot(pointerId: PointerId): List<ObservableWidget> = activeWidgets(pointerId)
 
     /**
-     * 替换指定指针的活跃控件列表
+     * Replaces the given pointer's active widget list
      */
     fun setActiveWidgets(pointerId: PointerId, widgets: List<ObservableWidget>) {
         _activeWidgets[pointerId] = widgets.toMutableList()
     }
 
     // ────────────────────────────────────────────────────────
-    // 滑动链管理
+    // Swipe chain management
     // ────────────────────────────────────────────────────────
 
-    /** 指定指针是否处于滑动链中 */
+    /** Whether the given pointer is inside a swipe chain */
     fun isInSwipeChain(pointerId: PointerId): Boolean = pointerId in _swipeChainPointers
 
-    /** 标记指针进入滑动链 */
+    /** Marks a pointer as having entered a swipe chain */
     fun enterSwipeChain(pointerId: PointerId) {
         _swipeChainPointers.add(pointerId)
     }
 
-    /** 将指针移出滑动链 */
+    /** Removes a pointer from the swipe chain */
     fun exitSwipeChain(pointerId: PointerId) {
         _swipeChainPointers.remove(pointerId)
     }

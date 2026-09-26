@@ -23,7 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 /**
- * 公开可用的透明棋格背景
+ * Publicly usable transparent checkerboard background
  */
 @Composable
 fun TransparentChecker(

@@ -27,36 +27,36 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 按钮大小最小值
+ * Minimum button size
  */
 const val MIN_SIZE_DP = 5.0f
 
 /**
- * 按钮百分比大小最小值
+ * Minimum button size percentage
  */
 internal const val MIN_SIZE_PERCENTAGE = 100
 
 /**
- * 按钮百分比大小最大值
+ * Maximum button size percentage
  */
 internal const val MAX_SIZE_PERCENTAGE = 10000
 
 /**
- * 按钮大小百分比取值范围
+ * Valid range of button size percentages
  */
 val SIZE_PERCENTAGE: ClosedFloatingPointRange<Float> = 100.0f..10000.0f
 
 /**
- * 给编辑器使用的百分比取值范围
+ * Percentage range used by the editor
  */
 val SIZE_PERCENTAGE_EDITOR: ClosedFloatingPointRange<Float> = 1.0f..100.0f
 
 /**
- * 按钮的大小
- * @param widthDp 绝对值宽度 5~设备总Dp
- * @param heightDp 绝对值高度 5~设备总Dp
- * @param widthPercentage 百分比宽度 100~10000
- * @param heightPercentage 百分比高度 100~10000
+ * Size of a button
+ * @param widthDp absolute width, 5..device width in Dp
+ * @param heightDp absolute height, 5..device height in Dp
+ * @param widthPercentage percentage width, 100..10000
+ * @param heightPercentage percentage height, 100..10000
  */
 @Serializable
 data class ButtonSize(
@@ -83,22 +83,22 @@ data class ButtonSize(
     }
 
     /**
-     * 大小计算类型
+     * Size calculation type
      */
     @Serializable
     enum class Type {
         /**
-         * 以 Dp 绝对值进行存储
+         * Stores the size as an absolute Dp value
          */
         @SerialName("dp") Dp,
 
         /**
-         * 以百分比值进行存储
+         * Stores the size as a percentage value
          */
         @SerialName("percentage") Percentage,
 
         /**
-         * 跟随内容大小变化
+         * Follows the content size
          */
         @SerialName("wrap_content") WrapContent
     }
@@ -106,12 +106,12 @@ data class ButtonSize(
     @Serializable
     enum class Reference {
         /**
-         * 参考屏幕宽
+         * References the screen width
          */
         @SerialName("screen_width") ScreenWidth,
 
         /**
-         * 参考屏幕高
+         * References the screen height
          */
         @SerialName("screen_height") ScreenHeight,
     }
@@ -128,7 +128,7 @@ data class ButtonSize(
 }
 
 /**
- * 默认大小：以百分比值进行存储
+ * Default size: stored as a percentage value
  */
 val DefaultSize = ButtonSize(
     type = Type.Percentage,
@@ -141,7 +141,7 @@ val DefaultSize = ButtonSize(
 )
 
 /**
- * 创建一个默认的百分比尺寸，根据参考尺寸计算出合适的值
+ * Creates a default percentage size computed from the reference size
  */
 fun createAdaptiveButtonSize(
     referenceLength: Int,

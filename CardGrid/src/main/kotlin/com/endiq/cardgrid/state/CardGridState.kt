@@ -54,23 +54,23 @@ import java.util.UUID
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/** 已落位的网格卡片 */
+/** Settled grid card */
 data class GridCard(
     val id: String,
     val type: CardType,
     val layout: CardRect,
-    /** 跨度折算基准（用户结算时的跨度与列数），窗口列数变化时自基准无损折算 */
+    /** Span conversion basis (the span and column count from the user's last settle); spans convert losslessly from this basis when the window column count changes */
     val reflowBase: ReflowBase? = null
 )
 
-/** 卡片跨度的重排基准 */
+/** Repack basis of a card span */
 data class ReflowBase(
     val width: Int,
     val height: Int,
     val columns: Int
 )
 
-/** 待播种的持久化卡片布局，[typeId] 须能在播种的类型表中找到 */
+/** A persisted card layout waiting to be seeded; [typeId] must exist in the seeded type table */
 data class CardSeed(
     val id: String,
     val typeId: String,
@@ -78,16 +78,16 @@ data class CardSeed(
 )
 
 /**
- * 卡片网格的状态持有者：
- * 统一持有布局结算的会话状态，所有指针坐标均为网格内容坐标系
- * （网格区域左上角为原点、像素单位），命中测试与会话结算均在此坐标系下进行，
- * 布局结算全部委托 [GridEngine]，卡片渲染矩形通过逐卡 [Animatable] 以弹簧动画过渡。
+ * State holder of the card grid:
+ * holds all layout-session state; every pointer coordinate uses the grid content coordinate system
+ * (origin at the grid area's top-left, in pixels); hit testing and session computation run in this system,
+ * all layout computation is delegated to [GridEngine], and per-card [Animatable]s drive spring-animated render rects.
  */
 @Stable
 class CardGridState internal constructor(
     private val scope: CoroutineScope
 ) {
-    /** 拖动/缩放会话 */
+    /** Drag/resize session */
     private data class AdjustSession(
         val card: GridCard,
         val grabOffset: Offset,
@@ -99,96 +99,96 @@ class CardGridState internal constructor(
         }
     }
 
-    /** 网格几何（列数恒为偶数，单元格为正方形） */
+    /** Grid geometry (always even columns, square cells) */
     var geometry by mutableStateOf(GridGeometry(MIN_GRID_COLUMNS, 20f))
         private set
 
-    /** 单元格边长（px） */
+    /** Cell edge length (px) */
     var cellPx by mutableFloatStateOf(20f)
         private set
 
-    /** 屏幕密度（dp → px 换算），随几何更新 */
+    /** Screen density (dp → px), updated with the geometry */
     private var densityFactor by mutableFloatStateOf(1f)
 
-    /** 卡片矩形在单元格内的收缩量（px） */
+    /** Card rect inset within a cell (px) */
     var cardInsetPx by mutableIntStateOf(2)
         private set
 
-    /** 全部已落位卡片，保持加入顺序 */
+    /** All settled cards, in insertion order */
     var cards by mutableStateOf<List<GridCard>>(emptyList())
         private set
 
-    /** 处于调整态（长按选中）的卡片 id */
+    /** Id of the card in adjust mode (long-press selected) */
     var adjustingCardId by mutableStateOf<String?>(null)
         private set
 
-    /** 是否处于调整态 */
+    /** Whether adjust mode is active */
     val isAdjusting: Boolean get() = adjustingCardId != null
 
-    /** 吸附后的预览布局（虚影位置），仅会话期间非空 */
+    /** Snapped preview layout (ghost position); non-null only during a session */
     var dragPreview by mutableStateOf<CardRect?>(null)
         private set
 
-    /** 跟随手指的原始矩形，仅会话期间非空 */
+    /** Raw rect that follows the finger; non-null only during a session */
     var dragRawRect by mutableStateOf<Rect?>(null)
         private set
 
-    /** 指针在网格内容坐标系中的位置，供网格光晕与自动滚动使用 */
+    /** Pointer position in grid content coordinates, used by the grid glow and auto-scroll */
     var pointerPosition by mutableStateOf<Offset?>(null)
         private set
 
-    /** 网格区域在窗口坐标系中的偏移（随滚动变化） */
+    /** Offset of the grid area in window coordinates (changes with scrolling) */
     internal var areaOffsetInRoot by mutableStateOf(Offset.Zero)
         private set
 
-    /** 网格视口在窗口坐标系中的上缘（窗口坐标不受滚动影响），未上报时为 0 */
+    /** Top edge of the grid viewport in window coordinates (window coordinates ignore scrolling); 0 when not yet reported */
     var viewportTopPx by mutableFloatStateOf(0f)
         private set
 
-    /** 网格视口高度（px），未上报时为 0 */
+    /** Grid viewport height (px); 0 when not yet reported */
     var viewportHeightPx by mutableFloatStateOf(0f)
         private set
 
-    /** 网格区域布局位置回调 */
+    /** Layout position callback of the grid area */
     fun onAreaPositioned(offsetInRoot: Offset) {
         areaOffsetInRoot = offsetInRoot
     }
 
-    /** 网格视口布局位置回调（窗口坐标系），供工具条放置判定与自动滚动使用 */
+    /** Layout position callback of the grid viewport (window coordinates), used for toolbar placement and auto-scroll */
     fun onViewportPositioned(topPx: Float, heightPx: Float) {
         viewportTopPx = topPx
         viewportHeightPx = heightPx
     }
 
     /**
-     * 手指在窗口坐标系中的锚点：窗口坐标不受滚动影响，
-     * 指针的网格坐标始终由锚点与网格区域当前偏移整体换算得出，
-     * 避免滚动增量与事件坐标之间的反馈振荡。
+     * The finger's anchor in window coordinates (window coordinates ignore scrolling);
+     * the pointer's grid coordinate always derives wholesale from the anchor and the grid area's current offset,
+     * avoiding feedback oscillation between scroll increments and event coordinates.
      */
     private var pointerAnchorInRoot: Offset? = null
 
-    /** 被挤开让位的卡片（id -> 让位布局）：会话期间实时更新为预览态，松手提交后持久化 */
+    /** Cards that yielded (id -> yielded layout): updated live as previews during the session and persisted once the drop is committed */
     var displaced by mutableStateOf<Map<String, CardRect>>(emptyMap())
         private set
 
-    /** 布局发生结算后的回调（用于持久化） */
+    /** Callback after a layout settle (used for persistence) */
     var onLayoutCommitted: () -> Unit = {}
 
-    /** 卡片被移除后的回调（用于同步外部与该卡片关联的数据） */
+    /** Callback after a card is removed (used to sync external data linked to that card) */
     var onCardRemoved: (cardId: String) -> Unit = {}
 
-    /** 布局结算落盘；几何未就绪时的结算属于瞬态补位，不覆写有效的持久化数据 */
+    /** Persists the layout settle; settles made before geometry is ready are transient filler and must not overwrite valid persisted data */
     private fun commitLayout() {
         if (geometryReady) onLayoutCommitted()
     }
 
-    /** 快速空间动画（拖动中的让位） */
+    /** Quick spatial animation (yielding during a drag) */
     internal var fastSpec: AnimationSpec<Rect> = spring(
         dampingRatio = Spring.DampingRatioLowBouncy,
         stiffness = Spring.StiffnessMediumLow
     )
 
-    /** 默认空间动画（结算、压实） */
+    /** Default spatial animation (settle, compaction) */
     internal var defaultSpec: AnimationSpec<Rect> = spring(
         dampingRatio = Spring.DampingRatioNoBouncy,
         stiffness = Spring.StiffnessMediumLow
@@ -196,27 +196,27 @@ class CardGridState internal constructor(
 
     private var session by mutableStateOf<AdjustSession?>(null)
 
-    /** 是否存在进行中的拖动/缩放会话 */
+    /** Whether a drag/resize session is in progress */
     val hasSession: Boolean get() = session != null
 
-    /** 待播种的持久化卡片，待网格几何就绪后生效 */
+    /** Persisted cards waiting to be seeded; take effect once grid geometry is ready */
     private var pendingSeeds: List<CardSeed>? = null
     private var pendingColumns: Int = 0
 
-    /** 已注册的卡片类型表 */
+    /** Registered card type table */
     private var typeById: Map<String, CardType> = emptyMap()
 
-    /** 网格几何是否已经依据实际容器宽度完成过计算 */
+    /** Whether grid geometry has been computed from a real container width */
     private var geometryReady = false
 
     private val animators = mutableMapOf<String, Animatable<Rect, AnimationVector4D>>()
 
-    // ---------- 播种 ----------
+    // ---------- Seeding ----------
 
     /**
-     * 播种卡片类型与持久化的卡片布局：
-     * 类型表即刻生效，卡片布局待网格几何就绪后校验修复（列数一致或未知）或按阅读顺序重排（列数不一致）。
-     * 重复 id 的卡片仅保留最先出现的一个，类型未知的卡片被丢弃。
+     * Seeds card types and persisted card layouts:
+     * The type table applies immediately; layouts are repaired (matching/unknown column count) or repacked in reading order (mismatched) once geometry is ready.
+     * Duplicate ids keep only the first occurrence; cards of unknown type are dropped.
      */
     fun seed(types: List<CardType>, seeds: List<CardSeed>, storedColumns: Int) {
         typeById = types.associateBy { it.typeId }
@@ -229,7 +229,7 @@ class CardGridState internal constructor(
     }
 
     /**
-     * @return 是否播种了待播卡片
+     * @return whether any pending cards were seeded
      */
     private fun materializePending(newColumns: Int): Boolean {
         val pending = pendingSeeds ?: return false
@@ -252,7 +252,7 @@ class CardGridState internal constructor(
         val materialized = pending.mapNotNull { seed ->
             typeById[seed.typeId]?.let { type ->
                 val layout = layouts.getValue(seed.id)
-                //折算基准取持久化跨度与存储列数，存储列数未知时以当前几何为基准
+                //The conversion basis uses the persisted span and stored column count; when the stored count is unknown, the current geometry is the basis
                 val base = if (pendingColumns > 0) {
                     ReflowBase(seed.layout.width, seed.layout.height, pendingColumns)
                 } else {
@@ -261,18 +261,18 @@ class CardGridState internal constructor(
                 GridCard(id = seed.id, type = type, layout = layout, reflowBase = base)
             }
         }
-        //播种布局以持久化数据为准，替换几何就绪前先行补位加入的同 id 卡片，避免重复
+        //Seeded layouts take the persisted data as truth, replacing same-id cards added as filler before geometry was ready, avoiding duplicates
         val seededIds = materialized.mapTo(mutableSetOf()) { it.id }
         cards = cards.filterNot { it.id in seededIds } + materialized
         materialized.forEach { animateTo(it, effectiveLayout(it), defaultSpec) }
         return true
     }
 
-    // ---------- 几何 ----------
+    // ---------- Geometry ----------
 
-    /** 依据容器宽度更新网格，列数变化时触发整体重排 */
+    /** Updates the grid from the container width; a column-count change triggers a full repack */
     fun updateGeometry(widthDp: Float, density: Density) {
-        if (widthDp <= 0f) return // 宽度无效时忽略本次测量，避免瞬态零宽把网格重排进退化的几何
+        if (widthDp <= 0f) return // ignore invalid widths so a transient zero width cannot repack the grid into a degenerate geometry
         val wasReady = geometryReady
         val oldColumns = geometry.columns
         val newGeometry = computeGridGeometry(widthDp)
@@ -283,15 +283,15 @@ class CardGridState internal constructor(
         densityFactor = density.density
         geometry = newGeometry
         geometryReady = true
-        //本次播种落位的卡片从未按旧几何布局，直接重排会按错误比例折算尺寸
+        //Cards just settled by seeding were never laid out under the old geometry; repacking right away would scale their sizes by the wrong ratio
         val materialized = materializePending(newColumns = newGeometry.columns)
-        //旧几何来自真实测量时才视为列数变化；初始默认几何只用于占位，不参与重排
+        //Only treat it as a column change when the old geometry came from a real measurement; the initial default geometry is a placeholder and never repacks
         if (!materialized && wasReady && newGeometry.columns != oldColumns && cards.isNotEmpty()) {
             reflowTo(newColumns = newGeometry.columns, oldColumns = oldColumns)
         }
     }
 
-    /** 卡片布局对应的渲染矩形（px），锚点为网格左上角 */
+    /** Render rect (px) of a card layout, anchored at the grid's top-left */
     fun rectFor(layout: CardRect): Rect = Rect(
         left = layout.x * cellPx + cardInsetPx,
         top = layout.y * cellPx + cardInsetPx,
@@ -299,7 +299,7 @@ class CardGridState internal constructor(
         bottom = layout.bottom * cellPx - cardInsetPx
     )
 
-    /** 网格内容高度（px），含一行备用行供尾部推放 */
+    /** Grid content height (px), including one spare row for pushing at the tail */
     fun gridHeightPx(): Float {
         val rows = max(
             GridEngine.totalRows(cards.map { it.layout }),
@@ -308,9 +308,9 @@ class CardGridState internal constructor(
         return (rows + 1) * cellPx
     }
 
-    // ---------- 卡片管理 ----------
+    // ---------- Card management ----------
 
-    /** 追加一张卡片，落在最上最左的空闲位置 */
+    /** Appends a card, landing at the topmost-leftmost free spot */
     fun addCard(type: CardType, id: String = UUID.randomUUID().toString()): GridCard? {
         if (cards.any { it.id == id }) return null
         val lim = type.limits.clampedFor(geometry.columns)
@@ -333,7 +333,7 @@ class CardGridState internal constructor(
         return card
     }
 
-    /** 移除一张卡片并压实剩余布局 */
+    /** Removes a card and compacts the remaining layout */
     fun removeCard(id: String) {
         val removed = cards.firstOrNull { it.id == id } ?: return
         val remaining = cards.filterNot { it.id == id }
@@ -347,9 +347,9 @@ class CardGridState internal constructor(
         onCardRemoved(id)
     }
 
-    // ---------- 命中测试（网格内容坐标系） ----------
+    // ---------- Hit testing (grid content coordinates) ----------
 
-    /** 命中测试卡片，z 序高的优先（调整态卡优先，其余列表靠后者在上，与绘制层叠顺序一致） */
+    /** Hit-tests cards topmost-first (adjust-mode card first, then later-in-list on top, matching the draw order) */
     fun cardAt(position: Offset): GridCard? {
         val ordered = cards
             .withIndex()
@@ -364,8 +364,8 @@ class CardGridState internal constructor(
     }
 
     /**
-     * 命中测试调整态卡片的缩放手柄热区，
-     * @return 卡片与命中的边，未命中返回 null
+     * Hit-tests the resize handle hot zones of the adjust-mode card,
+     * @return the card and the hit edge, or null on a miss
      */
     fun resizeEdgeAt(position: Offset): Pair<GridCard, ResizeEdge>? {
         val card = adjustingCardId?.let { id -> cards.firstOrNull { it.id == id } } ?: return null
@@ -386,9 +386,9 @@ class CardGridState internal constructor(
         ResizeEdge.Bottom -> Offset(rect.center.x, rect.bottom)
     }
 
-    // ---------- 调整会话：拖动 ----------
+    // ---------- Adjust session: drag ----------
 
-    /** 长按成功，卡片进入拖动（同时也进入了调整态） */
+    /** Long-press succeeded: the card starts dragging (and enters adjust mode too) */
     fun onCardDragStart(card: GridCard, pointer: Offset) {
         val layout = effectiveLayout(card)
         session = AdjustSession(
@@ -415,8 +415,8 @@ class CardGridState internal constructor(
             pointer.y - current.grabOffset.y
         )
         dragRawRect = Rect(offset = topLeft, size = size)
-        // 吸附到单元格，横向钳制在网格内
-        // 被压卡片依据手指位置实时做方向性让位预览
+        // Snap to cells, clamped horizontally inside the grid
+        // Covered cards run a live directional yield preview based on the finger position
         val target = IntOffset(
             (topLeft.x / cellPx).roundToInt().coerceIn(0, geometry.columns - current.card.layout.width),
             (topLeft.y / cellPx).roundToInt().coerceAtLeast(0)
@@ -436,20 +436,20 @@ class CardGridState internal constructor(
         )
     }
 
-    /** 松手：结算落位与被挤开的卡片，压实并持久化 */
+    /** On release: settles the drop and the yielded cards, compacts and persists */
     fun onCardDragEnd() {
         val current = session ?: return
         commit(previewLayoutOf(current))
     }
 
-    /** 拖动被取消：一切回到会话前的状态 */
+    /** Drag cancelled: everything returns to the pre-session state */
     fun onCardDragCancel() {
         cancelSession()
     }
 
-    // ---------- 调整会话：缩放 ----------
+    // ---------- Adjust session: resize ----------
 
-    /** 开始拖动某条边的手柄，单向调整跨度 */
+    /** Starts dragging an edge handle, adjusting the span in one direction */
     fun onResizeStart(card: GridCard, edge: ResizeEdge, pointer: Offset) {
         session = AdjustSession(
             card = card,
@@ -493,9 +493,9 @@ class CardGridState internal constructor(
     }
 
     /**
-     * 自动滚动后重算指针位置：
-     * 手指的窗口锚点不变，滚动改变了网格区域的窗口偏移，
-     * 指针的网格坐标由两者整体换算（全量覆盖，无增量累积）。
+     * Recomputes the pointer position after an auto-scroll:
+     * the finger's window anchor stays put while scrolling shifts the grid area's window offset,
+     * so the pointer's grid coordinate is recomputed from both wholesale (no incremental drift).
      */
     internal fun onAutoScroll() {
         val anchor = pointerAnchorInRoot ?: return
@@ -507,9 +507,9 @@ class CardGridState internal constructor(
         }
     }
 
-    // ---------- 调整态 ----------
+    // ---------- Adjust mode ----------
 
-    /** 指定卡片当前的交互状态 */
+    /** Current interaction state of the given card */
     fun interactionOf(cardId: String): CardInteraction {
         val current = session
         return when {
@@ -520,16 +520,16 @@ class CardGridState internal constructor(
         }
     }
 
-    /** 会话是否正作用于指定卡片（渲染时跟手矩形替换动画矩形） */
+    /** Whether the session is acting on the given card (the follow-finger rect replaces the animated rect when rendering) */
     fun isSessionCard(cardId: String): Boolean = session?.card?.id == cardId
 
-    /** 退出调整态（点击空白或返回键） */
+    /** Exits adjust mode (tapping empty space or pressing Back) */
     fun exitAdjusting() {
         if (session != null) cancelSession()
         adjustingCardId = null
     }
 
-    /** 提供给卡片内容的自身状态（缩放会话期间跟随吸附预览，实时感知尺寸变化） */
+    /** The card's own state handed to its content (follows the snap preview during resize so size changes are felt live) */
     fun cardStateOf(card: GridCard): CardState {
         val layout = if (isSessionCard(card.id)) dragPreview ?: card.layout else card.layout
         return CardState(
@@ -540,15 +540,15 @@ class CardGridState internal constructor(
         )
     }
 
-    // ---------- 渲染 ----------
+    // ---------- Rendering ----------
 
-    /** 指定卡片的渲染矩形动画器 */
+    /** Render rect animator of the given card */
     internal fun animatorFor(card: GridCard): Animatable<Rect, AnimationVector4D> =
         animators.getOrPut(card.id) {
             Animatable(rectFor(card.layout), Rect.VectorConverter)
         }
 
-    /** 单张卡片的当前渲染矩形（会话卡跟手，其余取动画值） */
+    /** A card's current render rect (session cards follow the finger, others use the animated value) */
     internal fun renderRectOf(card: GridCard): Rect {
         if (isSessionCard(card.id)) return dragRawRect ?: animatorFor(card).value
         return animatorFor(card).value
@@ -565,8 +565,8 @@ class CardGridState internal constructor(
     }
 
     /**
-     * 会话卡结算：动画器先吸附到松手时的跟手矩形，再动画到最终布局，
-     * 避免跟手渲染切换回动画渲染时发生瞬移。
+     * Settling the session card: the animator first snaps to the follow-finger rect at release, then animates to the final layout,
+     * avoiding a visual jump when switching from follow rendering back to animated rendering.
      */
     private fun settleSessionCard(card: GridCard, rawRect: Rect?, target: CardRect) {
         val animatable = animatorFor(card)
@@ -576,7 +576,7 @@ class CardGridState internal constructor(
         }
     }
 
-    // ---------- 内部：结算 ----------
+    // ---------- Internals: computation ----------
 
     internal fun effectiveLayout(card: GridCard): CardRect =
         displaced[card.id] ?: card.layout
@@ -586,7 +586,7 @@ class CardGridState internal constructor(
 
     private fun layouts(): List<CardRect> = cards.map { it.layout }
 
-    /** 应用新的吸附预览：动画过渡让位中的卡片与刚脱离让位的卡片 */
+    /** Applies a new snap preview: animates cards entering and leaving the yielded set */
     private fun applyPreview(preview: CardRect, displacements: Map<String, CardRect>) {
         if (dragPreview == preview && displaced.keys == displacements.keys) return
         dragPreview = preview
@@ -599,10 +599,10 @@ class CardGridState internal constructor(
         }
     }
 
-    /** 提交会话结果：沿用会话过程中的让位结算，压实并持久化 */
+    /** Commits the session result: reuses the session's yield computation, compacts, and persists */
     private fun commit(target: CardRect) {
         val current = session ?: return
-        // endSession 会清空跟手矩形，必须先捕获供动画器吸附
+        // endSession clears the follow-finger rect, so it must be captured first for the animator snap
         val rawRect = dragRawRect
         val settled = displaced
         cards = cards.map { card ->
@@ -612,9 +612,9 @@ class CardGridState internal constructor(
             }
         }
         cards = compactCards(cards)
-        //压实可能改变会话卡的最终落位，以列表中的最终布局为准
+        //Compaction may change the session card's final resting spot; the final layout from the list is authoritative
         val finalLayout = cards.firstOrNull { it.id == current.card.id }?.layout ?: target
-        //用户结算的跨度成为新的折算基准
+        //The user-settled span becomes the new conversion basis
         cards = cards.map { card ->
             if (card.id == current.card.id) {
                 card.copy(reflowBase = ReflowBase(card.layout.width, card.layout.height, geometry.columns))
@@ -629,7 +629,7 @@ class CardGridState internal constructor(
         commitLayout()
     }
 
-    /** 取消会话：让位卡与会话卡弹回原位，不产生任何结算 */
+    /** Cancels the session: yielded cards and the session card spring back with no computation */
     private fun cancelSession() {
         val current = session ?: return
         val rawRect = dragRawRect
@@ -649,14 +649,14 @@ class CardGridState internal constructor(
         displaced = emptyMap()
     }
 
-    /** 垂直压实全部卡片，保持实例映射 */
+    /** Vertically compacts all cards, keeping the instance mapping */
     private fun compactCards(list: List<GridCard>): List<GridCard> {
         val compacted = GridEngine.compact(list.map { it.layout }).associateBy { it.id }
         return list.map { card -> card.copy(layout = compacted.getValue(card.id)) }
     }
 
     private fun reflowTo(newColumns: Int, oldColumns: Int) {
-        //跨度自基准一次性折算，避免逐级取整把小幅增长吞噬成固定跨度
+        //Spans convert from the basis in one shot, so stepwise rounding cannot swallow small growth into a fixed span
         val respanned = cards.map { card ->
             val base = card.reflowBase
             if (base == null) {
@@ -671,7 +671,7 @@ class CardGridState internal constructor(
                 )
             }
         }
-        //跨度已折算完毕，oldColumns 传同值使重排只做位置打包
+        //Spans are already converted; passing the same oldColumns makes the repack a pure position packing
         val layouts = GridEngine.reflow(
             cards = respanned,
             oldColumns = newColumns,
@@ -685,9 +685,9 @@ class CardGridState internal constructor(
         commitLayout()
     }
 
-    // ---------- 内部：跟手矩形 ----------
+    // ---------- Internals: follow-finger rect ----------
 
-    /** 依据指针位置计算缩放时跟手的原始矩形，被拖动边钳制在最小跨度与推挤结算的跨度之间 */
+    /** Computes the raw follow-finger rect while resizing from the pointer position; the dragged edge is clamped between the min span and the push-computed span */
     private fun rawRectForResize(
         card: GridCard,
         edge: ResizeEdge,
@@ -706,7 +706,7 @@ class CardGridState internal constructor(
         val top = layout.y * cellPx + cardInsetPx
         val right = layout.right * cellPx - cardInsetPx
         val bottom = layout.bottom * cellPx - cardInsetPx
-        // 各跨度对应的被拖动边像素位置
+        // Pixel position of the dragged edge for each span
         fun edgePxStart(span: Int) = (layout.right - span) * cellPx + cardInsetPx
         fun edgePxTop(span: Int) = (layout.bottom - span) * cellPx + cardInsetPx
         fun edgePxEnd(span: Int) = (layout.x + span) * cellPx - cardInsetPx
@@ -720,12 +720,12 @@ class CardGridState internal constructor(
     }
 
     companion object {
-        /** 缩放手柄热区半径（dp） */
+        /** Resize handle hot-zone radius (dp) */
         private const val EDGE_HIT_RADIUS_DP = 24f
     }
 }
 
-/** 创建与组合生命周期绑定的 [CardGridState] */
+/** Creates a [CardGridState] bound to the composition lifecycle */
 @Composable
 fun rememberCardGridState(): CardGridState {
     val scope = rememberCoroutineScope()

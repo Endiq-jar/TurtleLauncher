@@ -46,8 +46,8 @@ internal fun randomUUID(length: Int = 12): String =
 internal fun getAButtonUUID() = randomUUID(18)
 
 /**
- * 生成一个随机的文件名
- * @param characters 字符数
+ * Generates a random file name
+ * @param characters number of characters
  */
 fun newRandomFileName(characters: Int = 8): String {
     val uuid = UUID.randomUUID()
@@ -78,7 +78,7 @@ suspend fun ControlLayout.saveToFile(file: File) {
         val parentDir = file.parentFile ?: File(".")
         parentDir.mkdirs()
 
-        // 先写入临时文件再替换目标文件
+        // Write to a temp file first, then replace the target
         val tempFile = File(parentDir, "${file.name}.tmp")
         try {
             tempFile.writeText(jsonString)
@@ -114,7 +114,7 @@ fun <E : Comparable<E>> checkInRange(
 }
 
 /**
- * 生成简单的语言标签
+ * Generates a simplified language tag
  */
 fun Locale.toSimpleLangTag(): String {
     return "$language-$country"
@@ -126,7 +126,7 @@ internal fun Locale.compareLangTag(
     return if (targetTag.contains("-")) {
         toSimpleLangTag() == targetTag
     } else {
-        //仅检查语言（不包含国家）
+        //Check the language only (no country)
         language == targetTag
     }
 }

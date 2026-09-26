@@ -138,7 +138,7 @@ private class GameDownloadViewModel(): ViewModel() {
                 },
                 onGameAlreadyInstalled = {
                     //很有可能发生在刚安装完成，再次点击安装按钮时
-                    //重置状态，避免无法发起新的安装的问题
+                    //Resets the state，避免无法发起新的安装的问题
                     installOperation = GameInstallOperation.None
                     //保险起见，再次刷新版本名称错误检查
                     refreshVersionNameCheck()

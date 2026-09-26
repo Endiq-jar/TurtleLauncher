@@ -24,7 +24,7 @@ import androidx.annotation.Nullable;
 
 public class ControlEventKeyName {
     /**
-     * 利用Java语言switch的性能，快速匹配键对应的显示名称
+     * Uses Java switch performance to quickly match a key to its display name
      */
     public static @Nullable String getNameByKey(String key) {
         return switch (key) {

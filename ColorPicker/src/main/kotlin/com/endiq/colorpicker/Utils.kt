@@ -3,7 +3,7 @@ package com.endiq.colorpicker
 import androidx.compose.ui.graphics.Color
 
 /**
- * 在颜色渐变中，根据当前X坐标获取对应的颜色
+ * Gets the color at the given X coordinate within the color gradient
  */
 internal fun List<Color>.getGradientColorAtPosition(x: Float, widthPx: Float): Color {
     if (this.isEmpty()) return Color.Black

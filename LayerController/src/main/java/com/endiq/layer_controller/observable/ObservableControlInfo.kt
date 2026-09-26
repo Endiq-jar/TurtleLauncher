@@ -35,7 +35,7 @@ class ObservableControlInfo(
     var versionName by mutableStateOf(info.versionName)
 
     /**
-     * 重置版本名称
+     * Resets the version name
      */
     fun resetVersionName() {
         versionName = info.versionName

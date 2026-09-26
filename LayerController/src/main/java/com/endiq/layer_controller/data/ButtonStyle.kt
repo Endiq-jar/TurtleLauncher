@@ -28,31 +28,31 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 不透明度取值范围
+ * Valid opacity range
  */
 val ALPHA_RANGE: ClosedFloatingPointRange<Float> = 0.0f..1.0f
 
 /**
- * 文本大小取值范围
+ * Valid text size range
  */
 val FONT_SIZE_RANGE: ClosedFloatingPointRange<Float> = 2.0f..30.0f
 
 /**
- * 默认文本大小（自定义时）
+ * Default text size (when customized)
  */
 const val DEFAULT_FONT_SIZE = 14
 
 /**
- * 边框宽度取值范围
+ * Valid border width range
  */
 val BORDER_WIDTH: ClosedFloatingPointRange<Float> = 0.0f..50.0f
 
 /**
- * @param name 样式显示名称
- * @param animateSwap 在切换状态时，是否启用动画过渡
- * @param commonStyle 共用亮色主题
- * @param lightStyle 亮色模式样式
- * @param darkStyle 暗色模式样式
+ * @param name display name of the style
+ * @param animateSwap whether to animate when switching state
+ * @param commonStyle shared light theme
+ * @param lightStyle light mode style
+ * @param darkStyle dark mode style
  */
 @Serializable
 data class ButtonStyle(
@@ -70,20 +70,20 @@ data class ButtonStyle(
     val darkStyle: StyleConfig
 ): Modifiable<ButtonStyle> {
     /**
-     * @param alpha 整体不透明度
-     * @param backgroundColor 背景颜色
-     * @param contentColor 内容颜色
-     * @param fontSize 文字大小，为null时则默认视为TextUnit.Unspecified
-     * @param borderWidth 边框粗细
-     * @param borderColor 边框颜色
-     * @param borderRadius 圆角尺寸
-     * @param pressedAlpha 按下时，整体不透明度
-     * @param pressedBackgroundColor 按下时，背景颜色
-     * @param pressedContentColor 按下时，内容颜色
-     * @param pressedFontSize 按下时，文字大小，为null时则默认视为TextUnit.Unspecified
-     * @param pressedBorderWidth 按下时，边框粗细
-     * @param pressedBorderColor 按下时，边框颜色
-     * @param pressedBorderRadius 按下时，圆角尺寸
+     * @param alpha overall opacity
+     * @param backgroundColor background color
+     * @param contentColor content color
+     * @param fontSize text size; null means TextUnit.Unspecified
+     * @param borderWidth border width
+     * @param borderColor border color
+     * @param borderRadius corner radius
+     * @param pressedAlpha overall opacity while pressed
+     * @param pressedBackgroundColor background color while pressed
+     * @param pressedContentColor content color while pressed
+     * @param pressedFontSize text size while pressed; null means TextUnit.Unspecified
+     * @param pressedBorderWidth border width while pressed
+     * @param pressedBorderColor border color while pressed
+     * @param pressedBorderRadius corner radius while pressed
      */
     @Serializable
     data class StyleConfig(
@@ -184,7 +184,7 @@ val DefaultButtonStyle = ButtonStyle(
 fun createNewButtonStyle(name: String): ButtonStyle = DefaultButtonStyle.copy(name = name, uuid = randomUUID())
 
 /**
- * 克隆一个新的ButtonStyle对象（UUID不同）
+ * Clones a new ButtonStyle (with a different UUID)
  */
 fun ButtonStyle.cloneNew(): ButtonStyle = ButtonStyle(
     name = name,

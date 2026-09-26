@@ -21,9 +21,9 @@ package com.endiq.cardgrid.model
 import androidx.compose.ui.unit.IntOffset
 
 /**
- * 网格卡片的布局矩形。
- * 坐标与尺寸均以网格单元格为单位，锚点为卡片左上角，
- * y 轴向下为正，纵向（行数）不设上限。
+ * Layout rectangle of a grid card.
+ * Coordinates and sizes are in grid cells, anchored at the card's top-left corner,
+ * the y axis points downward, and rows are unbounded.
  */
 data class CardRect(
     val id: String,

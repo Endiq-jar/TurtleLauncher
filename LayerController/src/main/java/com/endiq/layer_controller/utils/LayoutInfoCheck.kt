@@ -19,16 +19,16 @@
 package com.endiq.layer_controller.utils
 
 /**
- * 控制布局名称长度限制
+ * Control layout name length limit
  */
 const val NAME_LENGTH = 64
 
 /**
- * 作者名称长度限制
+ * Author name length limit
  */
 const val AUTHOR_NAME_LENGTH = 128
 
 /**
- * 控制布局版本名称长度限制
+ * Control layout version name length limit
  */
 const val VERSION_NAME_LENGTH = 32

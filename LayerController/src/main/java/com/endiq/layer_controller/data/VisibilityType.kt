@@ -22,24 +22,24 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 控件可见场景
+ * Widget visibility scenarios
  */
 @Serializable
 enum class VisibilityType {
     /**
-     * 始终展示
+     * Always visible
      */
     @SerialName("always")
     ALWAYS,
 
     /**
-     * 在虚拟鼠标被捕获时展示
+     * Visible while the virtual mouse is captured
      */
     @SerialName("in_game")
     IN_GAME,
 
     /**
-     * 在虚拟鼠标被释放时展示
+     * Visible while the virtual mouse is released
      */
     @SerialName("in_menu")
     IN_MENU

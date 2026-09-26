@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 摇杆方向枚举
+ * Joystick direction enum
  */
 @Serializable
 enum class JoystickDirection {

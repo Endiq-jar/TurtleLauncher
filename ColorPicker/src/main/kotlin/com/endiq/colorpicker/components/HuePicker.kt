@@ -16,9 +16,9 @@ import com.endiq.colorpicker.ColorPickerController
 import com.endiq.colorpicker.getGradientColorAtPosition
 
 /**
- * 色相条拾色器
- * @param controller [ColorPickerController] 的实例，用于控制和响应色相变化
- * @param onChangeFinished 当滚动条结束拖动后的回调
+ * Hue bar picker
+ * @param controller the [ColorPickerController] instance used to control and react to hue changes
+ * @param onChangeFinished callback after the bar finishes being dragged
  */
 @Composable
 fun HueBarPicker(
@@ -36,7 +36,7 @@ fun HueBarPicker(
         }
     }
 
-    //构造色相渐变颜色（分段实现 0~360°）
+    //Build the hue gradient colors (piecewise over 0~360°)
     val hueColors = remember {
         buildList {
             for (i in 0..6) {
@@ -61,7 +61,7 @@ fun HueBarPicker(
                 onChangeFinished = onChangeFinished
             )
     ) {
-        //绘制色相条
+        //Draw the hue bar
         drawRect(
             brush = Brush.horizontalGradient(colors = hueColors),
             size = size

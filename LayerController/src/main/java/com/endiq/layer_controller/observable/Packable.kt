@@ -20,12 +20,12 @@ package com.endiq.layer_controller.observable
 
 interface Packable<E> {
     /**
-     * @return 打包后的对象，类型为 [E]
+     * @return the packed object, of type [E]
      */
     fun pack(): E
 
     /**
-     * @return 对象自上次检查以来是否被修改过，否则为`false`
+     * @return whether the object was modified since the last check, otherwise `false`
      */
     fun isModified(): Boolean
 }

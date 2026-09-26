@@ -26,7 +26,7 @@ import androidx.compose.runtime.setValue
 import com.endiq.layer_controller.data.ButtonStyle
 
 /**
- * 可观察的StyleConfig包装类
+ * Observable StyleConfig wrapper
  */
 class ObservableStyleConfig(
     private val config: ButtonStyle.StyleConfig

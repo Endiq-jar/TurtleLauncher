@@ -26,7 +26,7 @@ import com.endiq.layer_controller.data.DefaultButtonStyle
 import com.endiq.layer_controller.data.cloneNew
 
 /**
- * 可观察的ButtonStyle包装类
+ * Observable ButtonStyle wrapper
  */
 class ObservableButtonStyle(
     private val style: ButtonStyle

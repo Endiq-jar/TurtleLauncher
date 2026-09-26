@@ -23,9 +23,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 按键点击事件
- * @param type 绑定的点击事件类型
- * @param key 事件唯一标识/事件值
+ * Key click event
+ * @param type the bound click event type
+ * @param key unique event identifier / event value
  */
 @Serializable
 data class ClickEvent(
@@ -37,43 +37,43 @@ data class ClickEvent(
     @Serializable
     enum class Type {
         /**
-         * 点击触发按键
+         * Clicking triggers a key
          */
         @SerialName("key")
         Key,
 
         /**
-         * 点击触发启动器事件
+         * Clicking triggers a launcher event
          */
         @SerialName("launcher_event")
         LauncherEvent,
 
         /**
-         * 点击开关控件层
+         * Clicking toggles the control layers
          */
         @SerialName("switch_layer")
         SwitchLayer,
 
         /**
-         * 点击强制显示控件层
+         * Clicking forcefully shows the control layers
          */
         @SerialName("show_layer")
         ShowLayer,
 
         /**
-         * 点击强制隐藏控件层
+         * Clicking forcefully hides the control layers
          */
         @SerialName("hide_layer")
         HideLayer,
 
         /**
-         * 点击发送聊天消息
+         * Clicking sends a chat message
          */
         @SerialName("send_text")
         SendText;
 
         /**
-         * 该点击事件类型是否关于控件层
+         * Whether this click event type concerns control layers
          */
         fun isAboutLayers(): Boolean =
             this == SwitchLayer ||
@@ -82,7 +82,7 @@ data class ClickEvent(
     }
 
     /**
-     * 该点击事件是否关于控件层
+     * Whether this click event concerns control layers
      */
     fun isAboutLayers(): Boolean = type.isAboutLayers()
 

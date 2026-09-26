@@ -22,9 +22,9 @@ import androidx.annotation.Nullable;
 
 public class ControlEventKeycode {
     /**
-     * 利用Java语言switch的性能，快速匹配点击事件对应的键值
-     * @param event 点击事件
-     * @return 匹配到的键值，若为null则未匹配到
+     * Uses Java switch performance to quickly match a click event to its keycode
+     * @param event the click event
+     * @return the matched keycode, or null when unmatched
      */
     public static @Nullable Short getKeycodeFromEvent(String event) {
         switch (event) {

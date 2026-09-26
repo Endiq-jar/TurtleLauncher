@@ -61,15 +61,15 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
- * 自动处理按钮拖动改变位置
- * @param onTapInEditMode 在编辑模式下点击了按钮
- * @param enableSnap 是否开启吸附功能
- * @param snapMode 吸附模式
- * @param localSnapRange 局部吸附范围（仅在Local模式下有效）
- * @param getOtherWidgets 获取其他控件的信息，用于计算吸附位置
- * @param snapThresholdValue 吸附距离阈值
- * @param drawLine 绘制吸附参考线
- * @param onLineCancel 取消吸附参考线
+ * Automatically handles dragging a button to change its position
+ * @param onTapInEditMode called when the button is tapped in edit mode
+ * @param enableSnap whether snapping is enabled
+ * @param snapMode the snap mode
+ * @param localSnapRange local snap range (only effective in Local mode)
+ * @param getOtherWidgets fetches other widgets' info to compute snap positions
+ * @param snapThresholdValue the snap distance threshold
+ * @param drawLine draws the snap guide lines
+ * @param onLineCancel cancels the snap guide lines
  */
 @Composable
 internal fun Modifier.editMode(
@@ -179,12 +179,12 @@ internal fun Modifier.editMode(
 }
 
 /**
- * 计算吸附位置
- * @param snapThreshold 吸附参考距离
- * @param snapMode 吸附模式
- * @param localSnapRange 局部吸附范围（像素）
- * @param drawLine 通知绘制参考线
- * @param onLineCancel 通知取消绘制参考线
+ * Computes the snap position
+ * @param snapThreshold the snap reference distance
+ * @param snapMode the snap mode
+ * @param localSnapRange local snap range (pixels)
+ * @param drawLine notifies to draw the guide lines
+ * @param onLineCancel notifies to cancel the guide lines
  */
 private fun calculateSnapPosition(
     currentPosition: ButtonPosition,
@@ -199,7 +199,7 @@ private fun calculateSnapPosition(
 ): ButtonPosition {
     val currentOffset = getWidgetPosition(currentPosition, widgetSize, screenSize)
 
-    //当前控件的边界
+    //Bounds of the current widget
     val currentLeft = currentOffset.x
     val currentRight = currentOffset.x + widgetSize.width
     val currentTop = currentOffset.y
@@ -216,7 +216,7 @@ private fun calculateSnapPosition(
         val otherTop = otherPosition.y
         val otherBottom = otherPosition.y + otherSize.height
 
-        //在局部模式下，检查是否在吸附范围内
+        //In Local mode, check whether within the snap range
         if (snapMode == SnapMode.Local) {
             val minDistance = calculateMinDistanceBetweenRects(
                 currentLeft, currentTop, currentRight, currentBottom,
@@ -228,15 +228,15 @@ private fun calculateSnapPosition(
             }
         }
 
-        //左/右
+        //Left/right
         val rightToLeft = abs(currentRight - otherLeft)
         val leftToRight = abs(currentLeft - otherRight)
 
-        //顶/底
+        //Top/bottom
         val bottomToTop = abs(currentBottom - otherTop)
         val topToBottom = abs(currentTop - otherBottom)
 
-        //同侧
+        //Same side
         val leftToLeft = abs(currentLeft - otherLeft)
         val rightToRight = abs(currentRight - otherRight)
         val topToTop = abs(currentTop - otherTop)
@@ -271,7 +271,7 @@ private fun calculateSnapPosition(
     val newY = newYWithLines.minByOrNull { abs(it.key - currentOffset.y) }
 
     if (newX == null && newY == null) {
-        //未找到距离最短的坐标
+        //No nearest coordinate found
         onLineCancel()
         return currentPosition
     } else {
@@ -288,7 +288,7 @@ private fun calculateSnapPosition(
 }
 
 /**
- * 自动处理按钮大小
+ * Automatically computes the button size
  */
 @Composable
 internal fun Modifier.buttonSize(
@@ -304,7 +304,7 @@ internal fun Modifier.buttonSize(
                 height = size.heightDp.dp
             )
 
-            //百分比计算方式，根据屏幕的高宽来计算按钮的大小尺寸
+            //Percentage mode: computes the button size from the screen height and width
             ButtonSize.Type.Percentage -> {
                 val screenWidth = screenSize.width.toFloat()
                 val screenHeight = screenSize.height.toFloat()
@@ -333,8 +333,8 @@ internal fun Modifier.buttonSize(
 
 
 /**
- * 自动处理按钮内容颜色
- * @param isPressed 按钮是否处于按下的状态
+ * Automatically computes the button content colors
+ * @param isPressed whether the button is pressed
  */
 @Composable
 internal fun buttonContentColorAsState(
@@ -360,8 +360,8 @@ internal fun buttonContentColorAsState(
 }
 
 /**
- * 自动处理按钮文本大小
- * @param isPressed 按钮是否处于按下的状态
+ * Automatically computes the button text size
+ * @param isPressed whether the button is pressed
  */
 @Composable
 internal fun buttonFontSizeAsState(
@@ -396,8 +396,8 @@ internal fun buttonFontSizeAsState(
 }
 
 /**
- * 自动处理按钮样式 - 优化版本
- * @param isPressed 按钮是否处于按下的状态
+ * Automatically computes the button style (optimized)
+ * @param isPressed whether the button is pressed
  */
 @Composable
 internal fun Modifier.buttonStyle(
@@ -481,7 +481,7 @@ private fun Modifier.staticButtonModifier(
 )
 
 /**
- * 根据控件的位置百分比值，计算其在屏幕上的真实位置
+ * Computes the real on-screen position from the widget's position percentages
  */
 internal fun getWidgetPosition(
     data: ObservableWidget,
@@ -493,7 +493,7 @@ internal fun getWidgetPosition(
 }
 
 /**
- * 根据控件的位置百分比值，计算其在屏幕上的真实位置
+ * Computes the real on-screen position from the widget's position percentages
  */
 internal fun getWidgetPosition(
     position: ButtonPosition,
@@ -509,7 +509,7 @@ internal fun getWidgetPosition(
 }
 
 /**
- * 用 X, Y 百分比的计算方式，计算组件在屏幕上的 Offset
+ * Computes the component's screen Offset using X/Y percentages
  */
 fun widgetPosition(
     @FloatRange(from = 0.0, to = 1.0)
@@ -525,7 +525,7 @@ fun widgetPosition(
 }
 
 /**
- * 转换为百分比位置值
+ * Converts to percentage position values
  */
 internal fun Offset.toPercentagePosition(
     widgetSize: IntSize,
@@ -543,42 +543,42 @@ internal fun Offset.toPercentagePosition(
 }
 
 /**
- * 计算两个矩形之间的最小距离（边缘到边缘）
+ * Computes the minimum distance between two rectangles (edge to edge)
  */
 internal fun calculateMinDistanceBetweenRects(
     rect1Left: Float, rect1Top: Float, rect1Right: Float, rect1Bottom: Float,
     rect2Left: Float, rect2Top: Float, rect2Right: Float, rect2Bottom: Float
 ): Float {
-    // 检查是否有重叠
+    // Check for overlap
     if (rect1Right >= rect2Left && rect1Left <= rect2Right &&
         rect1Bottom >= rect2Top && rect1Top <= rect2Bottom) {
-        return 0f // 有重叠，距离为0
+        return 0f // overlapping, distance 0
     }
 
-    // 计算水平距离
+    // Compute the horizontal distance
     val horizontalDistance = if (rect1Right < rect2Left) {
-        rect2Left - rect1Right // 矩形1在矩形2左侧
+        rect2Left - rect1Right // rect1 is left of rect2
     } else if (rect1Left > rect2Right) {
-        rect1Left - rect2Right // 矩形1在矩形2右侧
+        rect1Left - rect2Right // rect1 is right of rect2
     } else {
-        0f // 水平方向有重叠
+        0f // overlapping horizontally
     }
 
-    // 计算垂直距离
+    // Compute the vertical distance
     val verticalDistance = if (rect1Bottom < rect2Top) {
-        rect2Top - rect1Bottom // 矩形1在矩形2上方
+        rect2Top - rect1Bottom // rect1 is above rect2
     } else if (rect1Top > rect2Bottom) {
-        rect1Top - rect2Bottom // 矩形1在矩形2下方
+        rect1Top - rect2Bottom // rect1 is below rect2
     } else {
-        0f // 垂直方向有重叠
+        0f // overlapping vertically
     }
 
-    // 返回最小距离
+    // Return the minimum distance
     return if (horizontalDistance > 0 && verticalDistance > 0) {
-        // 两个矩形在对角位置，使用欧几里得距离
+        // Rectangles diagonal to each other: use the Euclidean distance
         sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance)
     } else {
-        // 至少一个方向的距离为0，返回另一个方向的距离
+        // One axis has distance 0: return the other axis's distance
         max(horizontalDistance, verticalDistance)
     }
 }

@@ -31,64 +31,64 @@ import com.endiq.layer_controller.data.VisibilityType
 import com.endiq.layer_controller.event.EventHandler
 
 /**
- * 可观察的控件包装基类
+ * Base observable widget wrapper
  */
 abstract class ObservableWidget {
     /**
-     * 编辑模式中，是否正在编辑位置
+     * In edit mode, whether the position is being edited
      */
     var isEditingPos by mutableStateOf(false)
 
     /**
-     * 编辑模式中，记录实时偏移量
+     * In edit mode, tracks the live offset
      */
     var movingOffset by mutableStateOf(Offset.Zero)
 
     /**
-     * 控件的内部渲染大小
+     * The widget's internal render size
      */
     internal var internalRenderSize by mutableStateOf(IntSize.Zero)
 
     /**
-     * 组件的内部渲染位置属性
+     * The component's internal render position property
      */
     internal abstract val internalRenderPosition: ButtonPosition
 
     /**
-     * 存入内部渲染位置属性
+     * Stores into the internal render position property
      */
     internal abstract fun putRenderPosition(position: ButtonPosition)
 
     /**
-     * 组件的样式 ID
+     * The component's style ID
      */
     internal abstract val styleId: String?
 
     /**
-     * 组件的大小属性
+     * The component's size property
      */
     internal abstract val widgetSize: ButtonSize
 
     /**
-     * 存入组件的大小属性
+     * Stores into the component's size property
      */
     internal abstract fun putWidgetSize(size: ButtonSize)
 
     /**
-     * 控件的交互行为模型
+     * Interaction behavior model of a widget
      */
     abstract val behavior: InteractionBehavior
 
     /**
-     * 确认该组件是否可以响应触摸事件
+     * Confirms whether the component may respond to touch events
      */
     open fun canTouch(): Boolean = true
 
     /**
-     * 为该控件提供触摸事件处理的 Modifier
-     * 每个控件通过自己的 pointerInput 独立处理触摸事件
-     * @param onOccupiedPointer 当占用一个指针时回调，用于隔离指针
-     * @param onReleasePointer 当释放一个指针时回调
+     * Provides the touch-handling Modifier for this widget
+     * Every widget handles touch events through its own pointerInput
+     * @param onOccupiedPointer called when a pointer gets occupied, used for pointer isolation
+     * @param onReleasePointer called when a pointer gets released
      */
     open fun Modifier.touchModifier(
         pointerEventBus: PointerEventBus,
@@ -100,37 +100,37 @@ abstract class ObservableWidget {
     ): Modifier = this
 
     /**
-     * Compose 树开始布局时
+     * When the Compose tree starts layout
      */
     abstract fun onCompositionStart(eventHandler: EventHandler?)
 
     /**
-     * Compose 树结束布局时
+     * When the Compose tree finishes layout
      */
     abstract fun onCompositionDispose(eventHandler: EventHandler?)
 
     /**
-     * 获取该组件可见类型
+     * Returns the visibility type of this component
      */
     abstract fun onCheckVisibilityType(): VisibilityType
 
     /**
-     * 判断该组件是否支持深度触摸检测和取最深操作
+     * Whether this component supports deep touch hit-testing and taking the deepest
      */
     abstract fun supportsDeepTouchDetection(): Boolean
 
     /**
-     * 检查是否要处理这个触摸事件
-     * @return 是否可以处理
+     * Checks whether this touch event should be handled
+     * @return whether it can be handled
      */
     abstract fun canProcess(): Boolean
 
     /**
-     * 响应触摸事件
-     * @param allLayers 当前所有可观察控制层
-     * @param activeWidgets 当前指针活动中的组件
-     * @param addThis 标记组件在该指针活动
-     * @param consumeEvent 是否要求标记消费事件
+     * Responds to a touch event
+     * @param allLayers all current observable control layers
+     * @param activeWidgets widgets active under the current pointer
+     * @param addThis marks this widget active under that pointer
+     * @param consumeEvent whether to mark the event consumed
      */
     abstract fun onTouchEvent(
         eventHandler: EventHandler,
@@ -141,13 +141,13 @@ abstract class ObservableWidget {
     )
 
     /**
-     * 用于判断组件是否支持 移出边界即视为松开 的交互行为
+     * Whether this component uses the "out of bounds counts as release" interaction
      */
     abstract fun isReleaseOnOutOfBounds(): Boolean
 
     /**
-     * 手指回到组件内
-     * @param allLayers 当前所有可观察控制层
+     * The finger re-entered the component
+     * @param allLayers all current observable control layers
      */
     abstract fun onPointerBackInBounds(
         eventHandler: EventHandler,
@@ -155,8 +155,8 @@ abstract class ObservableWidget {
     )
 
     /**
-     * 响应松开触摸事件
-     * @param allLayers 当前所有可观察控制层
+     * Responds to a touch release event
+     * @param allLayers all current observable control layers
      */
     abstract fun onReleaseEvent(
         eventHandler: EventHandler,

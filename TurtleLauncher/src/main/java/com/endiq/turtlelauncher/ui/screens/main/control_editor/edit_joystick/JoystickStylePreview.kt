@@ -136,7 +136,7 @@ fun JoystickStylePreview(
         val canvasSize = this.size
         val minSide = minOf(canvasSize.width, canvasSize.height)
 
-        // 背景层
+        // Background layer
         drawBackgroundLayer(
             layoutDirection = layoutDirection,
             size = canvasSize,
@@ -146,7 +146,7 @@ fun JoystickStylePreview(
             borderWidthPx = (minSide * borderRatio).coerceAtLeast(0f)
         )
 
-        // 摇杆头
+        // Joystick head
         val joystickSizePx = minSide * jsSizeRatio
         val center = Offset(canvasSize.width / 2, canvasSize.height / 2)
         drawJoystick(

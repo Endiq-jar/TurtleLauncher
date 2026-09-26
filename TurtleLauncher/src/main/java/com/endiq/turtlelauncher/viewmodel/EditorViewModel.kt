@@ -143,7 +143,7 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 移除控件层
+     * Removes a control layer
      */
     fun removeLayer(layer: ObservableControlLayer) {
         if (layer == selectedLayer) selectedLayer = null
@@ -241,15 +241,15 @@ class EditorViewModel : ViewModel() {
     }
 
     /**
-     * 复制摇杆样式
+     * Duplicates a joystick style
      */
     fun cloneJoystickStyle(style: ObservableJoystickStyle) {
         observableLayout.cloneJoystickStyle(style)
     }
 
     /**
-     * 将编辑器内层级隐藏状态同步到实际隐藏状态
-     * 供预览模式下使用正确的隐藏状态
+     * Syncs the editor-side hidden state of layers into the real hidden state
+     * so preview mode uses the correct hidden state
      */
     fun applyEditorHide() {
         observableLayout.applyEditorHide()

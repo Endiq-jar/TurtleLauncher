@@ -22,15 +22,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.IntOffset
 
-/** 卡片内容的 composable 类型，参数为卡片自身 id */
+/** Composable type of the card content; the parameter is the card's own id */
 typealias CardContent = @Composable CardState.(cardId: String) -> Unit
 
 /**
- * 用户卡片的类型声明，未声明形状时使用主题默认形状。
- * @param defaultSpan 默认跨度
- * @param limits 尺寸边界限制
- * @param shape 形状
- * @param content 该卡片的 UI 内容
+ * Type declaration of a user card; without a declared shape the theme default is used.
+ * @param defaultSpan the default span
+ * @param limits the size bounds
+ * @param shape the shape
+ * @param content the card's UI content
  */
 class CardType(
     val typeId: String,

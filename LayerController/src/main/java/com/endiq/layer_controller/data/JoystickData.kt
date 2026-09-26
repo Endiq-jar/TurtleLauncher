@@ -31,46 +31,46 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 摇杆控件大小的绝对值最小值（Dp）
+ * Minimum absolute joystick widget size (Dp)
  */
 const val JOYSTICK_MIN_SIZE_DP = 20f
 
 /**
- * 摇杆控件大小的百分比最小值（100 = 1%）
+ * Minimum joystick widget size percentage (100 = 1%)
  */
 const val JOYSTICK_MIN_SIZE_PERCENTAGE = 2000
 
 /**
- * 摇杆头大小的取值范围
+ * Valid range of the joystick head size
  */
 val JOYSTICK_KNOB_SIZE_RANGE: ClosedFloatingPointRange<Float> = 0.1f..1.0f
 
 /**
- * 死区比例取值范围
+ * Valid range of the dead-zone ratio
  */
 val JOYSTICK_DEAD_ZONE_RANGE: ClosedFloatingPointRange<Float> = 0.0f..0.9f
 
 /**
- * 锁定阈值取值范围
+ * Valid range of the lock threshold
  */
 val JOYSTICK_LOCK_THRESHOLD_RANGE: ClosedFloatingPointRange<Float> = 0.0f..1.0f
 
 /**
- * 摇杆控件数据模型
- * 摇杆始终为正方形，宽高使用同一个数值
- * @param uuid 控件唯一标识
- * @param position 控件位置
- * @param sizeType 尺寸类型（不支持 WrapContent）
- * @param sizeDp Dp 模式下的尺寸值
- * @param sizePercentage 百分比模式下的尺寸值
- * @param visibilityType 控件可见类型
- * @param joystickStyleId 引用摇杆样式ID
- * @param deadZoneRatio 死区比例
- * @param lockThreshold 前进锁阈值（相对于背景层大小的百分比）
- * @param canLock 是否支持前进锁
- * @param triggerMode 操控方式（拖动触发 / 触碰触发）
- * @param directionEvents 方向绑定事件
- * @param lockEvents 锁定时触发的事件列表
+ * Joystick widget data model
+ * The joystick is always square; width and height share one value
+ * @param uuid unique widget identifier
+ * @param position widget position
+ * @param sizeType size type (WrapContent unsupported)
+ * @param sizeDp size value in Dp mode
+ * @param sizePercentage size value in percentage mode
+ * @param visibilityType widget visibility type
+ * @param joystickStyleId referenced joystick style ID
+ * @param deadZoneRatio dead-zone ratio
+ * @param lockThreshold forward-lock threshold (as a percentage of the background layer size)
+ * @param canLock whether forward-lock is supported
+ * @param triggerMode trigger mode (drag / touch)
+ * @param directionEvents direction binding events
+ * @param lockEvents events fired while locked
  */
 @Serializable
 data class JoystickData(
@@ -108,7 +108,7 @@ data class JoystickData(
     }
 
     /**
-     * 将摇杆的尺寸数据转换为 ButtonSize（宽=高），供 editMode / buttonSize 修饰符使用
+     * Converts the joystick size into a ButtonSize (width=height) for the editMode / buttonSize modifiers
      */
     fun toButtonSize(): ButtonSize {
         val clampedDp = sizeDp.coerceAtLeast(JOYSTICK_MIN_SIZE_DP)
@@ -162,7 +162,7 @@ data class JoystickData(
 }
 
 /**
- * 默认的摇杆方向事件绑定
+ * Default joystick direction event bindings
  */
 val DefaultDirectionEvents = buildMap {
     val forward = ClickEvent(ClickEvent.Type.Key, GLFW_KEY_W)
@@ -183,7 +183,7 @@ val DefaultDirectionEvents = buildMap {
 }
 
 /**
- * 默认的摇杆锁定事件绑定
+ * Default joystick lock event bindings
  */
 val DefaultLockEvents = buildList {
     add(ClickEvent(ClickEvent.Type.Key, GLFW_KEY_LEFT_CONTROL))

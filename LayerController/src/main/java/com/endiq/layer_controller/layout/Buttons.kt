@@ -60,16 +60,16 @@ private data class ButtonTextStyle(
 )
 
 /**
- * 基础文本控件
- * @param allStyles 当前控制布局所有的样式（用于加载控件的样式）
- * @param enableSnap 编辑模式下，是否开启吸附功能
- * @param snapMode 吸附模式
- * @param localSnapRange 局部吸附范围（仅在Local模式下有效）
- * @param getOtherWidgets 获取其他控件的信息，在编辑模式下，用于计算吸附位置
- * @param snapThresholdValue 吸附距离阈值
- * @param eventHandler 事件处理器
- * @param drawLine 绘制吸附参考线
- * @param onLineCancel 取消吸附参考线
+ * Basic text widget
+ * @param allStyles all styles of the current control layout (used to load widget styles)
+ * @param enableSnap whether snapping is enabled in edit mode
+ * @param snapMode the snap mode
+ * @param localSnapRange local snap range (only effective in Local mode)
+ * @param getOtherWidgets fetches other widgets' info, used to compute snap positions in edit mode
+ * @param snapThresholdValue the snap distance threshold
+ * @param eventHandler the event handler
+ * @param drawLine draws the snap guide lines
+ * @param onLineCancel cancels the snap guide lines
  */
 @Composable
 internal fun TextButton(
@@ -170,7 +170,7 @@ internal fun TextButton(
             }
         }
     } else {
-        //虚假的控件，使用一个空的组件，只是让Layout有东西能测
+        //A fake widget using an empty component, just so the Layout has something to measure
         Spacer(
             modifier = Modifier.buttonSize(data, screenSize)
         )
@@ -178,7 +178,7 @@ internal fun TextButton(
 }
 
 /**
- * 仅渲染控件外观的组件
+ * Component that only renders the widget appearance
  */
 @Composable
 fun RendererStyleBox(

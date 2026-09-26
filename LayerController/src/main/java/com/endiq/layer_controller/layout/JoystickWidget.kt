@@ -73,7 +73,7 @@ import com.endiq.layer_controller.utils.snap.GuideLine
 import com.endiq.layer_controller.utils.snap.SnapMode
 
 /**
- * 摇杆控件渲染组件
+ * Joystick widget renderer
  */
 @Composable
 internal fun JoystickWidgetRenderer(
@@ -100,7 +100,7 @@ internal fun JoystickWidgetRenderer(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
 
-    // 获取样式
+    // Get the style
     val joystickStyle = data.joystickStyleId?.let { id ->
         joystickStyles.find { it.uuid == id }
     }
@@ -111,9 +111,9 @@ internal fun JoystickWidgetRenderer(
         joystickStyle?.darkStyle ?: DefaultObservableJoystickStyle.darkStyle
     }
 
-    //已经经过验证，如果使用Modifier.alpha设置不透明度，会导致摇杆强制裁切超出范围的内容
-    //graphicsLayer(alpha = alpha, clip = false)也一样
-    //这里暂时只能统一修改颜色的alpha
+    //Verified: setting opacity via Modifier.alpha makes the joystick forcibly clip out-of-range content
+    //graphicsLayer(alpha = alpha, clip = false) behaves the same
+    //For now the alpha can only be changed on the colors uniformly
     val alpha = themeConfig.alpha
     val currentBackgroundColor = remember(themeConfig.backgroundColor, alpha) {
         themeConfig.backgroundColor.applyAlpha(alpha)
@@ -134,7 +134,7 @@ internal fun JoystickWidgetRenderer(
         themeConfig.borderColor.applyAlpha(alpha)
     }
 
-    // 形状
+    // Shape
     val backgroundShape = remember(themeConfig.backgroundShape) {
         if (themeConfig.backgroundShape == 50) CircleShape
         else RoundedCornerShape(percent = themeConfig.backgroundShape)
@@ -144,23 +144,23 @@ internal fun JoystickWidgetRenderer(
         else RoundedCornerShape(percent = themeConfig.joystickShape)
     }
 
-    // 边框宽度比例
+    // Border width ratio
     val borderWidthRatio = remember(themeConfig.borderWidthRatio) {
         (themeConfig.borderWidthRatio.toFloat() / 100f).coerceIn(0.0f, 0.5f)
     }
 
-    // 摇杆头大小
+    // Joystick head size
     val joystickSizeRatio = remember(themeConfig.joystickSize) {
         themeConfig.joystickSize.coerceIn(0.0f, 1.0f)
     }
 
-    //使用这个标记来判断是否渲染摇杆组件，未完全初始化时，可能导致组件闪烁
+    //This flag guards the joystick rendering; rendering before full initialization can flicker
     var initialized by remember { mutableStateOf(false) }
 
-    // 当大小变化时重新初始化
+    // Re-initialize when the size changes
     var currentSize by remember { mutableStateOf(IntSize.Zero) }
 
-    // 当形状变化时重新计算区域
+    // Recompute the region when the shape changes
     LaunchedEffect(backgroundShape) {
         if (visible && currentSize != IntSize.Zero) {
             val sizePx = Size(currentSize.width.toFloat(), currentSize.height.toFloat())
@@ -178,7 +178,7 @@ internal fun JoystickWidgetRenderer(
                 .onSizeChanged { size ->
                     currentSize = size
                     if (size != IntSize.Zero) {
-                        // 计算并设置背景区域
+                        // Compute and set the background region
                         val sizePx = Size(size.width.toFloat(), size.height.toFloat())
                         data.backgroundRegion = backgroundShape.toRegion(
                             size = sizePx,
@@ -225,7 +225,7 @@ internal fun JoystickWidgetRenderer(
                     val minSide = minOf(size.width, size.height)
                     val bgCenter = Offset(size.width / 2f, size.height / 2f)
 
-                    // 背景层
+                    // Background layer
                     drawBackgroundLayer(
                         layoutDirection = layoutDirection,
                         size = Size(size.width, size.height),
@@ -235,7 +235,7 @@ internal fun JoystickWidgetRenderer(
                         borderWidthPx = (minSide * borderWidthRatio).coerceAtLeast(0f)
                     )
 
-                    // 摇杆头
+                    // Joystick head
                     val knobSize = minSide * joystickSizeRatio
                     val knobCenter = Offset(
                         bgCenter.x + data.knobOffset.x,
@@ -253,7 +253,7 @@ internal fun JoystickWidgetRenderer(
                         shape = joystickShape
                     )
 
-                    // 绘制锁定标记
+                    // Draw the lock mark
                     if (data.isLocked) {
                         drawCircle(
                             color = currentLockMarkColor,
@@ -283,7 +283,7 @@ internal fun JoystickWidgetRenderer(
 }
 
 /**
- * 绘制背景层
+ * Draws the background layer
  */
 private fun DrawScope.drawBackgroundLayer(
     layoutDirection: LayoutDirection,
@@ -326,7 +326,7 @@ private fun DrawScope.drawBackgroundLayer(
 }
 
 /**
- * 绘制摇杆层
+ * Draws the joystick layer
  */
 private fun DrawScope.drawJoystick(
     layoutDirection: LayoutDirection,

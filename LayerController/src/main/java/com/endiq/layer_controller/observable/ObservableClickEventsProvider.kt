@@ -22,7 +22,7 @@ import com.endiq.layer_controller.data.JoystickDirection
 import com.endiq.layer_controller.event.ClickEvent
 
 /**
- * 可观察控件的点击事件编辑提供器
+ * Click-event editing provider for observable widgets
  */
 abstract class ObservableClickEventsProvider {
     abstract val clickEvents: List<ClickEvent>
@@ -33,7 +33,7 @@ abstract class ObservableClickEventsProvider {
 }
 
 /**
- * 为普通按钮控件创建点击事件编辑提供器
+ * Creates a click-event editing provider for normal button widgets
  */
 fun clickEventsProvider(data: ObservableNormalData): ObservableClickEventsProvider {
     return object : ObservableClickEventsProvider() {
@@ -55,7 +55,7 @@ fun clickEventsProvider(data: ObservableNormalData): ObservableClickEventsProvid
 }
 
 /**
- * 为摇杆控件创建锁定状态触发事件编辑提供其
+ * Creates a lock-state trigger event editor provider for joystick widgets
  */
 fun joystickLockEventsProvider(data: ObservableJoystickData): ObservableClickEventsProvider {
     return object : ObservableClickEventsProvider() {
@@ -79,7 +79,7 @@ fun joystickLockEventsProvider(data: ObservableJoystickData): ObservableClickEve
 }
 
 /**
- * 为摇杆控件创建方向触发事件编辑提供其
+ * Creates a direction trigger event editor provider for joystick widgets
  */
 fun joystickDirectionEventsProvider(
     data: ObservableJoystickData,

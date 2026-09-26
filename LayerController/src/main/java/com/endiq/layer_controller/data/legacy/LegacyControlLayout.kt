@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 旧版编辑器布局（版本 8~11）中 special 字段
+ * The special field in legacy editor layouts (versions 8~11)
  */
 @Serializable
 data class LegacySpecial(
@@ -32,7 +32,7 @@ data class LegacySpecial(
 )
 
 /**
- * 旧版 [JoystickStyle]
+ * Legacy [JoystickStyle]
  */
 @Serializable
 data class LegacyJoystickStyle(

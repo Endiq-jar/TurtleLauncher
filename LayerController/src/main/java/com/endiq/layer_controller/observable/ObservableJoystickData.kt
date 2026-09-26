@@ -55,7 +55,7 @@ import kotlin.math.atan2
 import kotlin.math.sqrt
 
 /**
- * 可观察的摇杆控件包装类
+ * Observable joystick widget wrapper
  */
 class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     val uuid: String = data.uuid
@@ -86,35 +86,35 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     var lockEvents by mutableStateOf(data.lockEvents)
 
     /**
-     * 运行时的方向状态
+     * Runtime direction state
      */
     var currentDirection by mutableStateOf(JoystickDirection.None)
         private set
 
     /**
-     * 摇杆头在背景层内的偏移位置（相对于背景层中心）
+     * Offset of the joystick head inside the background layer (relative to its center)
      */
     var knobOffset by mutableStateOf(Offset.Zero)
 
     /**
-     * 是否处于前进锁定状态
+     * Whether forward-lock is active
      */
     var isLocked by mutableStateOf(false)
         private set
 
     /**
-     * 是否可以进行前进锁定
+     * Whether forward-lock is available
      */
     var canLockState by mutableStateOf(false)
         private set
 
     /**
-     * 当前占用的指针ID
+     * Currently occupying pointer ID
      */
     internal var activePointer: PointerId? = null
 
     /**
-     * 上一次拖动的位置
+     * Last dragged position
      */
     private var lastDragPosition = Offset.Zero
 
@@ -149,13 +149,13 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     override fun onCompositionStart(eventHandler: EventHandler?) {}
 
     override fun onCompositionDispose(eventHandler: EventHandler?) {
-        // 释放时取消所有方向按键
+        // Cancel all direction keys on release
         if (currentDirection != JoystickDirection.None) {
             val events = directionEvents[currentDirection] ?: emptyList()
             eventHandler?.onKeyPressed(events, false)
             currentDirection = JoystickDirection.None
         }
-        // 释放锁定事件
+        // Release lock events
         if (canLockState || isLocked) {
             eventHandler?.onKeyPressed(lockEvents, false)
             isLocked = false
@@ -192,21 +192,21 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     ) {}
 
     /**
-     * 为锁定状态添加触发事件
+     * Adds a trigger event to the locked state
      */
     fun addLockEvent(event: ClickEvent) {
         lockEvents += event
     }
 
     /**
-     * 为锁定状态移除触发事件
+     * Removes a trigger event from the locked state
      */
     fun removeLockEvent(filterNot: (ClickEvent) -> Boolean) {
         lockEvents = lockEvents.filterNot(filterNot)
     }
 
     /**
-     * 为指定方向添加触发事件
+     * Adds a trigger event for the given direction
      */
     fun addDirectionEvent(
         direction: JoystickDirection?,
@@ -221,7 +221,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     }
 
     /**
-     * 为指定方向移除触发事件
+     * Removes a trigger event for the given direction
      */
     fun removeDirectionEvent(
         direction: JoystickDirection?,
@@ -234,7 +234,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     }
 
     /**
-     * 计算方向并触发事件
+     * Computes the direction and triggers events
      */
     private fun updateDirection(
         newDirection: JoystickDirection,
@@ -242,13 +242,13 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     ) {
         if (newDirection == currentDirection) return
 
-        // 释放旧方向的事件
+        // Release the old direction's events
         if (currentDirection != JoystickDirection.None) {
             val oldEvents = directionEvents[currentDirection] ?: emptyList()
             eventHandler.onKeyPressed(oldEvents, false)
         }
 
-        // 按下新方向的事件
+        // Press the new direction's events
         if (newDirection != JoystickDirection.None) {
             val newEvents = directionEvents[newDirection] ?: emptyList()
             eventHandler.onKeyPressed(newEvents, true)
@@ -258,7 +258,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     }
 
     /**
-     * 更新摇杆状态（方向 + 锁定判断）
+     * Updates the joystick state (direction + lock decision)
      */
     private fun updateJoystickState(
         position: Offset,
@@ -296,7 +296,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
     }
 
     /**
-     * 背景区域缓存，在 touchModifier 中使用，由 JoystickWidgetRenderer 设置
+     * Cached background region, used in touchModifier and set by JoystickWidgetRenderer
      */
     internal var backgroundRegion: Region = Region()
 
@@ -312,7 +312,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
             while (true) {
                 val event = awaitPointerEvent()
 
-                // 按下事件
+                // Press event
                 event.changes
                     .filter { it.changedToDown() }
                     .forEach { change ->
@@ -321,19 +321,19 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
                         if (activePointer == null) {
                             if (!pointerEventBus.checkOccupiedPointers(pointerId)) {
                                 val pos = change.position
-                                // 命中检测：触摸必须在背景区域内
+                                // Hit test: the touch must land inside the background region
                                 if (backgroundRegion.contains(pos.x.toInt(), pos.y.toInt())) {
                                     change.consume()
                                     activePointer = pointerId
                                     onOccupiedPointer(pointerId)
                                     lastDragPosition = pos
-                                    // 如果当前锁定中，解锁
+                                    // If currently locked, unlock
                                     if (isLocked) {
                                         isLocked = false
                                     }
 
                                     if (triggerMode == JoystickTriggerMode.TOUCH) {
-                                        // 触碰触发时立即更新摇杆状态
+                                        // In touch-trigger mode, update the joystick state immediately
                                         val centerPoint = Offset(
                                             internalRenderSize.width / 2f,
                                             internalRenderSize.height / 2f
@@ -355,7 +355,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
                         }
                     }
 
-                // 移动事件
+                // Move event
                 activePointer?.let { pointerId ->
                     event.changes
                         .firstOrNull { it.id == pointerId && it.positionChanged() && !it.isConsumed }
@@ -385,7 +385,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
                         }
                 }
 
-                // 释放事件
+                // Release event
                 event.changes
                     .filter { it.changedToUpIgnoreConsumed() }
                     .forEach { change ->
@@ -496,7 +496,7 @@ class ObservableJoystickData(data: JoystickData) : ObservableWidget() {
             val vector = joystickPosition - backgroundCenter
             val distance = sqrt(vector.x * vector.x + vector.y * vector.y)
 
-            //如果距离小于死区半径，认为是无方向
+            //Distances below the dead-zone radius count as no direction
             if (distance < deadZoneRadius) {
                 return JoystickDirection.None
             }

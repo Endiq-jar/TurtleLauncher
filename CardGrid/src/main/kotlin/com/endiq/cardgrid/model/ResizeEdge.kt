@@ -18,5 +18,5 @@
 
 package com.endiq.cardgrid.model
 
-/** 缩放手柄所在的边 */
+/** The edge the resize handle sits on */
 enum class ResizeEdge { Start, Top, End, Bottom }

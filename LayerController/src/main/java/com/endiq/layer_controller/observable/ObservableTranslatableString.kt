@@ -38,7 +38,7 @@ class ObservableTranslatableString(
     private fun getMatchQueues() = text.matchQueue.map { ObservableLocalizedString(it) }
 
     /**
-     * 重置状态
+     * Resets the state
      */
     fun reset() {
         default = text.default
@@ -57,7 +57,7 @@ class ObservableTranslatableString(
     }
 
     /**
-     * 移除可翻译的字符串
+     * Removes a translatable string
      */
     fun deleteLocalizedString(string: ObservableLocalizedString) {
         matchQueue.removeIf {
@@ -66,7 +66,7 @@ class ObservableTranslatableString(
     }
 
     /**
-     * 添加可翻译的字符串
+     * Adds a translatable string
      */
     fun addLocalizedString(string: LocalizedString = EmptyLocalizedString) {
         if (matchQueue.any { it.languageTag == string.languageTag && it.value == string.value }) return

@@ -22,12 +22,12 @@ import com.endiq.layer_controller.data.TextAlignment
 import com.endiq.layer_controller.layout.ControlLayout
 
 /**
- * 控件编辑器的版本号
+ * Version number of the control editor
  */
 internal const val EDITOR_VERSION = 12
 
 /**
- * 自动处理并逐步更新控制布局到新版编辑器
+ * Automatically processes and migrates control layouts to newer editor versions step by step
  */
 internal fun updateLayoutToNew(
     layout: ControlLayout
@@ -44,7 +44,7 @@ internal fun updateLayoutToNew(
 }
 
 /**
- * 1 -> 2: 控件位置、控件大小 数值精确到小数点后2位
+ * 1 -> 2: widget position and size values rounded to 2 decimal places
  */
 private fun update1To2(
     layout: ControlLayout
@@ -81,7 +81,7 @@ private fun update1To2(
 )
 
 /**
- * 2 -> 3: 支持在实体鼠标、手柄操控后，隐藏控件层
+ * 2 -> 3: supports hiding widget layers while controlled by a physical mouse or gamepad
  */
 private fun update2To3(
     layout: ControlLayout
@@ -96,7 +96,7 @@ private fun update2To3(
 )
 
 /**
- * 3 -> 4: 支持为文本设置文本对齐、粗体、斜体、下划线
+ * 3 -> 4: supports text alignment, bold, italic, underline
  */
 private fun update3To4(
     layout: ControlLayout
@@ -125,14 +125,14 @@ private fun update3To4(
 )
 
 /**
- * 4 -> 5: 支持设置点击事件: `强制显示控件层`，`强制隐藏控件层`
- * 5 -> 6: 支持设置点击事件: `发送消息`
- * 6 -> 7: 支持设置文本大小
- * 7 -> 8: 支持扩展设定: 可设定启动器层的摇杆的样式
- * 8 -> 9: 按钮大小最小可调至 1%
- * 9 -> 10: 在使用摇杆时，支持隐藏控件层
+ * 4 -> 5: supports click events: `force show layers`, `force hide layers`
+ * 5 -> 6: supports click events: `send message`
+ * 6 -> 7: supports setting text size
+ * 7 -> 8: supports extension settings: the joystick style of launcher layers is configurable
+ * 8 -> 9: button size can go as low as 1%
+ * 9 -> 10: supports hiding widget layers while using a joystick
  *
- * 不需要变更控制布局文件，仅提升版本号
+ * No layout-file change needed; only bump the version number
  */
 private fun update4To10(
     layout: ControlLayout
@@ -141,7 +141,7 @@ private fun update4To10(
 )
 
 /**
- * 10 -> 11: 控件外观支持不区分系统主题
+ * 10 -> 11: widget appearance supports ignoring the system theme
  */
 private fun update10To11(
     layout: ControlLayout
@@ -149,14 +149,14 @@ private fun update10To11(
     editorVersion = 11,
     styles = layout.styles.map { style ->
         style.copy(
-            //兼容旧布局，启用主题区分
+            //Legacy layouts keep theme differentiation enabled
             commonStyle = false
         )
     }
 )
 
 /**
- * 11 -> 12: 控件层支持摇杆控件
+ * 11 -> 12: control layers support joystick widgets
  */
 private fun update11To12(
     layout: ControlLayout

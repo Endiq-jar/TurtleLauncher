@@ -177,6 +177,38 @@ class ExperimentalSettingsFragment :
             binding.aiSkinFilter
         )
 
+        // Turtle AI: language, optional cloud brain, optional web search. See
+        // feature/ai/TurtleAiLanguage.kt, TurtleAiBackend.kt and TurtleAiWebSearch.kt.
+        BaseSettingsWrapper(context, binding.aiLanguageLayout) {
+            promptSetAssistantLanguage(context)
+        }
+
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.aiAssistantCloudBrain,
+            binding.aiBrainLayout,
+            binding.aiBrain
+        )
+
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.aiWebSearchEnabled,
+            binding.aiWebSearchLayout,
+            binding.aiWebSearch
+        )
+
+        BaseSettingsWrapper(context, binding.aiSearchProviderLayout) {
+            promptSetSearchProvider(context)
+        }
+
+        BaseSettingsWrapper(context, binding.aiSearchUrlLayout) {
+            promptSetSearchUrl(context)
+        }
+
+        BaseSettingsWrapper(context, binding.aiSearchKeyLayout) {
+            promptSetSearchApiKey(context)
+        }
+
         BaseSettingsWrapper(context, binding.dependencyGraphLayout) {
             val version = com.endiq.turtlelauncher.feature.version.VersionsManager.getCurrentVersion()
             if (version == null) {
@@ -262,6 +294,70 @@ class ExperimentalSettingsFragment :
             .setInputType(android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)
             .setConfirmListener { editText, _ ->
                 com.endiq.turtlelauncher.setting.AllSettings.aiApiKey.put(editText.text.toString().trim()).save()
+                Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
+    }
+
+    /** Language picker for the Assistant: the same list [TurtleAiLanguage] ships lines for. */
+    private fun promptSetAssistantLanguage(context: android.content.Context) {
+        val entries = com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage.pickerEntries()
+        val labels = entries.map { it.second }.toTypedArray()
+        val current = runCatching { AllSettings.aiLanguage.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage.AUTO)
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_language_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                AllSettings.aiLanguage.put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /** Search provider picker; "custom" is what makes the URL/key rows below matter. */
+    private fun promptSetSearchProvider(context: android.content.Context) {
+        val entries = com.endiq.turtlelauncher.feature.ai.TurtleAiWebSearch.PICKER
+        val labels = entries.map { it.second }.toTypedArray()
+        val current = runCatching { AllSettings.aiSearchProvider.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiWebSearch.PROVIDER_AUTO)
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_search_provider_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                AllSettings.aiSearchProvider.put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun promptSetSearchUrl(context: android.content.Context) {
+        val current = runCatching { AllSettings.aiSearchUrl.getValue() }.getOrDefault("")
+        com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
+            .setTitle(R.string.setting_ai_search_url_title)
+            .setHintText(R.string.setting_ai_search_url_desc)
+            .setEditText(current)
+            .setInputType(android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI)
+            .setConfirmListener { editText, _ ->
+                AllSettings.aiSearchUrl.put(editText.text.toString().trim()).save()
+                Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
+    }
+
+    private fun promptSetSearchApiKey(context: android.content.Context) {
+        val current = runCatching { AllSettings.aiSearchApiKey.getValue() }.getOrDefault("")
+        com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
+            .setTitle(R.string.setting_ai_search_key_title)
+            .setHintText(R.string.setting_ai_search_key_desc)
+            .setEditText(current)
+            .setInputType(android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            .setConfirmListener { editText, _ ->
+                AllSettings.aiSearchApiKey.put(editText.text.toString().trim()).save()
                 Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
                 true
             }

@@ -626,6 +626,154 @@
                 </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
     
                 <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiLanguage_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+                    <TextView
+                        android:id="@+id/aiLanguage_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_language_title"
+                        android:textColor="@color/turtle_primary_text" />
+                    <TextView
+                        android:id="@+id/aiLanguage_summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_language_desc" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+    
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiBrain_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+    
+                    <TextView
+                        android:id="@+id/aiBrain_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiBrain"
+                        android:text="@string/setting_ai_brain_title"
+                        android:textColor="@color/turtle_primary_text" />
+    
+                    <TextView
+                        android:id="@+id/aiBrain_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/aiBrain_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiBrain"
+                        android:text="@string/setting_ai_brain_desc" />
+    
+                    <Switch
+                        android:id="@+id/aiBrain"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:checked="false"/>
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+    
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiWebSearch_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+    
+                    <TextView
+                        android:id="@+id/aiWebSearch_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiWebSearch"
+                        android:text="@string/setting_ai_web_search_title"
+                        android:textColor="@color/turtle_primary_text" />
+    
+                    <TextView
+                        android:id="@+id/aiWebSearch_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/aiWebSearch_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/aiWebSearch"
+                        android:text="@string/setting_ai_web_search_desc" />
+    
+                    <Switch
+                        android:id="@+id/aiWebSearch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:checked="false"/>
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+    
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiSearchProvider_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+                    <TextView
+                        android:id="@+id/aiSearchProvider_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_search_provider_title"
+                        android:textColor="@color/turtle_primary_text" />
+                    <TextView
+                        android:id="@+id/aiSearchProvider_summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_search_provider_desc" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+    
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiSearchUrl_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+                    <TextView
+                        android:id="@+id/aiSearchUrl_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_search_url_title"
+                        android:textColor="@color/turtle_primary_text" />
+                    <TextView
+                        android:id="@+id/aiSearchUrl_summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_search_url_desc" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+    
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/aiSearchKey_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+                    <TextView
+                        android:id="@+id/aiSearchKey_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_search_key_title"
+                        android:textColor="@color/turtle_primary_text" />
+                    <TextView
+                        android:id="@+id/aiSearchKey_summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/setting_ai_search_key_desc" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+    
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
                     android:id="@+id/configEditor_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -1,0 +1,22 @@
+# Build outputs and local state (produced by Gradle / AGP, never committed)
+build/
+*/build/
+.gradle/
+local.properties
+.externalNativeBuild/
+.cxx/
+release/
+*.apk
+*.ap_
+*.aab
+*.apk.idsig
+*.idsig
+output-metadata.json
+gen-external-apklibs/
+lint-results*.html
+lint-results*.xml
+
+# IDE
+.idea/
+.DS_Store
+*.hprof

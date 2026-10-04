@@ -333,16 +333,42 @@ class AllSettings {
         @JvmStatic val aiSkinFilterEnabled       = BooleanSettingUnit("aiSkinFilterEnabled", false)
 
         // ── TurtleLauncher built-in AI Assistant (top bar → Assistant) ────────
-        /** The Assistant screen itself runs entirely on-device - it's a local
-         *  knowledge base + live-launcher-state reader (see feature/ai/TurtleAssistant.kt),
-         *  so unlike aiCrashHelpEnabled/aiSkinFilterEnabled above it needs no API key,
-         *  no account and no network at all. This toggle only hides/shows the top-bar
-         *  entry point, for players who don't want the button there. */
+        /** The Assistant works with no API key, no account and no network: it's a local
+         *  knowledge base + live-launcher-state reader (see feature/ai/TurtleAssistant.kt).
+         *  Its two optional extras - answering in other languages and searching the internet
+         *  (aiAssistantCloudBrain / aiWebSearchEnabled below) - are separately opted into.
+         *  This toggle only hides/shows the top-bar entry point. */
         @JvmStatic val aiAssistantEnabled        = BooleanSettingUnit("aiAssistantEnabled", true)
         /** Keep the Assistant's conversation across launcher restarts (JSON file under
          *  the app's private files dir - see feature/ai/AssistantHistory.kt). Off = every
          *  session starts from a clean transcript. */
         @JvmStatic val aiAssistantHistoryEnabled = BooleanSettingUnit("aiAssistantHistoryEnabled", true)
+
+        // ── Turtle AI: language, optional cloud brain, optional web search ──────
+        // The Assistant still works with none of this configured: on-device rule engine,
+        // English answers. These four switches are what let it talk to the user in their own
+        // language or answer things the launcher itself has no opinion about.
+        // See feature/ai/TurtleAiLanguage.kt, TurtleAiBackend.kt and TurtleAiWebSearch.kt.
+        /** Language the Assistant answers in. Default "auto" follows the launcher/device
+         *  language; any other value is a BCP-47 tag ("hi", "pt", "zh-Hans", ...). The
+         *  Assistant also mirrors the language of whatever the user writes in, regardless of
+         *  this setting, because that is what a person expects from a chat box. */
+        @JvmStatic val aiLanguage                = StringSettingUnit("aiLanguage", "auto")
+        /** Let the Assistant use the OpenAI key above (aiApiKey) for open questions and to
+         *  answer in the user's language. Off = the Assistant never leaves the device. */
+        @JvmStatic val aiAssistantCloudBrain     = BooleanSettingUnit("aiAssistantCloudBrain", false)
+        /** Let the Assistant search the internet when the on-device knowledge base has no
+         *  answer. Off by default: turning it on is what sends the question to a third party
+         *  (Minecraft Wiki / Wikipedia / DuckDuckGo, or the custom endpoint below). */
+        @JvmStatic val aiWebSearchEnabled        = BooleanSettingUnit("aiWebSearchEnabled", false)
+        /** Search provider: "auto" (Minecraft Wiki, then Wikipedia, then DuckDuckGo), one of
+         *  "minecraftwiki" / "wikipedia" / "duckduckgo", or "custom". */
+        @JvmStatic val aiSearchProvider          = StringSettingUnit("aiSearchProvider", "auto")
+        /** Endpoint template for the "custom" provider - must contain "{query}" (or "%s").
+         *  Expected response: SearXNG-compatible JSON, {"results":[{"title","url","content"}]}. */
+        @JvmStatic val aiSearchUrl               = StringSettingUnit("aiSearchUrl", "")
+        /** Optional bearer token for the custom search endpoint; empty for keyless providers. */
+        @JvmStatic val aiSearchApiKey            = StringSettingUnit("aiSearchApiKey", "")
 
         // Custom DNS resolver for the launcher's own network requests (downloads/API
         // calls), independent of the download-source (BMCLAPI) mirror above.

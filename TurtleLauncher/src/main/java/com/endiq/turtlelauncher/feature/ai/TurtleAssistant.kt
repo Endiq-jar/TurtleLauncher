@@ -10,6 +10,7 @@ import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.feature.version.VersionsManager
 import com.endiq.turtlelauncher.renderer.RendererCatalog
 import com.endiq.turtlelauncher.renderer.Renderers
+import com.endiq.turtlelauncher.renderer.renderers.HolyGL4ESRenderer
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.utils.ZHTools
 import com.endiq.turtlelauncher.utils.path.PathManager
@@ -36,21 +37,15 @@ object TurtleAssistant {
     /** A finished assistant turn: the text to show plus optional suggestion chips. */
     data class Reply(val text: String, val suggestions: List<String> = emptyList())
 
-    /** First message shown when a conversation starts. */
+    /**
+     * First message shown when a conversation starts - in the launcher's language, so the
+     * assistant speaks the user's language from the very first line (see [TurtleAiLanguage]).
+     */
     @JvmStatic
     fun greeting(context: Context): Reply {
-        val appName = runCatching { InfoDistributor.APP_NAME }.getOrDefault("TurtleLauncher")
+        val shell = TurtleAiLanguage.shell(TurtleAiLanguage.resolve(context))
         return Reply(
-            "Hi! I'm the $appName assistant. I run entirely on this device - no account, " +
-                "no API key, no internet needed.\n\n" +
-                "Ask me about renderers, crashes, memory, controls, mods, skins, accounts, " +
-                "friends/LAN play, or type /status for a summary of this device and your " +
-                "current setup.\n\n" +
-                "You can also share a game log with me: use Android's share menu on any " +
-                "log file or log text and pick this launcher - I'll read it and tell you " +
-                "what went wrong.\n\n" +
-                "I only know about this launcher, so if I can't help I'll say so rather " +
-                "than guess.",
+            shell.greeting,
             listOf("Status", "Best renderer?", "Why did my game crash?", "Not enough RAM?")
         )
     }
@@ -65,7 +60,11 @@ object TurtleAssistant {
     @JvmStatic
     fun respond(context: Context, input: String): Reply {
         val raw = input.trim()
-        if (raw.isEmpty()) return Reply("Type a question, or tap one of the suggestions.")
+        // The language this message should be answered in: what the user actually wrote in,
+        // falling back to the launcher/device language. See TurtleAiLanguage.
+        val language = TurtleAiLanguage.replyLanguage(context, raw)
+        val shell = TurtleAiLanguage.shell(language)
+        if (raw.isEmpty()) return Reply("Type a question, or tap one of the suggestions.", startingSuggestions())
 
         // Slash-commands: explicit, so they always win over keyword matching.
         when (raw.lowercase(Locale.ROOT)) {
@@ -75,22 +74,133 @@ object TurtleAssistant {
             "/renderer", "/renderers" -> return topicReply(context, "renderer")
             "/tips" -> return Reply(tipsAnswer(context), listOf("Best renderer?", "Not enough RAM?"))
             "/about" -> return Reply(aboutAnswer(context))
+            "/language", "/lang" -> return languageReply(context, language)
         }
 
         val normalized = normalize(raw)
         val scored = topics.map { it to score(normalized, it.keywords) }
             .sortedWith(compareByDescending<Pair<Topic, Int>> { it.second }.thenBy { it.first.id })
         val best = scored.firstOrNull()
+        // Same rule as before: a very weak match (one short keyword) is not an answer.
+        val matchedTopic = best?.takeIf { it.second >= 2 }?.first
 
-        if (best == null || best.second <= 0) {
-            return Reply(unknownAnswer(raw), startingSuggestions())
+        val brainReady = TurtleAiBackend.isConfigured(context)
+
+        // Anyone writing in another language talks to the brain whenever it is available, even
+        // for a question the (English-only) rule engine knows: the local answer is passed along
+        // as the authority, so the reply stays faithful to this launcher and comes back in the
+        // user's own language. See TurtleAiLanguage's class doc.
+        if (brainReady && (!TurtleAiLanguage.isEnglish(language) || matchedTopic == null)) {
+            return brainReply(
+                context = context,
+                question = raw,
+                language = language,
+                shell = shell,
+                localAnswer = matchedTopic?.let { safeAnswer(context, it) },
+                suggestions = matchedTopic?.followUps ?: startingSuggestions()
+            )
         }
-        // A very weak match (a single short keyword) is not worth presenting as an answer -
-        // better to say "I don't know" and list what I do know.
-        if (best.second < 2) {
-            return Reply(unknownAnswer(raw), startingSuggestions())
+
+        if (matchedTopic != null) {
+            val answer = safeAnswer(context, matchedTopic)
+            val text = if (TurtleAiLanguage.isEnglish(language)) answer else answer + "\n\n" + shell.englishOnly
+            return Reply(text, matchedTopic.followUps)
         }
-        return Reply(safeAnswer(context, best.first), best.first.followUps)
+
+        // Nothing local and no brain: attributed web results are the honest answer, if the
+        // user turned search on.
+        if (TurtleAiWebSearch.isEnabled(context)) return searchReply(context, raw, language, shell)
+
+        return Reply(unknownAnswer(raw, shell), startingSuggestions())
+    }
+
+    /** Live answer for "/language": what the assistant is speaking, and why. */
+    private fun languageReply(context: Context, language: String): Reply {
+        val setting = runCatching { AllSettings.aiLanguage.getValue() }
+            .getOrDefault(TurtleAiLanguage.AUTO)
+        val device = TurtleAiLanguage.deviceLanguage(context)
+        val brain = TurtleAiBackend.isConfigured(context)
+        val search = TurtleAiWebSearch.isEnabled(context)
+        return Reply(
+            buildString {
+                append("Language: ").append(TurtleAiLanguage.displayName(language))
+                    .append(" (").append(language).append(")\n")
+                append("Launcher/device language: ").append(TurtleAiLanguage.displayName(device))
+                    .append(" (").append(device).append(")\n")
+                append("Setting: ").append(
+                    if (setting == TurtleAiLanguage.AUTO) "Automatic (device language)"
+                    else TurtleAiLanguage.displayName(setting)
+                ).append('\n')
+                append("Offline answers: English only\n")
+                append("AI brain (other languages, open questions): ")
+                    .append(if (brain) "on\n" else "off - Settings -> Experimental -> \"Assistant: use my AI key\"\n")
+                append("Web search: ")
+                    .append(if (search) "on\n" else "off - Settings -> Experimental -> \"Assistant: search the internet\"\n")
+                append("\nI always reply in the language you write in when the AI brain is on.")
+            },
+            listOf("Help", "Status")
+        )
+    }
+
+    /**
+     * Routes a question to the optional cloud brain ([TurtleAiBackend]), attaching web results
+     * when search is enabled and the launcher's own answer as authoritative context when the
+     * rule engine had one. Falls back to raw attributed results, then to the localized
+     * "couldn't reach the service" line - never to a made-up answer.
+     */
+    private fun brainReply(
+        context: Context,
+        question: String,
+        language: String,
+        shell: TurtleAiLanguage.Shell,
+        localAnswer: String?,
+        suggestions: List<String>
+    ): Reply {
+        var results: List<TurtleAiWebSearch.Result> = emptyList()
+        var providerName = ""
+        if (TurtleAiWebSearch.isEnabled(context)) {
+            when (val outcome = TurtleAiWebSearch.search(context, question, language)) {
+                is TurtleAiWebSearch.Outcome.Ok -> {
+                    results = outcome.results
+                    providerName = outcome.provider
+                }
+                else -> Unit
+            }
+        }
+        val searchBlock =
+            if (results.isEmpty()) null else TurtleAiWebSearch.formatForPrompt(results, providerName)
+        val answer = TurtleAiBackend.ask(context, question, language, localAnswer, searchBlock)
+        return when {
+            !answer.isNullOrBlank() ->
+                Reply(answer + TurtleAiWebSearch.sourcesFooter(results, shell), suggestions)
+            // The brain failed but search worked: show the sources rather than nothing.
+            results.isNotEmpty() ->
+                Reply(
+                    TurtleAiWebSearch.formatForChat(results, shell, question) + "\n\n" + shell.requestFailed,
+                    suggestions
+                )
+            else ->
+                Reply(shell.requestFailed + "\n\n" + shell.offlineHint, suggestions)
+        }
+    }
+
+    /**
+     * No brain configured, but web search is on. Results are shown attributed and unparaphrased:
+     * without a model to synthesize them, a paraphrase would be the assistant guessing.
+     */
+    private fun searchReply(
+        context: Context,
+        question: String,
+        language: String,
+        shell: TurtleAiLanguage.Shell
+    ): Reply = when (val outcome = TurtleAiWebSearch.search(context, question, language)) {
+        is TurtleAiWebSearch.Outcome.Ok ->
+            Reply(TurtleAiWebSearch.formatForChat(outcome.results, shell, question), startingSuggestions())
+        // Failed = the service was unreachable (and `reason` is a technical English detail, the
+        // same way an error message from the launcher would be).
+        is TurtleAiWebSearch.Outcome.Failed ->
+            Reply(shell.requestFailed + "\n\n(" + outcome.reason + ")", startingSuggestions())
+        else -> Reply(shell.searchNone, startingSuggestions())
     }
 
     /**
@@ -142,7 +252,9 @@ object TurtleAssistant {
             "• Renderers - which one to use, how to change it, shader support\n" +
             "• Crashes - read and explain your last game log\n" +
             "• Memory / RAM - how much to allocate on this device\n" +
+            "• Memory before launch - what the launcher releases for the game\n" +
             "• Performance - FPS, resolution scale, FPS boost flags\n" +
+            "• Renderer overhead / GL state - what can and can't be tuned per frame\n" +
             "• Mods, modpacks, resource packs, shaders, worlds\n" +
             "• Controls, custom buttons, gamepads\n" +
             "• Skins and capes\n" +
@@ -150,7 +262,7 @@ object TurtleAssistant {
             "• Game versions, snapshots, LWJGL compatibility\n" +
             "• Friends / LAN play\n" +
             "• Storage, files, screenshots and recording\n\n" +
-            "Commands: /status /diagnose /renderer /tips /about",
+            "Commands: /status /diagnose /renderer /tips /language /about",
         startingSuggestions()
     )
 
@@ -177,11 +289,11 @@ object TurtleAssistant {
         return total
     }
 
-    private fun unknownAnswer(input: String): String {
+    private fun unknownAnswer(input: String, shell: TurtleAiLanguage.Shell): String {
         val shown = if (input.length > 60) input.take(60) + "…" else input
-        return "I don't have an answer for \"$shown\".\n\n" +
-            "I only know about this launcher - I'm not connected to the internet and I " +
-            "won't make something up. Try one of these instead, or /help for the full list."
+        // shell.unknown carries the "%s"; the wording (and the promise not to make things up)
+        // is in the user's language where we ship one, English otherwise.
+        return String.format(shell.unknown, shown) + "\n\n" + shell.offlineHint
     }
 
     // ── Live-state answers ──────────────────────────────────────────────────────────
@@ -238,6 +350,21 @@ object TurtleAssistant {
             else -> "none available on this device"
         }
     }.getOrDefault("unknown")
+
+    /**
+     * Renderer id the launcher would actually launch with right now - the same resolution
+     * [currentRendererName] does, without needing [Renderers.getCurrentRenderer] (which
+     * throws until setCurrentRenderer has run).
+     */
+    private fun currentRendererId(context: Context): String? = runCatching {
+        val wanted = AllSettings.renderer.getValue()
+        Renderers.init(false)
+        val compatible = Renderers.getCompatibleRenderers(context).second
+        (compatible.firstOrNull { it.getUniqueIdentifier() == wanted } ?: compatible.firstOrNull())
+            ?.getRendererId()
+    }.getOrNull()
+
+    private fun onOff(value: Boolean): String = if (value) "on" else "off"
 
     private fun freeStorageGb(): String? = runCatching {
         val path = PathManager.DIR_GAME_HOME
@@ -393,6 +520,59 @@ object TurtleAssistant {
             },
             followUps = listOf("FPS is low", "Status")
         ),
+        // The launcher-side half of memory: what the launcher itself releases before the game
+        // starts (feature/turtle/BackgroundServiceManager.kt), and the policy to recommend when
+        // launcher and game compete for RAM. The full spec lives in
+        // TurtleAiPrompt.LAUNCHER_SIDE_MEMORY_MANAGEMENT.
+        Topic(
+            id = "memory_prelaunch",
+            label = "Memory before launch",
+            keywords = listOf(
+                // Multi-word keys on purpose: the plain words ("memory", "ram", "cache")
+                // belong to the RAM / storage topics, and a tie is resolved alphabetically -
+                // which would hand these questions to those topics instead of this one.
+                "before launch", "before launching", "launcher memory", "launcher cache",
+                "free ram", "free up ram", "background apps", "background work",
+                "close apps", "flush caches", "memory before"
+            ),
+            answer = { context ->
+                val deviceTotalMb = runCatching { Tools.getTotalDeviceMemory(context) }.getOrDefault(0)
+                val ramMb = runCatching { AllSettings.ramAllocation.value.getValue() }.getOrDefault(0)
+                val cleanupOn = runCatching { AllSettings.backgroundServiceOptimization.getValue() }
+                    .getOrDefault(false)
+                val monitorOn = runCatching { AllSettings.memoryPressureMonitor.getValue() }
+                    .getOrDefault(false)
+                val prefetchOn = runCatching { AllSettings.backgroundAssetPrefetch.getValue() }
+                    .getOrDefault(false)
+                buildString {
+                    append("Before Minecraft starts, the launcher releases its own memory and gets " +
+                        "out of the way - every MB it holds is one Android can't give the game JVM.\n\n")
+                    append("What happens at launch:\n")
+                    append("• Image/bitmap caches are dropped (cover art, screenshots, launcher " +
+                        "backgrounds) - they re-decode on demand, nothing on disk is touched.\n")
+                    append("• The in-memory download/search caches are dropped - they refill the " +
+                        "next time you open the Download screen.\n")
+                    append("• Background work is held back for the whole session: asset prefetching " +
+                        "and the plugin-update check skip themselves, and the launcher's task " +
+                        "threads drop to background priority.\n")
+                    append("• Launcher animations pause during the session and resume when you " +
+                        "come back.\n")
+                    append("• No world, save, mod, log or shader-cache file is deleted to make room.\n\n")
+                    append("On this device: ${deviceTotalMb}MB total RAM, ${ramMb}MB allocated to " +
+                        "Minecraft.\n")
+                    append("• Pre-launch cleanup (Settings → Experimental → Background Service " +
+                        "Optimization): " + onOff(cleanupOn) + "\n")
+                    append("• Memory pressure monitor (Settings → Phone Settings): " + onOff(monitorOn) + "\n")
+                    append("• Background asset prefetch: " + onOff(prefetchOn) + "\n\n")
+                    append("The rule that matters: keep the heap at roughly half the device total " +
+                        "or less, and leave 2GB+ for Android itself. If the launcher and the game " +
+                        "are fighting over RAM, a smaller heap helps and a bigger one makes it " +
+                        "worse - an oversized heap pushes the system into killing processes, " +
+                        "which looks exactly like a random crash. More RAM never adds FPS.")
+                }
+            },
+            followUps = listOf("Not enough RAM?", "FPS is low", "Status")
+        ),
         Topic(
             id = "performance",
             label = "FPS is low",
@@ -414,6 +594,69 @@ object TurtleAssistant {
                 }
             },
             followUps = listOf("Best renderer?", "Not enough RAM?")
+        ),
+        // The per-frame half of performance: what the renderer/EGL layer can actually be told
+        // to do about GL state overhead, and what is renderer-internal. Rules come from
+        // TurtleAiPrompt.glStateRules() so this answer can't drift from the AI spec.
+        Topic(
+            id = "renderer_state",
+            label = "Renderer overhead / GL state",
+            keywords = listOf(
+                "gl state", "opengl state", "state change", "state changes", "redundant",
+                "draw call", "draw calls", "bottleneck", "overhead", "frame time", "frame times",
+                "jni batching", "object pooling", "buffer uploads", "readback", "glfinish"
+            ),
+            answer = { context ->
+                val rendererId = currentRendererId(context)
+                val isGl4es = rendererId == HolyGL4ESRenderer.ID
+                val shaderCache = runCatching { AllSettings.rendererShaderCacheEnabled.getValue() }
+                    .getOrDefault(false)
+                val forceVsync = runCatching { AllSettings.forceVsync.getValue() }.getOrDefault(false)
+                val adaptiveVsync = runCatching { AllSettings.adaptiveVsync.getValue() }.getOrDefault(false)
+                val vsyncInZink = runCatching { AllSettings.vsyncInZink.getValue() }.getOrDefault(false)
+                val lowLatency = runCatching { AllSettings.lowLatencyFrontBuffer.getValue() }
+                    .getOrDefault(false)
+                buildString {
+                    append("Current renderer: ${currentRendererName(context)}\n\n")
+                    append("Per-frame GL overhead is where a translated renderer loses time. " +
+                        "Here's what this launcher can actually tell it to do:\n")
+                    if (isGl4es) {
+                        append("• JNI batching (LIBGL_BATCH): " + onOff(
+                            runCatching { AllSettings.jniBatching.getValue() }.getOrDefault(false)
+                        ) + " - batches GL calls instead of one JNI crossing each\n")
+                        append("• Cached buffer references (LIBGL_USEVBO): " + onOff(
+                            runCatching { AllSettings.jniCachedReferences.getValue() }.getOrDefault(false)
+                        ) + " - keeps vertex data in VBOs instead of re-uploading client arrays\n")
+                        append("• Native object pooling (LIBGL_RECYCLEFBO): " + onOff(
+                            runCatching { AllSettings.nativeObjectPooling.getValue() }.getOrDefault(false)
+                        ) + " - reuses framebuffer objects instead of reallocating them\n")
+                        append("• Skip redundant texture copies (LIBGL_SKIPTEXCOPIES): " + onOff(
+                            runCatching { AllSettings.reducedJniCalls.getValue() }.getOrDefault(false)
+                        ) + " - drops a redundant copy on the texture upload path\n")
+                    } else {
+                        append("• The GL4ES state flags (JNI batching, cached buffer references, " +
+                            "native object pooling, skip redundant texture copies) do not apply " +
+                            "to this renderer - they only exist on the GL4ES path (Holy GL4ES). " +
+                            "The equivalent caching is internal to whatever renderer you're on.\n")
+                    }
+                    append("• Renderer shader cache: " + onOff(shaderCache) + " - persists compiled " +
+                        "program caches for Zink and the gallium-based renderers\n")
+                    append("• Swap/pacing: VSync " + onOff(forceVsync) + ", adaptive VSync " +
+                        onOff(adaptiveVsync) + ", Zink VSync " + onOff(vsyncInZink) + ", " +
+                        "low-latency front buffer " + onOff(lowLatency) + "\n\n")
+                    append("What is NOT a switch here - and I won't pretend otherwise: skipping " +
+                        "redundant state changes and texture binds, avoiding redundant clears, " +
+                        "and avoiding GPU readbacks are internal to the renderer and the game. " +
+                        "If one of those is the bottleneck, the lever is a different renderer, " +
+                        "not a setting.\n\n")
+                    append("If you're chasing stutter: check frame-time consistency first " +
+                        "(thermal throttling, GC pauses, other apps) - a 60 FPS average with " +
+                        "35ms spikes is not fixed by any of the above. Then change one flag at a " +
+                        "time and relaunch; the GL4ES flags trade speed for stability on some " +
+                        "devices.")
+                }
+            },
+            followUps = listOf("FPS is low", "Best renderer?", "Why did my game crash?")
         ),
         Topic(
             id = "mods",

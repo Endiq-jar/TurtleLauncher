@@ -422,6 +422,40 @@ class ExperimentalSettingsFragment :
             .show()
     }
 
+    /** Language picker for the Assistant's answers (see TurtleAiLanguage). */
+    private fun promptSetAssistantLanguage(context: android.content.Context) {
+        val entries = com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage.pickerEntries()
+        val labels = entries.map { it.second }.toTypedArray()
+        val current = runCatching { AllSettings.aiLanguage.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage.AUTO)
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_language_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                AllSettings.aiLanguage.put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /** Search provider picker; "custom" is what makes the URL/key rows below matter. */
+    private fun promptSetSearchProvider(context: android.content.Context) {
+        val entries = com.endiq.turtlelauncher.feature.ai.TurtleAiWebSearch.PICKER
+        val labels = entries.map { it.second }.toTypedArray()
+        val current = runCatching { AllSettings.aiSearchProvider.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiWebSearch.PROVIDER_AUTO)
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_search_provider_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                AllSettings.aiSearchProvider.put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     private fun promptSetSearchUrl(context: android.content.Context) {
         val current = runCatching { AllSettings.aiSearchUrl.getValue() }.getOrDefault("")
         com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)

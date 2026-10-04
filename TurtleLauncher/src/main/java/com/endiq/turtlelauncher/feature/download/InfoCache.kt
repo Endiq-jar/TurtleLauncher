@@ -52,16 +52,18 @@ class InfoCache {
     object ModVersionCache : CacheBase<MutableList<ModVersionItem>>()
     object ModPackVersionCache : CacheBase<MutableList<ModLikeVersionItem>>()
 
-    /**
-     * Releases every in-memory download/search cache this launcher keeps. Called before a
-     * game session (see BackgroundServiceManager) so those results aren't holding RAM the
-     * game JVM could be using; nothing on disk is touched.
-     */
-    @JvmStatic
-    fun clearAll() {
-        DependencyInfoCache.clear()
-        VersionCache.clear()
-        ModVersionCache.clear()
-        ModPackVersionCache.clear()
+    companion object {
+        /**
+         * Releases every in-memory download/search cache this launcher keeps. Called before a
+         * game session (see BackgroundServiceManager) so those results aren't holding RAM the
+         * game JVM could be using; nothing on disk is touched.
+         */
+        @JvmStatic
+        fun clearAll() {
+            DependencyInfoCache.clear()
+            VersionCache.clear()
+            ModVersionCache.clear()
+            ModPackVersionCache.clear()
+        }
     }
 }

@@ -422,6 +422,46 @@ object TurtleAssistant {
             "• Ask me \"why did my game crash?\" after a crash - I read the log locally"
     }
 
+    /**
+     * What the assistant is, told from the current configuration rather than from what it was
+     * originally built as. Privacy questions ("do you send my data?") land on this topic, so it
+     * must not claim that nothing ever leaves the device while the user has the AI brain or
+     * internet search switched on - and it must not claim those are running when they aren't.
+     */
+    private fun assistantSelfDescription(context: Context): String {
+        val brain = TurtleAiBackend.isConfigured(context)
+        val search = TurtleAiWebSearch.isEnabled(context)
+        val model = runCatching { AllSettings.aiModel.value.getValue() }.getOrDefault("gpt-4o-mini")
+
+        return buildString {
+            append("I'm the launcher's built-in assistant. My answers come from a knowledge base about ")
+            append("this launcher plus live readings from this device, so my own answers need no API key, ")
+            append("no account and no internet - and I don't guess: if something isn't in that knowledge ")
+            append("base, I say so.\n\n")
+
+            if (brain) {
+                append("The optional AI brain is ON ($model, your own key), so questions I can't answer ")
+                append("from the knowledge base are sent to it. The context I gather here - version, ")
+                append("renderer, RAM, log excerpts - travels with the question.\n\n")
+            }
+            if (search) {
+                append("Internet search is ON (${TurtleAiWebSearch.providerLabel(TurtleAiWebSearch.provider(context))}), ")
+                append("so I can look a question up and show you the pages I used - only the search text ")
+                append("leaves the device.\n\n")
+            }
+            if (!brain && !search) {
+                append("Two optional extras in Settings → Experimental can change that: an AI brain (your own ")
+                append("key) for open questions, and internet search for looking things up. Both are off, so ")
+                append("nothing leaves this device.\n\n")
+            } else {
+                append("Both extras live in Settings → Experimental and can be switched off there.\n\n")
+            }
+
+            append("Separately, AI crash help and the skin/cape filter also send data to OpenAI - again ")
+            append("only when you enable them, and only with your own key.")
+        }
+    }
+
     private fun aboutAnswer(context: Context): String {
         val versions = runCatching { VersionsManager.getVersions() }.getOrDefault(emptyList())
         return "TurtleLauncher is a TurtleLauncher Minecraft: Java Edition " +
@@ -430,8 +470,19 @@ object TurtleAssistant {
             "(code ${runCatching { ZHTools.getVersionCode() }.getOrDefault(0)})\n" +
             "• Installed game versions: ${versions.size}\n" +
             "• Renderer in use: ${currentRendererName(context)}\n\n" +
-            "This assistant is part of the launcher itself and works offline - it doesn't " +
-            "call any AI service."
+            "This assistant is part of the launcher itself. " + when {
+                !TurtleAiBackend.isConfigured(context) && !TurtleAiWebSearch.isEnabled(context) ->
+                    "It answers on-device - it doesn't call any AI service."
+                TurtleAiBackend.isConfigured(context) && TurtleAiWebSearch.isEnabled(context) ->
+                    "It answers on-device by default, but the optional AI brain and internet search " +
+                        "you turned on can send questions out - see Settings → Experimental."
+                TurtleAiBackend.isConfigured(context) ->
+                    "It answers on-device by default, but the optional AI brain you turned on can send " +
+                        "open questions out - see Settings → Experimental."
+                else ->
+                    "It answers on-device by default; the internet search you turned on can look " +
+                        "questions up - see Settings → Experimental."
+            }
     }
 
     private val topics: List<Topic> = listOf(
@@ -867,16 +918,7 @@ object TurtleAssistant {
                 "assistant", "ai", "chatgpt", "gpt", "chat bot", "are you", "who are you",
                 "what are you", "api key", "offline", "privacy", "do you send", "llm"
             ),
-            answer = {
-                "I'm the launcher's built-in assistant. I'm not a language model and I don't call any AI " +
-                    "service: everything I say comes from a knowledge base about this launcher plus live " +
-                    "readings from this device, so I work with no API key, no account and no internet.\n\n" +
-                "That also means I can't answer general questions, and I won't pretend to. If I don't know, " +
-                    "I say so.\n\n" +
-                "Two other features in this launcher DO talk to an AI service (crash help and the skin " +
-                    "filter, both in Settings → Experimental). They're off by default and need your own key - " +
-                    "nothing is sent anywhere unless you turn them on."
-            },
+            answer = { ctx -> assistantSelfDescription(ctx) },
             followUps = listOf("Help", "Status")
         ),
         Topic(

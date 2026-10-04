@@ -115,7 +115,7 @@ object TurtleAiLanguage {
         sources = "Sources",
         requestFailed = "I couldn't reach the AI service just now.",
         imageFailed =
-            "I couldn't create that image - the image service refused, or there's no key or quota left."
+            "I couldn't create that image - the image service refused, or there's no key or quota left.",
 
         fallbackNote = "(fallback)",
         videoFailed =
@@ -140,7 +140,7 @@ object TurtleAiLanguage {
             sources = "स्रोत",
             requestFailed = "अभी AI सेवा तक नहीं पहुँच सका।",
             imageFailed =
-                "मैं वह इमेज बना नहीं सका - इमेज सेवा ने मना कर दिया, या key/quota नहीं बची।"
+                "मैं वह इमेज बना नहीं सका - इमेज सेवा ने मना कर दिया, या key/quota नहीं बची।",
 
             fallbackNote = "(फ़ॉलबैक)",
             videoFailed =
@@ -162,7 +162,7 @@ object TurtleAiLanguage {
             sources = "সূত্র",
             requestFailed = "এখনই AI পরিষেবায় পৌঁছাতে পারিনি।",
             imageFailed =
-                "আমি সেই ছবিটি তৈরি করতে পারিনি - ইমেজ পরিষেবা রাজি হয়নি, বা key/quota নেই।"
+                "আমি সেই ছবিটি তৈরি করতে পারিনি - ইমেজ পরিষেবা রাজি হয়নি, বা key/quota নেই।",
 
             fallbackNote = "(ফলব্যাক)",
             videoFailed =
@@ -184,7 +184,7 @@ object TurtleAiLanguage {
             sources = "மூலங்கள்",
             requestFailed = "இப்போது AI சேவையை அணுக முடியவில்லை.",
             imageFailed =
-                "அந்தப் படத்தை உருவாக்க முடியவில்லை - இமேஜ் சேவை மறுத்தது, அல்லது key/quota இல்லை."
+                "அந்தப் படத்தை உருவாக்க முடியவில்லை - இமேஜ் சேவை மறுத்தது, அல்லது key/quota இல்லை.",
 
             fallbackNote = "(மாற்று)",
             videoFailed =
@@ -206,7 +206,7 @@ object TurtleAiLanguage {
             sources = "Fuentes",
             requestFailed = "No pude conectar con el servicio de IA ahora mismo.",
             imageFailed =
-                "No pude crear esa imagen: el servicio la rechazó o no queda key/cuota."
+                "No pude crear esa imagen: el servicio la rechazó o no queda key/cuota.",
 
             fallbackNote = "(alternativa)",
             videoFailed =
@@ -229,7 +229,7 @@ object TurtleAiLanguage {
             sources = "Fontes",
             requestFailed = "Não consegui falar com o serviço de IA agora.",
             imageFailed =
-                "Não consegui criar essa imagem - o serviço recusou, ou não há key/cota."
+                "Não consegui criar essa imagem - o serviço recusou, ou não há key/cota.",
 
             fallbackNote = "(alternativa)",
             videoFailed =
@@ -252,7 +252,7 @@ object TurtleAiLanguage {
             sources = "Sources",
             requestFailed = "Je n'ai pas pu joindre le service d'IA pour le moment.",
             imageFailed =
-                "Je n'ai pas pu créer cette image - le service a refusé, ou il ne reste plus de key/quota."
+                "Je n'ai pas pu créer cette image - le service a refusé, ou il ne reste plus de key/quota.",
 
             fallbackNote = "(solution de repli)",
             videoFailed =
@@ -275,7 +275,7 @@ object TurtleAiLanguage {
             sources = "Quellen",
             requestFailed = "Ich konnte den KI-Dienst gerade nicht erreichen.",
             imageFailed =
-                "Ich konnte das Bild nicht erstellen - der Dienst hat abgelehnt, oder es fehlt Key/Kontingent."
+                "Ich konnte das Bild nicht erstellen - der Dienst hat abgelehnt, oder es fehlt Key/Kontingent.",
 
             fallbackNote = "(Ausweichmodell)",
             videoFailed =
@@ -297,7 +297,7 @@ object TurtleAiLanguage {
             sources = "Fonti",
             requestFailed = "Non riesco a contattare il servizio AI adesso.",
             imageFailed =
-                "Non ho potuto creare quell'immagine - il servizio ha rifiutato, o manca key/quota."
+                "Non ho potuto creare quell'immagine - il servizio ha rifiutato, o manca key/quota.",
 
             fallbackNote = "(alternativa)",
             videoFailed =
@@ -319,7 +319,7 @@ object TurtleAiLanguage {
             sources = "Źródła",
             requestFailed = "Nie udało się teraz połączyć z usługą AI.",
             imageFailed =
-                "Nie udało się utworzyć tego obrazu - usługa odmówiła lub brakuje key/kwoty."
+                "Nie udało się utworzyć tego obrazu - usługa odmówiła lub brakuje key/kwoty.",
 
             fallbackNote = "(zapasowy)",
             videoFailed =
@@ -341,7 +341,7 @@ object TurtleAiLanguage {
             sources = "Источники",
             requestFailed = "Не удалось связаться с сервисом ИИ.",
             imageFailed =
-                "Не удалось создать изображение - сервис отказал или закончился key/quota."
+                "Не удалось создать изображение - сервис отказал или закончился key/quota.",
 
             fallbackNote = "(резервная)",
             videoFailed =
@@ -363,7 +363,7 @@ object TurtleAiLanguage {
             sources = "Джерела",
             requestFailed = "Не вдалося зв'язатися із сервісом ШІ.",
             imageFailed =
-                "Не вдалося створити зображення - сервіс відмовив або закінчився key/quota."
+                "Не вдалося створити зображення - сервіс відмовив або закінчився key/quota.",
 
             fallbackNote = "(резервна)",
             videoFailed =
@@ -385,7 +385,7 @@ object TurtleAiLanguage {
             sources = "Kaynaklar",
             requestFailed = "Şu anda AI servisine ulaşamadım.",
             imageFailed =
-                "Bu görseli oluşturamadım - servis reddetti ya da key/kota yok."
+                "Bu görseli oluşturamadım - servis reddetti ya da key/kota yok.",
 
             fallbackNote = "(yedek)",
             videoFailed =
@@ -407,7 +407,7 @@ object TurtleAiLanguage {
             sources = "المصادر",
             requestFailed = "لم أتمكن من الوصول إلى خدمة الـAI الآن.",
             imageFailed =
-                "لم أتمكن من إنشاء تلك الصورة - الخدمة رفضت، أو لا يوجد key/quota."
+                "لم أتمكن من إنشاء تلك الصورة - الخدمة رفضت، أو لا يوجد key/quota.",
 
             fallbackNote = "(بديل)",
             videoFailed =
@@ -429,7 +429,7 @@ object TurtleAiLanguage {
             sources = "منابع",
             requestFailed = "الان نتوانستم به سرویس AI وصل شوم.",
             imageFailed =
-                "نتوانستم آن تصویر را بسازم - سرویس رد کرد یا key/quota نیست."
+                "نتوانستم آن تصویر را بسازم - سرویس رد کرد یا key/quota نیست.",
 
             fallbackNote = "(جایگزین)",
             videoFailed =
@@ -451,7 +451,7 @@ object TurtleAiLanguage {
             sources = "מקורות",
             requestFailed = "לא הצלחתי להגיע לשירות ה-AI כרגע.",
             imageFailed =
-                "לא הצלחתי ליצור את התמונה - השירות סירב, או שאין key/quota."
+                "לא הצלחתי ליצור את התמונה - השירות סירב, או שאין key/quota.",
 
             fallbackNote = "(גיבוי)",
             videoFailed =
@@ -470,7 +470,7 @@ object TurtleAiLanguage {
             sources = "来源",
             requestFailed = "目前无法连接 AI 服务。",
             imageFailed =
-                "我无法生成这张图片——图像服务拒绝了，或者没有 key/额度。"
+                "我无法生成这张图片——图像服务拒绝了，或者没有 key/额度。",
 
             fallbackNote = "(备用)",
             videoFailed =
@@ -492,7 +492,7 @@ object TurtleAiLanguage {
             sources = "出典",
             requestFailed = "今は AI サービスに接続できませんでした。",
             imageFailed =
-                "その画像を作成できませんでした - サービスが拒否したか、key/クォータがありません。"
+                "その画像を作成できませんでした - サービスが拒否したか、key/クォータがありません。",
 
             fallbackNote = "(代替)",
             videoFailed =
@@ -513,7 +513,7 @@ object TurtleAiLanguage {
             sources = "출처",
             requestFailed = "지금은 AI 서비스에 연결하지 못했습니다.",
             imageFailed =
-                "이미지를 만들지 못했습니다 - 서비스가 거부했거나 key/할당량이 없습니다."
+                "이미지를 만들지 못했습니다 - 서비스가 거부했거나 key/할당량이 없습니다.",
 
             fallbackNote = "(대체)",
             videoFailed =
@@ -535,7 +535,7 @@ object TurtleAiLanguage {
             sources = "Sumber",
             requestFailed = "Saya tidak bisa menghubungi layanan AI saat ini.",
             imageFailed =
-                "Gagal membuat gambar itu - layanan menolak, atau key/kuota habis."
+                "Gagal membuat gambar itu - layanan menolak, atau key/kuota habis.",
 
             fallbackNote = "(cadangan)",
             videoFailed =
@@ -557,7 +557,7 @@ object TurtleAiLanguage {
             sources = "Nguồn",
             requestFailed = "Hiện không kết nối được dịch vụ AI.",
             imageFailed =
-                "Không tạo được ảnh đó - dịch vụ từ chối, hoặc hết key/hạn mức."
+                "Không tạo được ảnh đó - dịch vụ từ chối, hoặc hết key/hạn mức.",
 
             fallbackNote = "(dự phòng)",
             videoFailed =
@@ -579,7 +579,7 @@ object TurtleAiLanguage {
             sources = "แหล่งอ้างอิง",
             requestFailed = "ตอนนี้เชื่อมต่อบริการ AI ไม่ได้",
             imageFailed =
-                "สร้างภาพนั้นไม่สำเร็จ - บริการปฏิเสธ หรือไม่มี key/โควตา"
+                "สร้างภาพนั้นไม่สำเร็จ - บริการปฏิเสธ หรือไม่มี key/โควตา",
 
             fallbackNote = "(สำรอง)",
             videoFailed =

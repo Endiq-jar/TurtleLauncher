@@ -89,7 +89,35 @@ jobs:
           # Read by build.gradle.kts for InfoDistributor.BUILD_TYPE, which decides whether the
           # app considers itself a release build (ZHTools.isRelease/isDebug/isPreRelease).
           ZL_BUILD_TYPE: RELEASE
-        run: ./gradlew :TurtleLauncher:assembleRelease --no-daemon
+        run: |
+          set -o pipefail
+          # Prefer the repo's wrapper, but fall back to the provisioned Gradle if the
+          # tracked wrapper jar is unusable - a broken wrapper should not decide whether
+          # the launcher can be built.
+          GRADLE_CMD=./gradlew
+          if ! $GRADLE_CMD --version >/dev/null 2>&1; then
+            echo "::warning::./gradlew is not usable - building with the provisioned Gradle instead."
+            GRADLE_CMD=gradle
+          fi
+          $GRADLE_CMD :TurtleLauncher:assembleRelease --no-daemon --stacktrace 2>&1 \
+            | tee /tmp/gradle-build.log
+
+      # The raw job log is a separate download and can be unreachable from a restricted
+      # network, so the errors are repeated as annotations on the run itself.
+      - name: Report the build failure
+        if: failure()
+        run: |
+          LOG=/tmp/gradle-build.log
+          if [ ! -f "$LOG" ]; then
+            echo "::error title=Gradle build failed::No build output was captured."
+            exit 0
+          fi
+          ERRORS=$(grep -E "^e: |^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED" "$LOG" | head -40 || true)
+          if [ -z "$ERRORS" ]; then ERRORS=$(tail -40 "$LOG"); fi
+          echo "----- captured errors -----"
+          printf '%s\n' "$ERRORS"
+          ESCAPED=$(printf '%s' "$ERRORS" | head -c 20000 | sed -e 's/%/%25/g' -e 's/\r/%0D/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Gradle build failed::$ESCAPED"
 
       - name: Upload release APK
         uses: actions/upload-artifact@v6

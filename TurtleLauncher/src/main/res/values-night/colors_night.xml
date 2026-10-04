@@ -8,7 +8,6 @@
     <color name="background_app">#0D0D0D</color>
     <color name="background_app_error">#0D0D0D</color>
     <color name="background_overlay">#88000000</color>
-    <color name="background_status_bar">#0D0D0D</color>
 
     <!-- Top Bar -->
     <color name="background_menu_top">#CC171717</color>
@@ -18,19 +17,15 @@
 
     <!-- Buttons -->
     <color name="button_background">#C7E8B0</color>
-    <color name="button_background_selected">#202020</color>
 
     <!-- Dialog -->
     <color name="dialog_background">#EE202020</color>
 
     <!-- Menu -->
-    <color name="menu_bar">#171717</color>
     <color name="menu_bar_text">#F2F5F0</color>
-    <color name="menu_overlay">#88000000</color>
     <color name="menu_progress">#C7E8B0</color>
 
     <!-- Cards -->
-    <color name="background_item">#88171717</color>
     <color name="background_item_selected">#AA202020</color>
     <color name="background_item_disabled">#55202020</color>
 
@@ -39,8 +34,6 @@
     <color name="background_sponsor_advanced">#559CCF93</color>
 
     <!-- Inputs -->
-    <color name="edit_box_fill">#AA171717</color>
-    <color name="edit_box_fill_selected">#CC202020</color>
 
     <!-- Categories -->
     <color name="mod_category_fill">#66171717</color>
@@ -57,14 +50,8 @@
          so every accent name below collapses onto Primary Accent / Secondary
          Accent / the status colors — whichever is the closest match) -->
     <color name="accent_primary">#C7E8B0</color>
-    <color name="accent_secondary">#9CCF93</color>
-    <color name="accent_purple">#C7E8B0</color>
-    <color name="accent_blue">#C7E8B0</color>
     <color name="accent_cyan">#9CCF93</color>
-    <color name="accent_green">#9CCF93</color>
     <color name="accent_orange">#FF8A8A</color>
-    <color name="accent_red">#FF8A8A</color>
-    <color name="accent_pink">#FF8A8A</color>
 
     <!-- Glass / AMOLED -->
     <color name="bg_deep">#0D0D0D</color>
@@ -106,4 +93,14 @@
     <color name="game_panel_overlay">#80171717</color>
     <color name="turtle_highlight_subtle">#22F2F5F0</color>
 
+    <!--
+         Colors that used to live here only in night mode with no default in values/colors.xml:
+         background_status_bar, button_background_selected, menu_bar, menu_overlay,
+         background_item, edit_box_fill, edit_box_fill_selected, accent_secondary,
+         accent_purple, accent_blue, accent_green, accent_red, accent_pink.
+         Nothing references them any more, and a resource that exists only in a qualifier
+         folder fails the release build's lint check (MissingDefaultResource) because a query
+         in the other mode has nothing to resolve to. Their live replacements are the
+         new_* colors in values/colors.xml.
+    -->
 </resources>

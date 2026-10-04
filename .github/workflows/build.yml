@@ -117,9 +117,9 @@ jobs:
           # rather than in the Gradle output.
           for REPORT in $(find . -name "lint-results*.txt" -o -name "lint-results*.xml" 2>/dev/null | head -3); do
             echo "----- $REPORT -----"
-            grep -E "Error|Fatal|severity=\"(Fatal|Error)\"" "$REPORT" | head -20 || true
-            ERRORS="$ERRORS
-$(grep -E "Error|Fatal|severity=\"(Fatal|Error)\"" "$REPORT" | head -20 || true)"
+            LINTS=$(grep -E "Error|Fatal|severity=\"(Fatal|Error)\"" "$REPORT" | head -20 || true)
+            echo "$LINTS"
+            ERRORS=$(printf '%s\n%s' "$ERRORS" "$LINTS")
           done
           if [ -z "$ERRORS" ]; then ERRORS=$(tail -40 "$LOG"); fi
           echo "----- captured errors -----"

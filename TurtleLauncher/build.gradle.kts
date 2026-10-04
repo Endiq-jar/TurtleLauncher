@@ -64,11 +64,23 @@ android {
 
     signingConfigs {
         create("releaseBuild") {
+            // The launcher's own keystore is in the repo; its password is not, and lives in
+            // CI as the ENDIQ_KEYSTORE_PASSWORD secret. When the password is missing - a
+            // fresh clone, or a workflow run without the secret - the release APK is signed
+            // with the debug keystore instead of failing the whole build. It installs and
+            // runs identically; it simply cannot update an app signed with the real key.
             val pwd = System.getenv("ENDIQ_KEYSTORE_PASSWORD") ?: ""
-            storeFile = file("endiq-key.jks")
-            storePassword = pwd
-            keyAlias = "mtp"
-            keyPassword = pwd
+            val hasRealKey = pwd.isNotEmpty()
+            if (!hasRealKey) {
+                logger.warn(
+                    "BUILD: ENDIQ_KEYSTORE_PASSWORD is not set - " +
+                        "signing the release build with the debug keystore."
+                )
+            }
+            storeFile = file(if (hasRealKey) "endiq-key.jks" else "debug.keystore")
+            storePassword = if (hasRealKey) pwd else "android"
+            keyAlias = if (hasRealKey) "mtp" else "androiddebugkey"
+            keyPassword = if (hasRealKey) pwd else "android"
         }
         create("customDebug") {
             storeFile = file("debug.keystore")

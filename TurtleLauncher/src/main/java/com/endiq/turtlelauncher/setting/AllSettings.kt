@@ -336,12 +336,34 @@ class AllSettings {
         // it instead, and it is how a leaked build key gets rotated without shipping a new
         // APK. Stored only on this device.
         @JvmStatic val aiGeminiApiKey           = StringSettingUnit("aiGeminiApiKey", "")
-        /** Model id for text: "auto" = TurtleAiGemini.DEFAULT_MODEL. The Settings picker can
-         *  fetch the live list for the configured key, because model names change far faster
-         *  than app releases. */
-        @JvmStatic val aiGeminiModel            = StringSettingUnit("aiGeminiModel", "auto")
-        /** Model id for image generation (the Assistant's /image command). */
-        @JvmStatic val aiGeminiImageModel       = StringSettingUnit("aiGeminiImageModel", "gemini-2.5-flash-image")
+        /** Voice used for speech (/speak) and the live conversation - a Gemini prebuilt
+         *  voice name, e.g. "Kore". */
+        @JvmStatic val aiVoice                  = StringSettingUnit("aiVoice", "Kore")
+
+        // One model per job: "auto" means "whatever TurtleAiModels picks for this task".
+        // Auto is the recommended value - each task's chain already ends in the cheap,
+        // widely-available models, and a hand-picked model still keeps that chain as its
+        // fallback. See TurtleAiModels.
+        /** Chat, questions, writing, translation. */
+        @JvmStatic val aiModelChat              = StringSettingUnit("aiModelChat", "auto")
+        /** Writing and fixing code. */
+        @JvmStatic val aiModelCoding            = StringSettingUnit("aiModelCoding", "auto")
+        /** Hard problems: planning, diagnosis, careful maths. */
+        @JvmStatic val aiModelReasoning         = StringSettingUnit("aiModelReasoning", "auto")
+        /** Short, cheap work: lookups, labels, simple rewrites. */
+        @JvmStatic val aiModelFast              = StringSettingUnit("aiModelFast", "auto")
+        /** Reading images: screenshots, skins and capes. */
+        @JvmStatic val aiModelVision            = StringSettingUnit("aiModelVision", "auto")
+        /** Drawing images (/image). */
+        @JvmStatic val aiModelImage             = StringSettingUnit("aiModelImage", "auto")
+        /** Making videos (/video). */
+        @JvmStatic val aiModelVideo             = StringSettingUnit("aiModelVideo", "auto")
+        /** Speaking (/speak). */
+        @JvmStatic val aiModelTts               = StringSettingUnit("aiModelTts", "auto")
+        /** Turning a recording into text. */
+        @JvmStatic val aiModelTranscribe        = StringSettingUnit("aiModelTranscribe", "auto")
+        /** The live voice conversation. */
+        @JvmStatic val aiModelLive              = StringSettingUnit("aiModelLive", "auto")
         @JvmStatic val aiSkinFilterEnabled       = BooleanSettingUnit("aiSkinFilterEnabled", false)
 
         // ── TurtleLauncher built-in AI Assistant (top bar → Assistant) ────────

@@ -5,6 +5,7 @@ import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.utils.path.UrlManager
 import com.google.gson.JsonArray
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import okhttp3.MediaType.Companion.toMediaType
@@ -14,9 +15,9 @@ import java.util.concurrent.TimeUnit
 /**
  * Every call Turtle AI makes to Google's Gemini API.
  *
- * One client for all three AI features in the launcher - the Assistant's brain, the crash
- * advisor and the skin/cape filter - because they differ only in their prompt and the parts
- * they send, not in the wire format. The Gemini REST API is:
+ * One client for all the launcher's AI work - chat, vision (the skin/cape filter), image
+ * generation, video generation, speech and transcription - because they differ in their prompt
+ * and the parts they send, not in the wire format. The REST shape is:
  *
  *   POST {BASE}/models/{model}:generateContent      header x-goog-api-key
  *   {"contents":[{"role":"user","parts":[{"text":"..."}]}],
@@ -24,16 +25,19 @@ import java.util.concurrent.TimeUnit
  *    "generationConfig":{...},
  *    "tools":[{"google_search":{}}]}
  *
- * and answers come back in `candidates[0].content.parts` - either `text` or `inlineData`
- * (base64 media, used by image generation) - with any Google-Search sources in
- * `candidates[0].groundingMetadata.groundingChunks[].web`.
+ * and answers come back in `candidates[0].content.parts` - `text`, or `inlineData` (base64
+ * media: images, speech) - with any Google-Search sources in
+ * `candidates[0].groundingMetadata.groundingChunks[].web`. Video is the odd one out: it uses
+ * `:predictLongRunning` plus polling (see [generateVideo]).
  *
- * ## The key
+ * ## Model fallback
  *
- * `apiKey()` prefers the user's own key from Settings (so a shared APK can be re-pointed or
- * a leaked build key rotated without a new release) and otherwise falls back to
- * [BuildConfig.GEMINI_API_KEY], which the build injects from the GEMINI_API_KEY repository
- * secret. Nothing here ever logs the key.
+ * Every call runs through [runChain], which walks [TurtleAiModels.chain] for the task: the
+ * user's chosen model first, then the registry's fallbacks. A model that hits its quota (429),
+ * has been retired (404), is not enabled for this key (403) or fails server-side is put on a
+ * short cooldown and the request moves to the next one. What stops the walk early is a
+ * *definitive* failure: a bad key, a safety block or a dead network - none of those are fixed
+ * by asking a different model.
  *
  * ## No Context, on purpose
  *
@@ -43,10 +47,9 @@ import java.util.concurrent.TimeUnit
  *
  * ## Failure policy
  *
- * Every function returns null (or an empty list) instead of throwing: the launcher's offline
- * rule engine is always a valid fallback, and a network failure must never take the chat
- * screen down with it. Failures are logged with the HTTP status so a bug report can tell
- * "no key" from "quota exhausted" from "model does not exist".
+ * Every function returns null instead of throwing: the launcher's offline rule engine is always
+ * a valid fallback. Failures are logged with the HTTP status and the API's own message so a bug
+ * report can tell "no key" from "quota exhausted" from "model does not exist".
  */
 object TurtleAiGemini {
 
@@ -54,22 +57,19 @@ object TurtleAiGemini {
 
     private const val BASE = "https://generativelanguage.googleapis.com/v1beta"
 
-    /**
-     * Used when the user has not chosen a model ("auto"). Flash is the sensible default for a
-     * phone: fast and cheap, good enough for the launcher's answers, and the model that every
-     * key should have access to. A user who wants more can pick a Pro model in Settings - the
-     * picker lists what their key actually supports.
-     */
-    const val DEFAULT_MODEL = "gemini-2.5-flash"
-
-    /** Server-side image generation ("nano banana" family). */
-    const val DEFAULT_IMAGE_MODEL = "gemini-2.5-flash-image"
-
-    /** "auto" in the model setting: pick [DEFAULT_MODEL]. */
-    const val AUTO = "auto"
-
     private const val MAX_OUTPUT_TOKENS = 4000
     private const val TIMEOUT_SECONDS = 60L
+
+    /** Video generation is a long-running job: minutes, not seconds. */
+    private const val VIDEO_POLL_INTERVAL_MS = 5000L
+    private const val VIDEO_MAX_POLLS = 60            // ~5 minutes
+    private const val VIDEO_TIMEOUT_SECONDS = 120L
+
+    /** Quota comes back within the hour in practice; a retired model stays retired. */
+    private const val COOLDOWN_QUOTA_MS = 90_000L
+    private const val COOLDOWN_GONE_MS = 10 * 60_000L
+    private const val COOLDOWN_SERVER_MS = 30_000L
+
     private const val MAX_HISTORY_TURNS = 6
     private const val MAX_HISTORY_QUESTION_CHARS = 240
     private const val MAX_HISTORY_ANSWER_CHARS = 700
@@ -80,15 +80,34 @@ object TurtleAiGemini {
     /** One web source the model actually used (from grounding metadata - never invented). */
     data class Source(val title: String, val url: String)
 
-    /** A finished answer: the text, plus where its facts came from when Search grounded it. */
+    /** A finished answer: the text, where its facts came from, and which model wrote it. */
     data class Answer(
         val text: String,
         val sources: List<Source> = emptyList(),
-        val model: String = ""
+        val modelId: String = ""
     )
 
     /** Generated image bytes plus the format Gemini returned them in. */
-    data class GeneratedImage(val bytes: ByteArray, val mimeType: String, val caption: String = "")
+    data class GeneratedImage(
+        val bytes: ByteArray,
+        val mimeType: String,
+        val caption: String = "",
+        val modelId: String = ""
+    )
+
+    /** A rendered video, already downloaded from the file the operation produced. */
+    data class GeneratedVideo(
+        val bytes: ByteArray,
+        val mimeType: String = "video/mp4",
+        val modelId: String = ""
+    )
+
+    /** Speech, already wrapped as a playable WAV. */
+    data class GeneratedSpeech(
+        val bytes: ByteArray,
+        val mimeType: String = "audio/wav",
+        val modelId: String = ""
+    )
 
     // ── Configuration ───────────────────────────────────────────────────────────────
 
@@ -114,23 +133,24 @@ object TurtleAiGemini {
         return enabled && apiKey().isNotEmpty()
     }
 
-    /** The model to use: the user's choice, or [DEFAULT_MODEL] for "auto"/blank. */
-    @JvmStatic
-    fun model(): String =
-        runCatching { AllSettings.aiGeminiModel.getValue() }.getOrDefault(AUTO)
-            .trim().ifBlank { AUTO }
-            .let { if (it == AUTO) DEFAULT_MODEL else it }
-
-    /** The image-generation model: the user's choice, or [DEFAULT_IMAGE_MODEL]. */
-    @JvmStatic
-    fun imageModel(): String =
-        runCatching { AllSettings.aiGeminiImageModel.getValue() }.getOrDefault(DEFAULT_IMAGE_MODEL)
-            .trim().ifBlank { DEFAULT_IMAGE_MODEL }
-
-    /** True when the user asked for internet search (the Assistant grounds with Google Search). */
+    /** True when the user asked for internet search (Google Search grounding). */
     @JvmStatic
     fun searchEnabled(): Boolean =
         runCatching { AllSettings.aiWebSearchEnabled.getValue() }.getOrDefault(false)
+
+    /** The prebuilt voice used for speech and the live session ("Kore" by default). */
+    @JvmStatic
+    fun voiceName(): String =
+        runCatching { AllSettings.aiVoice.getValue() }.getOrDefault(DEFAULT_VOICE)
+            .trim().ifBlank { DEFAULT_VOICE }
+
+    const val DEFAULT_VOICE = "Kore"
+
+    /** Voices offered in Settings. Gemini's prebuilt set; more exist server-side. */
+    val VOICES: List<String> = listOf(
+        "Kore", "Puck", "Charon", "Fenrir", "Aoede", "Leda", "Orus", "Zephyr", "Enceladus",
+        "Schedar", "Achernar", "Achird", "Sadachbia", "Sadaltager", "Sulafat", "Vindemiatrix"
+    )
 
     // ── Chat ────────────────────────────────────────────────────────────────────────
 
@@ -143,21 +163,23 @@ object TurtleAiGemini {
      * @param deviceFacts  live readings from this device (RAM, renderer, version, storage).
      * @param history      earlier turns, oldest first, so follow-ups resolve.
      * @param useSearch    attach Google Search grounding to this request.
-     * @return the answer, or null when the request cannot be made or fails.
+     * @param task         which model chain to use ([TurtleAiModels.Task.CHAT] by default).
+     * @return the answer, or null when the request cannot be made or every model failed.
      */
     @JvmStatic
+    @JvmOverloads
     fun ask(
         question: String,
         languageTag: String,
         localAnswer: String? = null,
         deviceFacts: String? = null,
         history: List<Exchange> = emptyList(),
-        useSearch: Boolean = false
+        useSearch: Boolean = false,
+        task: TurtleAiModels.Task = TurtleAiModels.Task.CHAT
     ): Answer? {
         if (question.isBlank()) return null
         val key = apiKey()
         if (key.isEmpty()) return null
-        val usedModel = model()
 
         val systemPrompt = buildString {
             append(TurtleAiPrompt.systemPrompt())
@@ -187,230 +209,417 @@ object TurtleAiGemini {
 
         val contents = buildContents(userContent, history)
 
-        val body = JsonObject().apply {
-            add("contents", contents)
-            add("systemInstruction", JsonObject().apply {
-                add("parts", JsonArray().apply {
-                    add(JsonObject().apply { addProperty("text", systemPrompt) })
+        return runChain(task) { model ->
+            val body = JsonObject().apply {
+                add("contents", contents)
+                add("systemInstruction", JsonObject().apply {
+                    add("parts", JsonArray().apply {
+                        add(JsonObject().apply { addProperty("text", systemPrompt) })
+                    })
                 })
-            })
-            add("generationConfig", JsonObject().apply {
-                addProperty("temperature", 0.3)
-                addProperty("maxOutputTokens", MAX_OUTPUT_TOKENS)
-            })
-            if (useSearch) {
-                add("tools", JsonArray().apply {
-                    add(JsonObject().apply { add("google_search", JsonObject()) })
+                add("generationConfig", JsonObject().apply {
+                    addProperty("temperature", 0.3)
+                    addProperty("maxOutputTokens", MAX_OUTPUT_TOKENS)
                 })
+                if (useSearch) {
+                    add("tools", JsonArray().apply {
+                        add(JsonObject().apply { add("google_search", JsonObject()) })
+                    })
+                }
+            }
+            when (val call = performRequest("models/$model:generateContent", body, key)) {
+                is Call.Ok -> parseTextAnswer(call.root, model)
+                is Call.Retry -> stepNext(model, call)
+                is Call.Stop -> Step.Stop
             }
         }
-
-        val root = post("models/$usedModel:generateContent", body, key)
-            ?: return null
-        val candidate = root.getAsJsonArray("candidates")?.firstOrNull()
-            ?.takeIf { it.isJsonObject }?.asJsonObject
-            ?: run {
-                // Usually a safety block or a quota error with no candidate: worth a line in
-                // the log, since the user only sees "couldn't reach the service".
-                val feedback = root.getAsJsonObject("promptFeedback")
-                    ?.get("blockReason")?.takeIf { it.isJsonPrimitive }?.asString
-                Logging.w(TAG, "No candidate in Gemini response" +
-                    if (feedback == null) "" else " (blockReason=$feedback)")
-                return null
-            }
-
-        val text = textOf(candidate)
-        if (text.isBlank()) {
-            Logging.w(TAG, "Gemini returned no text (finishReason=" +
-                (candidate.get("finishReason")?.takeIf { it.isJsonPrimitive }?.asString ?: "?") + ")")
-            return null
-        }
-        val finishReason = candidate.get("finishReason")?.takeIf { it.isJsonPrimitive }?.asString
-        if (finishReason == "MAX_TOKENS") {
-            Logging.w(TAG, "Gemini answer hit the $MAX_OUTPUT_TOKENS-token cap")
-        }
-
-        return Answer(
-            text = text,
-            sources = sourcesOf(candidate),
-            model = usedModel
-        )
     }
 
     /**
      * The plainest entry point: one system prompt, one user message, text back. Used by the
-     * crash advisor, which brings its own (shorter) persona and needs a tight token budget
-     * more than it needs conversation history or search.
+     * crash advisor, which brings its own (shorter) persona and a tight token budget.
      */
     @JvmStatic
+    @JvmOverloads
     fun complete(
         systemPrompt: String,
         userText: String,
         temperature: Double = 0.2,
-        maxOutputTokens: Int = MAX_OUTPUT_TOKENS
+        maxOutputTokens: Int = MAX_OUTPUT_TOKENS,
+        task: TurtleAiModels.Task = TurtleAiModels.Task.REASONING
     ): String? {
         if (systemPrompt.isBlank() || userText.isBlank()) return null
         val key = apiKey()
         if (key.isEmpty()) return null
-        val usedModel = model()
 
-        val body = JsonObject().apply {
-            add("contents", JsonArray().apply {
-                add(JsonObject().apply {
-                    addProperty("role", "user")
-                    add("parts", JsonArray().apply {
-                        add(JsonObject().apply { addProperty("text", userText) })
+        return runChain(task) { model ->
+            val body = JsonObject().apply {
+                add("contents", JsonArray().apply {
+                    add(JsonObject().apply {
+                        addProperty("role", "user")
+                        add("parts", JsonArray().apply {
+                            add(JsonObject().apply { addProperty("text", userText) })
+                        })
                     })
                 })
-            })
-            add("systemInstruction", JsonObject().apply {
-                add("parts", JsonArray().apply {
-                    add(JsonObject().apply { addProperty("text", systemPrompt) })
+                add("systemInstruction", JsonObject().apply {
+                    add("parts", JsonArray().apply {
+                        add(JsonObject().apply { addProperty("text", systemPrompt) })
+                    })
                 })
-            })
-            add("generationConfig", JsonObject().apply {
-                addProperty("temperature", temperature)
-                addProperty("maxOutputTokens", maxOutputTokens)
-            })
+                add("generationConfig", JsonObject().apply {
+                    addProperty("temperature", temperature)
+                    addProperty("maxOutputTokens", maxOutputTokens)
+                })
+            }
+            when (val call = performRequest("models/$model:generateContent", body, key)) {
+                is Call.Ok -> {
+                    val text = call.root.candidate()?.let { textOf(it) }
+                    if (text.isNullOrBlank()) {
+                        unusable(call.root, model, "no text")
+                        Step.Next
+                    } else {
+                        Step.Value(text)
+                    }
+                }
+                is Call.Retry -> stepNext(model, call)
+                is Call.Stop -> Step.Stop
+            }
         }
-
-        val root = post("models/$usedModel:generateContent", body, key) ?: return null
-        return root.getAsJsonArray("candidates")?.firstOrNull()
-            ?.takeIf { it.isJsonObject }?.asJsonObject
-            ?.let { textOf(it) }
-            ?.takeIf { it.isNotBlank() }
     }
 
-    // ── Vision (used by the skin/cape filter) ───────────────────────────────────────
+    // ── Vision (screenshots, skins and capes) ───────────────────────────────────────
 
     /**
-     * One image in, one text answer out - Gemini reads the image natively, so the caller gets
-     * to keep its own prompt and parse its own JSON out of the reply.
+     * One image in, one text answer out - Gemini reads the image natively, so the caller keeps
+     * its own prompt and parses its own JSON out of the reply.
      */
     @JvmStatic
+    @JvmOverloads
     fun askAboutImage(
         prompt: String,
         imageBytes: ByteArray,
-        mimeType: String = "image/png"
+        mimeType: String = "image/png",
+        task: TurtleAiModels.Task = TurtleAiModels.Task.VISION
     ): String? {
         if (prompt.isBlank() || imageBytes.isEmpty()) return null
         val key = apiKey()
         if (key.isEmpty()) return null
-        val usedModel = model()
+        val encoded = android.util.Base64.encodeToString(imageBytes, android.util.Base64.NO_WRAP)
 
-        val body = JsonObject().apply {
-            add("contents", JsonArray().apply {
-                add(JsonObject().apply {
-                    addProperty("role", "user")
-                    add("parts", JsonArray().apply {
-                        add(JsonObject().apply {
-                            add("inlineData", JsonObject().apply {
-                                addProperty("mimeType", mimeType)
-                                addProperty("data", android.util.Base64.encodeToString(
-                                    imageBytes, android.util.Base64.NO_WRAP
-                                ))
+        return runChain(task) { model ->
+            val body = JsonObject().apply {
+                add("contents", JsonArray().apply {
+                    add(JsonObject().apply {
+                        addProperty("role", "user")
+                        add("parts", JsonArray().apply {
+                            add(JsonObject().apply {
+                                add("inlineData", JsonObject().apply {
+                                    addProperty("mimeType", mimeType)
+                                    addProperty("data", encoded)
+                                })
                             })
+                            add(JsonObject().apply { addProperty("text", prompt) })
                         })
-                        add(JsonObject().apply { addProperty("text", prompt) })
                     })
                 })
-            })
-            add("generationConfig", JsonObject().apply {
-                addProperty("temperature", 0.0)
-            })
+                add("generationConfig", JsonObject().apply {
+                    addProperty("temperature", 0.0)
+                })
+            }
+            when (val call = performRequest("models/$model:generateContent", body, key)) {
+                is Call.Ok -> {
+                    val text = call.root.candidate()?.let { textOf(it) }
+                    if (text.isNullOrBlank()) {
+                        unusable(call.root, model, "no text for image")
+                        Step.Next
+                    } else {
+                        Step.Value(text)
+                    }
+                }
+                is Call.Retry -> stepNext(model, call)
+                is Call.Stop -> Step.Stop
+            }
         }
-
-        val root = post("models/$usedModel:generateContent", body, key) ?: return null
-        return root.getAsJsonArray("candidates")?.firstOrNull()
-            ?.takeIf { it.isJsonObject }?.asJsonObject
-            ?.let { textOf(it) }
-            ?.takeIf { it.isNotBlank() }
     }
 
     // ── Image generation ────────────────────────────────────────────────────────────
 
     /**
-     * Text prompt in, image out. Uses the Gemini image model (`responseModalities` = TEXT +
-     * IMAGE) rather than Imagen's separate `:predict` endpoint, so it shares the key, the
-     * model setting style and the response parser with everything else.
-     *
-     * Most image models also return a short text part (a caption or a refusal), which is kept
-     * so the chat can show *something* when no image comes back.
+     * Text prompt in, image out (`responseModalities` = TEXT + IMAGE). Most image models also
+     * return a short text part - a caption, or the refusal when they will not draw something -
+     * which is kept so the chat can show *something* instead of an empty bubble.
      */
     @JvmStatic
-    fun generateImage(prompt: String): GeneratedImage? {
+    @JvmOverloads
+    fun generateImage(
+        prompt: String,
+        task: TurtleAiModels.Task = TurtleAiModels.Task.IMAGE
+    ): GeneratedImage? {
         if (prompt.isBlank()) return null
         val key = apiKey()
         if (key.isEmpty()) return null
-        val usedModel = imageModel()
 
-        val body = JsonObject().apply {
-            add("contents", JsonArray().apply {
-                add(JsonObject().apply {
-                    addProperty("role", "user")
-                    add("parts", JsonArray().apply {
-                        add(JsonObject().apply { addProperty("text", prompt.trim()) })
+        return runChain(task) { model ->
+            val body = JsonObject().apply {
+                add("contents", JsonArray().apply {
+                    add(JsonObject().apply {
+                        addProperty("role", "user")
+                        add("parts", JsonArray().apply {
+                            add(JsonObject().apply { addProperty("text", prompt.trim()) })
+                        })
                     })
                 })
-            })
-            add("generationConfig", JsonObject().apply {
-                add("responseModalities", JsonArray().apply {
-                    add("TEXT")
-                    add("IMAGE")
+                add("generationConfig", JsonObject().apply {
+                    add("responseModalities", JsonArray().apply {
+                        add("TEXT")
+                        add("IMAGE")
+                    })
                 })
-            })
-        }
-
-        val root = post("models/$usedModel:generateContent", body, key)
-            ?: return null
-        val candidate = root.getAsJsonArray("candidates")?.firstOrNull()
-            ?.takeIf { it.isJsonObject }?.asJsonObject
-            ?: run {
-                Logging.w(TAG, "Image request returned no candidate")
-                return null
             }
-        val parts = candidate.getAsJsonObject("content")?.getAsJsonArray("parts")
-            ?: return null
-
-        var bytes: ByteArray? = null
-        var mime = "image/png"
-        val caption = StringBuilder()
-        for (part in parts) {
-            val obj = runCatching { part.asJsonObject }.getOrNull() ?: continue
-            obj.get("text")?.takeIf { it.isJsonPrimitive }?.asString
-                ?.takeIf { it.isNotBlank() }?.let { caption.append(it).append('\n') }
-            val inline = obj.getAsJsonObject("inlineData") ?: obj.getAsJsonObject("inline_data")
-            if (inline != null && bytes == null) {
-                val data = inline.get("data")?.takeIf { it.isJsonPrimitive }?.asString
-                if (!data.isNullOrBlank()) {
-                    bytes = runCatching {
-                        android.util.Base64.decode(data, android.util.Base64.DEFAULT)
-                    }.onFailure { t ->
-                        Logging.w(TAG, "Image part was not valid base64", t)
-                    }.getOrNull()
-                    inline.get("mimeType")?.takeIf { it.isJsonPrimitive }?.asString
-                        ?.takeIf { it.isNotBlank() }?.let { mime = it }
+            when (val call = performRequest("models/$model:generateContent", body, key)) {
+                is Call.Ok -> {
+                    val parts = call.root.candidate()
+                        ?.getAsJsonObject("content")?.getAsJsonArray("parts")
+                    val media = firstInlineData(parts)
+                    if (media == null) {
+                        // A text-only model answers this request with prose and no image part:
+                        // not an error, just the wrong model - fall through to the next one.
+                        unusable(call.root, model, "no image part")
+                        Step.Next
+                    } else {
+                        Step.Value(
+                            GeneratedImage(
+                                bytes = media.bytes,
+                                mimeType = media.mimeType,
+                                caption = textOfParts(parts),
+                                modelId = model
+                            )
+                        )
+                    }
                 }
+                is Call.Retry -> stepNext(model, call)
+                is Call.Stop -> Step.Stop
             }
         }
-
-        val imageBytes = bytes ?: run {
-            Logging.w(TAG, "Image request produced no image part")
-            return null
-        }
-        return GeneratedImage(
-            bytes = imageBytes,
-            mimeType = mime,
-            caption = caption.toString().trim()
-        )
     }
 
+    // ── Video generation (Veo) ──────────────────────────────────────────────────────
+
     /**
-     * The model ids this key can use for text, newest-looking first.
+     * Text prompt in, video out. Veo is not a `generateContent` model: the request starts a
+     * long-running operation (`:predictLongRunning`), the operation is polled until `done`, and
+     * the finished video is downloaded from the file URI the operation returns.
      *
-     * Fetched rather than hardcoded: model names are the part of the API that changes most,
-     * and a list baked into an APK goes stale in months. Embedding/vision-only/audio models
-     * are filtered out of the picker by their supported methods.
+     * Blocking for as long as it takes (usually under two minutes) - the caller already runs on
+     * a background thread and shows progress in the UI.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun generateVideo(
+        prompt: String,
+        aspectRatio: String = "16:9",
+        task: TurtleAiModels.Task = TurtleAiModels.Task.VIDEO,
+        onProgress: ((String) -> Unit)? = null
+    ): GeneratedVideo? {
+        if (prompt.isBlank()) return null
+        val key = apiKey()
+        if (key.isEmpty()) return null
+
+        return runChain(task) { model ->
+            val startBody = JsonObject().apply {
+                add("instances", JsonArray().apply {
+                    add(JsonObject().apply { addProperty("prompt", prompt.trim()) })
+                })
+                add("parameters", JsonObject().apply {
+                    addProperty("aspectRatio", aspectRatio)
+                })
+            }
+            val started = when (
+                val call = performRequest("models/$model:predictLongRunning", startBody, key)
+            ) {
+                is Call.Ok -> call.root
+                is Call.Retry -> return@runChain stepNext(model, call)
+                is Call.Stop -> return@runChain Step.Stop
+            }
+            val operation = started.get("name")?.takeIf { it.isJsonPrimitive }?.asString
+            if (operation.isNullOrBlank()) {
+                Logging.w(TAG, "Video request returned no operation name")
+                return@runChain Step.Next
+            }
+
+            var polls = 0
+            while (polls < VIDEO_MAX_POLLS) {
+                polls++
+                onProgress?.invoke(operation)
+                Thread.sleep(VIDEO_POLL_INTERVAL_MS)
+                val status = getWithTimeout("$operation", key, VIDEO_TIMEOUT_SECONDS)
+                    ?: return@runChain Step.Next
+                if (status.get("done")?.takeIf { it.isJsonPrimitive }?.asBoolean != true) {
+                    continue
+                }
+                val error = status.getAsJsonObject("error")
+                if (error != null) {
+                    val message = error.get("message")?.takeIf { it.isJsonPrimitive }?.asString
+                        ?: "video operation failed"
+                    Logging.w(TAG, "Video operation failed on $model: $message")
+                    val code = error.get("code")?.takeIf { it.isJsonPrimitive }?.asInt ?: 500
+                    val cooldown = if (code == 429) COOLDOWN_QUOTA_MS else COOLDOWN_SERVER_MS
+                    TurtleAiModels.cool(model, cooldown)
+                    return@runChain Step.Next
+                }
+                val uri = findMediaUri(status.getAsJsonObject("response"))
+                    ?: run {
+                        Logging.w(TAG, "Video operation finished with no video uri")
+                        return@runChain Step.Next
+                    }
+                val bytes = downloadFile(uri, key)
+                if (bytes == null || bytes.isEmpty()) {
+                    Logging.w(TAG, "Could not download the generated video")
+                    return@runChain Step.Next
+                }
+                return@runChain Step.Value(GeneratedVideo(bytes = bytes, modelId = model))
+            }
+            Logging.w(TAG, "Video generation timed out after $polls polls")
+            Step.Next
+        }
+    }
+
+    // ── Speech (text to audio) ──────────────────────────────────────────────────────
+
+    /**
+     * Reads [text] aloud. Gemini returns raw PCM (`audio/L16`), which is wrapped into a WAV
+     * container here so it can be played and shared like any other audio file - nothing on
+     * Android plays headerless PCM without extra plumbing.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun speak(
+        text: String,
+        task: TurtleAiModels.Task = TurtleAiModels.Task.TTS
+    ): GeneratedSpeech? {
+        if (text.isBlank()) return null
+        val key = apiKey()
+        if (key.isEmpty()) return null
+        val voice = voiceName()
+
+        return runChain(task) { model ->
+            val body = JsonObject().apply {
+                add("contents", JsonArray().apply {
+                    add(JsonObject().apply {
+                        addProperty("role", "user")
+                        add("parts", JsonArray().apply {
+                            add(JsonObject().apply { addProperty("text", text.trim()) })
+                        })
+                    })
+                })
+                add("generationConfig", JsonObject().apply {
+                    add("responseModalities", JsonArray().apply { add("AUDIO") })
+                    add("speechConfig", JsonObject().apply {
+                        add("voiceConfig", JsonObject().apply {
+                            add("prebuiltVoiceConfig", JsonObject().apply {
+                                addProperty("voiceName", voice)
+                            })
+                        })
+                    })
+                })
+            }
+            when (val call = performRequest("models/$model:generateContent", body, key)) {
+                is Call.Ok -> {
+                    val parts = call.root.candidate()
+                        ?.getAsJsonObject("content")?.getAsJsonArray("parts")
+                    val media = firstInlineData(parts)
+                    if (media == null) {
+                        unusable(call.root, model, "no audio part")
+                        Step.Next
+                    } else {
+                        val isPcm = media.mimeType.contains("l16", ignoreCase = true) ||
+                            media.mimeType.contains("pcm", ignoreCase = true)
+                        Step.Value(
+                            GeneratedSpeech(
+                                bytes = if (isPcm) {
+                                    wrapPcmAsWav(media.bytes, sampleRateOf(media.mimeType))
+                                } else {
+                                    media.bytes
+                                },
+                                mimeType = if (isPcm) "audio/wav" else media.mimeType,
+                                modelId = model
+                            )
+                        )
+                    }
+                }
+                is Call.Retry -> stepNext(model, call)
+                is Call.Stop -> Step.Stop
+            }
+        }
+    }
+
+    // ── Transcription (audio to text) ───────────────────────────────────────────────
+
+    /** Audio in, text out - used for a recording the user shares with the launcher. */
+    @JvmStatic
+    @JvmOverloads
+    fun transcribe(
+        audioBytes: ByteArray,
+        mimeType: String,
+        task: TurtleAiModels.Task = TurtleAiModels.Task.TRANSCRIBE
+    ): String? {
+        if (audioBytes.isEmpty()) return null
+        val key = apiKey()
+        if (key.isEmpty()) return null
+        val encoded = android.util.Base64.encodeToString(audioBytes, android.util.Base64.NO_WRAP)
+
+        return runChain(task) { model ->
+            val body = JsonObject().apply {
+                add("contents", JsonArray().apply {
+                    add(JsonObject().apply {
+                        addProperty("role", "user")
+                        add("parts", JsonArray().apply {
+                            add(JsonObject().apply {
+                                add("inlineData", JsonObject().apply {
+                                    addProperty("mimeType", mimeType)
+                                    addProperty("data", encoded)
+                                })
+                            })
+                            add(JsonObject().apply {
+                                addProperty(
+                                    "text",
+                                    "Transcribe this audio exactly, in the language spoken. " +
+                                        "Output only the transcript, no commentary. If there is " +
+                                        "no speech in it, say so in one short line."
+                                )
+                            })
+                        })
+                    })
+                })
+                add("generationConfig", JsonObject().apply {
+                    addProperty("temperature", 0.0)
+                })
+            }
+            when (val call = performRequest("models/$model:generateContent", body, key)) {
+                is Call.Ok -> {
+                    val text = call.root.candidate()?.let { textOf(it) }
+                    if (text.isNullOrBlank()) {
+                        unusable(call.root, model, "no transcript")
+                        Step.Next
+                    } else {
+                        Step.Value(text)
+                    }
+                }
+                is Call.Retry -> stepNext(model, call)
+                is Call.Stop -> Step.Stop
+            }
+        }
+    }
+
+    // ── Model listing ───────────────────────────────────────────────────────────────
+
+    /**
+     * The model ids this key can actually use, newest-looking first.
+     *
+     * Fetched rather than hardcoded: model names are the part of the API that changes most, and
+     * a list baked into an APK goes stale in months. This is informational - the chat flow uses
+     * [TurtleAiModels] - so a failure here just means an empty list in Settings.
      */
     @JvmStatic
     fun listModels(): List<String> {
@@ -426,15 +635,83 @@ object TurtleAiGemini {
             val methods = obj.getAsJsonArray("supportedGenerationMethods")
                 ?.mapNotNull { it.takeIf { m -> m.isJsonPrimitive }?.asString } ?: emptyList()
             if ("generateContent" !in methods) return@mapNotNull null
-            // Vision-only and audio models answer generateContent too, but they are not chat
-            // brains: keep them out of a list the user picks a chat model from.
-            val lowered = name.lowercase()
-            if (lowered.contains("embedding") || lowered.contains("aqa") ||
-                lowered.contains("tts") || lowered.contains("imagen") ||
-                lowered.contains("veo")
-            ) return@mapNotNull null
             name
         }.distinct().sortedDescending()
+    }
+
+    // ── The fallback engine ─────────────────────────────────────────────────────────
+
+    /** What one attempt produced. */
+    private sealed class Step<out T> {
+        /** This model answered. */
+        data class Value<T>(val value: T) : Step<T>()
+        /** This model could not; try the next one in the chain. */
+        object Next : Step<Nothing>()
+        /** Nothing further will help - a bad key, a safety block, no network. */
+        object Stop : Step<Nothing>()
+    }
+
+    /** How an HTTP call ended, from the fallback engine's point of view. */
+    private sealed class Call {
+        data class Ok(val root: JsonObject) : Call()
+        /** Worth trying another model: quota, retired model, permission, server error. */
+        data class Retry(val status: Int, val detail: String) : Call()
+        /** Trying another model would fail the same way. */
+        data class Stop(val detail: String) : Call()
+    }
+
+    /** Runs [attempt] down the task's model chain, honouring cooldowns, and returns the first
+     *  result. Null means every model in the chain failed (or the chain was empty). */
+    private fun <T> runChain(
+        task: TurtleAiModels.Task,
+        attempt: (model: String) -> Step<T>
+    ): T? {
+        val full = TurtleAiModels.chain(task)
+        if (full.isEmpty()) return null
+        val cooling = full.filter { TurtleAiModels.isCooling(it) }
+        // Models on cooldown are skipped - unless every model is cooling, in which case the
+        // cooldown may have been a blip and trying beats refusing to answer at all.
+        val candidates = full.filterNot { TurtleAiModels.isCooling(it) }.ifEmpty { full }
+        if (cooling.isNotEmpty()) {
+            Logging.w(TAG, "Skipping models on cooldown for $task: $cooling")
+        }
+        for (model in candidates) {
+            when (val step = attempt(model)) {
+                is Step.Value -> return step.value
+                Step.Next -> Unit
+                Step.Stop -> return null
+            }
+        }
+        Logging.w(TAG, "Every model in the $task chain failed")
+        return null
+    }
+
+    /** Cools a model down and asks the chain to move on. */
+    private fun stepNext(model: String, call: Call.Retry): Step<Nothing> {
+        Logging.w(TAG, "Model $model unavailable (${call.status}): ${call.detail}")
+        TurtleAiModels.cool(model, call.cooldownMs())
+        return Step.Next
+    }
+
+    private fun Call.Retry.cooldownMs(): Long = when (status) {
+        404 -> COOLDOWN_GONE_MS
+        403 -> COOLDOWN_GONE_MS
+        429 -> COOLDOWN_QUOTA_MS
+        else -> COOLDOWN_SERVER_MS
+    }
+
+    /** Logs why a response could not be used; the caller then moves to the next model. */
+    private fun unusable(root: JsonObject, model: String, what: String) {
+        val blocked = root.getAsJsonObject("promptFeedback")
+            ?.get("blockReason")?.takeIf { it.isJsonPrimitive }?.asString
+        val candidate = root.candidate()
+        val finish = candidate?.get("finishReason")?.takeIf { it.isJsonPrimitive }?.asString
+        Logging.w(
+            TAG,
+            "$model returned $what" +
+                (if (finish == null) "" else " (finishReason=$finish)") +
+                (if (blocked == null) "" else " (blockReason=$blocked)")
+        )
     }
 
     // ── HTTP plumbing ───────────────────────────────────────────────────────────────
@@ -463,8 +740,11 @@ object TurtleAiGemini {
         }
 
     /** The concatenated text parts of a candidate; empty when it returned media only. */
-    private fun textOf(candidate: JsonObject): String {
-        val parts = candidate.getAsJsonObject("content")?.getAsJsonArray("parts") ?: return ""
+    private fun textOf(candidate: JsonObject): String =
+        textOfParts(candidate.getAsJsonObject("content")?.getAsJsonArray("parts"))
+
+    private fun textOfParts(parts: JsonArray?): String {
+        if (parts == null) return ""
         return parts.mapNotNull { part ->
             runCatching { part.asJsonObject }.getOrNull()
                 ?.get("text")?.takeIf { it.isJsonPrimitive }?.asString
@@ -487,45 +767,214 @@ object TurtleAiGemini {
         }
     }
 
-    private fun post(path: String, body: JsonObject, key: String): JsonObject? =
-        request(path, body, key)
+    /** Text answers need the answer, the grounding sources and a missing-text guard. */
+    private fun parseTextAnswer(root: JsonObject, model: String): Step<Answer> {
+        val candidate = root.candidate()
+        if (candidate == null) {
+            val blocked = root.getAsJsonObject("promptFeedback")
+                ?.get("blockReason")?.takeIf { it.isJsonPrimitive }?.asString
+            if (blocked != null) {
+                // A safety block is about the *content*, not the model: another model would
+                // refuse the same request, so stop instead of burning the whole chain.
+                Logging.w(TAG, "Request blocked by safety filters ($blocked)")
+                return Step.Stop
+            }
+            unusable(root, model, "no candidate")
+            return Step.Next
+        }
+        val text = textOf(candidate)
+        if (text.isBlank()) {
+            unusable(root, model, "no text")
+            return Step.Next
+        }
+        val finish = candidate.get("finishReason")?.takeIf { it.isJsonPrimitive }?.asString
+        if (finish == "MAX_TOKENS") {
+            Logging.w(TAG, "$model hit the $MAX_OUTPUT_TOKENS-token cap")
+        }
+        return Step.Value(
+            Answer(text = text, sources = sourcesOf(candidate), modelId = model)
+        )
+    }
 
-    private fun get(path: String, key: String): JsonObject? =
-        request(path, null, key)
+    /** The first inlineData part of a candidate, decoded. */
+    private class Media(val bytes: ByteArray, val mimeType: String)
+
+    private fun firstInlineData(parts: JsonArray?): Media? {
+        if (parts == null) return null
+        for (part in parts) {
+            val obj = runCatching { part.asJsonObject }.getOrNull() ?: continue
+            val inline = obj.getAsJsonObject("inlineData") ?: obj.getAsJsonObject("inline_data")
+                ?: continue
+            val data = inline.get("data")?.takeIf { it.isJsonPrimitive }?.asString
+            if (data.isNullOrBlank()) continue
+            val mime = inline.get("mimeType")?.takeIf { it.isJsonPrimitive }?.asString
+                ?.takeIf { it.isNotBlank() } ?: "application/octet-stream"
+            val bytes = runCatching {
+                android.util.Base64.decode(data, android.util.Base64.DEFAULT)
+            }.onFailure { t -> Logging.w(TAG, "Media part was not valid base64", t) }
+                .getOrNull() ?: continue
+            return Media(bytes, mime)
+        }
+        return null
+    }
+
+    private fun JsonObject.candidate(): JsonObject? =
+        getAsJsonArray("candidates")?.firstOrNull()
+            ?.takeIf { it.isJsonObject }?.asJsonObject
 
     /**
-     * One request. [body] null = GET. Returns the parsed root object, or null after logging
-     * why - the API's own error text is in the response body, and without it "it didn't work"
-     * is undiagnosable.
+     * One request. [body] null = GET. Classifies the outcome for the fallback engine rather
+     * than logging and giving up: whether a failure is worth retrying on another model is the
+     * whole point of this class.
      */
-    private fun request(
+    private fun performRequest(
         path: String,
         body: JsonObject?,
-        key: String
-    ): JsonObject? {
-        if (key.isEmpty()) return null
+        key: String,
+        timeoutSeconds: Long = TIMEOUT_SECONDS
+    ): Call {
+        if (key.isEmpty()) return Call.Stop("no key")
         val url = "$BASE/$path"
-        return runCatching {
+        return try {
             val requestBody = body?.toString()?.toRequestBody("application/json".toMediaType())
             val builder = UrlManager.createRequestBuilder(url, requestBody)
                 .header("x-goog-api-key", key)
                 .header("Accept", "application/json")
                 .addHeader("User-Agent", "TurtleLauncher-TurtleAI/1.0")
             val client = UrlManager
-                .createOkHttpClientBuilder { it.callTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS) }
+                .createOkHttpClientBuilder { it.callTimeout(timeoutSeconds, TimeUnit.SECONDS) }
                 .build()
             client.newCall(builder.build()).execute().use { response ->
                 val responseBody = response.body?.string().orEmpty()
                 if (!response.isSuccessful) {
                     // Never log the key; the URL carries none (it goes in a header).
-                    Logging.w(TAG, "Gemini HTTP " + response.code + " for " + path +
-                        " - " + responseBody.take(300))
-                    return@runCatching null
+                    val detail = responseBody.take(300)
+                    Logging.w(TAG, "Gemini HTTP ${response.code} for $path - $detail")
+                    classify(response.code, detail)
+                } else {
+                    if (responseBody.isBlank()) return Call.Stop("empty response")
+                    val parsed = JsonParser.parseString(responseBody)
+                        .takeIf { it.isJsonObject }?.asJsonObject
+                    if (parsed == null) Call.Stop("non-object response") else Call.Ok(parsed)
                 }
-                if (responseBody.isBlank()) return@runCatching null
-                JsonParser.parseString(responseBody).takeIf { it.isJsonObject }?.asJsonObject
             }
-        }.onFailure { t -> Logging.w(TAG, "Gemini request failed for " + path, t) }
-            .getOrNull()
+        } catch (t: Exception) {
+            // A network problem is not a model problem: every other model would fail the same
+            // way, so stop rather than walking the chain.
+            Logging.w(TAG, "Gemini request failed for $path", t)
+            Call.Stop(t.javaClass.simpleName)
+        }
+    }
+
+    /**
+     * Turns an HTTP failure into "try the next model" or "give up".
+     *
+     * The API's own message is the tie-breaker for 400/403, which are used for both "this model
+     * cannot do that" (retry elsewhere) and "your key is wrong" (retrying is pointless).
+     */
+    private fun classify(status: Int, detail: String): Call {
+        val lower = detail.lowercase()
+        val keyProblem = status == 401 ||
+            lower.contains("api key not valid") || lower.contains("api_key_invalid") ||
+            lower.contains("api key expired")
+        if (keyProblem) return Call.Stop("key rejected")
+        if (status == 400 && lower.contains("invalid") && !lower.contains("not supported")) {
+            // A malformed request repeats identically on every model.
+            if (lower.contains("field") || lower.contains("argument") || lower.contains("format")) {
+                return Call.Stop("bad request")
+            }
+        }
+        return Call.Retry(status, detail)
+    }
+
+    private fun get(path: String, key: String): JsonObject? =
+        when (val call = performRequest(path, null, key)) {
+            is Call.Ok -> call.root
+            else -> null
+        }
+
+    private fun getWithTimeout(path: String, key: String, timeoutSeconds: Long): JsonObject? =
+        when (val call = performRequest(path, null, key, timeoutSeconds)) {
+            is Call.Ok -> call.root
+            else -> null
+        }
+
+    /** Downloads a generated file (video) - the file endpoint takes the same key header. */
+    private fun downloadFile(url: String, key: String): ByteArray? = runCatching {
+        val request = UrlManager.createRequestBuilder(url)
+            .header("x-goog-api-key", key)
+            .addHeader("User-Agent", "TurtleLauncher-TurtleAI/1.0")
+            .build()
+        val client = UrlManager
+            .createOkHttpClientBuilder { it.callTimeout(VIDEO_TIMEOUT_SECONDS, TimeUnit.SECONDS) }
+            .build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                Logging.w(TAG, "Video download failed: HTTP ${response.code}")
+                return@runCatching null
+            }
+            response.body?.bytes()
+        }
+    }.onFailure { t -> Logging.w(TAG, "Video download failed", t) }.getOrNull()
+
+    /**
+     * The video URI inside a finished operation. The response shape has already changed once
+     * (`generateVideoResponse.generatedSamples[].video.uri` vs `videos[].uri` vs the Vertex
+     * `predictions[]` form), so this walks the whole tree looking for the first string that
+     * looks like a download URI instead of trusting one path.
+     */
+    private fun findMediaUri(response: JsonObject?): String? {
+        if (response == null) return null
+        val candidates = mutableListOf<String>()
+        fun walk(element: JsonElement?) {
+            when {
+                element == null -> Unit
+                element.isJsonObject -> element.asJsonObject.entrySet()
+                    .forEach { walk(it.value) }
+                element.isJsonArray -> element.asJsonArray.forEach { walk(it) }
+                element.isJsonPrimitive && element.asJsonPrimitive.isString -> {
+                    val value = element.asString
+                    if (value.startsWith("http") &&
+                        (value.contains(":download") || value.contains("alt=media") ||
+                            value.endsWith(".mp4"))
+                    ) {
+                        candidates.add(value)
+                    }
+                }
+            }
+        }
+        walk(response)
+        return candidates.firstOrNull()
+    }
+
+    /** `audio/L16;rate=24000` -> 24000. Defaults to 24 kHz, Gemini's usual speech rate. */
+    private fun sampleRateOf(mimeType: String): Int {
+        val match = Regex("rate=(\\d+)").find(mimeType) ?: return 24_000
+        return match.groupValues.getOrNull(1)?.toIntOrNull() ?: 24_000
+    }
+
+    /**
+     * Wraps headerless 16-bit mono PCM in a WAV container. Gemini returns speech as
+     * `audio/L16` - raw samples with no header - which Android cannot play or share as-is.
+     */
+    private fun wrapPcmAsWav(pcm: ByteArray, sampleRate: Int): ByteArray {
+        val channels = 1
+        val bitsPerSample = 16
+        val byteRate = sampleRate * channels * bitsPerSample / 8
+        val header = java.nio.ByteBuffer.allocate(44).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+        header.put("RIFF".toByteArray(Charsets.US_ASCII))
+        header.putInt(36 + pcm.size)
+        header.put("WAVE".toByteArray(Charsets.US_ASCII))
+        header.put("fmt ".toByteArray(Charsets.US_ASCII))
+        header.putInt(16)                       // PCM chunk size
+        header.putShort(1)                      // format = PCM
+        header.putShort(channels.toShort())
+        header.putInt(sampleRate)
+        header.putInt(byteRate)
+        header.putShort((channels * bitsPerSample / 8).toShort())
+        header.putShort(bitsPerSample.toShort())
+        header.put("data".toByteArray(Charsets.US_ASCII))
+        header.putInt(pcm.size)
+        return header.array() + pcm
     }
 }

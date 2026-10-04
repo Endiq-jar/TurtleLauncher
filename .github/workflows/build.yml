@@ -66,7 +66,7 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
@@ -76,10 +76,16 @@ jobs:
           # GEMINI_API_KEY. Missing secret = empty key = the app falls back to asking the user
           # (the build still succeeds).
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: ./gradlew :TurtleLauncher:assembleDebug --no-daemon
+          # The launcher's release keystore (endiq-key.jks) is in the repo; this is its
+          # password. Without it the build still succeeds, signed with the debug keystore.
+          ENDIQ_KEYSTORE_PASSWORD: ${{ secrets.ENDIQ_KEYSTORE_PASSWORD }}
+          # Read by build.gradle.kts for InfoDistributor.BUILD_TYPE, which decides whether the
+          # app considers itself a release build (ZHTools.isRelease/isDebug/isPreRelease).
+          ZL_BUILD_TYPE: RELEASE
+        run: ./gradlew :TurtleLauncher:assembleRelease --no-daemon
 
-      - name: Upload debug APK
+      - name: Upload release APK
         uses: actions/upload-artifact@v6
         with:
-          name: TurtleLauncher-debug-apk
-          path: "**/build/outputs/apk/debug/*.apk"
+          name: TurtleLauncher-release-apk
+          path: "**/build/outputs/apk/release/*.apk"

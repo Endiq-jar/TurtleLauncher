@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.ItemChatMessageBinding
+import com.endiq.turtlelauncher.feature.ai.TurtleAiFiles
 import java.io.File
 
 class ChatMessageAdapter(
@@ -56,6 +57,19 @@ class ChatMessageAdapter(
                 Glide.with(binding.messageImage)
                     .load(File(imagePath))
                     .into(binding.messageImage)
+            }
+
+            val mediaPath = message.mediaPath
+            if (mediaPath.isNullOrBlank()) {
+                binding.messageFile.visibility = View.GONE
+                binding.messageFile.setOnClickListener(null)
+            } else {
+                val file = File(mediaPath)
+                binding.messageFile.visibility = View.VISIBLE
+                binding.messageFile.text = message.mediaLabel ?: "Open the file"
+                binding.messageFile.setOnClickListener {
+                    TurtleAiFiles.openFile(it.context, file)
+                }
             }
 
             val context = binding.root.context

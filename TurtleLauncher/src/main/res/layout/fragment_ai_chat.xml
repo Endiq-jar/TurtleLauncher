@@ -61,6 +61,16 @@
         </LinearLayout>
 
         <ImageButton
+            android:id="@+id/chat_mic_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="@dimen/space_s"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_ai_assistant"
+            android:tint="@color/turtle_text_secondary"
+            android:contentDescription="@string/ai_voice_start"/>
+
+        <ImageButton
             android:id="@+id/clear_button"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -105,6 +115,40 @@
             android:orientation="horizontal"
             android:paddingVertical="@dimen/space_xs"/>
     </HorizontalScrollView>
+
+    <!-- Live voice session: only visible while a session is running. -->
+    <LinearLayout
+        android:id="@+id/voice_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/background_grid_card"
+        android:paddingHorizontal="@dimen/space_l"
+        android:paddingVertical="@dimen/space_s"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/assistant_input_row"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/voice_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/ai_voice_connecting"
+            android:textColor="@color/turtle_text_primary"
+            android:textSize="13sp"/>
+
+        <ImageButton
+            android:id="@+id/voice_stop"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            android:tint="@color/turtle_text_secondary"
+            android:contentDescription="@string/ai_voice_stop"/>
+    </LinearLayout>
 
     <!-- Input -->
     <LinearLayout

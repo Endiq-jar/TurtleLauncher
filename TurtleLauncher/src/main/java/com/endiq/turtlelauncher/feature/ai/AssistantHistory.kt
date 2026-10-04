@@ -35,7 +35,11 @@ object AssistantHistory {
                 val isUser = obj.get("user")?.takeIf { it.isJsonPrimitive }?.asBoolean ?: false
                 val imagePath = obj.get("image")?.takeIf { it.isJsonPrimitive }?.asString
                     ?.takeIf { it.isNotBlank() }
-                ChatMessage(msgText, isUser, imagePath)
+                val mediaPath = obj.get("media")?.takeIf { it.isJsonPrimitive }?.asString
+                    ?.takeIf { it.isNotBlank() }
+                val mediaLabel = obj.get("mediaLabel")?.takeIf { it.isJsonPrimitive }?.asString
+                    ?.takeIf { it.isNotBlank() }
+                ChatMessage(msgText, isUser, imagePath, mediaPath, mediaLabel)
             }
         }.onFailure { e ->
             // A corrupt/partial file (process killed mid-write is the realistic case) must
@@ -56,6 +60,9 @@ object AssistantHistory {
                 obj.addProperty("text", message.text)
                 obj.addProperty("user", message.isUser)
                 message.imagePath?.takeIf { it.isNotBlank() }?.let { obj.addProperty("image", it) }
+                message.mediaPath?.takeIf { it.isNotBlank() }?.let { obj.addProperty("media", it) }
+                message.mediaLabel?.takeIf { it.isNotBlank() }
+                    ?.let { obj.addProperty("mediaLabel", it) }
                 array.add(obj)
             }
             val file = historyFile()
@@ -74,6 +81,6 @@ object AssistantHistory {
             val file = historyFile()
             if (file.exists()) file.delete()
         }.onFailure { e -> Logging.e(TAG, "Couldn't clear assistant history", e) }
-        TurtleAiImages.deleteAll()
+        TurtleAiFiles.deleteAll()
     }
 }

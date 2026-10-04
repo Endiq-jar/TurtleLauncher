@@ -700,22 +700,22 @@
                 </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
 
                 <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
-                    android:id="@+id/aiImageModel_layout"
+                    android:id="@+id/aiVoice_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="?android:attr/selectableItemBackground"
                     android:padding="@dimen/_12sdp">
                     <TextView
-                        android:id="@+id/aiImageModel_title"
+                        android:id="@+id/aiVoice_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/setting_ai_image_model_title"
+                        android:text="@string/setting_ai_voice_title"
                         android:textColor="@color/turtle_primary_text" />
                     <TextView
-                        android:id="@+id/aiImageModel_summary"
+                        android:id="@+id/aiVoice_summary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/setting_ai_image_model_desc" />
+                        android:text="@string/setting_ai_voice_desc" />
                 </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
 
                 <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout

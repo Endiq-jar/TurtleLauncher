@@ -59,7 +59,15 @@ object TurtleAiLanguage {
         /** Image generation failed (no key, quota, refusal). Defaulted so adding a language
          *  can never break on it. */
         val imageFailed: String = "I couldn't create that image - the image service refused, " +
-            "or there's no key or quota left."
+            "or there's no key or quota left.",
+        /** Shown after a model's name when a fallback model answered. */
+        val fallbackNote: String = "(fallback)",
+        /** Video generation failed (refusal, quota, timeout). */
+        val videoFailed: String = "I couldn't make that video - the video model refused, ran " +
+            "out of quota, or took too long. Try again with a shorter prompt.",
+        /** Speech generation failed (refusal, quota). */
+        val speechFailed: String = "I couldn't turn that into speech - the speech model " +
+            "refused or there's no quota left."
     )
 
     /** Selectable languages for the settings picker: tag -> label. [AUTO] first. */
@@ -108,6 +116,12 @@ object TurtleAiLanguage {
         requestFailed = "I couldn't reach the AI service just now.",
         imageFailed =
             "I couldn't create that image - the image service refused, or there's no key or quota left."
+
+        fallbackNote = "(fallback)",
+        videoFailed =
+            "I couldn't make that video - the video model refused, ran out of quota, or took too long. Try again with a shorter prompt.",
+        speechFailed =
+            "I couldn't turn that into speech - the speech model refused or there's no quota left."
     )
 
     private val SHELL: Map<String, Shell> = mapOf(
@@ -127,6 +141,12 @@ object TurtleAiLanguage {
             requestFailed = "अभी AI सेवा तक नहीं पहुँच सका।",
             imageFailed =
                 "मैं वह इमेज बना नहीं सका - इमेज सेवा ने मना कर दिया, या key/quota नहीं बची।"
+
+            fallbackNote = "(फ़ॉलबैक)",
+            videoFailed =
+                "मैं वह वीडियो बना नहीं सका - वीडियो मॉडल ने मना किया, कोटा खत्म हो गया, या बहुत समय लगा। छोटे prompt से फिर कोशिश करें।",
+            speechFailed =
+                "मैं उसे आवाज़ में नहीं बदल सका - स्पीच मॉडल ने मना किया या कोटा नहीं बचा।"
         ),
         "bn" to Shell(
             greeting = "নমস্কার! আমি Turtle AI — এই লঞ্চারের বিল্ট-ইন সহকারী। রেন্ডারার, ক্র্যাশ, RAM, " +
@@ -143,6 +163,12 @@ object TurtleAiLanguage {
             requestFailed = "এখনই AI পরিষেবায় পৌঁছাতে পারিনি।",
             imageFailed =
                 "আমি সেই ছবিটি তৈরি করতে পারিনি - ইমেজ পরিষেবা রাজি হয়নি, বা key/quota নেই।"
+
+            fallbackNote = "(ফলব্যাক)",
+            videoFailed =
+                "আমি সেই ভিডিওটি তৈরি করতে পারিনি - ভিডিও মডেল রাজি হয়নি, কোটা শেষ, বা অনেক সময় লেগেছে। ছোট prompt দিয়ে আবার চেষ্টা করুন।",
+            speechFailed =
+                "আমি সেটিকে কথায় রূপ দিতে পারিনি - স্পিচ মডেল রাজি হয়নি বা কোটা নেই।"
         ),
         "ta" to Shell(
             greeting = "வணக்கம்! நான் Turtle AI - இந்த லாஞ்சரின் உள்ளமைந்த உதவியாளர். ரெண்டரர்கள், " +
@@ -159,6 +185,12 @@ object TurtleAiLanguage {
             requestFailed = "இப்போது AI சேவையை அணுக முடியவில்லை.",
             imageFailed =
                 "அந்தப் படத்தை உருவாக்க முடியவில்லை - இமேஜ் சேவை மறுத்தது, அல்லது key/quota இல்லை."
+
+            fallbackNote = "(மாற்று)",
+            videoFailed =
+                "அந்த வீடியோவை உருவாக்க முடியவில்லை - வீடியோ மாடல் மறுத்தது, ஒதுக்கீடு தீர்ந்தது, அல்லது அதிக நேரம் எடுத்தது. சிறிய prompt உடன் மீண்டும் முயற்சிக்கவும்.",
+            speechFailed =
+                "அதைப் பேச்சாக மாற்ற முடியவில்லை - பேச்சு மாடல் மறுத்தது அல்லது ஒதுக்கீடு இல்லை."
         ),
         "es" to Shell(
             greeting = "¡Hola! Soy Turtle AI, el asistente integrado del launcher. Pregúntame por " +
@@ -175,6 +207,12 @@ object TurtleAiLanguage {
             requestFailed = "No pude conectar con el servicio de IA ahora mismo.",
             imageFailed =
                 "No pude crear esa imagen: el servicio la rechazó o no queda key/cuota."
+
+            fallbackNote = "(alternativa)",
+            videoFailed =
+                "No pude crear ese video: el modelo de video lo rechazó, se quedó sin cuota o tardó demasiado. Prueba con un prompt más corto.",
+            speechFailed =
+                "No pude convertirlo en voz: el modelo de voz lo rechazó o no queda cuota."
         ),
         "pt" to Shell(
             greeting = "Olá! Sou o Turtle AI, o assistente integrado do launcher. Pergunte sobre " +
@@ -192,6 +230,12 @@ object TurtleAiLanguage {
             requestFailed = "Não consegui falar com o serviço de IA agora.",
             imageFailed =
                 "Não consegui criar essa imagem - o serviço recusou, ou não há key/cota."
+
+            fallbackNote = "(alternativa)",
+            videoFailed =
+                "Não consegui criar esse vídeo - o modelo recusou, acabou a cota, ou demorou demais. Tente com um prompt mais curto.",
+            speechFailed =
+                "Não consegui transformar isso em fala - o modelo de voz recusou ou não há cota."
         ),
         "fr" to Shell(
             greeting = "Salut ! Je suis Turtle AI, l'assistant intégré du launcher. Posez-moi des " +
@@ -209,6 +253,12 @@ object TurtleAiLanguage {
             requestFailed = "Je n'ai pas pu joindre le service d'IA pour le moment.",
             imageFailed =
                 "Je n'ai pas pu créer cette image - le service a refusé, ou il ne reste plus de key/quota."
+
+            fallbackNote = "(solution de repli)",
+            videoFailed =
+                "Je n'ai pas pu créer cette vidéo - le modèle a refusé, le quota est épuisé, ou c'était trop long. Réessayez avec un prompt plus court.",
+            speechFailed =
+                "Je n'ai pas pu transformer cela en voix - le modèle a refusé ou il ne reste plus de quota."
         ),
         "de" to Shell(
             greeting = "Hallo! Ich bin Turtle AI, der eingebaute Assistent des Launchers. Frag mich " +
@@ -226,6 +276,12 @@ object TurtleAiLanguage {
             requestFailed = "Ich konnte den KI-Dienst gerade nicht erreichen.",
             imageFailed =
                 "Ich konnte das Bild nicht erstellen - der Dienst hat abgelehnt, oder es fehlt Key/Kontingent."
+
+            fallbackNote = "(Ausweichmodell)",
+            videoFailed =
+                "Ich konnte das Video nicht erstellen - das Videomodell hat abgelehnt, das Kontingent ist aufgebraucht, oder es dauerte zu lange. Versuch es mit einem kürzeren Prompt.",
+            speechFailed =
+                "Ich konnte das nicht in Sprache umwandeln - das Sprachmodell hat abgelehnt, oder das Kontingent ist leer."
         ),
         "it" to Shell(
             greeting = "Ciao! Sono Turtle AI, l'assistente integrato del launcher. Chiedimi di " +
@@ -242,6 +298,12 @@ object TurtleAiLanguage {
             requestFailed = "Non riesco a contattare il servizio AI adesso.",
             imageFailed =
                 "Non ho potuto creare quell'immagine - il servizio ha rifiutato, o manca key/quota."
+
+            fallbackNote = "(alternativa)",
+            videoFailed =
+                "Non ho potuto creare quel video - il modello ha rifiutato, il quota è finito, o ci ha messo troppo. Riprova con un prompt più corto.",
+            speechFailed =
+                "Non ho potuto trasformarlo in voce - il modello ha rifiutato o non resta quota."
         ),
         "pl" to Shell(
             greeting = "Cześć! Jestem Turtle AI, wbudowany asystent launchera. Pytaj o renderery, " +
@@ -258,6 +320,12 @@ object TurtleAiLanguage {
             requestFailed = "Nie udało się teraz połączyć z usługą AI.",
             imageFailed =
                 "Nie udało się utworzyć tego obrazu - usługa odmówiła lub brakuje key/kwoty."
+
+            fallbackNote = "(zapasowy)",
+            videoFailed =
+                "Nie udało się utworzyć tego filmu - model odmówił, skończyła się kwota lub trwało to zbyt długo. Spróbuj z krótszym promptem.",
+            speechFailed =
+                "Nie udało się zamienić tego na mowę - model odmówił lub nie ma kwoty."
         ),
         "ru" to Shell(
             greeting = "Привет! Я Turtle AI — встроенный помощник лаунчера. Спроси про рендереры, " +
@@ -274,6 +342,12 @@ object TurtleAiLanguage {
             requestFailed = "Не удалось связаться с сервисом ИИ.",
             imageFailed =
                 "Не удалось создать изображение - сервис отказал или закончился key/quota."
+
+            fallbackNote = "(резервная)",
+            videoFailed =
+                "Не удалось создать видео - модель отказала, закончился лимит или это заняло слишком много времени. Попробуйте более короткий запрос.",
+            speechFailed =
+                "Не удалось озвучить - модель отказала или закончился лимит."
         ),
         "uk" to Shell(
             greeting = "Привіт! Я Turtle AI — вбудований помічник лаунчера. Запитай про рендерери, " +
@@ -290,6 +364,12 @@ object TurtleAiLanguage {
             requestFailed = "Не вдалося зв'язатися із сервісом ШІ.",
             imageFailed =
                 "Не вдалося створити зображення - сервіс відмовив або закінчився key/quota."
+
+            fallbackNote = "(резервна)",
+            videoFailed =
+                "Не вдалося створити відео - модель відмовила, закінчився ліміт або це тривало занадто довго. Спробуйте коротший запит.",
+            speechFailed =
+                "Не вдалося озвучити - модель відмовила або закінчився ліміт."
         ),
         "tr" to Shell(
             greeting = "Merhaba! Ben Turtle AI, başlatıcının dahili asistanı. Renderer'lar, çökmeler, " +
@@ -306,6 +386,12 @@ object TurtleAiLanguage {
             requestFailed = "Şu anda AI servisine ulaşamadım.",
             imageFailed =
                 "Bu görseli oluşturamadım - servis reddetti ya da key/kota yok."
+
+            fallbackNote = "(yedek)",
+            videoFailed =
+                "O videoyu oluşturamadım - video modeli reddetti, kota bitti ya da çok uzun sürdü. Daha kısa bir prompt ile tekrar dene.",
+            speechFailed =
+                "Bunu sese çeviremedim - ses modeli reddetti ya da kota kalmadı."
         ),
         "ar" to Shell(
             greeting = "مرحبًا! أنا Turtle AI، المساعد المدمج في اللانشر. اسألني عن المُصيّرات " +
@@ -322,6 +408,12 @@ object TurtleAiLanguage {
             requestFailed = "لم أتمكن من الوصول إلى خدمة الـAI الآن.",
             imageFailed =
                 "لم أتمكن من إنشاء تلك الصورة - الخدمة رفضت، أو لا يوجد key/quota."
+
+            fallbackNote = "(بديل)",
+            videoFailed =
+                "لم أتمكن من إنشاء ذلك الفيديو - رفض النموذج، أو نفدت الحصة، أو استغرق وقتًا طويلاً. جرّب طلبًا أقصر.",
+            speechFailed =
+                "لم أتمكن من تحويل ذلك إلى صوت - رفض النموذج أو لا توجد حصة."
         ),
         "fa" to Shell(
             greeting = "سلام! من Turtle AI هستم، دستیار داخلی لانچر. درباره رندررها، کرش، رم، مادها، " +
@@ -338,6 +430,12 @@ object TurtleAiLanguage {
             requestFailed = "الان نتوانستم به سرویس AI وصل شوم.",
             imageFailed =
                 "نتوانستم آن تصویر را بسازم - سرویس رد کرد یا key/quota نیست."
+
+            fallbackNote = "(جایگزین)",
+            videoFailed =
+                "نتوانستم آن ویدیو را بسازم - مدل رد کرد، سهمیه تمام شد، یا خیلی طول کشید. با یک درخواست کوتاه‌تر دوباره امتحان کنید.",
+            speechFailed =
+                "نتوانستم آن را به صدا تبدیل کنم - مدل رد کرد یا سهمیه‌ای نمانده."
         ),
         "he" to Shell(
             greeting = "היי! אני Turtle AI, העוזר המובנה של הלאנצ'ר. שאל אותי על רנדררים, קריסות, " +
@@ -354,6 +452,12 @@ object TurtleAiLanguage {
             requestFailed = "לא הצלחתי להגיע לשירות ה-AI כרגע.",
             imageFailed =
                 "לא הצלחתי ליצור את התמונה - השירות סירב, או שאין key/quota."
+
+            fallbackNote = "(גיבוי)",
+            videoFailed =
+                "לא הצלחתי ליצור את הסרטון - המודל סירב, נגמרה המכסה, או שזה לקח יותר מדי זמן. נסו שוב עם בקשה קצרה יותר.",
+            speechFailed =
+                "לא הצלחתי להפוך את זה לדיבור - המודל סירב או שאין מכסה."
         ),
         "zh" to Shell(
             greeting = "你好！我是 Turtle AI，启动器内置的助手。可以问我渲染器、崩溃、内存、模组、" +
@@ -367,6 +471,12 @@ object TurtleAiLanguage {
             requestFailed = "目前无法连接 AI 服务。",
             imageFailed =
                 "我无法生成这张图片——图像服务拒绝了，或者没有 key/额度。"
+
+            fallbackNote = "(备用)",
+            videoFailed =
+                "我无法生成那段视频——视频模型拒绝了、额度用完了，或者耗时太久。换一个更短的提示再试。",
+            speechFailed =
+                "我无法把它转成语音——语音模型拒绝了，或者没有额度了。"
         ),
         "ja" to Shell(
             greeting = "こんにちは！Turtle AI です。ランチャー内蔵のアシスタントで、レンダラー、" +
@@ -383,6 +493,12 @@ object TurtleAiLanguage {
             requestFailed = "今は AI サービスに接続できませんでした。",
             imageFailed =
                 "その画像を作成できませんでした - サービスが拒否したか、key/クォータがありません。"
+
+            fallbackNote = "(代替)",
+            videoFailed =
+                "その動画は作成できませんでした - 拒否されたか、クォータ切れ、または時間がかかりすぎました。短いプロンプトで再試行してください。",
+            speechFailed =
+                "それを音声にできませんでした - 拒否されたか、クォータがありません。"
         ),
         "ko" to Shell(
             greeting = "안녕하세요! 런처에 내장된 Turtle AI입니다. 렌더러, 크래시, RAM, 모드, Java, " +
@@ -398,6 +514,12 @@ object TurtleAiLanguage {
             requestFailed = "지금은 AI 서비스에 연결하지 못했습니다.",
             imageFailed =
                 "이미지를 만들지 못했습니다 - 서비스가 거부했거나 key/할당량이 없습니다."
+
+            fallbackNote = "(대체)",
+            videoFailed =
+                "해당 영상을 만들지 못했습니다 - 모델이 거부했거나 할당량이 없거나 시간이 너무 오래 걸렸습니다. 더 짧은 프롬프트로 다시 시도해 보세요.",
+            speechFailed =
+                "그것을 음성으로 바꾸지 못했습니다 - 모델이 거부했거나 할당량이 없습니다."
         ),
         "id" to Shell(
             greeting = "Hai! Saya Turtle AI, asisten bawaan launcher ini. Tanyakan soal renderer, " +
@@ -414,6 +536,12 @@ object TurtleAiLanguage {
             requestFailed = "Saya tidak bisa menghubungi layanan AI saat ini.",
             imageFailed =
                 "Gagal membuat gambar itu - layanan menolak, atau key/kuota habis."
+
+            fallbackNote = "(cadangan)",
+            videoFailed =
+                "Gagal membuat video itu - model menolak, kuota habis, atau terlalu lama. Coba lagi dengan prompt lebih pendek.",
+            speechFailed =
+                "Gagal mengubahnya menjadi suara - model menolak atau kuota habis."
         ),
         "vi" to Shell(
             greeting = "Xin chào! Tôi là Turtle AI, trợ lý có sẵn trong launcher. Hỏi tôi về renderer, " +
@@ -430,6 +558,12 @@ object TurtleAiLanguage {
             requestFailed = "Hiện không kết nối được dịch vụ AI.",
             imageFailed =
                 "Không tạo được ảnh đó - dịch vụ từ chối, hoặc hết key/hạn mức."
+
+            fallbackNote = "(dự phòng)",
+            videoFailed =
+                "Không tạo được video đó - mô hình từ chối, hết hạn mức, hoặc mất quá nhiều thời gian. Thử lại với prompt ngắn hơn.",
+            speechFailed =
+                "Không chuyển được thành giọng nói - mô hình từ chối hoặc hết hạn mức."
         ),
         "th" to Shell(
             greeting = "สวัสดี! ฉันคือ Turtle AI ผู้ช่วยที่มาพร้อมกับตัว launcer นี้ ถามเรื่อง " +
@@ -446,6 +580,12 @@ object TurtleAiLanguage {
             requestFailed = "ตอนนี้เชื่อมต่อบริการ AI ไม่ได้",
             imageFailed =
                 "สร้างภาพนั้นไม่สำเร็จ - บริการปฏิเสธ หรือไม่มี key/โควตา"
+
+            fallbackNote = "(สำรอง)",
+            videoFailed =
+                "สร้างวิดีโอนั้นไม่สำเร็จ - โมเดลปฏิเสธ โควตาหมด หรือใช้เวลานานเกินไป ลองอีกครั้งด้วย prompt ที่สั้นลง",
+            speechFailed =
+                "เปลี่ยนเป็นเสียงไม่สำเร็จ - โมเดลปฏิเสธ หรือไม่มีโควตา"
         )
     )
 

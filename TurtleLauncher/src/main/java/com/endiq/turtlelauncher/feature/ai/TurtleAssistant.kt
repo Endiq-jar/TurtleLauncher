@@ -35,6 +35,161 @@ object TurtleAssistant {
     )
 
     /**
+     * Renders a video and files it. Veo takes minutes, so this is the one command where the
+     * chat really does wait - the screen says so the whole time (see AiChatFragment).
+     */
+    private fun videoReply(prompt: String): Reply {
+        if (prompt.isBlank()) {
+            return Reply(
+                "Tell me what the video should show, for example: " +
+                    "/video a creeper walking through a flower forest at sunset",
+                startingSuggestions()
+            )
+        }
+        if (TurtleAiGemini.apiKey().isEmpty()) {
+            return Reply(TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).videoFailed, startingSuggestions())
+        }
+        val video = TurtleAiGemini.generateVideo(prompt)
+            ?: return Reply(
+                TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).videoFailed,
+                startingSuggestions()
+            )
+        val file = TurtleAiFiles.save(video.bytes, video.mimeType, "video")
+            ?: return Reply(
+                TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).videoFailed,
+                startingSuggestions()
+            )
+        return Reply(
+            "Here's your video.\n\nPrompt: " + prompt + "\nModel: " +
+                TurtleAiModels.label(video.modelId) +
+                "\nSaved as " + file.name + " in the launcher's TurtleAI folder.",
+            listOf("/video a slow pan over a Minecraft village at sunrise"),
+            mediaPath = file.absolutePath,
+            mediaLabel = "Open the video"
+        )
+    }
+
+    /**
+     * Reads text aloud and files the audio. Bare "/speak" reads the assistant's previous answer,
+     * which is what the command is usually for - hence [lastAssistantAnswer].
+     */
+    private fun speakReply(context: Context, text: String): Reply {
+        val shell = TurtleAiLanguage.shell(TurtleAiLanguage.replyLanguage(context, text))
+        val toSay = if (text == LAST_ANSWER_PLACEHOLDER) {
+            lastAssistantAnswer() ?: return Reply(
+                "There's no answer to read out yet - ask me something first, or send " +
+                    "/speak <text>.",
+                startingSuggestions()
+            )
+        } else {
+            text
+        }
+        if (toSay.isBlank()) {
+            return Reply(
+                "Tell me what to say, for example: /speak the launcher released 100MB of RAM",
+                startingSuggestions()
+            )
+        }
+        val speech = TurtleAiGemini.speak(toSay.take(SPEAK_MAX_CHARS))
+            ?: return Reply(shell.speechFailed, startingSuggestions())
+        val file = TurtleAiFiles.save(speech.bytes, speech.mimeType, "speech")
+            ?: return Reply(shell.speechFailed, startingSuggestions())
+        val voice = TurtleAiGemini.voiceName()
+        return Reply(
+            "Ready - " + TurtleAiModels.label(speech.modelId) + " reading it in voice " + voice +
+                ".\n\n\"" + toSay.take(180).trim() + if (toSay.length > 180) "\u2026\"" else "\"" +
+                "\n\nSaved as " + file.name + " in the launcher's TurtleAI folder.",
+            listOf("Read it aloud again", "Draw a Minecraft wallpaper at sunset"),
+            mediaPath = file.absolutePath,
+            mediaLabel = "Play the audio"
+        )
+    }
+
+    /**
+     * Transcribes a recording the user handed to the launcher (Android share sheet ->
+     * ShareReceiverActivity -> AiChatFragment). Public because it is an entry point of its own,
+     * the same way [analyzeSharedLog] is.
+     */
+    @JvmStatic
+    fun transcribeFile(context: Context, file: java.io.File): Reply = transcribeReply(file.absolutePath)
+
+    /** Turns an audio file into text. */
+    private fun transcribeReply(path: String): Reply {
+        if (path.isBlank()) {
+            return Reply(
+                "Point me at an audio file - /transcribe <path> - or share a recording with " +
+                    "the launcher and I'll transcribe it.",
+                startingSuggestions()
+            )
+        }
+        val file = java.io.File(path)
+        if (!file.isFile) {
+            return Reply("I can't find a file at \"" + path + "\".", startingSuggestions())
+        }
+        if (file.length() > TRANSCRIBE_MAX_BYTES) {
+            return Reply(
+                "That recording is " + (file.length() / (1024 * 1024)) +
+                    "MB - too big to send. Split it and try again.",
+                startingSuggestions()
+            )
+        }
+        val bytes = runCatching { file.readBytes() }.getOrNull()
+            ?: return Reply("I couldn't read \"" + file.name + "\".", startingSuggestions())
+        val text = TurtleAiGemini.transcribe(bytes, TurtleAiFiles.mimeTypeOf(file))
+            ?: return Reply(
+                TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).speechFailed,
+                startingSuggestions()
+            )
+        return Reply(
+            "Transcript of " + file.name + ":\n\n" + text,
+            listOf("Summarize the transcript", "Speak it back")
+        )
+    }
+
+    /**
+     * The assistant's own last answer, for bare "/speak". Read from the saved transcript, so it
+     * works after a restart too - and skipped when it is a footer-only or image-only turn.
+     */
+    private fun lastAssistantAnswer(): String? = runCatching {
+        AssistantHistory.load().lastOrNull { !it.isUser && it.text.isNotBlank() }?.text
+    }.getOrNull()
+
+    /** Bare "/speak" means "read your last answer" - this marks the difference. */
+    private const val LAST_ANSWER_PLACEHOLDER = "\u0000last-answer\u0000"
+
+    /** Speech is billed by input length, and nobody wants a five-minute read-out by accident. */
+    private const val SPEAK_MAX_CHARS = 4000
+
+    /** Inline audio for transcription has a hard request-size ceiling; refuse politely first. */
+    private const val TRANSCRIBE_MAX_BYTES = 18L * 1024 * 1024
+
+    /** Code-shaped requests, routed to the coding model. */
+    private val CODING_MARKERS = listOf(
+        " code", "coding", "program", "script", "function", "method", "class ", "snippet",
+        "compile", "compiler", "stack trace", "exception", "refactor", "unit test", "test case",
+        "regex", "python", "javascript", "typescript", "kotlin", "java ", "c++", "rust ",
+        "bash", "shell command", "gradle", "json", "html", "css", "sql", "yaml", "xml",
+        "implement ", "algorithm", "pseudo", "api call", "endpoint", "parse ", "mod code",
+        "mixins", "fabric api", "neoforge", "compile error", "error log"
+    )
+
+    /** Requests that need careful thinking rather than a quick answer. */
+    private val REASONING_MARKERS = listOf(
+        "calculate", "compute", "how much", "how many", "convert ", "percentage", "average",
+        "sum of", "multiply", "divide", "equation", "formula", "probability", "estimate the",
+        "in mib", "in gib", "per tick", "why does", "why is", "why did", "root cause",
+        "diagnose", "plan ", "strategy", "compare ", "trade-off", "tradeoff", "which is better",
+        "optimi", "benchmark"
+    )
+
+    /** Ways of asking for a video, mirroring the image markers. */
+    private val VIDEO_MARKERS = listOf(
+        "make a video of ", "make me a video of ", "make a video ", "generate a video of ",
+        "generate video of ", "create a video of ", "create a video ", "render a video of ",
+        "animate "
+    )
+
+    /**
      * Phrases that open a request for a picture. Tight on purpose: "image of a shader" is a
      * question, "draw me a shader" is a job.
      */
@@ -74,7 +229,11 @@ object TurtleAssistant {
         val text: String,
         val suggestions: List<String> = emptyList(),
         /** Absolute path of an image this turn produced, when it produced one (see /image). */
-        val imagePath: String? = null
+        val imagePath: String? = null,
+        /** Absolute path of another generated file (video, speech) and what to call it in the
+         *  chat - images get their own slot because the chat renders them inline. */
+        val mediaPath: String? = null,
+        val mediaLabel: String? = null
     )
 
     /**
@@ -125,12 +284,16 @@ object TurtleAssistant {
             "/tips" -> return Reply(tipsAnswer(context), listOf("Best renderer?", "Not enough RAM?"))
             "/about" -> return Reply(aboutAnswer(context))
             "/language", "/lang" -> return languageReply(context, language)
+            "/models", "/model" -> return modelsReply()
         }
 
-        // Image generation: an explicit command always runs (typing it *is* the consent), and
-        // an unmistakable "draw me ..." is treated the same way when the brain is on.
+        // Generation commands. An explicit command always runs (typing it *is* the consent);
+        // an unmistakable "draw me ..." is treated the same way while the brain is on.
         val imagePrompt = imageRequest(raw)
         if (imagePrompt != null) return imageReply(imagePrompt, shell)
+        videoRequest(raw)?.let { return videoReply(it) }
+        speakRequest(raw)?.let { return speakReply(context, it) }
+        transcribeRequest(raw)?.let { return transcribeReply(it) }
 
         val normalized = normalize(raw)
         val scored = topics.map { it to score(normalized, it.keywords) }
@@ -140,6 +303,9 @@ object TurtleAssistant {
         val matchedTopic = best?.takeIf { it.second >= 2 }?.first
 
         val brainReady = TurtleAiGemini.isConfigured()
+        // Which model chain this message should use - code goes to the coding model, hard
+        // problems to the reasoning one, everything else to the general one.
+        val task = taskFor(raw)
 
         // Three things send a message to the brain instead of the rule engine:
         //  - it is written in another language (the local engine only answers in English);
@@ -159,7 +325,8 @@ object TurtleAssistant {
                 shell = shell,
                 localAnswer = matchedTopic?.let { safeAnswer(context, it) },
                 suggestions = matchedTopic?.followUps ?: startingSuggestions(),
-                history = history
+                history = history,
+                task = task
             )
         }
 
@@ -196,7 +363,7 @@ object TurtleAssistant {
                 append("Offline answers: English only\n")
                 append("AI brain (other languages, open questions): ")
                     .append(
-                        if (brain) "on (" + TurtleAiGemini.model() + ")\n"
+                        if (brain) "on (" + TurtleAiModels.label(TurtleAiModels.primary(TurtleAiModels.Task.CHAT)) + ")\n"
                         else "off - Settings -> Experimental -> \"Assistant: use Gemini\"\n"
                     )
                 append("Web search: ")
@@ -221,7 +388,8 @@ object TurtleAssistant {
         shell: TurtleAiLanguage.Shell,
         localAnswer: String?,
         suggestions: List<String>,
-        history: List<TurtleAiGemini.Exchange>
+        history: List<TurtleAiGemini.Exchange>,
+        task: TurtleAiModels.Task
     ): Reply {
         val search = TurtleAiGemini.searchEnabled()
         val answer = TurtleAiGemini.ask(
@@ -230,10 +398,15 @@ object TurtleAssistant {
             localAnswer = localAnswer,
             deviceFacts = liveDeviceFacts(context),
             history = history,
-            useSearch = search
+            useSearch = search,
+            task = task
         )
         if (answer != null) {
-            return Reply(answer.text + sourceFooter(answer.sources, shell), suggestions)
+            return Reply(
+                answer.text + sourceFooter(answer.sources, shell) +
+                    modelFooter(answer.modelId, task, shell),
+                suggestions
+            )
         }
 
         // Gemini failed. If the user also switched on search, the keyless providers are still
@@ -288,6 +461,108 @@ object TurtleAssistant {
     }
 
     /**
+     * Which chain a question belongs to. Deliberately coarse: the *features* that are not chat
+     * (the skin filter, /image, /video, /speak, /transcribe, the live session) pick their own
+     * task, and a chat message only has to choose between code, hard problems and everything
+     * else.
+     */
+    private fun taskFor(raw: String): TurtleAiModels.Task {
+        val text = " " + normalize(raw).replace(Regex("\\s+"), " ").trim() + " "
+        if (CODING_MARKERS.any { text.contains(it) }) return TurtleAiModels.Task.CODING
+        if (REASONING_MARKERS.any { text.contains(it) }) return TurtleAiModels.Task.REASONING
+        return TurtleAiModels.Task.CHAT
+    }
+
+    /**
+     * The model that answered, in one line under the answer. Worth the two lines it costs:
+     * the user can see which TurtleAI model spent their quota, and can tell when a fallback
+     * answered because the first choice ran out.
+     */
+    private fun modelFooter(
+        modelId: String,
+        task: TurtleAiModels.Task,
+        shell: TurtleAiLanguage.Shell
+    ): String {
+        if (modelId.isBlank()) return ""
+        val label = TurtleAiModels.label(modelId)
+        val preferred = TurtleAiModels.preferred(task)
+        val fellBack = preferred.isNotEmpty() && preferred != modelId
+        return "\n\n\u2014 " + label + if (fellBack) " " + shell.fallbackNote else ""
+    }
+
+    /** "/model": what each job is using, and which models are resting after a failure. */
+    private fun modelsReply(): Reply {
+        val cooling = TurtleAiModels.coolingSummary()
+        val lines = TurtleAiModels.Task.values().joinToString("\n") { task ->
+            "\u2022 " + task.settingLabel + ": " +
+                TurtleAiModels.label(TurtleAiModels.primary(task)) +
+                " (" + task.blurb + ")"
+        }
+        val body = buildString {
+            append("TurtleAI models in use:\n").append(lines)
+            append("\n\nFallback: each job tries its model, then the next cheapest one ")
+            append("that can do the same work - so a model that runs out of quota no longer ")
+            append("takes the feature down with it.")
+            if (cooling.isNotBlank()) {
+                append("\n\nResting after a failure: ").append(cooling)
+            }
+            append("\n\nChange any of these in Settings \u2192 Experimental \u2192 AI models.")
+        }
+        return Reply(body, startingSuggestions())
+    }
+
+    /**
+     * The prompt for video generation, or null when this message is not asking for a video.
+     * "/video" always works; a spoken-style "make me a video of ..." only while the brain is on.
+     */
+    private fun videoRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT)
+        if (lower.startsWith("/video ")) return raw.substringAfter(' ').trim()
+        if (lower == "/video") return ""
+        if (!TurtleAiGemini.isConfigured()) return null
+        for (marker in VIDEO_MARKERS) {
+            if (lower.startsWith(marker)) {
+                val prompt = raw.substring(marker.length).trim()
+                if (prompt.isNotEmpty()) return prompt
+            }
+        }
+        return null
+    }
+
+    /**
+     * "/speak" with text, or a request to read the last answer aloud. The friendly phrasings
+     * are matched as whole messages (never a prefix), so "read it aloud and also explain the
+     * renderer part" is a normal question rather than an accidental read-out.
+     */
+    private fun speakRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT).trim()
+        if (lower.startsWith("/speak ")) return raw.substringAfter(' ').trim()
+        if (lower == "/speak" || lower == "/read") return LAST_ANSWER_PLACEHOLDER
+        if (lower in SPEAK_PHRASES) return LAST_ANSWER_PLACEHOLDER
+        return null
+    }
+
+    /** Whole-message ways of asking for a read-out. */
+    private val SPEAK_PHRASES = setOf(
+        "read it aloud", "read that aloud", "read it aloud again", "read that aloud again",
+        "read it out loud", "read that out loud", "read it to me", "read that to me",
+        "read it again", "speak it back", "say it out loud", "read your last answer",
+        "read your answer aloud"
+    )
+
+    /**
+     * "/transcribe <path>" - turns a recording into text. The path is what the launcher's file
+     * browser shows; a shared audio file arrives through the same function (see
+     * AiChatFragment), which is the way most people will use this.
+     */
+    private fun transcribeRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT)
+        if (lower.startsWith("/transcribe ")) return raw.substringAfter(' ').trim()
+        if (lower == "/transcribe") return ""
+        return null
+    }
+
+    /**
      * Runs one image generation and files the result next to the app's own data. The reply
      * carries the file path, which the chat screen renders as a picture (see ChatMessage).
      */
@@ -303,10 +578,15 @@ object TurtleAssistant {
         }
         val image = TurtleAiGemini.generateImage(prompt)
             ?: return Reply(shell.imageFailed, startingSuggestions())
-        val file = TurtleAiImages.save(image.bytes, image.mimeType)
+        val file = TurtleAiFiles.save(image.bytes, image.mimeType, "image")
             ?: return Reply(shell.imageFailed, startingSuggestions())
         val caption = image.caption.ifBlank { "Here's the image you asked for." }
-        return Reply(caption, listOf("Draw another image"), file.absolutePath)
+        return Reply(
+            caption + "\n\nMade with " + TurtleAiModels.label(image.modelId) +
+                ", saved as " + file.name + " in the launcher's TurtleAI folder.",
+            listOf("Draw a Minecraft wallpaper at sunset"),
+            file.absolutePath
+        )
     }
 
     /**
@@ -388,8 +668,13 @@ object TurtleAssistant {
             "• Friends / LAN play\n" +
             "• Storage, files, screenshots and recording\n" +
             "• Writing, code, maths and general questions (with Gemini)\n" +
-            "• Image generation - /image a creeper at sunset\n\n" +
-            "Commands: /status /diagnose /renderer /tips /language /image /about",
+            "• Drawing - /image a creeper at sunset\n" +
+            "• Video - /video a creeper walking through a flower forest\n" +
+            "• Speaking - /speak (reads my last answer), /speak <text>\n" +
+            "• Voice conversation - the microphone button in the chat header\n" +
+            "• Transcribing - /transcribe <path>, or share a recording with the launcher\n\n" +
+            "Commands: /status /diagnose /renderer /tips /language /image /video /speak " +
+            "/models /about",
         startingSuggestions()
     )
 
@@ -609,7 +894,7 @@ object TurtleAssistant {
     private fun assistantSelfDescription(context: Context): String {
         val brain = TurtleAiGemini.isConfigured()
         val search = TurtleAiGemini.searchEnabled()
-        val model = TurtleAiGemini.model()
+        val model = TurtleAiModels.label(TurtleAiModels.primary(TurtleAiModels.Task.CHAT))
 
         return buildString {
             append("I'm the launcher's built-in assistant. My answers about this launcher come ")

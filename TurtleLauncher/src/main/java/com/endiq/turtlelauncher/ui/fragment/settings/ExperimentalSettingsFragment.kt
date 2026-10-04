@@ -191,11 +191,11 @@ class ExperimentalSettingsFragment :
         )
 
         BaseSettingsWrapper(context, binding.aiModelLayout) {
-            promptSetAiModel(context)
+            promptSetAiModels(context)
         }
 
-        BaseSettingsWrapper(context, binding.aiImageModelLayout) {
-            promptSetAiImageModel(context)
+        BaseSettingsWrapper(context, binding.aiVoiceLayout) {
+            promptSetAiVoice(context)
         }
 
         SwitchSettingsWrapper(
@@ -315,78 +315,108 @@ class ExperimentalSettingsFragment :
             .showDialog()
     }
 
-    private fun promptSetAiModel(context: android.content.Context) {
-        val auto = com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.AUTO
-        val current = runCatching { AllSettings.aiGeminiModel.getValue() }.getOrDefault(auto)
-            .ifBlank { auto }
-        val entries = mutableListOf<Pair<String, String>>(auto to "Automatic")
-        val fetched = runCatching { com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.listModels() }
-            .getOrDefault(emptyList())
-        fetched.forEach { entries.add(it to it) }
-        if (entries.none { it.first == current }) entries.add(current to current + " (current)")
-
-        val labels = entries.map { it.second }.toTypedArray()
-        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+    /**
+     * First screen of the model settings: one row per job, each showing what it uses now.
+     * Ten separate rows in the Settings list would be a wall of text, so the jobs live here
+     * instead.
+     */
+    private fun promptSetAiModels(context: android.content.Context) {
+        val tasks = com.endiq.turtlelauncher.feature.ai.TurtleAiModels.Task.values()
+        val labels = tasks.map { task ->
+            task.settingLabel + "\n" + com.endiq.turtlelauncher.feature.ai.TurtleAiModels.summary(task)
+        }.toTypedArray()
         android.app.AlertDialog.Builder(context)
-            .setTitle(context.getString(R.string.setting_ai_model_title) +
-                if (fetched.isEmpty()) "" else " (${fetched.size} available)")
-            .setSingleChoiceItems(labels, checked) { dialog, which ->
-                AllSettings.aiGeminiModel.put(entries[which].first).save()
-                dialog.dismiss()
+            .setTitle(R.string.setting_ai_model_title)
+            .setItems(labels) { _, which -> promptSetAiTaskModel(context, tasks[which]) }
+            .setNeutralButton(R.string.setting_ai_models_help) { _, _ ->
+                com.endiq.turtlelauncher.ui.dialog.TipDialog.Builder(context)
+                    .setTitle(R.string.setting_ai_model_title)
+                    .setMessage(R.string.setting_ai_models_help_text)
+                    .setCenterMessage(false)
+                    .setSelectable(true)
+                    .setShowCancel(false)
+                    .setConfirm(R.string.generic_ok)
+                    .showDialog()
             }
-            .setNeutralButton(R.string.setting_ai_model_type) { _, _ -> promptSetAiModelManual(context) }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
-    /** Free-text entry, for a model id the fetch does not know about. */
-    private fun promptSetAiModelManual(context: android.content.Context) {
-        val current = runCatching { AllSettings.aiGeminiModel.getValue() }.getOrDefault("")
+    /**
+     * The model picker for one job. The list is the TurtleAI catalogue (the names the user
+     * knows), with the live list from the API appended for the configured key - model names
+     * change far faster than app releases, and a hand-typed id is still possible.
+     */
+    private fun promptSetAiTaskModel(
+        context: android.content.Context,
+        task: com.endiq.turtlelauncher.feature.ai.TurtleAiModels.Task
+    ) {
+        val auto = com.endiq.turtlelauncher.feature.ai.TurtleAiModels.AUTO
+        val current = runCatching {
+            com.endiq.turtlelauncher.feature.ai.TurtleAiModels.settingFor(task).getValue()
+        }.getOrDefault(auto).ifBlank { auto }
+
+        val entries = mutableListOf<Pair<String, String>>()
+        entries.addAll(com.endiq.turtlelauncher.feature.ai.TurtleAiModels.pickerEntries(task))
+        val fetched = runCatching { com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.listModels() }
+            .getOrDefault(emptyList())
+        fetched.filter { id -> entries.none { it.first == id } }
+            .forEach { id -> entries.add(id to id + " (from Google)") }
+        if (entries.none { it.first == current }) {
+            entries.add(current to current + " (current)")
+        }
+
+        val labels = entries.map { it.second }.toTypedArray()
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(task.settingLabel)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                com.endiq.turtlelauncher.feature.ai.TurtleAiModels.settingFor(task)
+                    .put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNeutralButton(R.string.setting_ai_model_type) { _, _ ->
+                promptSetAiTaskModelManual(context, task, current)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /** Free-text entry, for a model id the catalogue and the API listing do not know about. */
+    private fun promptSetAiTaskModelManual(
+        context: android.content.Context,
+        task: com.endiq.turtlelauncher.feature.ai.TurtleAiModels.Task,
+        current: String
+    ) {
         com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
-            .setTitle(R.string.setting_ai_model_title)
+            .setTitle(task.settingLabel)
             .setHintText(R.string.setting_ai_model_manual_hint)
             .setEditText(current)
             .setInputType(android.text.InputType.TYPE_CLASS_TEXT)
             .setConfirmListener { editText, _ ->
-                AllSettings.aiGeminiModel.put(editText.text.toString().trim()).save()
+                com.endiq.turtlelauncher.feature.ai.TurtleAiModels.settingFor(task)
+                    .put(editText.text.toString().trim()).save()
                 Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
                 true
             }
             .showDialog()
     }
 
-    /** The model the /image command uses. Same idea as the text model, fewer choices. */
-    private fun promptSetAiImageModel(context: android.content.Context) {
-        val current = runCatching { AllSettings.aiGeminiImageModel.getValue() }
-            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.DEFAULT_IMAGE_MODEL)
-        val presets = listOf(
-            "gemini-2.5-flash-image",
-            "gemini-3-pro-image-preview"
-        )
-        val entries = mutableListOf<Pair<String, String>>()
-        presets.forEach { entries.add(it to it) }
-        if (entries.none { it.first == current }) entries.add(current to current + " (current)")
-
-        val labels = entries.map { it.second }.toTypedArray()
-        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+    /** The voice used by /speak and the live conversation. */
+    private fun promptSetAiVoice(context: android.content.Context) {
+        val voices = com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.VOICES
+        val current = runCatching { AllSettings.aiVoice.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.DEFAULT_VOICE)
+            .ifBlank { com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.DEFAULT_VOICE }
+        val entries = voices.toMutableList()
+        if (entries.none { it == current }) entries.add(current)
+        val labels = entries.toTypedArray()
+        val checked = entries.indexOfFirst { it == current }.coerceAtLeast(0)
         android.app.AlertDialog.Builder(context)
-            .setTitle(R.string.setting_ai_image_model_title)
+            .setTitle(R.string.setting_ai_voice_title)
             .setSingleChoiceItems(labels, checked) { dialog, which ->
-                AllSettings.aiGeminiImageModel.put(entries[which].first).save()
+                AllSettings.aiVoice.put(entries[which]).save()
                 dialog.dismiss()
-            }
-            .setNeutralButton(R.string.setting_ai_model_type) { _, _ ->
-                com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
-                    .setTitle(R.string.setting_ai_image_model_title)
-                    .setHintText(R.string.setting_ai_image_model_desc)
-                    .setEditText(current)
-                    .setInputType(android.text.InputType.TYPE_CLASS_TEXT)
-                    .setConfirmListener { editText, _ ->
-                        AllSettings.aiGeminiImageModel.put(editText.text.toString().trim()).save()
-                        Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
-                        true
-                    }
-                    .showDialog()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

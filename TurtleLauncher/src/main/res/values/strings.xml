@@ -655,7 +655,7 @@
     <string name="assistant_share_nothing">Nothing readable was shared - share a game log file (.log/.txt) or its text, and I\'ll analyze it.</string>
     <string name="assistant_share_failed">Couldn\'t save the shared log - check storage access and try again.</string>
     <string name="setting_ai_assistant_title">Show the Assistant button</string>
-    <string name="setting_ai_assistant_desc">Shows the Assistant in the launcher\'s top bar. It answers questions about this launcher entirely on-device - no API key, no account and no internet connection needed.</string>
+    <string name="setting_ai_assistant_desc">Shows the Assistant in the launcher\'s top bar. It answers questions about this launcher on-device - no API key, no account and no internet connection needed. The optional AI features (AI answers, internet search) live in Settings → Experimental and are off by default.</string>
     <string name="setting_ai_assistant_history_title">Keep Assistant conversations</string>
     <string name="setting_ai_assistant_history_desc">Saves the Assistant conversation on this device so it is still there next time. Turn off to start every session fresh.</string>
     <string name="share_logs_upload_mclogs">Upload to mclo.gs</string>
@@ -1267,7 +1267,7 @@
 
     <!-- Turtle AI: language, optional cloud brain, optional web search -->
     <string name="setting_ai_language_title">Assistant language</string>
-    <string name="setting_ai_language_desc">The language the Assistant answers in. Automatic follows the launcher/device language, and the Assistant always mirrors the language you actually type in. Without an AI key (below) its offline answers stay English, with a note in your language saying so.</string>
+    <string name="setting_ai_language_desc">The language the Assistant answers in. Automatic follows the launcher/device language, and the Assistant always mirrors the language you actually type in. Without an AI key (above) its offline answers stay English, with a note in your language saying so.</string>
     <string name="setting_ai_brain_title">Assistant: use my AI key</string>
     <string name="setting_ai_brain_desc">Lets the Assistant use the API key above to answer in your own language and to handle questions the launcher has no built-in answer for. Everything it knows about this launcher is still sent along as the source of truth. Off by default; off = the Assistant never leaves your device.</string>
     <string name="setting_ai_web_search_title">Assistant: search the internet</string>

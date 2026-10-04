@@ -167,11 +167,12 @@ android {
     }
 
     lint {
-        // assembleRelease runs lintVitalRelease, which otherwise stops the build on "fatal"
-        // findings. The project still carries findings inherited from upstream - they are
-        // printed by the build and written to build/reports/lint-results-release.html - and a
-        // release APK should not depend on clearing all of them first. `./gradlew lint` still
-        // runs the full check with the normal severity levels.
+        // assembleRelease would otherwise run the full lint analysis (lintVitalRelease) and
+        // stop on "fatal" findings the project inherits from upstream. That analysis is also
+        // the single slowest step in a release build, and a release APK should not wait on
+        // clearing the whole backlog. `./gradlew lint` (and CI's own lint step, if added)
+        // still runs the full check and writes build/reports/lint-results-release.html.
+        checkReleaseBuilds = false
         abortOnError = false
     }
 

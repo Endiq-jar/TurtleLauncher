@@ -70,6 +70,18 @@ jobs:
       - name: Remove Termux-only aapt2 override
         run: sed -i '/android.aapt2FromMavenOverride/d' "${{ steps.locate.outputs.dir }}/gradle.properties" || true
 
+      # gradle.properties is tuned for a phone: a 1 GB daemon heap and a single worker, with
+      # parallel builds and the build cache off. A CI runner has 4 cores and 16 GB, and
+      # packaging four ABIs of native libraries plus the assets with one worker is by far the
+      # slowest part of a release build. These overrides are applied here, to the runner's
+      # copy only - local and Termux builds keep the checked-in settings.
+      - name: Tune Gradle for the runner
+        working-directory: ${{ steps.locate.outputs.dir }}
+        run: |
+          sed -i '/^org.gradle.workers.max=/d;/^org.gradle.parallel=/d;/^org.gradle.jvmargs=/d;/^org.gradle.configuration-cache=/d' gradle.properties
+          printf '\n# CI overrides (see the "Tune Gradle for the runner" step)\norg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8\norg.gradle.parallel=true\norg.gradle.workers.max=4\norg.gradle.configuration-cache=false\n' >> gradle.properties
+          grep -E '^org.gradle' gradle.properties
+
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 

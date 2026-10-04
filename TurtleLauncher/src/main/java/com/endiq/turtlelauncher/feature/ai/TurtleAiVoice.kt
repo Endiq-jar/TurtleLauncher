@@ -362,7 +362,11 @@ object TurtleAiVoice {
          * The blocking half of the capture: read one frame, send it, repeat. Runs on its own
          * thread because [AudioRecord.read] blocks, and stops as soon as the session closes or
          * the socket refuses a frame.
+         *
+         * The microphone permission is checked by the caller ([start]) before a session is
+         * ever created, which is what the suppression records for lint.
          */
+        @SuppressLint("MissingPermission")
         private fun captureLoop(recorder: AudioRecord) {
             val frameBytes = INPUT_SAMPLE_RATE * 2 * FRAME_MS / 1000
             val buffer = ByteArray(frameBytes)

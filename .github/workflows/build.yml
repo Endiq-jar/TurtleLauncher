@@ -113,6 +113,14 @@ jobs:
             exit 0
           fi
           ERRORS=$(grep -E "^e: |^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED" "$LOG" | head -40 || true)
+          # assembleRelease also runs lintVitalRelease, whose findings are in its own report
+          # rather than in the Gradle output.
+          for REPORT in $(find . -name "lint-results*.txt" -o -name "lint-results*.xml" 2>/dev/null | head -3); do
+            echo "----- $REPORT -----"
+            grep -E "Error|Fatal|severity=\"(Fatal|Error)\"" "$REPORT" | head -20 || true
+            ERRORS="$ERRORS
+$(grep -E "Error|Fatal|severity=\"(Fatal|Error)\"" "$REPORT" | head -20 || true)"
+          done
           if [ -z "$ERRORS" ]; then ERRORS=$(tail -40 "$LOG"); fi
           echo "----- captured errors -----"
           printf '%s\n' "$ERRORS"

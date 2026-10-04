@@ -653,6 +653,8 @@
     <string name="ai_voice_stop">End the voice conversation</string>
     <string name="ai_voice_connecting">Connecting…</string>
     <string name="ai_voice_listening">Listening - just talk.</string>
+    <string name="ai_voice_listening_model">Listening - just talk (%1$s).</string>
+    <string name="ai_media_open_file">Open the file</string>
     <string name="ai_voice_hearing">Hearing you…</string>
     <string name="ai_voice_speaking">Turtle AI is speaking…</string>
     <string name="ai_voice_ended">Voice conversation ended</string>

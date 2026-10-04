@@ -59,6 +59,11 @@ class ChatMessageAdapter(
                     .into(binding.messageImage)
             }
 
+            val context = binding.root.context
+
+            // Generated video and audio can't be shown inline, so they get a row that opens
+            // the file in whatever app can play it (the launcher's DocumentsProvider hands
+            // out the URI - see TurtleAiFiles).
             val mediaPath = message.mediaPath
             if (mediaPath.isNullOrBlank()) {
                 binding.messageFile.visibility = View.GONE
@@ -66,13 +71,12 @@ class ChatMessageAdapter(
             } else {
                 val file = File(mediaPath)
                 binding.messageFile.visibility = View.VISIBLE
-                binding.messageFile.text = message.mediaLabel ?: "Open the file"
+                binding.messageFile.text =
+                    message.mediaLabel ?: context.getString(R.string.ai_media_open_file)
                 binding.messageFile.setOnClickListener {
                     TurtleAiFiles.openFile(it.context, file)
                 }
             }
-
-            val context = binding.root.context
             val params = binding.root.layoutParams as? LinearLayout.LayoutParams
             if (message.isUser) {
                 binding.root.gravity = Gravity.END

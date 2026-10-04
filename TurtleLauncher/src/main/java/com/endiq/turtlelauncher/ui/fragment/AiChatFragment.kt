@@ -240,9 +240,10 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
             override fun onReady(modelId: String) {
                 TaskExecutors.runInUIThread {
                     if (!isAdded) return@runInUIThread
-                    binding.voiceStatus.text =
-                        getString(R.string.ai_voice_listening) +
-                            " (" + TurtleAiModels.label(modelId) + ")"
+                    binding.voiceStatus.text = getString(
+                        R.string.ai_voice_listening_model,
+                        TurtleAiModels.label(modelId)
+                    )
                 }
             }
 

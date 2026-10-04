@@ -1,5 +1,8 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.gradle.tasks.MergeSourceSetFolders
+// Imported rather than written as java.util.Properties: inside a Kotlin DSL script the
+// fully qualified form does not resolve (the script's implicit receivers shadow `java`).
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -115,8 +118,8 @@ android {
                 ?: System.getenv("GEMINI_API_KEY")
                 ?: rootProject.file("local.properties")
                     .takeIf { it.isFile }
-                    ?.let { file ->
-                        java.util.Properties().apply { file.inputStream().use { load(it) } }
+                    ?.let { localProperties ->
+                        Properties().apply { localProperties.inputStream().use { load(it) } }
                             .getProperty("GEMINI_API_KEY")
                     }
             ).orEmpty().trim()

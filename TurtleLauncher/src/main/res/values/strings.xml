@@ -657,7 +657,7 @@
     <string name="ai_voice_speaking">Turtle AI is speaking…</string>
     <string name="ai_voice_ended">Voice conversation ended</string>
     <string name="ai_voice_no_mic">I need the microphone permission to talk out loud - enable it in Settings → Apps → TurtleLauncher → Permissions.</string>
-    <string name="assistant_share_audio">Here's a recording I just shared - can you transcribe it?</string>
+    <string name="assistant_share_audio">Here\'s a recording I just shared - can you transcribe it?</string>
     <string name="ai_chat_clear_title">Clear conversation?</string>
     <string name="ai_chat_clear_message">This deletes the saved Assistant history on this device. It can\'t be undone.</string>
     <string name="ai_chat_error_generic">Something went wrong while answering that. Try again.</string>
@@ -1295,7 +1295,7 @@
     <string name="setting_ai_search_provider_title">Search provider</string>
     <string name="setting_ai_search_provider_desc">Where web searches go. Automatic uses the Minecraft Wiki first, then Wikipedia, then DuckDuckGo. Custom is for your own SearXNG-compatible endpoint (URL below).</string>
     <string name="setting_ai_search_url_title">Custom search URL</string>
-    <string name="setting_ai_search_url_desc">Full URL template for the Custom provider, with {query} where the search text goes - e.g. https://searx.example.org/search?format=json&amp;q={query}. Must return SearXNG-style JSON: {"results":[{"title","url","content"}]}.</string>
+    <string name="setting_ai_search_url_desc">Full URL template for the Custom provider, with {query} where the search text goes - e.g. https://searx.example.org/search?format=json&amp;q={query}. Must return SearXNG-style JSON: a results array whose entries have title, url and content.</string>
     <string name="setting_ai_search_key_title">Custom search API key</string>
     <string name="setting_ai_search_key_desc">Optional bearer token for the Custom search URL. Leave empty for keyless endpoints such as your own SearXNG. Stored only on this device.</string>
     <string name="setting_config_editor_title">File Editor</string>

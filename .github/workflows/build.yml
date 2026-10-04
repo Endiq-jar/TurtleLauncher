@@ -55,7 +55,14 @@ jobs:
 
       - name: Regenerate the Gradle wrapper jar
         working-directory: ${{ steps.locate.outputs.dir }}
-        run: gradle wrapper --gradle-version ${{ steps.locate.outputs.gradle_version }}
+        # The wrapper jar is tracked in the repo, so this step is only a repair for a missing
+        # or corrupt one. If it cannot run (offline distribution, plugin lookup), carry on:
+        # the actual build below uses ./gradlew and reports the real error if the jar were
+        # genuinely broken, instead of failing here with a message about the wrapper.
+        run: |
+          gradle wrapper --gradle-version ${{ steps.locate.outputs.gradle_version }} \
+            || echo "::warning::Could not regenerate the Gradle wrapper jar - using the one in the repo."
+
 
       # The Termux build pins aapt2 to a Termux-only ARM64 binary path that doesn't
       # exist on a normal Linux runner. Strip it so AGP falls back to the standard

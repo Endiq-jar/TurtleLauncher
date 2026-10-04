@@ -52,6 +52,7 @@
                 android:textColor="@color/turtle_text_primary"/>
 
             <TextView
+                android:id="@+id/chat_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/ai_chat_subtitle"

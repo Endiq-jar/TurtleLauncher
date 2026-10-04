@@ -92,9 +92,7 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
      */
     private fun analyzeSharedLogFile(logFile: File) {
         appendMessage(ChatMessage(getString(R.string.assistant_share_received), true))
-        isAnswering = true
-        binding.chatSendButton.isEnabled = false
-        setSuggestions(emptyList())
+        beginAnswering()
 
         val appContext = requireContext().applicationContext
         TaskExecutors.getDefault().execute {
@@ -109,8 +107,7 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
 
             TaskExecutors.runInUIThread {
                 if (!isAdded || view == null) return@runInUIThread
-                isAnswering = false
-                binding.chatSendButton.isEnabled = true
+                endAnswering()
                 appendMessage(ChatMessage(reply.text, false))
                 setSuggestions(
                     if (reply.suggestions.isNotEmpty()) reply.suggestions
@@ -131,9 +128,7 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
         binding.chatMessageInput.text?.clear()
         appendMessage(ChatMessage(text, true))
 
-        isAnswering = true
-        binding.chatSendButton.isEnabled = false
-        setSuggestions(emptyList())
+        beginAnswering()
 
         val appContext = requireContext().applicationContext
         TaskExecutors.getDefault().execute {
@@ -145,8 +140,7 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
                 // A slow answer can land after the user pressed back - touching binding
                 // after onDestroyView would crash, so check the fragment is still live.
                 if (!isAdded || view == null) return@runInUIThread
-                isAnswering = false
-                binding.chatSendButton.isEnabled = true
+                endAnswering()
                 appendMessage(ChatMessage(reply.text, false))
                 setSuggestions(
                     if (reply.suggestions.isNotEmpty()) reply.suggestions
@@ -155,6 +149,25 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
                 persist()
             }
         }
+    }
+
+    /**
+     * A question is now in flight: block a second one and say so. An on-device answer returns
+     * almost instantly, but with the optional AI brain or web search enabled the wait is a
+     * network round trip - without this the screen looks frozen for the whole timeout.
+     */
+    private fun beginAnswering() {
+        isAnswering = true
+        binding.chatSendButton.isEnabled = false
+        binding.chatSubtitle.setText(R.string.ai_chat_thinking)
+        setSuggestions(emptyList())
+    }
+
+    /** The answer landed: accept input again and put the normal subtitle back. */
+    private fun endAnswering() {
+        isAnswering = false
+        binding.chatSendButton.isEnabled = true
+        binding.chatSubtitle.setText(R.string.ai_chat_subtitle)
     }
 
     /** Single funnel for "a message is now visible", so the adapter and [transcript] can't drift. */

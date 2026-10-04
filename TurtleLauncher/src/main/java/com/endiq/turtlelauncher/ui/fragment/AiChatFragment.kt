@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.FragmentAiChatBinding
 import com.endiq.turtlelauncher.feature.ai.AssistantHistory
+import com.endiq.turtlelauncher.feature.ai.TurtleAiBackend
 import com.endiq.turtlelauncher.feature.ai.TurtleAssistant
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.setting.AllSettings
@@ -27,6 +28,10 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
         /** Bundle arg carrying a log file shared via the Android share sheet; the
          *  Assistant reads and analyzes it as soon as the conversation is restored. */
         const val ARG_SHARED_LOG_PATH = "shared_log_path"
+
+        /** How many earlier turns are replayed to the cloud brain. Six is enough for "that
+         *  renderer" and "now in Kotlin" to resolve without paying for the whole thread. */
+        private const val MAX_HISTORY_EXCHANGES = 6
     }
 
     private lateinit var binding: FragmentAiChatBinding
@@ -131,8 +136,12 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
         beginAnswering()
 
         val appContext = requireContext().applicationContext
+        // Snapshot the thread before the answer lands: this is what the previous turns were,
+        // and the question just typed is the one being asked now.
+        val history = recentHistory()
+
         TaskExecutors.getDefault().execute {
-            val reply = runCatching { TurtleAssistant.respond(appContext, text) }
+            val reply = runCatching { TurtleAssistant.respond(appContext, text, history) }
                 .onFailure { e -> Logging.e(TAG, "Assistant failed to answer", e) }
                 .getOrDefault(TurtleAssistant.Reply(fallbackErrorText()))
 
@@ -149,6 +158,29 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
                 persist()
             }
         }
+    }
+
+    /**
+     * The last few question/answer pairs of the visible conversation, oldest first, for the
+     * cloud brain's context. Pairs are built from the transcript rather than tracked
+     * separately, so a restored conversation provides context too; the greeting (an assistant
+     * line with no question before it) and the question currently being asked provide none.
+     */
+    private fun recentHistory(): List<TurtleAiBackend.Exchange> {
+        val exchanges = mutableListOf<TurtleAiBackend.Exchange>()
+        var pendingQuestion: String? = null
+        transcript.forEach { message ->
+            if (message.isUser) {
+                pendingQuestion = message.text
+            } else {
+                val question = pendingQuestion
+                if (!question.isNullOrBlank()) {
+                    exchanges.add(TurtleAiBackend.Exchange(question, message.text))
+                    pendingQuestion = null
+                }
+            }
+        }
+        return exchanges.takeLast(MAX_HISTORY_EXCHANGES)
     }
 
     /**

@@ -1270,6 +1270,10 @@
     <string name="setting_ai_language_desc">The language the Assistant answers in. Automatic follows the launcher/device language, and the Assistant always mirrors the language you actually type in. Without an AI key (above) its offline answers stay English, with a note in your language saying so.</string>
     <string name="setting_ai_brain_title">Assistant: use my AI key</string>
     <string name="setting_ai_brain_desc">Lets the Assistant use the API key above to answer in your own language and to handle questions the launcher has no built-in answer for. Everything it knows about this launcher is still sent along as the source of truth. Off by default; off = the Assistant never leaves your device.</string>
+    <string name="setting_ai_model_title">AI model</string>
+    <string name="setting_ai_model_desc">Model id sent to the endpoint below - gpt-4o-mini by default. Type any model your provider offers; larger models are slower and cost more per question but write, code and calculate better. Used by the Assistant, AI crash help and the skin filter.</string>
+    <string name="setting_ai_base_url_title">AI endpoint URL</string>
+    <string name="setting_ai_base_url_desc">Base URL of an OpenAI-compatible API - leave empty for OpenAI itself. Set it to use another provider or a local server: the launcher posts to &lt;url&gt;/chat/completions with your key as a Bearer token.</string>
     <string name="setting_ai_web_search_title">Assistant: search the internet</string>
     <string name="setting_ai_web_search_desc">When the on-device knowledge base has no answer, the Assistant can search the web and show you the sources. Off by default: turning it on sends your question to the search provider below.</string>
     <string name="setting_ai_search_provider_title">Search provider</string>

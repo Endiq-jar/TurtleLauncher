@@ -3,6 +3,7 @@ package com.endiq.turtlelauncher.feature.log
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.endiq.turtlelauncher.feature.ai.TurtleAiEndpoint
 import com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage
 import com.endiq.turtlelauncher.feature.ai.TurtleAiPrompt
 import com.endiq.turtlelauncher.setting.AllSettings
@@ -12,7 +13,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 object AiCrashAdvisor {
 
-    private const val ENDPOINT = "https://api.openai.com/v1/chat/completions"
     private const val MAX_LOG_CHARS = 6000
 
     /**
@@ -72,7 +72,7 @@ object AiCrashAdvisor {
             }
 
             val body = requestBody.toString().toRequestBody("application/json".toMediaType())
-            val request = UrlManager.createRequestBuilder(ENDPOINT, body)
+            val request = UrlManager.createRequestBuilder(TurtleAiEndpoint.chatCompletions(), body)
                 .header("Authorization", "Bearer $apiKey")
                 .build()
 

@@ -190,6 +190,14 @@ class ExperimentalSettingsFragment :
             binding.aiBrain
         )
 
+        BaseSettingsWrapper(context, binding.aiModelLayout) {
+            promptSetAiModel(context)
+        }
+
+        BaseSettingsWrapper(context, binding.aiBaseUrlLayout) {
+            promptSetAiBaseUrl(context)
+        }
+
         SwitchSettingsWrapper(
             context,
             AllSettings.aiWebSearchEnabled,
@@ -332,6 +340,36 @@ class ExperimentalSettingsFragment :
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    private fun promptSetAiModel(context: android.content.Context) {
+        val current = runCatching { AllSettings.aiModel.getValue() }.getOrDefault("")
+        com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
+            .setTitle(R.string.setting_ai_model_title)
+            .setHintText(R.string.setting_ai_model_desc)
+            .setEditText(current)
+            .setInputType(android.text.InputType.TYPE_CLASS_TEXT)
+            .setConfirmListener { editText, _ ->
+                AllSettings.aiModel.put(editText.text.toString().trim()).save()
+                Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
+    }
+
+    private fun promptSetAiBaseUrl(context: android.content.Context) {
+        val current = runCatching { AllSettings.aiApiBaseUrl.getValue() }.getOrDefault("")
+        com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
+            .setTitle(R.string.setting_ai_base_url_title)
+            .setHintText(R.string.setting_ai_base_url_desc)
+            .setEditText(current)
+            .setInputType(android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI)
+            .setConfirmListener { editText, _ ->
+                AllSettings.aiApiBaseUrl.put(editText.text.toString().trim()).save()
+                Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
     }
 
     private fun promptSetSearchUrl(context: android.content.Context) {

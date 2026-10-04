@@ -11,10 +11,10 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.Base64
 import java.util.concurrent.TimeUnit
+import com.endiq.turtlelauncher.feature.ai.TurtleAiEndpoint
 
 internal object AiContentModerator {
 
-    private const val ENDPOINT = "https://api.openai.com/v1/chat/completions"
     private const val MAX_CACHE_ENTRIES = 500
 
     private const val PROMPT =
@@ -86,7 +86,7 @@ internal object AiContentModerator {
             }
 
             val body = requestBody.toString().toRequestBody("application/json".toMediaType())
-            val request = UrlManager.createRequestBuilder(ENDPOINT, body)
+            val request = UrlManager.createRequestBuilder(TurtleAiEndpoint.chatCompletions(), body)
                 .header("Authorization", "Bearer $apiKey")
                 .build()
 

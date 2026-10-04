@@ -34,6 +34,29 @@ object TurtleAssistant {
         val followUps: List<String> = emptyList()
     )
 
+    /**
+     * Phrases that mean "produce something for me", checked against the normalised message.
+     * Kept short and specific on purpose: every entry here is a case where the rule engine
+     * would otherwise answer a request for work with a topic blurb.
+     */
+    private val GENERAL_TASK_MARKERS = listOf(
+        // writing
+        "write ", "writing ", "draft ", "compose ", "rewrite ", "reword ", "proofread ",
+        "summarize ", "summarise ", "translate ", "explain in ", "make a list", "write me ",
+        "essay", "poem", "email", "cover letter", "readme", "changelog", "release notes",
+        "documentation for", "guide for", "guide to writing",
+        // code
+        " code", "coding", "program ", "script ", "function ", "method ", "class ", "snippet",
+        "compile", "debug ", "stack trace", "refactor", "unit test", "test case", "regex",
+        "python", "javascript", "typescript", "kotlin code", "java code", "c++", "rust ",
+        "bash ", "shell command", "gradle", "json", "html", "css", "sql", "yaml", "xml",
+        "implement ", "algorithm", "pseudo", "api call", "endpoint for", "parse ",
+        // calculation
+        "calculate", "compute ", "how much is", "how many is", "convert ", "percentage",
+        "average", "sum of", "multiply", "divide ", "equation", "formula", "probability",
+        "how long will", "how much does", "estimate the", "in mib", "in gib", "per tick"
+    )
+
     /** A finished assistant turn: the text to show plus optional suggestion chips. */
     data class Reply(val text: String, val suggestions: List<String> = emptyList())
 
@@ -57,8 +80,18 @@ object TurtleAssistant {
         "How do I install mods?", "Controls", "Friends / LAN"
     )
 
+    /**
+     * Answers [input]. [history] is the earlier part of the conversation, oldest first, used
+     * only for the cloud brain: without it a follow-up ("make it faster", "now in Python") is
+     * an unanswerable message, because the subject of the question is in the previous turn.
+     * The on-device engine ignores it - its answers never depend on context.
+     */
     @JvmStatic
-    fun respond(context: Context, input: String): Reply {
+    fun respond(
+        context: Context,
+        input: String,
+        history: List<TurtleAiBackend.Exchange> = emptyList()
+    ): Reply {
         val raw = input.trim()
         // The language this message should be answered in: what the user actually wrote in,
         // falling back to the launcher/device language. See TurtleAiLanguage.
@@ -86,18 +119,25 @@ object TurtleAssistant {
 
         val brainReady = TurtleAiBackend.isConfigured(context)
 
-        // Anyone writing in another language talks to the brain whenever it is available, even
-        // for a question the (English-only) rule engine knows: the local answer is passed along
-        // as the authority, so the reply stays faithful to this launcher and comes back in the
-        // user's own language. See TurtleAiLanguage's class doc.
-        if (brainReady && (!TurtleAiLanguage.isEnglish(language) || matchedTopic == null)) {
+        // Three things send a message to the brain instead of the rule engine:
+        //  - it is written in another language (the local engine only answers in English);
+        //  - nothing in the topic table matches it;
+        //  - it asks for something to be *produced* - code, a calculation, a piece of writing.
+        //    Keyword matching is the wrong tool for those: "write a Fabric mod that adds a
+        //    block" contains the word "fabric", so the mod topic would happily answer a
+        //    request for code with an explanation about mods. When a topic did match, its
+        //    answer is still passed along as authoritative launcher context, so the model
+        //    writes the code and gets the launcher facts right at the same time.
+        val generalTask = looksLikeGeneralTask(raw)
+        if (brainReady && (!TurtleAiLanguage.isEnglish(language) || matchedTopic == null || generalTask)) {
             return brainReply(
                 context = context,
                 question = raw,
                 language = language,
                 shell = shell,
                 localAnswer = matchedTopic?.let { safeAnswer(context, it) },
-                suggestions = matchedTopic?.followUps ?: startingSuggestions()
+                suggestions = matchedTopic?.followUps ?: startingSuggestions(),
+                history = history
             )
         }
 
@@ -154,7 +194,8 @@ object TurtleAssistant {
         language: String,
         shell: TurtleAiLanguage.Shell,
         localAnswer: String?,
-        suggestions: List<String>
+        suggestions: List<String>,
+        history: List<TurtleAiBackend.Exchange>
     ): Reply {
         var results: List<TurtleAiWebSearch.Result> = emptyList()
         var providerName = ""
@@ -169,7 +210,15 @@ object TurtleAssistant {
         }
         val searchBlock =
             if (results.isEmpty()) null else TurtleAiWebSearch.formatForPrompt(results, providerName)
-        val answer = TurtleAiBackend.ask(context, question, language, localAnswer, searchBlock)
+        val answer = TurtleAiBackend.ask(
+            context = context,
+            question = question,
+            languageTag = language,
+            localAnswer = localAnswer,
+            searchBlock = searchBlock,
+            history = history,
+            deviceFacts = liveDeviceFacts(context)
+        )
         return when {
             !answer.isNullOrBlank() ->
                 Reply(answer + TurtleAiWebSearch.sourcesFooter(results, shell), suggestions)
@@ -266,6 +315,19 @@ object TurtleAssistant {
         startingSuggestions()
     )
 
+    /**
+     * True when the message asks for something to be written, calculated, converted or
+     * explained as a general skill rather than answered from the launcher's knowledge base.
+     *
+     * Deliberately about *intent words*, not topics: a plain keyword match would fire on
+     * "explain the renderer" (which the rule engine answers better) while missing "turn that
+     * into Java". The words below are the ones a request for produced work actually uses.
+     */
+    private fun looksLikeGeneralTask(raw: String): Boolean {
+        val text = " " + normalize(raw).replace(Regex("\\s+"), " ").trim() + " "
+        return GENERAL_TASK_MARKERS.any { text.contains(it) }
+    }
+
     /** Never let one broken live-state read take the whole assistant down. */
     private fun safeAnswer(context: Context, topic: Topic): String =
         runCatching { topic.answer(context) }
@@ -297,6 +359,44 @@ object TurtleAssistant {
     }
 
     // ── Live-state answers ──────────────────────────────────────────────────────────
+
+    /**
+     * The device facts a model cannot know and must never guess: what this machine has, what
+     * the launcher is set to, and what is currently in use. Sent with every cloud answer so a
+     * question like "how much RAM can I put on this phone" or "is 4GB enough" starts from real
+     * numbers instead of a plausible-sounding invention. Deliberately English and terse: it is
+     * machine context handed to the model, not text the user reads - the answer itself comes
+     * back in the user's language.
+     */
+    private fun liveDeviceFacts(context: Context): String {
+        val totalMb = runCatching { Tools.getTotalDeviceMemory(context) }.getOrDefault(0)
+        val ramMb = runCatching { AllSettings.ramAllocation.value.getValue() }.getOrDefault(0)
+        val facts = mutableListOf(
+            "Launcher: " + runCatching { InfoDistributor.APP_NAME }.getOrDefault("TurtleLauncher") +
+                " v" + runCatching { ZHTools.getVersionName() }.getOrDefault("?"),
+            "Device: " + Build.MANUFACTURER + " " + Build.MODEL +
+                ", Android API " + Build.VERSION.SDK_INT +
+                ", ABI " + (Build.SUPPORTED_ABIS.firstOrNull() ?: "?"),
+            "Renderer in use: " + currentRendererName(context)
+        )
+        if (totalMb > 0) {
+            facts.add(
+                "RAM: " + totalMb + "MB total on the device, " + ramMb +
+                    "MB currently allocated to Minecraft"
+            )
+        } else {
+            facts.add("RAM allocated to Minecraft: " + ramMb + "MB")
+        }
+        freeStorageGb()?.let { facts.add("Free storage on the game drive: " + it + "GB") }
+        val versions = runCatching { VersionsManager.getVersions() }.getOrDefault(emptyList())
+        facts.add("Installed game versions: " + versions.size +
+            (runCatching { VersionsManager.getCurrentVersion()?.getVersionName() }.getOrNull()
+                ?.let { " (selected: " + it + ")" } ?: " (none selected)"))
+        runCatching { AllSettings.aiLanguage.getValue() }.getOrDefault("")
+            .takeIf { it.isNotBlank() && it != TurtleAiLanguage.AUTO }
+            ?.let { facts.add("Launcher language setting: " + it) }
+        return facts.joinToString("\n")
+    }
 
     private fun statusAnswer(context: Context): String {
         val deviceTotalMb = runCatching { Tools.getTotalDeviceMemory(context) }.getOrDefault(0)

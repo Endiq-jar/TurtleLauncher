@@ -330,6 +330,13 @@ class AllSettings {
         @JvmStatic val aiCrashHelpEnabled       = BooleanSettingUnit("aiCrashHelpEnabled", false)
         @JvmStatic val aiApiKey                 = StringSettingUnit("aiApiKey", "")
         @JvmStatic val aiModel                  = StringSettingUnit("aiModel", "gpt-4o-mini")
+        /** Base URL of an OpenAI-compatible API, e.g. "https://api.openai.com/v1". Blank
+         *  means OpenAI itself. Set it to use a different provider (or a local server) with
+         *  the same key: the client posts to "<base>/chat/completions" with a Bearer token,
+         *  so any provider that speaks that shape works, including the bigger/slower models
+         *  the default one can't be. Shared by the Assistant, AI crash help and the skin
+         *  filter. */
+        @JvmStatic val aiApiBaseUrl             = StringSettingUnit("aiApiBaseUrl", "")
         @JvmStatic val aiSkinFilterEnabled       = BooleanSettingUnit("aiSkinFilterEnabled", false)
 
         // ── TurtleLauncher built-in AI Assistant (top bar → Assistant) ────────

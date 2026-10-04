@@ -50,9 +50,26 @@ object TurtleAiWebSearch {
         PROVIDER_CUSTOM to "Custom (SearXNG-compatible JSON)"
     )
 
-    private const val MAX_RESULTS = 4
+    // Six, not four: with a model summarizing them, the useful fact is often in the second
+    // result while the first is a disambiguation page. The raw-results fallback shows all of
+    // them too, which is fine - they are links, not prose.
+    private const val MAX_RESULTS = 6
     private const val MAX_SNIPPET_CHARS = 260
     private const val MAX_QUERY_CHARS = 200
+
+    /** Chat wrappers that mean nothing to a search index (matched at the start, lowercased). */
+    private val LEADING_FILLER = listOf(
+        "can you", "could you", "would you", "will you", "please", "pls", "hey", "hi", "hello",
+        "i want to know", "i need to know", "i want to", "i need to", "i would like to",
+        "help me", "tell me", "show me", "give me", "explain to me", "explain",
+        "search for", "search", "look up", "google", "find me", "find",
+        "do you know", "is it true that", "how do i", "how do you", "how can i", "how to",
+        "what is", "what are", "what's", "whats", "what was", "who is", "who was",
+        "where is", "where can i", "when is", "when did", "why is", "why does", "why do"
+    )
+
+    /** Politeness that trails a request without adding a subject. */
+    private val TRAILING_FILLER = listOf("please", "pls", "thanks", "thank you", "thx")
     // Short on purpose: a search that hasn't answered in this long is not worth the wait,
     // and the assistant has a fallback for every outcome.
     private const val TIMEOUT_SECONDS = 12L
@@ -101,7 +118,7 @@ object TurtleAiWebSearch {
     @JvmStatic
     fun search(context: Context, query: String, languageTag: String): Outcome {
         if (!isEnabled(context)) return Outcome.Disabled
-        val clean = query.replace(Regex("\\s+"), " ").trim().take(MAX_QUERY_CHARS)
+        val clean = buildQuery(query).take(MAX_QUERY_CHARS)
         if (clean.isBlank()) return Outcome.Empty(emptyList())
 
         val chosen = provider(context)
@@ -132,6 +149,78 @@ object TurtleAiWebSearch {
             Outcome.Empty(tried)
         }
     }
+
+    /**
+     * A question as an index query. Search engines match the words they are given, so the
+     * conversational wrapper on a chat message is pure noise to them: "can you please tell me
+     * how to install shaders on 1.21" finds less than "install shaders 1.21".
+     *
+     * Only the wrapper is removed - leading meta phrases, a leading article, trailing
+     * politeness, the question mark. Words in the middle of the question are left alone: they
+     * carry the subject, and a stop-word filter that mangles "how to train your dragon" into
+     * "train dragon" costs more than it saves.
+     */
+    private fun buildQuery(question: String): String {
+        var q = question.replace(Regex("\\s+"), " ").trim()
+            .trimEnd('?', '!', '.')
+            .trimStart(',', '.', ';', ':', '!', '-')
+            .trim()
+
+        // Peel leading filler one layer at a time: "can you please tell me how to ...".
+        var peeling = true
+        while (peeling) {
+            peeling = false
+            val lower = q.lowercase(Locale.ROOT)
+            for (phrase in LEADING_FILLER) {
+                if (lower.startsWith(phrase + " ") && q.length > phrase.length + 1) {
+                    // Re-trim: "tell me, how to ..." leaves the punctuation behind.
+                    q = q.substring(phrase.length).trim().trimStart(',', '.', ';', ':', '!').trim()
+                    peeling = true
+                    break
+                }
+            }
+        }
+
+        // "what is a shader" leaves an article behind; the article is not the query.
+        val afterArticle = q.lowercase(Locale.ROOT)
+        for (article in listOf("a ", "an ", "the ")) {
+            if (afterArticle.startsWith(article) && q.length > article.length + 2) {
+                q = q.substring(article.length).trim()
+                break
+            }
+        }
+
+        // Trailing politeness ("... on android please").
+        for (tail in TRAILING_FILLER) {
+            val lower = q.lowercase(Locale.ROOT)
+            if (lower.endsWith(" " + tail)) {
+                q = q.dropLast(tail.length + 1).trim().trimEnd(',', '.', '!', '?').trim()
+                break
+            }
+        }
+
+        // Never hand the provider an empty or one-letter query: if the cleaning ate
+        // everything, the raw question is still the better guess.
+        return if (q.count { it.isLetterOrDigit() } >= 2) q else question.trim()
+    }
+
+    /**
+     * Results the model/user can't use, and duplicates across endpoints: the same page can
+     * arrive twice with different fragment/anchor and capitalisation.
+     */
+    private fun sanitize(results: List<Result>): List<Result> {
+        val seen = HashSet<String>()
+        return results.filter { it.title.isNotBlank() && it.url.isNotBlank() }
+            .filter { seen.add(normalizedUrl(it.url)) }
+    }
+
+    private fun normalizedUrl(url: String): String = url.trim()
+        .lowercase(Locale.ROOT)
+        .substringBefore('#')
+        .removePrefix("https://")
+        .removePrefix("http://")
+        .removePrefix("www.")
+        .trimEnd('/')
 
     private fun runProvider(
         context: Context,
@@ -181,8 +270,9 @@ object TurtleAiWebSearch {
                 url = base + articlePath + urlEncode(title.replace(' ', '_'))
             )
         }
-        return if (results.isEmpty()) Outcome.Empty(listOf(provider))
-        else Outcome.Ok(results.take(MAX_RESULTS), provider)
+        val usable = sanitize(results)
+        return if (usable.isEmpty()) Outcome.Empty(listOf(provider))
+        else Outcome.Ok(usable.take(MAX_RESULTS), provider)
     }
 
     private fun duckDuckGo(query: String, provider: String): Outcome {
@@ -238,9 +328,11 @@ object TurtleAiWebSearch {
         return finishDuckDuckGo(results, provider)
     }
 
-    private fun finishDuckDuckGo(results: List<Result>, provider: String): Outcome =
-        if (results.isEmpty()) Outcome.Empty(listOf(provider))
-        else Outcome.Ok(results.distinctBy { it.url }.take(MAX_RESULTS), provider)
+    private fun finishDuckDuckGo(results: List<Result>, provider: String): Outcome {
+        val usable = sanitize(results)
+        return if (usable.isEmpty()) Outcome.Empty(listOf(provider))
+        else Outcome.Ok(usable.take(MAX_RESULTS), provider)
+    }
 
     /**
      * User-supplied endpoint. `{query}` (or `%s`) in the URL template is replaced with the
@@ -280,8 +372,9 @@ object TurtleAiWebSearch {
             )
             Result(title, snippet.ifBlank { "(no summary in the search index)" }, link)
         }
-        return if (results.isEmpty()) Outcome.Empty(listOf(provider))
-        else Outcome.Ok(results.take(MAX_RESULTS), provider)
+        val usable = sanitize(results)
+        return if (usable.isEmpty()) Outcome.Empty(listOf(provider))
+        else Outcome.Ok(usable.take(MAX_RESULTS), provider)
     }
 
     // ── Formatting ──────────────────────────────────────────────────────────────────

@@ -35,6 +35,18 @@ object TurtleAssistant {
     )
 
     /**
+     * Phrases that open a request for a picture. Tight on purpose: "image of a shader" is a
+     * question, "draw me a shader" is a job.
+     */
+    private val DRAW_MARKERS = listOf(
+        "draw me ", "draw a ", "draw an ", "draw the ", "draw ",
+        "generate an image of ", "generate image of ", "generate a picture of ",
+        "create an image of ", "create a picture of ", "make an image of ",
+        "make a picture of ", "make me an image of ", "paint me ", "paint a ",
+        "imagine a picture of "
+    )
+
+    /**
      * Phrases that mean "produce something for me", checked against the normalised message.
      * Kept short and specific on purpose: every entry here is a case where the rule engine
      * would otherwise answer a request for work with a topic blurb.
@@ -58,7 +70,12 @@ object TurtleAssistant {
     )
 
     /** A finished assistant turn: the text to show plus optional suggestion chips. */
-    data class Reply(val text: String, val suggestions: List<String> = emptyList())
+    data class Reply(
+        val text: String,
+        val suggestions: List<String> = emptyList(),
+        /** Absolute path of an image this turn produced, when it produced one (see /image). */
+        val imagePath: String? = null
+    )
 
     /**
      * First message shown when a conversation starts - in the launcher's language, so the
@@ -77,7 +94,7 @@ object TurtleAssistant {
     @JvmStatic
     fun startingSuggestions(): List<String> = listOf(
         "Status", "Best renderer?", "Why did my game crash?", "FPS is low",
-        "How do I install mods?", "Controls", "Friends / LAN"
+        "How do I install mods?", "Draw a Minecraft wallpaper"
     )
 
     /**
@@ -90,7 +107,7 @@ object TurtleAssistant {
     fun respond(
         context: Context,
         input: String,
-        history: List<TurtleAiBackend.Exchange> = emptyList()
+        history: List<TurtleAiGemini.Exchange> = emptyList()
     ): Reply {
         val raw = input.trim()
         // The language this message should be answered in: what the user actually wrote in,
@@ -110,6 +127,11 @@ object TurtleAssistant {
             "/language", "/lang" -> return languageReply(context, language)
         }
 
+        // Image generation: an explicit command always runs (typing it *is* the consent), and
+        // an unmistakable "draw me ..." is treated the same way when the brain is on.
+        val imagePrompt = imageRequest(raw)
+        if (imagePrompt != null) return imageReply(imagePrompt, shell)
+
         val normalized = normalize(raw)
         val scored = topics.map { it to score(normalized, it.keywords) }
             .sortedWith(compareByDescending<Pair<Topic, Int>> { it.second }.thenBy { it.first.id })
@@ -117,7 +139,7 @@ object TurtleAssistant {
         // Same rule as before: a very weak match (one short keyword) is not an answer.
         val matchedTopic = best?.takeIf { it.second >= 2 }?.first
 
-        val brainReady = TurtleAiBackend.isConfigured(context)
+        val brainReady = TurtleAiGemini.isConfigured()
 
         // Three things send a message to the brain instead of the rule engine:
         //  - it is written in another language (the local engine only answers in English);
@@ -159,8 +181,8 @@ object TurtleAssistant {
         val setting = runCatching { AllSettings.aiLanguage.getValue() }
             .getOrDefault(TurtleAiLanguage.AUTO)
         val device = TurtleAiLanguage.deviceLanguage(context)
-        val brain = TurtleAiBackend.isConfigured(context)
-        val search = TurtleAiWebSearch.isEnabled(context)
+        val brain = TurtleAiGemini.isConfigured()
+        val search = TurtleAiGemini.searchEnabled()
         return Reply(
             buildString {
                 append("Language: ").append(TurtleAiLanguage.displayName(language))
@@ -173,9 +195,12 @@ object TurtleAssistant {
                 ).append('\n')
                 append("Offline answers: English only\n")
                 append("AI brain (other languages, open questions): ")
-                    .append(if (brain) "on\n" else "off - Settings -> Experimental -> \"Assistant: use my AI key\"\n")
+                    .append(
+                        if (brain) "on (" + TurtleAiGemini.model() + ")\n"
+                        else "off - Settings -> Experimental -> \"Assistant: use Gemini\"\n"
+                    )
                 append("Web search: ")
-                    .append(if (search) "on\n" else "off - Settings -> Experimental -> \"Assistant: search the internet\"\n")
+                    .append(if (search) "on (Google Search grounding)\n" else "off - Settings -> Experimental -> \"Assistant: search the internet\"\n")
                 append("\nI always reply in the language you write in when the AI brain is on.")
             },
             listOf("Help", "Status")
@@ -183,10 +208,11 @@ object TurtleAssistant {
     }
 
     /**
-     * Routes a question to the optional cloud brain ([TurtleAiBackend]), attaching web results
-     * when search is enabled and the launcher's own answer as authoritative context when the
-     * rule engine had one. Falls back to raw attributed results, then to the localized
-     * "couldn't reach the service" line - never to a made-up answer.
+     * Routes a question to Gemini, handing it the launcher's own answer as authoritative
+     * context when the rule engine had one and turning on Google Search grounding when the
+     * user asked for search. If the call fails it falls back to the keyless search providers
+     * (raw, attributed results), and only then to the localized "couldn't reach the service"
+     * line - never to a made-up answer.
      */
     private fun brainReply(
         context: Context,
@@ -195,42 +221,92 @@ object TurtleAssistant {
         shell: TurtleAiLanguage.Shell,
         localAnswer: String?,
         suggestions: List<String>,
-        history: List<TurtleAiBackend.Exchange>
+        history: List<TurtleAiGemini.Exchange>
     ): Reply {
-        var results: List<TurtleAiWebSearch.Result> = emptyList()
-        var providerName = ""
-        if (TurtleAiWebSearch.isEnabled(context)) {
-            when (val outcome = TurtleAiWebSearch.search(context, question, language)) {
-                is TurtleAiWebSearch.Outcome.Ok -> {
-                    results = outcome.results
-                    providerName = outcome.provider
-                }
-                else -> Unit
-            }
-        }
-        val searchBlock =
-            if (results.isEmpty()) null else TurtleAiWebSearch.formatForPrompt(results, providerName)
-        val answer = TurtleAiBackend.ask(
-            context = context,
+        val search = TurtleAiGemini.searchEnabled()
+        val answer = TurtleAiGemini.ask(
             question = question,
             languageTag = language,
             localAnswer = localAnswer,
-            searchBlock = searchBlock,
+            deviceFacts = liveDeviceFacts(context),
             history = history,
-            deviceFacts = liveDeviceFacts(context)
+            useSearch = search
         )
-        return when {
-            !answer.isNullOrBlank() ->
-                Reply(answer + TurtleAiWebSearch.sourcesFooter(results, shell), suggestions)
-            // The brain failed but search worked: show the sources rather than nothing.
-            results.isNotEmpty() ->
-                Reply(
-                    TurtleAiWebSearch.formatForChat(results, shell, question) + "\n\n" + shell.requestFailed,
-                    suggestions
-                )
-            else ->
-                Reply(shell.requestFailed + "\n\n" + shell.offlineHint, suggestions)
+        if (answer != null) {
+            return Reply(answer.text + sourceFooter(answer.sources, shell), suggestions)
         }
+
+        // Gemini failed. If the user also switched on search, the keyless providers are still
+        // worth a try: attributed results beat "couldn't reach the service".
+        if (search) {
+            when (val outcome = TurtleAiWebSearch.search(context, question, language)) {
+                is TurtleAiWebSearch.Outcome.Ok ->
+                    return Reply(
+                        TurtleAiWebSearch.formatForChat(outcome.results, shell, question) +
+                            "\n\n" + shell.requestFailed,
+                        suggestions
+                    )
+                else -> Unit
+            }
+        }
+        return Reply(shell.requestFailed + "\n\n" + shell.offlineHint, suggestions)
+    }
+
+    /**
+     * The sources Google Search grounding actually used, appended under the answer. These
+     * come from the API's grounding metadata, not from the model's text: a URL the model
+     * typed itself could be hallucinated, a grounding chunk cannot.
+     */
+    private fun sourceFooter(
+        sources: List<TurtleAiGemini.Source>,
+        shell: TurtleAiLanguage.Shell
+    ): String =
+        if (sources.isEmpty()) "" else "\n\n" + shell.sources + ":\n" +
+            sources.joinToString("\n") { "\u2022 " + it.url }
+
+    /**
+     * The prompt for image generation, or null when this message is not a request for an
+     * image. Two ways in: the explicit "/image ..." command, and an unmistakable
+     * "draw me a creeper" - which is only honoured while the AI brain is switched on, so a
+     * user who turned the cloud off never gets a surprise upload. The phrase itself is
+     * stripped, because image models take a description, not a chat message.
+     */
+    private fun imageRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT)
+        if (lower.startsWith("/image ") || lower.startsWith("/draw ")) {
+            return raw.substringAfter(' ').trim()
+        }
+        if (lower == "/image" || lower == "/draw") return ""
+        if (!TurtleAiGemini.isConfigured()) return null
+        for (marker in DRAW_MARKERS) {
+            if (lower.startsWith(marker)) {
+                val prompt = raw.substring(marker.length).trim()
+                if (prompt.isNotEmpty()) return prompt
+            }
+        }
+        return null
+    }
+
+    /**
+     * Runs one image generation and files the result next to the app's own data. The reply
+     * carries the file path, which the chat screen renders as a picture (see ChatMessage).
+     */
+    private fun imageReply(prompt: String, shell: TurtleAiLanguage.Shell): Reply {
+        if (prompt.isBlank()) {
+            return Reply(
+                "Tell me what to draw, for example: /image a creeper watching a sunset",
+                startingSuggestions()
+            )
+        }
+        if (TurtleAiGemini.apiKey().isEmpty()) {
+            return Reply(shell.imageFailed, startingSuggestions())
+        }
+        val image = TurtleAiGemini.generateImage(prompt)
+            ?: return Reply(shell.imageFailed, startingSuggestions())
+        val file = TurtleAiImages.save(image.bytes, image.mimeType)
+            ?: return Reply(shell.imageFailed, startingSuggestions())
+        val caption = image.caption.ifBlank { "Here's the image you asked for." }
+        return Reply(caption, listOf("Draw another image"), file.absolutePath)
     }
 
     /**
@@ -310,8 +386,10 @@ object TurtleAssistant {
             "• Accounts and login\n" +
             "• Game versions, snapshots, LWJGL compatibility\n" +
             "• Friends / LAN play\n" +
-            "• Storage, files, screenshots and recording\n\n" +
-            "Commands: /status /diagnose /renderer /tips /language /about",
+            "• Storage, files, screenshots and recording\n" +
+            "• Writing, code, maths and general questions (with Gemini)\n" +
+            "• Image generation - /image a creeper at sunset\n\n" +
+            "Commands: /status /diagnose /renderer /tips /language /image /about",
         startingSuggestions()
     )
 
@@ -497,7 +575,7 @@ object TurtleAssistant {
                     "What usually helps next:\n" +
                     "• Share Logs (home screen rail) - uploads the log so someone can read the raw output\n" +
                     "• Settings → Experimental → \"AI crash help\" - optional, sends the log tail to " +
-                    "OpenAI with YOUR OWN key, off by default\n" +
+                    "Google's Gemini API (your key, or the one built into the app), off by default\n" +
                     "• Try a different renderer for this version (Settings → Video → Renderer)",
                 listOf("Best renderer?", "Status")
             )
@@ -529,36 +607,34 @@ object TurtleAssistant {
      * internet search switched on - and it must not claim those are running when they aren't.
      */
     private fun assistantSelfDescription(context: Context): String {
-        val brain = TurtleAiBackend.isConfigured(context)
-        val search = TurtleAiWebSearch.isEnabled(context)
-        val model = runCatching { AllSettings.aiModel.value.getValue() }.getOrDefault("gpt-4o-mini")
+        val brain = TurtleAiGemini.isConfigured()
+        val search = TurtleAiGemini.searchEnabled()
+        val model = TurtleAiGemini.model()
 
         return buildString {
-            append("I'm the launcher's built-in assistant. My answers come from a knowledge base about ")
-            append("this launcher plus live readings from this device, so my own answers need no API key, ")
-            append("no account and no internet - and I don't guess: if something isn't in that knowledge ")
+            append("I'm the launcher's built-in assistant. My answers about this launcher come ")
+            append("from a knowledge base plus live readings from this device, so those need no ")
+            append("key and no internet - and I don't guess: if something isn't in that knowledge ")
             append("base, I say so.\n\n")
 
             if (brain) {
-                append("The optional AI brain is ON ($model, your own key), so questions I can't answer ")
-                append("from the knowledge base are sent to it. The context I gather here - version, ")
-                append("renderer, RAM, log excerpts - travels with the question.\n\n")
+                append("Gemini is on ($model), so open questions - writing, code, maths, ")
+                append("anything outside the launcher - go to Google with the context I gather ")
+                append("here: version, renderer, RAM, log excerpts.\n\n")
             }
             if (search) {
-                append("Internet search is ON (${TurtleAiWebSearch.providerLabel(TurtleAiWebSearch.provider(context))}), ")
-                append("so I can look a question up and show you the pages I used - only the search text ")
-                append("leaves the device.\n\n")
+                append("Internet search is on: answers are grounded in Google Search, and I show ")
+                append("the pages the search actually used underneath the answer.\n\n")
             }
             if (!brain && !search) {
-                append("Two optional extras in Settings → Experimental can change that: an AI brain (your own ")
-                append("key) for open questions, and internet search for looking things up. Both are off, so ")
-                append("nothing leaves this device.\n\n")
+                append("The Gemini brain and internet search are both off, so nothing leaves this ")
+                append("device. Both are in Settings \u2192 Experimental.\n\n")
             } else {
-                append("Both extras live in Settings → Experimental and can be switched off there.\n\n")
+                append("Both are switchable in Settings \u2192 Experimental.\n\n")
             }
 
-            append("Separately, AI crash help and the skin/cape filter also send data to OpenAI - again ")
-            append("only when you enable them, and only with your own key.")
+            append("Image generation is available too - /image <what you want> - and it always ")
+            append("goes to Google, since no phone can draw locally.")
         }
     }
 
@@ -571,17 +647,17 @@ object TurtleAssistant {
             "• Installed game versions: ${versions.size}\n" +
             "• Renderer in use: ${currentRendererName(context)}\n\n" +
             "This assistant is part of the launcher itself. " + when {
-                !TurtleAiBackend.isConfigured(context) && !TurtleAiWebSearch.isEnabled(context) ->
+                !TurtleAiGemini.isConfigured() && !TurtleAiWebSearch.isEnabled(context) ->
                     "It answers on-device - it doesn't call any AI service."
-                TurtleAiBackend.isConfigured(context) && TurtleAiWebSearch.isEnabled(context) ->
-                    "It answers on-device by default, but the optional AI brain and internet search " +
-                        "you turned on can send questions out - see Settings → Experimental."
-                TurtleAiBackend.isConfigured(context) ->
-                    "It answers on-device by default, but the optional AI brain you turned on can send " +
-                        "open questions out - see Settings → Experimental."
+                TurtleAiGemini.isConfigured() && TurtleAiGemini.searchEnabled() ->
+                    "It answers on-device for launcher questions; the Gemini brain and Google " +
+                        "Search grounding you enabled answer the rest - see Settings \u2192 Experimental."
+                TurtleAiGemini.isConfigured() ->
+                    "It answers on-device for launcher questions; the Gemini brain you enabled " +
+                        "handles open questions, writing and code - see Settings \u2192 Experimental."
                 else ->
-                    "It answers on-device by default; the internet search you turned on can look " +
-                        "questions up - see Settings → Experimental."
+                    "It answers on-device for launcher questions; the internet search you " +
+                        "enabled looks the rest up - see Settings \u2192 Experimental."
             }
     }
 

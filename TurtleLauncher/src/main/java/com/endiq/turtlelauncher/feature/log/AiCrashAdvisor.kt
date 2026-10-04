@@ -1,15 +1,9 @@
 package com.endiq.turtlelauncher.feature.log
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import com.endiq.turtlelauncher.feature.ai.TurtleAiEndpoint
+import com.endiq.turtlelauncher.feature.ai.TurtleAiGemini
 import com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage
 import com.endiq.turtlelauncher.feature.ai.TurtleAiPrompt
 import com.endiq.turtlelauncher.setting.AllSettings
-import com.endiq.turtlelauncher.utils.path.UrlManager
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 
 object AiCrashAdvisor {
 
@@ -45,56 +39,18 @@ object AiCrashAdvisor {
     @JvmOverloads
     fun getSuggestion(logText: String, languageTag: String? = null): String? {
         if (!runCatching { AllSettings.aiCrashHelpEnabled.getValue() }.getOrDefault(false)) return null
-        val apiKey = runCatching { AllSettings.aiApiKey.getValue() }.getOrDefault("").trim()
-        if (apiKey.isEmpty()) return null
         if (logText.isBlank()) return null
+        // No key (and no key baked into the build) = no crash help; the rule engine's own
+        // diagnoses are what the user sees, exactly as before this feature existed.
+        if (TurtleAiGemini.apiKey().isEmpty()) return null
 
-        val model = runCatching { AllSettings.aiModel.getValue() }.getOrDefault("gpt-4o-mini")
-            .ifBlank { "gpt-4o-mini" }
-        val trimmedLog = logText.takeLast(MAX_LOG_CHARS)
-
-        return runCatching {
-            val messages = JsonArray().apply {
-                add(JsonObject().apply {
-                    addProperty("role", "system")
-                    addProperty("content", systemPromptFor(languageTag))
-                })
-                add(JsonObject().apply {
-                    addProperty("role", "user")
-                    addProperty("content", "Crash log tail:\n\n$trimmedLog")
-                })
-            }
-            val requestBody = JsonObject().apply {
-                addProperty("model", model)
-                add("messages", messages)
-                addProperty("temperature", 0.2)
-                addProperty("max_tokens", 400)
-            }
-
-            val body = requestBody.toString().toRequestBody("application/json".toMediaType())
-            val request = UrlManager.createRequestBuilder(TurtleAiEndpoint.chatCompletions(), body)
-                .header("Authorization", "Bearer $apiKey")
-                .build()
-
-            // Independent short-timeout client — this is an interactive one-shot call during
-            // crash reporting, not a bulk download; we don't want it to hang the flow for long.
-            val client = UrlManager.createOkHttpClientBuilder { it.callTimeout(20, java.util.concurrent.TimeUnit.SECONDS) }.build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Logging.w("AiCrashAdvisor", "OpenAI request failed: HTTP ${response.code}")
-                    return@runCatching null
-                }
-                val responseBody = response.body?.string() ?: return@runCatching null
-                val json = JsonParser.parseString(responseBody).asJsonObject
-                json.getAsJsonArray("choices")
-                    ?.firstOrNull()?.asJsonObject
-                    ?.getAsJsonObject("message")
-                    ?.get("content")?.asString
-                    ?.trim()
-            }
-        }.onFailure { e -> Logging.w("AiCrashAdvisor", "AI crash suggestion failed", e) }
-            .getOrNull()
-            ?.takeIf { it.isNotBlank() }
+        return TurtleAiGemini.complete(
+            systemPrompt = systemPromptFor(languageTag),
+            userText = "Crash log tail:\n\n" + logText.takeLast(MAX_LOG_CHARS),
+            // Cooler and shorter than a chat answer: this renders in a small dialog next to
+            // the rule engine's own findings, not as a conversation.
+            temperature = 0.2,
+            maxOutputTokens = 400
+        )
     }
 }

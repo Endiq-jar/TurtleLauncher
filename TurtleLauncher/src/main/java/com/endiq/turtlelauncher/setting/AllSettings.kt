@@ -324,19 +324,24 @@ class AllSettings {
         @JvmStatic val logRegexFilterHistory    = StringSettingUnit("logRegexFilterHistory", "")
 
         // AI-assisted crash diagnosis: only used as a fallback when no local
-        // CrashAnalyzer rule (including custom rules) recognises the crash, and only
-        // if the user has supplied their own API key. Nothing is sent anywhere unless
-        // both of those are true.
+        // CrashAnalyzer rule (including custom rules) recognises the crash. Nothing is
+        // sent anywhere unless the service is enabled *and* there is a key to use.
         @JvmStatic val aiCrashHelpEnabled       = BooleanSettingUnit("aiCrashHelpEnabled", false)
-        @JvmStatic val aiApiKey                 = StringSettingUnit("aiApiKey", "")
-        @JvmStatic val aiModel                  = StringSettingUnit("aiModel", "gpt-4o-mini")
-        /** Base URL of an OpenAI-compatible API, e.g. "https://api.openai.com/v1". Blank
-         *  means OpenAI itself. Set it to use a different provider (or a local server) with
-         *  the same key: the client posts to "<base>/chat/completions" with a Bearer token,
-         *  so any provider that speaks that shape works, including the bigger/slower models
-         *  the default one can't be. Shared by the Assistant, AI crash help and the skin
-         *  filter. */
-        @JvmStatic val aiApiBaseUrl             = StringSettingUnit("aiApiBaseUrl", "")
+
+        // ── Gemini ──────────────────────────────────────────────────────────
+        // One provider for every AI feature (Assistant brain, crash help, skin/cape filter).
+        // The key normally comes from the build itself - CI injects the GEMINI_API_KEY
+        // repository secret into BuildConfig (see build.gradle.kts) - so the app works with
+        // nothing to configure. This setting is the override: a user with their own key uses
+        // it instead, and it is how a leaked build key gets rotated without shipping a new
+        // APK. Stored only on this device.
+        @JvmStatic val aiGeminiApiKey           = StringSettingUnit("aiGeminiApiKey", "")
+        /** Model id for text: "auto" = TurtleAiGemini.DEFAULT_MODEL. The Settings picker can
+         *  fetch the live list for the configured key, because model names change far faster
+         *  than app releases. */
+        @JvmStatic val aiGeminiModel            = StringSettingUnit("aiGeminiModel", "auto")
+        /** Model id for image generation (the Assistant's /image command). */
+        @JvmStatic val aiGeminiImageModel       = StringSettingUnit("aiGeminiImageModel", "gemini-2.5-flash-image")
         @JvmStatic val aiSkinFilterEnabled       = BooleanSettingUnit("aiSkinFilterEnabled", false)
 
         // ── TurtleLauncher built-in AI Assistant (top bar → Assistant) ────────
@@ -355,21 +360,26 @@ class AllSettings {
         // The Assistant still works with none of this configured: on-device rule engine,
         // English answers. These four switches are what let it talk to the user in their own
         // language or answer things the launcher itself has no opinion about.
-        // See feature/ai/TurtleAiLanguage.kt, TurtleAiBackend.kt and TurtleAiWebSearch.kt.
+        // See feature/ai/TurtleAiLanguage.kt, TurtleAiGemini.kt and TurtleAiWebSearch.kt.
         /** Language the Assistant answers in. Default "auto" follows the launcher/device
          *  language; any other value is a BCP-47 tag ("hi", "pt", "zh-Hans", ...). The
          *  Assistant also mirrors the language of whatever the user writes in, regardless of
          *  this setting, because that is what a person expects from a chat box. */
         @JvmStatic val aiLanguage                = StringSettingUnit("aiLanguage", "auto")
-        /** Let the Assistant use the OpenAI key above (aiApiKey) for open questions and to
-         *  answer in the user's language. Off = the Assistant never leaves the device. */
-        @JvmStatic val aiAssistantCloudBrain     = BooleanSettingUnit("aiAssistantCloudBrain", false)
-        /** Let the Assistant search the internet when the on-device knowledge base has no
-         *  answer. Off by default: turning it on is what sends the question to a third party
-         *  (Minecraft Wiki / Wikipedia / DuckDuckGo, or the custom endpoint below). */
-        @JvmStatic val aiWebSearchEnabled        = BooleanSettingUnit("aiWebSearchEnabled", false)
-        /** Search provider: "auto" (Minecraft Wiki, then Wikipedia, then DuckDuckGo), one of
-         *  "minecraftwiki" / "wikipedia" / "duckduckgo", or "custom". */
+        /** Let the Assistant use Gemini - for open questions, for writing/coding/maths, and
+         *  to answer in the user's language. Off = the Assistant never leaves the device.
+         *  Defaults to on in a build that was given a key (there is nothing to configure)
+         *  and to off in one without it, where the switch would do nothing anyway. */
+        @JvmStatic val aiAssistantCloudBrain     =
+            BooleanSettingUnit("aiAssistantCloudBrain", com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.hasBuildKey())
+        /** Let the Assistant search the internet. With a Gemini key this is Google Search
+         *  grounding inside the same request; without one it falls back to the keyless
+         *  providers below (Minecraft Wiki / Wikipedia / DuckDuckGo / custom). */
+        @JvmStatic val aiWebSearchEnabled        =
+            BooleanSettingUnit("aiWebSearchEnabled", com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.hasBuildKey())
+        /** Fallback search provider, used only when no Gemini key is available to ground
+         *  with Google Search: "auto" (Minecraft Wiki, then Wikipedia, then DuckDuckGo), one
+         *  of "minecraftwiki" / "wikipedia" / "duckduckgo", or "custom". */
         @JvmStatic val aiSearchProvider          = StringSettingUnit("aiSearchProvider", "auto")
         /** Endpoint template for the "custom" provider - must contain "{query}" (or "%s").
          *  Expected response: SearXNG-compatible JSON, {"results":[{"title","url","content"}]}. */

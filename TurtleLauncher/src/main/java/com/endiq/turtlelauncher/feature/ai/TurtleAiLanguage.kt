@@ -55,7 +55,11 @@ object TurtleAiLanguage {
         /** Label above the list of links. */
         val sources: String,
         /** The AI request itself failed (network, key, quota). */
-        val requestFailed: String
+        val requestFailed: String,
+        /** Image generation failed (no key, quota, refusal). Defaulted so adding a language
+         *  can never break on it. */
+        val imageFailed: String = "I couldn't create that image - the image service refused, " +
+            "or there's no key or quota left."
     )
 
     /** Selectable languages for the settings picker: tag -> label. [AUTO] first. */
@@ -101,7 +105,9 @@ object TurtleAiLanguage {
         searchHeader = "Here's what I found online for \"%s\":",
         searchNone = "I searched but found nothing useful.",
         sources = "Sources",
-        requestFailed = "I couldn't reach the AI service just now."
+        requestFailed = "I couldn't reach the AI service just now.",
+        imageFailed =
+            "I couldn't create that image - the image service refused, or there's no key or quota left."
     )
 
     private val SHELL: Map<String, Shell> = mapOf(
@@ -118,7 +124,9 @@ object TurtleAiLanguage {
             searchHeader = "\"%s\" के लिए मुझे इंटरनेट पर यह मिला:",
             searchNone = "मैंने खोजा, पर कुछ काम का नहीं मिला।",
             sources = "स्रोत",
-            requestFailed = "अभी AI सेवा तक नहीं पहुँच सका।"
+            requestFailed = "अभी AI सेवा तक नहीं पहुँच सका।",
+            imageFailed =
+                "मैं वह इमेज बना नहीं सका - इमेज सेवा ने मना कर दिया, या key/quota नहीं बची।"
         ),
         "bn" to Shell(
             greeting = "নমস্কার! আমি Turtle AI — এই লঞ্চারের বিল্ট-ইন সহকারী। রেন্ডারার, ক্র্যাশ, RAM, " +
@@ -132,7 +140,9 @@ object TurtleAiLanguage {
             searchHeader = "\"%s\"-এর জন্য ইন্টারনেটে যা পেলাম:",
             searchNone = "খুঁজেছি, কিন্তু কাজের কিছু পাইনি।",
             sources = "সূত্র",
-            requestFailed = "এখনই AI পরিষেবায় পৌঁছাতে পারিনি।"
+            requestFailed = "এখনই AI পরিষেবায় পৌঁছাতে পারিনি।",
+            imageFailed =
+                "আমি সেই ছবিটি তৈরি করতে পারিনি - ইমেজ পরিষেবা রাজি হয়নি, বা key/quota নেই।"
         ),
         "ta" to Shell(
             greeting = "வணக்கம்! நான் Turtle AI - இந்த லாஞ்சரின் உள்ளமைந்த உதவியாளர். ரெண்டரர்கள், " +
@@ -146,7 +156,9 @@ object TurtleAiLanguage {
             searchHeader = "\"%s\" க்காக இணையத்தில் கிடைத்தவை:",
             searchNone = "தேடினேன், பயனுள்ள எதுவும் கிடைக்கவில்லை.",
             sources = "மூலங்கள்",
-            requestFailed = "இப்போது AI சேவையை அணுக முடியவில்லை."
+            requestFailed = "இப்போது AI சேவையை அணுக முடியவில்லை.",
+            imageFailed =
+                "அந்தப் படத்தை உருவாக்க முடியவில்லை - இமேஜ் சேவை மறுத்தது, அல்லது key/quota இல்லை."
         ),
         "es" to Shell(
             greeting = "¡Hola! Soy Turtle AI, el asistente integrado del launcher. Pregúntame por " +
@@ -160,7 +172,9 @@ object TurtleAiLanguage {
             searchHeader = "Esto es lo que encontré en internet sobre \"%s\":",
             searchNone = "Busqué pero no encontré nada útil.",
             sources = "Fuentes",
-            requestFailed = "No pude conectar con el servicio de IA ahora mismo."
+            requestFailed = "No pude conectar con el servicio de IA ahora mismo.",
+            imageFailed =
+                "No pude crear esa imagen: el servicio la rechazó o no queda key/cuota."
         ),
         "pt" to Shell(
             greeting = "Olá! Sou o Turtle AI, o assistente integrado do launcher. Pergunte sobre " +
@@ -175,7 +189,9 @@ object TurtleAiLanguage {
             searchHeader = "Isto foi o que encontrei na internet sobre \"%s\":",
             searchNone = "Pesquisei, mas não encontrei nada útil.",
             sources = "Fontes",
-            requestFailed = "Não consegui falar com o serviço de IA agora."
+            requestFailed = "Não consegui falar com o serviço de IA agora.",
+            imageFailed =
+                "Não consegui criar essa imagem - o serviço recusou, ou não há key/cota."
         ),
         "fr" to Shell(
             greeting = "Salut ! Je suis Turtle AI, l'assistant intégré du launcher. Posez-moi des " +
@@ -190,7 +206,9 @@ object TurtleAiLanguage {
             searchHeader = "Voici ce que j'ai trouvé en ligne pour « %s » :",
             searchNone = "J'ai cherché mais je n'ai rien trouvé d'utile.",
             sources = "Sources",
-            requestFailed = "Je n'ai pas pu joindre le service d'IA pour le moment."
+            requestFailed = "Je n'ai pas pu joindre le service d'IA pour le moment.",
+            imageFailed =
+                "Je n'ai pas pu créer cette image - le service a refusé, ou il ne reste plus de key/quota."
         ),
         "de" to Shell(
             greeting = "Hallo! Ich bin Turtle AI, der eingebaute Assistent des Launchers. Frag mich " +
@@ -205,7 +223,9 @@ object TurtleAiLanguage {
             searchHeader = "Das habe ich im Internet zu \"%s\" gefunden:",
             searchNone = "Ich habe gesucht, aber nichts Nützliches gefunden.",
             sources = "Quellen",
-            requestFailed = "Ich konnte den KI-Dienst gerade nicht erreichen."
+            requestFailed = "Ich konnte den KI-Dienst gerade nicht erreichen.",
+            imageFailed =
+                "Ich konnte das Bild nicht erstellen - der Dienst hat abgelehnt, oder es fehlt Key/Kontingent."
         ),
         "it" to Shell(
             greeting = "Ciao! Sono Turtle AI, l'assistente integrato del launcher. Chiedimi di " +
@@ -219,7 +239,9 @@ object TurtleAiLanguage {
             searchHeader = "Ecco cosa ho trovato online per \"%s\":",
             searchNone = "Ho cercato ma non ho trovato nulla di utile.",
             sources = "Fonti",
-            requestFailed = "Non riesco a contattare il servizio AI adesso."
+            requestFailed = "Non riesco a contattare il servizio AI adesso.",
+            imageFailed =
+                "Non ho potuto creare quell'immagine - il servizio ha rifiutato, o manca key/quota."
         ),
         "pl" to Shell(
             greeting = "Cześć! Jestem Turtle AI, wbudowany asystent launchera. Pytaj o renderery, " +
@@ -233,7 +255,9 @@ object TurtleAiLanguage {
             searchHeader = "Oto co znalazłem w internecie dla \"%s\":",
             searchNone = "Szukałem, ale nie znalazłem nic przydatnego.",
             sources = "Źródła",
-            requestFailed = "Nie udało się teraz połączyć z usługą AI."
+            requestFailed = "Nie udało się teraz połączyć z usługą AI.",
+            imageFailed =
+                "Nie udało się utworzyć tego obrazu - usługa odmówiła lub brakuje key/kwoty."
         ),
         "ru" to Shell(
             greeting = "Привет! Я Turtle AI — встроенный помощник лаунчера. Спроси про рендереры, " +
@@ -247,7 +271,9 @@ object TurtleAiLanguage {
             searchHeader = "Вот что я нашёл в интернете по запросу «%s»:",
             searchNone = "Я искал, но ничего полезного не нашёл.",
             sources = "Источники",
-            requestFailed = "Не удалось связаться с сервисом ИИ."
+            requestFailed = "Не удалось связаться с сервисом ИИ.",
+            imageFailed =
+                "Не удалось создать изображение - сервис отказал или закончился key/quota."
         ),
         "uk" to Shell(
             greeting = "Привіт! Я Turtle AI — вбудований помічник лаунчера. Запитай про рендерери, " +
@@ -261,7 +287,9 @@ object TurtleAiLanguage {
             searchHeader = "Ось що я знайшов в інтернеті за запитом «%s»:",
             searchNone = "Я шукав, але нічого корисного не знайшов.",
             sources = "Джерела",
-            requestFailed = "Не вдалося зв'язатися із сервісом ШІ."
+            requestFailed = "Не вдалося зв'язатися із сервісом ШІ.",
+            imageFailed =
+                "Не вдалося створити зображення - сервіс відмовив або закінчився key/quota."
         ),
         "tr" to Shell(
             greeting = "Merhaba! Ben Turtle AI, başlatıcının dahili asistanı. Renderer'lar, çökmeler, " +
@@ -275,7 +303,9 @@ object TurtleAiLanguage {
             searchHeader = "\"%s\" için internette bulduklarım:",
             searchNone = "Aradım ama işe yarar bir şey bulamadım.",
             sources = "Kaynaklar",
-            requestFailed = "Şu anda AI servisine ulaşamadım."
+            requestFailed = "Şu anda AI servisine ulaşamadım.",
+            imageFailed =
+                "Bu görseli oluşturamadım - servis reddetti ya da key/kota yok."
         ),
         "ar" to Shell(
             greeting = "مرحبًا! أنا Turtle AI، المساعد المدمج في اللانشر. اسألني عن المُصيّرات " +
@@ -289,7 +319,9 @@ object TurtleAiLanguage {
             searchHeader = "هذا ما وجدته في الإنترنت عن \"%s\":",
             searchNone = "بحثت ولم أجد شيئًا مفيدًا.",
             sources = "المصادر",
-            requestFailed = "لم أتمكن من الوصول إلى خدمة الـAI الآن."
+            requestFailed = "لم أتمكن من الوصول إلى خدمة الـAI الآن.",
+            imageFailed =
+                "لم أتمكن من إنشاء تلك الصورة - الخدمة رفضت، أو لا يوجد key/quota."
         ),
         "fa" to Shell(
             greeting = "سلام! من Turtle AI هستم، دستیار داخلی لانچر. درباره رندررها، کرش، رم، مادها، " +
@@ -303,7 +335,9 @@ object TurtleAiLanguage {
             searchHeader = "این چیزی است که در اینترنت برای «%s» یافتم:",
             searchNone = "جستوجو کردم اما چیز مفیدی پیدا نشد.",
             sources = "منابع",
-            requestFailed = "الان نتوانستم به سرویس AI وصل شوم."
+            requestFailed = "الان نتوانستم به سرویس AI وصل شوم.",
+            imageFailed =
+                "نتوانستم آن تصویر را بسازم - سرویس رد کرد یا key/quota نیست."
         ),
         "he" to Shell(
             greeting = "היי! אני Turtle AI, העוזר המובנה של הלאנצ'ר. שאל אותי על רנדררים, קריסות, " +
@@ -317,7 +351,9 @@ object TurtleAiLanguage {
             searchHeader = "הנה מה שמצאתי באינטרנט עבור \"%s\":",
             searchNone = "חיפשתי אבל לא מצאתי משהו שימושי.",
             sources = "מקורות",
-            requestFailed = "לא הצלחתי להגיע לשירות ה-AI כרגע."
+            requestFailed = "לא הצלחתי להגיע לשירות ה-AI כרגע.",
+            imageFailed =
+                "לא הצלחתי ליצור את התמונה - השירות סירב, או שאין key/quota."
         ),
         "zh" to Shell(
             greeting = "你好！我是 Turtle AI，启动器内置的助手。可以问我渲染器、崩溃、内存、模组、" +
@@ -328,7 +364,9 @@ object TurtleAiLanguage {
             searchHeader = "关于“%s”，我在网上找到：",
             searchNone = "我搜索了，但没找到有用的内容。",
             sources = "来源",
-            requestFailed = "目前无法连接 AI 服务。"
+            requestFailed = "目前无法连接 AI 服务。",
+            imageFailed =
+                "我无法生成这张图片——图像服务拒绝了，或者没有 key/额度。"
         ),
         "ja" to Shell(
             greeting = "こんにちは！Turtle AI です。ランチャー内蔵のアシスタントで、レンダラー、" +
@@ -342,7 +380,9 @@ object TurtleAiLanguage {
             searchHeader = "「%s」について Web で見つけた内容:",
             searchNone = "検索しましたが、役立つ情報は見つかりませんでした。",
             sources = "出典",
-            requestFailed = "今は AI サービスに接続できませんでした。"
+            requestFailed = "今は AI サービスに接続できませんでした。",
+            imageFailed =
+                "その画像を作成できませんでした - サービスが拒否したか、key/クォータがありません。"
         ),
         "ko" to Shell(
             greeting = "안녕하세요! 런처에 내장된 Turtle AI입니다. 렌더러, 크래시, RAM, 모드, Java, " +
@@ -355,7 +395,9 @@ object TurtleAiLanguage {
             searchHeader = "\"%s\"에 대해 인터넷에서 찾은 내용:",
             searchNone = "검색했지만 유용한 내용을 찾지 못했습니다.",
             sources = "출처",
-            requestFailed = "지금은 AI 서비스에 연결하지 못했습니다."
+            requestFailed = "지금은 AI 서비스에 연결하지 못했습니다.",
+            imageFailed =
+                "이미지를 만들지 못했습니다 - 서비스가 거부했거나 key/할당량이 없습니다."
         ),
         "id" to Shell(
             greeting = "Hai! Saya Turtle AI, asisten bawaan launcher ini. Tanyakan soal renderer, " +
@@ -369,7 +411,9 @@ object TurtleAiLanguage {
             searchHeader = "Ini yang saya temukan di internet untuk \"%s\":",
             searchNone = "Saya sudah mencari, tapi tidak menemukan yang berguna.",
             sources = "Sumber",
-            requestFailed = "Saya tidak bisa menghubungi layanan AI saat ini."
+            requestFailed = "Saya tidak bisa menghubungi layanan AI saat ini.",
+            imageFailed =
+                "Gagal membuat gambar itu - layanan menolak, atau key/kuota habis."
         ),
         "vi" to Shell(
             greeting = "Xin chào! Tôi là Turtle AI, trợ lý có sẵn trong launcher. Hỏi tôi về renderer, " +
@@ -383,7 +427,9 @@ object TurtleAiLanguage {
             searchHeader = "Đây là những gì tôi tìm được trên internet cho \"%s\":",
             searchNone = "Tôi đã tìm nhưng không thấy gì hữu ích.",
             sources = "Nguồn",
-            requestFailed = "Hiện không kết nối được dịch vụ AI."
+            requestFailed = "Hiện không kết nối được dịch vụ AI.",
+            imageFailed =
+                "Không tạo được ảnh đó - dịch vụ từ chối, hoặc hết key/hạn mức."
         ),
         "th" to Shell(
             greeting = "สวัสดี! ฉันคือ Turtle AI ผู้ช่วยที่มาพร้อมกับตัว launcer นี้ ถามเรื่อง " +
@@ -397,7 +443,9 @@ object TurtleAiLanguage {
             searchHeader = "นี่คือสิ่งที่ฉันพบในอินเทอร์เน็ตสำหรับ \"%s\":",
             searchNone = "ฉันค้นแล้วแต่ไม่พบอะไรที่มีประโยชน์",
             sources = "แหล่งอ้างอิง",
-            requestFailed = "ตอนนี้เชื่อมต่อบริการ AI ไม่ได้"
+            requestFailed = "ตอนนี้เชื่อมต่อบริการ AI ไม่ได้",
+            imageFailed =
+                "สร้างภาพนั้นไม่สำเร็จ - บริการปฏิเสธ หรือไม่มี key/โควตา"
         )
     )
 

@@ -21,11 +21,11 @@ import java.util.concurrent.TimeUnit
  *    instant-answer endpoint are public HTTP APIs; that keeps the feature usable without the
  *    user signing up for anything, and the custom provider (below) is there for anyone who
  *    wants a real, privacy-respecting index (e.g. their own SearXNG) instead.
- *  - **The assistant never quotes a search result as fact.** [formatForPrompt] hands the whole
- *    block to the model along with the citation rules in [TurtleAiPrompt.WEB_SEARCH], and
- *    [formatForChat] shows the raw, attributed links when there is no model to synthesize with.
- *    So the user always sees where a claim came from - the assistant never launders a random
- *    blog post into "the launcher says".
+ *  - **The assistant never quotes a search result as fact.** [formatForChat] shows the raw,
+ *    attributed links whenever there is no model to synthesize with, so the user can always see
+ *    where a claim came from. These providers are the *fallback*: when a Gemini key is
+ *    configured, the Assistant's answers are grounded by Google Search inside the same request
+ *    (see TurtleAiGemini), and the sources it used are listed under the answer.
  *
  * Every provider is a single HTTP GET + a tolerant JSON parse: any provider can change shape
  * without warning, so a parse failure is reported as a failure (and, in [PROVIDER_AUTO], the
@@ -379,17 +379,6 @@ object TurtleAiWebSearch {
 
     // ── Formatting ──────────────────────────────────────────────────────────────────
 
-    /** The block handed to the model - see [TurtleAiPrompt.WEB_SEARCH] for how to use it. */
-    @JvmStatic
-    fun formatForPrompt(results: List<Result>, provider: String): String = buildString {
-        append("Web search results (").append(provider).append("):\n")
-        results.forEachIndexed { index, result ->
-            append("\n[").append(index + 1).append("] ").append(result.title).append('\n')
-            append(result.snippet).append('\n')
-            append("Source: ").append(result.url).append('\n')
-        }
-    }
-
     /**
      * The block shown to the user when there is no model to synthesize an answer - raw,
      * attributed results rather than a paraphrase nobody can check.
@@ -404,12 +393,6 @@ object TurtleAiWebSearch {
                 append('\n').append(result.url)
             }
         }
-
-    /** Footer listing where an answer's facts came from, for model-synthesized replies. */
-    @JvmStatic
-    fun sourcesFooter(results: List<Result>, shell: TurtleAiLanguage.Shell): String =
-        if (results.isEmpty()) "" else "\n\n" + shell.sources + ":\n" +
-            results.joinToString("\n") { "\u2022 " + it.url }
 
     private fun shortQuery(query: String): String {
         val clean = query.replace(Regex("\\s+"), " ").trim()

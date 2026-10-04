@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.FragmentAiChatBinding
 import com.endiq.turtlelauncher.feature.ai.AssistantHistory
-import com.endiq.turtlelauncher.feature.ai.TurtleAiBackend
+import com.endiq.turtlelauncher.feature.ai.TurtleAiGemini
 import com.endiq.turtlelauncher.feature.ai.TurtleAssistant
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.setting.AllSettings
@@ -113,7 +113,7 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
             TaskExecutors.runInUIThread {
                 if (!isAdded || view == null) return@runInUIThread
                 endAnswering()
-                appendMessage(ChatMessage(reply.text, false))
+                appendMessage(ChatMessage(reply.text, false, reply.imagePath))
                 setSuggestions(
                     if (reply.suggestions.isNotEmpty()) reply.suggestions
                     else TurtleAssistant.startingSuggestions()
@@ -150,7 +150,7 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
                 // after onDestroyView would crash, so check the fragment is still live.
                 if (!isAdded || view == null) return@runInUIThread
                 endAnswering()
-                appendMessage(ChatMessage(reply.text, false))
+                appendMessage(ChatMessage(reply.text, false, reply.imagePath))
                 setSuggestions(
                     if (reply.suggestions.isNotEmpty()) reply.suggestions
                     else TurtleAssistant.startingSuggestions()
@@ -166,8 +166,8 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
      * separately, so a restored conversation provides context too; the greeting (an assistant
      * line with no question before it) and the question currently being asked provide none.
      */
-    private fun recentHistory(): List<TurtleAiBackend.Exchange> {
-        val exchanges = mutableListOf<TurtleAiBackend.Exchange>()
+    private fun recentHistory(): List<TurtleAiGemini.Exchange> {
+        val exchanges = mutableListOf<TurtleAiGemini.Exchange>()
         var pendingQuestion: String? = null
         transcript.forEach { message ->
             if (message.isUser) {
@@ -175,7 +175,7 @@ class AiChatFragment : FragmentWithAnim(R.layout.fragment_ai_chat) {
             } else {
                 val question = pendingQuestion
                 if (!question.isNullOrBlank()) {
-                    exchanges.add(TurtleAiBackend.Exchange(question, message.text))
+                    exchanges.add(TurtleAiGemini.Exchange(question, message.text))
                     pendingQuestion = null
                 }
             }

@@ -70,6 +70,12 @@ jobs:
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          # Baked into BuildConfig.GEMINI_API_KEY by build.gradle.kts, so the APK ships with
+          # Turtle AI working and no key to paste. Add it under
+          # Settings -> Secrets and variables -> Actions -> New repository secret, named
+          # GEMINI_API_KEY. Missing secret = empty key = the app falls back to asking the user
+          # (the build still succeeds).
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: ./gradlew :TurtleLauncher:assembleDebug --no-daemon
 
       - name: Upload debug APK

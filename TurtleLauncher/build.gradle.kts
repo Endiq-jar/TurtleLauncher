@@ -86,6 +86,40 @@ android {
         versionName = launcherVersionName
         multiDexEnabled = true //important
         manifestPlaceholders["launcher_name"] = launcherAPPName
+
+        // The Gemini API key, baked into BuildConfig so a build can ship with the AI working
+        // without the user pasting anything. Read in this order:
+        //   1. -PGEMINI_API_KEY=... on the Gradle command line
+        //   2. the GEMINI_API_KEY environment variable (what CI passes from the repo secret)
+        //   3. GEMINI_API_KEY=... in local.properties (gitignored - the local-dev option)
+        // Absent everywhere = empty, and the app then asks the user for their own key in
+        // Settings; everything else keeps working.
+        //
+        // Anything compiled into an APK can be extracted from it. This is a convenience for a
+        // personal/private build, not a secret-keeping mechanism: restrict the key in Google
+        // Cloud (Generative Language API only) and rotate the repo secret if an APK is shared.
+        val geminiApiKey = (
+            (project.findProperty("GEMINI_API_KEY") as String?)
+                ?: System.getenv("GEMINI_API_KEY")
+                ?: rootProject.file("local.properties")
+                    .takeIf { it.isFile }
+                    ?.let { file ->
+                        java.util.Properties().apply { file.inputStream().use { load(it) } }
+                            .getProperty("GEMINI_API_KEY")
+                    }
+            ).orEmpty().trim()
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"" + geminiApiKey.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
+        logger.lifecycle(
+            if (geminiApiKey.isEmpty()) {
+                "BUILD: no GEMINI_API_KEY - the app will ask the user for a key and work offline until then"
+            } else {
+                "BUILD: GEMINI_API_KEY provided (${geminiApiKey.length} chars) - built into the APK"
+            }
+        )
     }
 
     buildTypes {

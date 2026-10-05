@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
@@ -38,8 +39,10 @@ object WarningTooltip {
                 cornerRadius = 8 * dp
             }
         }
-        val popup = PopupWindow(tv, PopupWindow.LayoutParams.WRAP_CONTENT,
-            PopupWindow.LayoutParams.WRAP_CONTENT, true).apply {
+        // PopupWindow has no nested LayoutParams - the width/height arguments are the
+        // ViewGroup constants (-2 for WRAP_CONTENT).
+        val popup = PopupWindow(tv, ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
             isOutsideTouchable = true
             elevation = 0f // no shadow, per launcher perf rules
         }

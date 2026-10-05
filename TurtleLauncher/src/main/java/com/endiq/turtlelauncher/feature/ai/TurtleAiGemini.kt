@@ -827,13 +827,33 @@ object TurtleAiGemini {
      * than logging and giving up: whether a failure is worth retrying on another model is the
      * whole point of this class.
      */
+    @Volatile
+    private var lastFailure: String? = null
+
+    /** Short, user-facing reason the most recent Gemini request failed, or null if it didn't. */
+    @JvmStatic
+    fun failureReason(): String? {
+        val f = lastFailure ?: return null
+        return when {
+            f == "no key" -> "No Gemini API key is set (Settings -> Experimental)."
+            f == "key rejected" || f == "HTTP 401" || f == "HTTP 403" ->
+                "Gemini rejected the API key - it is invalid, expired or restricted."
+            f == "HTTP 429" -> "Gemini quota or rate limit reached - try again in a minute."
+            f == "HTTP 404" -> "None of the configured Gemini models exist for this key."
+            f.startsWith("HTTP 5") -> "Gemini is having server problems - try again shortly."
+            f.contains("UnknownHost") || f.contains("Connect") || f.contains("Timeout") ->
+                "No internet connection to Gemini."
+            else -> "Gemini request failed ($f)."
+        }
+    }
+
     private fun performRequest(
         path: String,
         body: JsonObject?,
         key: String,
         timeoutSeconds: Long = TIMEOUT_SECONDS
     ): Call {
-        if (key.isEmpty()) return Call.Stop("no key")
+        if (key.isEmpty()) { lastFailure = "no key"; return Call.Stop("no key") }
         val url = "$BASE/$path"
         return try {
             val requestBody = body?.toString()?.toRequestBody("application/json".toMediaType())
@@ -850,8 +870,12 @@ object TurtleAiGemini {
                     // Never log the key; the URL carries none (it goes in a header).
                     val detail = responseBody.take(300)
                     Logging.w(TAG, "Gemini HTTP ${response.code} for $path - $detail")
-                    classify(response.code, detail)
+                    val c = classify(response.code, detail)
+                    lastFailure = if (c is Call.Stop && c.detail == "key rejected") "key rejected"
+                    else "HTTP ${response.code}"
+                    c
                 } else {
+                    lastFailure = null
                     if (responseBody.isBlank()) return Call.Stop("empty response")
                     val parsed = JsonParser.parseString(responseBody)
                         .takeIf { it.isJsonObject }?.asJsonObject
@@ -862,6 +886,7 @@ object TurtleAiGemini {
             // A network problem is not a model problem: every other model would fail the same
             // way, so stop rather than walking the chain.
             Logging.w(TAG, "Gemini request failed for $path", t)
+            lastFailure = t.javaClass.simpleName
             Call.Stop(t.javaClass.simpleName)
         }
     }

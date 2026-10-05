@@ -287,6 +287,9 @@ object TurtleAssistant {
             "/models", "/model" -> return modelsReply()
         }
 
+        // Small talk never needs the network: answer it on-device, instantly.
+        smallTalkReply(raw, language)?.let { return it }
+
         // Generation commands. An explicit command always runs (typing it *is* the consent);
         // an unmistakable "draw me ..." is treated the same way while the brain is on.
         val imagePrompt = imageRequest(raw)
@@ -341,6 +344,34 @@ object TurtleAssistant {
         if (TurtleAiWebSearch.isEnabled(context)) return searchReply(context, raw, language, shell)
 
         return Reply(unknownAnswer(raw, shell), startingSuggestions())
+    }
+
+    private val GREETINGS = setOf(
+        "hi", "hii", "hiii", "hello", "hey", "heya", "hola", "yo", "sup", "hi there",
+        "hello there", "hey there", "good morning", "good afternoon", "good evening"
+    )
+    private val THANKS = setOf("thanks", "thank you", "thx", "ty", "thanks a lot", "thank u")
+    private val HOW_ARE_YOU = setOf("how are you", "how are you doing", "hows it going", "whats up", "wassup")
+    private val BYE = setOf("bye", "goodbye", "cya", "see you", "see ya")
+    private val WHO_ARE_YOU = setOf("who are you", "what are you", "what can you do")
+
+    /** Instant on-device replies for greetings and chit-chat (English only; other languages go to the brain). */
+    private fun smallTalkReply(raw: String, language: String): Reply? {
+        if (!TurtleAiLanguage.isEnglish(language)) return null
+        val t = normalize(raw).replace(Regex("\\s+"), " ").trim()
+        if (t.isEmpty() || t.length > 30) return null
+        val chips = listOf("Status", "Best renderer?", "Why did my game crash?", "FPS is low")
+        return when (t) {
+            in GREETINGS -> Reply("Hey! What do you need - renderers, crashes, mods, FPS?", chips)
+            in THANKS -> Reply("Anytime.", chips)
+            in HOW_ARE_YOU -> Reply("All good. What can I help with?", chips)
+            in BYE -> Reply("See you.")
+            in WHO_ARE_YOU -> Reply(
+                "I'm the Turtle assistant. I help with renderers, crashes, mods, FPS and launcher settings. Type /help for more.",
+                chips
+            )
+            else -> null
+        }
     }
 
     /** Live answer for "/language": what the assistant is speaking, and why. */
@@ -416,13 +447,18 @@ object TurtleAssistant {
                 is TurtleAiWebSearch.Outcome.Ok ->
                     return Reply(
                         TurtleAiWebSearch.formatForChat(outcome.results, shell, question) +
-                            "\n\n" + shell.requestFailed,
+                            "\n\n" + shell.requestFailed +
+                            (TurtleAiGemini.failureReason()?.let { "\n" + it } ?: ""),
                         suggestions
                     )
                 else -> Unit
             }
         }
-        return Reply(shell.requestFailed + "\n\n" + shell.offlineHint, suggestions)
+        val reason = TurtleAiGemini.failureReason()
+        return Reply(
+            shell.requestFailed + (if (reason != null) "\n" + reason else "") + "\n\n" + shell.offlineHint,
+            suggestions
+        )
     }
 
     /**

@@ -475,7 +475,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_marginEnd="@dimen/_8sdp"
-                        android:layout_toStartOf="@+id/alternate_surface"
+                        android:layout_toStartOf="@+id/alternate_surface_warning"
                         android:text="@string/setting_use_surface_view_title"
                         android:textColor="@color/turtle_primary_text" />
     
@@ -486,9 +486,22 @@
                         android:layout_below="@+id/alternate_surface_title"
                         android:layout_alignParentStart="true"
                         android:layout_marginEnd="@dimen/_8sdp"
-                        android:layout_toStartOf="@+id/alternate_surface"
+                        android:layout_toStartOf="@+id/alternate_surface_warning"
                         android:text="@string/setting_use_surface_view_desc" />
     
+                    <ImageView
+                        android:id="@+id/alternate_surface_warning"
+                        android:layout_width="@dimen/_24sdp"
+                        android:layout_height="@dimen/_24sdp"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/alternate_surface"
+                        android:layout_centerVertical="true"
+                        android:padding="@dimen/_2sdp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/setting_warning_surface_view"
+                        android:src="@drawable/ic_warning"
+                        android:tint="@color/turtle_warning" />
+
                     <Switch
                         android:id="@+id/alternate_surface"
                         android:layout_width="wrap_content"

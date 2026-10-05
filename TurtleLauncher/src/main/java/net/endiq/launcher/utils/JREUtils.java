@@ -290,6 +290,23 @@ public final class JREUtils {
         String eglName = currentRenderer.getRendererEGL();
         if (eglName != null) envMap.put("POJAVEXEC_EGL", eglName);
 
+        // "Use ANGLE" game setting: swap the system EGL/GLES driver for the bundled ANGLE libs.
+        // Only for renderers that ride the system EGL ("libEGL.so"); renderers shipping their own
+        // EGL (Zink, MobileGlues, ANGLE renderer itself) and plugin renderers are left untouched.
+        if (com.endiq.turtlelauncher.setting.AllSettings.getUseAngle().getValue()
+                && "libEGL.so".equals(eglName)
+                && RendererPluginManager.getSelectedRendererPlugin() == null) {
+            java.io.File angleEgl = new java.io.File(DIR_NATIVE_LIB, "libEGL_angle.so");
+            java.io.File angleGles = new java.io.File(DIR_NATIVE_LIB, "libGLESv2_angle.so");
+            if (angleEgl.exists() && angleGles.exists()) {
+                envMap.put("POJAVEXEC_EGL", "libEGL_angle.so");
+                envMap.put("LIBGL_GLES", "libGLESv2_angle.so"); // egl_loader.c maps this to libEGL_angle.so
+                Logging.i("JREUtils", "Use ANGLE enabled: EGL/GLES -> ANGLE for renderer " + rendererId);
+            } else {
+                Logging.w("JREUtils", "Use ANGLE enabled but ANGLE libs missing in native lib dir; using system driver");
+            }
+        }
+
         envMap.put("POJAV_RENDERER", currentRenderer.getNativeRendererId());
 
         if (RendererPluginManager.getSelectedRendererPlugin() != null) return;

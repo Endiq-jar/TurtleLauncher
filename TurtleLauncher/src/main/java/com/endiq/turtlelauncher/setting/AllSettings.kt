@@ -124,6 +124,8 @@ class AllSettings {
 
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
+        /** Load ANGLE (libEGL_angle/libGLESv2_angle) instead of the system EGL/GLES driver. */
+        @JvmStatic val useAngle                 = BooleanSettingUnit("useAngle", false)
         @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")
         @JvmStatic val autoSetGameLanguage      = BooleanSettingUnit("autoSetGameLanguage", true)
         @JvmStatic val gameLanguageOverridden   = BooleanSettingUnit("gameLanguageOverridden", false)

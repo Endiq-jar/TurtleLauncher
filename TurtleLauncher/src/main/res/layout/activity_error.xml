@@ -3,32 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/background"
-    android:layout_width="@dimen/_300sdp"
-    android:layout_height="wrap_content"
-    android:maxHeight="@dimen/_260sdp"
-    android:padding="@dimen/_4sdp">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/top_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingVertical="@dimen/_8sdp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/error_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/turtle_primary_text"
-            android:textSize="@dimen/_15ssp"
-            android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/turtle_surface"
+    android:padding="@dimen/_16sdp">
 
     <TextView
         android:id="@+id/center_text"
@@ -43,183 +21,167 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <ScrollView
-        android:id="@+id/scroll_view"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/top_view"
-        app:layout_constraintBottom_toTopOf="@id/button_bar">
+    <!-- ══════════════════════════ Left card: tabs + log/AI content ══════════════════════════ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/crash_card"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/background_card_white"
+        android:padding="@dimen/_16sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/action_rail"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintWidth_percent="0.76">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!-- Short plain-language status line (error_title) shown above the tabs -->
+        <TextView
+            android:id="@+id/error_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="#111111"
+            android:textSize="@dimen/_14ssp"
+            android:textStyle="bold"
+            android:layout_marginEnd="@dimen/_32sdp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Plain-language "what happened" summary -->
+        <!-- Collapse / return-to-launcher control (the small ◁ in the reference design) -->
+        <ImageButton
+            android:id="@+id/error_confirm"
+            android:layout_width="@dimen/_28sdp"
+            android:layout_height="@dimen/_28sdp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_chevron_down"
+            android:rotation="90"
+            android:tint="#111111"
+            android:contentDescription="@string/generic_confirm"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Extra context lines (tip / no-screenshot warning), hidden unless relevant -->
+        <TextView
+            android:id="@+id/error_text"
+            android:text="Error"
+            android:textSize="@dimen/_11ssp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_4sdp"
+            android:textColor="#555555"
+            tools:ignore="HardcodedText"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/error_title"/>
+
+        <TextView
+            android:id="@+id/error_tip"
+            android:text="@string/game_exit_note"
+            android:textSize="@dimen/_11ssp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:textColor="#555555"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/error_text"/>
+
+        <TextView
+            android:id="@+id/error_no_screenshot"
+            android:text="@string/game_exit_no_screenshot"
+            android:textSize="@dimen/_11ssp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:textColor="@color/turtle_error"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/error_tip"/>
+
+        <!-- Tab row: Game Logs / AI Analysis -->
+        <LinearLayout
+            android:id="@+id/crash_tab_row"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_12sdp"
+            app:layout_constraintTop_toBottomOf="@id/error_no_screenshot"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
             <TextView
-                android:id="@+id/error_text"
-                android:text="Error"
-                android:textSize="@dimen/_12ssp"
+                android:id="@+id/tab_game_logs"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textColor="@color/turtle_primary_text"
-                tools:ignore="HardcodedText"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
-
-            <TextView
-                android:id="@+id/error_tip"
-                android:text="@string/game_exit_note"
-                android:textSize="@dimen/_12ssp"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_8sdp"
-                android:textColor="@color/turtle_primary_text"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/error_text"/>
-
-            <TextView
-                android:id="@+id/error_no_screenshot"
-                android:text="@string/game_exit_no_screenshot"
-                android:textSize="@dimen/_12ssp"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_8sdp"
-                android:textColor="@color/turtle_error"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:paddingVertical="@dimen/_8sdp"
+                android:text="@string/crash_tab_game_logs"
                 android:textStyle="bold"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/error_tip"/>
-
-            <!-- "How to fix" diagnosis card, populated from CrashAnalyzer -->
-            <TextView
-                android:id="@+id/fix_title"
-                android:text="@string/crash_how_to_fix"
                 android:textSize="@dimen/_13ssp"
-                android:textStyle="bold"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_12sdp"
-                android:textColor="@color/accent_primary"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/error_no_screenshot"/>
+                android:textColor="#111111"/>
 
             <TextView
-                android:id="@+id/fix_text"
-                android:textSize="@dimen/_12ssp"
+                android:id="@+id/tab_ai_analysis"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_6sdp"
-                android:textColor="@color/turtle_primary_text"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/fix_title"/>
-
-            <TextView
-                android:id="@+id/self_heal_status"
-                android:textSize="@dimen/_12ssp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:paddingVertical="@dimen/_8sdp"
+                android:text="@string/crash_tab_ai_analysis"
                 android:textStyle="bold"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_8sdp"
-                android:textColor="@color/accent_primary"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/fix_text"/>
+                android:textSize="@dimen/_13ssp"
+                android:textColor="#111111"/>
+        </LinearLayout>
 
-            <!-- Crash Analyzer 2.0 quick actions: one-click repair, search online, export.
-                 Each is individually hidden when not applicable (e.g. no repair action
-                 exists for this diagnosis, or there's no diagnosis at all yet). -->
+        <!-- Underline indicator, slid between the two tabs -->
+        <View
+            android:id="@+id/crash_tab_indicator"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:background="#111111"
+            app:layout_constraintTop_toBottomOf="@id/crash_tab_row"
+            app:layout_constraintStart_toStartOf="@id/tab_game_logs"
+            app:layout_constraintEnd_toEndOf="@id/tab_game_logs"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            app:layout_constraintTop_toTopOf="@id/crash_tab_indicator"
+            app:layout_constraintBottom_toBottomOf="@id/crash_tab_indicator"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- ── Tab content: Game Logs ──────────────────────────────────────────── -->
+        <ScrollView
+            android:id="@+id/log_tab_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/_12sdp"
+            app:layout_constraintTop_toBottomOf="@id/crash_tab_indicator"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
             <LinearLayout
-                android:id="@+id/diagnosis_actions_row"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/_8sdp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/self_heal_status">
-
-                <com.endiq.turtlelauncher.ui.view.AnimButton
-                    android:id="@+id/crash_repair_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="@dimen/_4sdp"
-                    android:minHeight="0dp"
-                    android:paddingVertical="@dimen/_4sdp"
-                    android:textSize="@dimen/_11ssp"
-                    android:visibility="gone"
-                    android:text="@string/crash_repair_button"/>
-
-                <com.endiq.turtlelauncher.ui.view.AnimButton
-                    android:id="@+id/crash_search_online_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="@dimen/_4sdp"
-                    android:minHeight="0dp"
-                    android:paddingVertical="@dimen/_4sdp"
-                    android:textSize="@dimen/_11ssp"
-                    android:visibility="gone"
-                    android:text="@string/crash_search_online_button"/>
-
-                <com.endiq.turtlelauncher.ui.view.AnimButton
-                    android:id="@+id/crash_export_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:minHeight="0dp"
-                    android:paddingVertical="@dimen/_4sdp"
-                    android:textSize="@dimen/_11ssp"
-                    android:visibility="gone"
-                    android:text="@string/crash_export_button"/>
-
-            </LinearLayout>
-
-            <!-- Advanced log toggle -->
-            <com.endiq.turtlelauncher.ui.view.AnimButton
-                android:id="@+id/toggle_advanced_log"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minHeight="0dp"
-                android:paddingVertical="@dimen/_4sdp"
-                android:textSize="@dimen/_11ssp"
-                android:text="@string/crash_show_advanced_log"
-                android:layout_marginTop="@dimen/_12sdp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/diagnosis_actions_row"/>
-
-            <!-- Advanced log: raw stack trace / log tail, hidden until toggled -->
-            <LinearLayout
-                android:id="@+id/advanced_log_section"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone"
-                android:layout_marginTop="@dimen/_8sdp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/toggle_advanced_log">
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/advanced_log_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/background_card"
                     android:fontFamily="monospace"
-                    android:padding="@dimen/_8sdp"
                     android:textIsSelectable="true"
                     android:textSize="@dimen/_10ssp"
-                    android:textColor="@color/turtle_text_secondary"
+                    android:textColor="#333333"
                     tools:ignore="HardcodedText"/>
 
                 <com.endiq.turtlelauncher.ui.view.AnimButton
@@ -229,47 +191,181 @@
                     android:minHeight="0dp"
                     android:paddingVertical="@dimen/_4sdp"
                     android:textSize="@dimen/_11ssp"
-                    android:layout_marginTop="@dimen/_6sdp"
+                    android:layout_marginTop="@dimen/_8sdp"
                     android:text="@string/crash_copy_log"/>
 
             </LinearLayout>
+        </ScrollView>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+        <!-- ── Tab content: AI Analysis ────────────────────────────────────────── -->
+        <ScrollView
+            android:id="@+id/ai_tab_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/_12sdp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/crash_tab_indicator"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/self_heal_status"
+                    android:textSize="@dimen/_12ssp"
+                    android:textStyle="bold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/_8sdp"
+                    android:textColor="@color/accent_primary"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/fix_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/_12ssp"
+                    android:textColor="#333333"
+                    android:textIsSelectable="true"/>
+
+                <!-- "Inspect with AI" is still loading / hasn't been requested yet -->
+                <TextView
+                    android:id="@+id/ai_analysis_placeholder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/_12ssp"
+                    android:textColor="#777777"
+                    android:text="@string/crash_ai_analysis_placeholder"/>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- ══════════════════════════ Right action rail ══════════════════════════ -->
     <LinearLayout
-        android:id="@+id/button_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="@dimen/_6sdp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:id="@+id/action_rail"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginStart="@dimen/_12sdp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.22">
+
+        <com.endiq.turtlelauncher.ui.view.AnimButton
+            android:id="@+id/ai_inspect_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="0dp"
+            android:paddingVertical="@dimen/_12sdp"
+            android:background="@drawable/background_pill_filled"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:textSize="@dimen/_12ssp"
+            android:text="@string/crash_inspect_with_ai"/>
+
+        <com.endiq.turtlelauncher.ui.view.AnimButton
+            android:id="@+id/crash_export_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="0dp"
+            android:paddingVertical="@dimen/_12sdp"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:background="@drawable/background_pill_outline"
+            android:textColor="#111111"
+            android:textAllCaps="false"
+            android:textSize="@dimen/_12ssp"
+            android:visibility="gone"
+            android:text="@string/crash_export_button"/>
 
         <com.endiq.turtlelauncher.ui.view.AnimButton
             android:id="@+id/share_log"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="@dimen/_4sdp"
+            android:minHeight="0dp"
+            android:paddingVertical="@dimen/_12sdp"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:background="@drawable/background_pill_outline"
+            android:textColor="#111111"
+            android:textAllCaps="false"
             android:textSize="@dimen/_12ssp"
             android:text="@string/main_share_logs"/>
 
-        <com.endiq.turtlelauncher.ui.view.AnimButton
-            android:id="@+id/error_restart"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="@dimen/_4sdp"
-            android:textSize="@dimen/_12ssp"
-            android:text="@string/generic_restart"/>
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_10sdp">
+
+            <ImageButton
+                android:id="@+id/toggle_advanced_log"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_36sdp"
+                android:layout_weight="1"
+                android:background="@drawable/background_pill_outline"
+                android:src="@drawable/ic_copy"
+                android:tint="#111111"
+                android:contentDescription="@string/crash_show_advanced_log"
+                android:padding="@dimen/_8sdp"/>
+
+            <ImageButton
+                android:id="@+id/crash_more_button"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_36sdp"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:background="@drawable/background_pill_outline"
+                android:src="@drawable/ic_more"
+                android:tint="#111111"
+                android:contentDescription="@string/crash_more_actions"
+                android:padding="@dimen/_8sdp"/>
+
+        </LinearLayout>
+
+        <!-- Hidden triggers kept for logic reuse (repair / search-online), surfaced via the
+             overflow (⋯) button above through a PopupMenu instead of being shown inline. -->
+        <com.endiq.turtlelauncher.ui.view.AnimButton
+            android:id="@+id/crash_repair_button"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:text="@string/crash_repair_button"/>
 
         <com.endiq.turtlelauncher.ui.view.AnimButton
-            android:id="@+id/error_confirm"
+            android:id="@+id/crash_search_online_button"
             android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:text="@string/crash_search_online_button"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <com.endiq.turtlelauncher.ui.view.AnimButton
+            android:id="@+id/error_restart"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="@dimen/_12ssp"
-            android:text="@string/generic_confirm"/>
+            android:minHeight="0dp"
+            android:paddingVertical="@dimen/_12sdp"
+            android:background="@drawable/background_pill_filled"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:textSize="@dimen/_13ssp"
+            android:drawableStart="@drawable/ic_refresh"
+            android:drawableTint="@android:color/white"
+            android:drawablePadding="@dimen/_6sdp"
+            android:gravity="center"
+            android:text="@string/generic_restart"/>
 
     </LinearLayout>
 

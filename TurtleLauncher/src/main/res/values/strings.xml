@@ -72,7 +72,7 @@
     <string name="crash_repair_button">Fix it</string>
     <string name="self_heal_repairing">Issues Found.\nRepairing automatically...</string>
     <string name="crash_search_online_button">Search online</string>
-    <string name="crash_export_button">Export</string>
+    <string name="crash_export_button">Crash Report</string>
     <string name="crash_export_failed">Couldn\'t export diagnostics</string>
     <string name="crash_export_saved">Diagnostics saved: %1$s</string>
     <string name="error_no_version">No version!</string>
@@ -1408,4 +1408,16 @@
     <string name="skin_cape_other_login_title">Server-managed skin</string>
     <string name="skin_cape_other_login_message">This account logs in through %s, which serves its own skins - the launcher cannot inject one at launch. The skin was saved locally; to wear it on this account, upload it on the server\'s website.</string>
     <string name="skin_cape_open_site">Open skin website</string>
+    <string name="setting_use_angle_title">Use ANGLE</string>
+    <string name="setting_use_angle_desc">Allows using ANGLE instead of the system driver. Can fix graphical issues with mods on some GPUs</string>
+    <string name="setting_warning_angle">ANGLE may be unstable or slower on some devices and can fail to start the game. Turn it off if you get a black screen or crash.</string>
+    <string name="setting_warning_surface_view">Surface View rendering might be unstable on some devices and could lead to graphical glitches.</string>
+    <string name="setting_category_graphics">Graphics</string>
+    <string name="crash_tab_game_logs">Game Logs</string>
+    <string name="crash_tab_ai_analysis">AI Analysis</string>
+    <string name="crash_inspect_with_ai">Inspect with AI</string>
+    <string name="crash_more_actions">More actions</string>
+    <string name="crash_ai_analysis_placeholder">Tap \"Inspect with AI\" for a deeper look at this crash.</string>
+    <string name="crash_ai_analysis_loading">Analyzing the log…</string>
+    <string name="crash_ai_analysis_unavailable">AI analysis isn\'t available right now. Enable AI crash help with an API key in Settings, or check the Game Logs tab for the raw log.</string>
 </resources>

@@ -221,6 +221,8 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
 
         SwitchSettingsWrapper(context, AllSettings.alternateSurface,
             binding.alternateSurfaceLayout, binding.alternateSurface)
+        com.endiq.turtlelauncher.utils.WarningTooltip.attach(
+            binding.alternateSurfaceWarning, getString(R.string.setting_warning_surface_view))
 
         SwitchSettingsWrapper(context, AllSettings.forceVsync,
             binding.forceVsyncLayout, binding.forceVsync)

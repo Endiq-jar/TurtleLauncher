@@ -8,11 +8,13 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.endiq.turtlelauncher.InfoCenter
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.ActivityErrorBinding
+import com.endiq.turtlelauncher.feature.log.AiCrashAdvisor
 import com.endiq.turtlelauncher.feature.log.CrashAnalyzer
 import com.endiq.turtlelauncher.feature.log.GameLogcat
 import com.endiq.turtlelauncher.feature.log.Logging
@@ -28,6 +30,7 @@ import java.io.File
 class ErrorActivity : BaseActivity() {
     private lateinit var binding: ActivityErrorBinding
     private var advancedLogContent: String = ""
+    private var aiAnalysisRequested = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,19 +48,19 @@ class ErrorActivity : BaseActivity() {
             startActivity(Intent(this@ErrorActivity, SplashActivity::class.java))
         }
         binding.shareLog.setOnClickListener { ZHTools.shareLogs(this) }
-
         binding.toggleAdvancedLog.setOnClickListener {
-            val showing = binding.advancedLogSection.visibility == View.VISIBLE
-            binding.advancedLogSection.visibility = if (showing) View.GONE else View.VISIBLE
-            binding.toggleAdvancedLog.setText(
-                if (showing) R.string.crash_show_advanced_log else R.string.crash_hide_advanced_log
-            )
-        }
-        binding.copyLog.setOnClickListener {
             val clipboard = getSystemService(ClipboardManager::class.java)
             clipboard?.setPrimaryClip(ClipData.newPlainText("crash_log", advancedLogContent))
             Toast.makeText(this, R.string.crash_log_copied, Toast.LENGTH_SHORT).show()
         }
+
+        binding.tabGameLogs.setOnClickListener { selectTab(isGameLogs = true) }
+        binding.tabAiAnalysis.setOnClickListener { selectTab(isGameLogs = false) }
+        binding.aiInspectButton.setOnClickListener {
+            selectTab(isGameLogs = false)
+            requestAiAnalysis()
+        }
+        selectTab(isGameLogs = true)
 
         if (extras.getBoolean(BUNDLE_IS_LAUNCHER_CRASH, false)) {
             showLauncherCrash(extras)
@@ -94,25 +97,66 @@ class ErrorActivity : BaseActivity() {
         finish()
     }
 
-    /** Populates the "How to fix this" section, or hides it if there's nothing useful to say. */
-    private fun showFixTips(diagnosisText: String?) {
+    /** Switches between the "Game Logs" and "AI Analysis" tabs, sliding the underline indicator. */
+    private fun selectTab(isGameLogs: Boolean) {
         binding.apply {
-            if (diagnosisText.isNullOrBlank()) {
-                fixTitle.visibility = View.VISIBLE
-                fixText.visibility = View.VISIBLE
-                fixText.text = getString(R.string.crash_no_diagnosis)
-            } else {
-                fixTitle.visibility = View.VISIBLE
-                fixText.visibility = View.VISIBLE
-                fixText.text = diagnosisText
+            logTabContent.visibility = if (isGameLogs) View.VISIBLE else View.GONE
+            aiTabContent.visibility = if (isGameLogs) View.GONE else View.VISIBLE
+            tabGameLogs.alpha = if (isGameLogs) 1f else 0.5f
+            tabAiAnalysis.alpha = if (isGameLogs) 0.5f else 1f
+
+            val indicatorTarget = if (isGameLogs) tabGameLogs else tabAiAnalysis
+            crashTabIndicator.post {
+                val params = crashTabIndicator.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                params.startToStart = indicatorTarget.id
+                params.endToEnd = indicatorTarget.id
+                crashTabIndicator.layoutParams = params
             }
         }
     }
 
-    /** Sets the raw text shown behind the "Advanced Log" toggle. */
+    /** Populates the "AI Analysis" tab, or hides it if there's nothing useful to say yet. */
+    private fun showFixTips(diagnosisText: String?) {
+        binding.apply {
+            if (diagnosisText.isNullOrBlank()) {
+                fixText.visibility = View.GONE
+                aiAnalysisPlaceholder.visibility = View.VISIBLE
+            } else {
+                fixText.visibility = View.VISIBLE
+                fixText.text = diagnosisText
+                aiAnalysisPlaceholder.visibility = View.GONE
+            }
+        }
+    }
+
+    /** Sets the raw text shown under the "Game Logs" tab. */
     private fun setAdvancedLog(rawText: String) {
         advancedLogContent = rawText.ifBlank { "<no log available>" }
         binding.advancedLogText.text = advancedLogContent
+    }
+
+    /**
+     * Calls the (separate, opt-in) AI crash advisor on the current log tail and shows the
+     * result in place of the local rule-based diagnosis, once it comes back. A no-op if AI
+     * crash help isn't configured or a request is already in flight — [AiCrashAdvisor] itself
+     * returns null in those cases, so the local diagnosis text is simply left as-is.
+     */
+    private fun requestAiAnalysis() {
+        if (aiAnalysisRequested) return
+        aiAnalysisRequested = true
+        binding.aiAnalysisPlaceholder.visibility = View.GONE
+        binding.fixText.visibility = View.VISIBLE
+        val previousText = binding.fixText.text.toString()
+        binding.fixText.text = getString(R.string.crash_ai_analysis_loading)
+
+        TaskExecutors.getDefault().execute {
+            val suggestion = runCatching { AiCrashAdvisor.getSuggestion(advancedLogContent) }.getOrNull()
+            TaskExecutors.runInUIThread {
+                binding.fixText.text = suggestion ?: previousText.ifBlank {
+                    getString(R.string.crash_ai_analysis_unavailable)
+                }
+            }
+        }
     }
 
     private fun showDiagnosisActions() {
@@ -122,31 +166,46 @@ class ErrorActivity : BaseActivity() {
         val repairAction = diagnoses.firstOrNull { it.repairActions.isNotEmpty() }?.repairActions?.firstOrNull()
 
         binding.apply {
-            if (repairAction != null) {
-                crashRepairButton.visibility = View.VISIBLE
-                crashRepairButton.text = repairAction.label
-                crashRepairButton.setOnClickListener { runRepair(repairAction, gameVersion) }
-            } else {
-                crashRepairButton.visibility = View.GONE
-            }
-
             if (topDiagnosis != null) {
-                crashSearchOnlineButton.visibility = View.VISIBLE
-                crashSearchOnlineButton.setOnClickListener {
-                    runCatching {
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(CrashAnalyzer.onlineSearchUrl(topDiagnosis))))
-                    }
-                }
-
                 crashExportButton.visibility = View.VISIBLE
                 crashExportButton.setOnClickListener { exportDiagnostics(diagnoses, gameVersion) }
             } else {
-                crashSearchOnlineButton.visibility = View.GONE
                 crashExportButton.visibility = View.GONE
+            }
+
+            // "Repair" and "Search online" are secondary actions - tucked behind the overflow
+            // (⋯) icon rather than taking a dedicated pill in the rail, same actions as before.
+            val hasOverflowActions = repairAction != null || topDiagnosis != null
+            crashMoreButton.visibility = if (hasOverflowActions) View.VISIBLE else View.GONE
+            crashMoreButton.setOnClickListener {
+                showOverflowMenu(it, repairAction, topDiagnosis, gameVersion)
             }
         }
 
         runSelfHeal(diagnoses, gameVersion)
+    }
+
+    private fun showOverflowMenu(
+        anchor: View,
+        repairAction: CrashAnalyzer.RepairAction?,
+        topDiagnosis: CrashAnalyzer.Diagnosis?,
+        gameVersion: com.endiq.turtlelauncher.feature.version.Version?
+    ) {
+        val popup = PopupMenu(this, anchor)
+        if (repairAction != null) {
+            popup.menu.add(repairAction.label).setOnMenuItemClickListener {
+                runRepair(repairAction, gameVersion); true
+            }
+        }
+        if (topDiagnosis != null) {
+            popup.menu.add(getString(R.string.crash_search_online_button)).setOnMenuItemClickListener {
+                runCatching {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(CrashAnalyzer.onlineSearchUrl(topDiagnosis))))
+                }
+                true
+            }
+        }
+        popup.show()
     }
 
     private fun runSelfHeal(diagnoses: List<CrashAnalyzer.Diagnosis>, gameVersion: com.endiq.turtlelauncher.feature.version.Version?) {
@@ -165,9 +224,6 @@ class ErrorActivity : BaseActivity() {
                     binding.selfHealStatus.visibility = View.GONE
                 } else {
                     binding.selfHealStatus.text = outcome.summary
-                    // Already repaired automatically — the manual button would just redo the
-                    // same work, so hide it rather than leave a stale/confusing duplicate action.
-                    binding.crashRepairButton.visibility = View.GONE
                 }
             }
         }
@@ -175,12 +231,10 @@ class ErrorActivity : BaseActivity() {
 
     /** Runs [action] off the UI thread, then reports the result and refreshes the fix text. */
     private fun runRepair(action: CrashAnalyzer.RepairAction, gameVersion: com.endiq.turtlelauncher.feature.version.Version?) {
-        binding.crashRepairButton.isEnabled = false
         TaskExecutors.getDefault().execute {
             val result = runCatching { CrashAnalyzer.executeRepair(action, gameVersion) }
                 .getOrElse { e -> CrashAnalyzer.RepairResult(false, e.message ?: "Repair failed") }
             TaskExecutors.runInUIThread {
-                binding.crashRepairButton.isEnabled = true
                 Toast.makeText(this, result.message, Toast.LENGTH_LONG).show()
             }
         }
@@ -214,9 +268,6 @@ class ErrorActivity : BaseActivity() {
 
         binding.apply {
             this.errorTitle.text = InfoCenter.replaceName(context, R.string.error_fatal)
-            this.errorText.text = getString(R.string.crash_how_to_fix)
-
-            this.topView.setBackgroundColor(ContextCompat.getColor(context, R.color.background_menu_top_error))
             this.background.setBackgroundColor(ContextCompat.getColor(context, R.color.background_app_error))
         }
 
@@ -244,20 +295,19 @@ class ErrorActivity : BaseActivity() {
         binding.apply {
             this.errorTitle.setText(R.string.generic_wrong_tip)
             this.errorText.apply {
+                visibility = View.VISIBLE
                 text = getString(errorText, code)
-                textSize = 13f
                 setTextIsSelectable(true)
             }
             this.errorTip.visibility = View.VISIBLE
             this.errorNoScreenshot.visibility = View.VISIBLE
 
-            this.topView.setBackgroundColor(ContextCompat.getColor(context, R.color.background_menu_top))
-            this.background.setBackgroundColor(ContextCompat.getColor(context, R.color.background_app))
+            this.background.setBackgroundColor(ContextCompat.getColor(context, R.color.turtle_surface))
         }
 
         showFixTips(diagnosis)
-        // The diagnosis already summarises the log; Advanced Log still gives access to the raw tail
-        // for anyone (or anyone helping them) who needs the unfiltered details.
+        // The diagnosis already summarises the log; Game Logs tab still gives access to the raw
+        // tail for anyone (or anyone helping them) who needs the unfiltered details.
         applyGameCrashAdvancedLog(diagnosis)
         // Structured diagnoses for this exact crash were already stashed by CrashAnalyzer.analyzeGameExit()
         // (called from JREUtils right before this activity was launched) — see getLastDiagnoses().
@@ -294,16 +344,12 @@ class ErrorActivity : BaseActivity() {
         val context = this
 
         binding.apply {
-            this.topView.visibility = View.GONE
-            this.scrollView.visibility = View.GONE
-            this.shareLog.visibility = View.GONE
-            this.errorRestart.visibility = View.GONE
-            this.errorConfirm.visibility = View.GONE
+            this.crashCard.visibility = View.GONE
+            this.actionRail.visibility = View.GONE
             this.centerText.visibility = View.VISIBLE
 
             this.centerText.text = InfoCenter.replaceName(context, R.string.error_fatal)
 
-            this.topView.setBackgroundColor(ContextCompat.getColor(context, R.color.background_menu_top_error))
             this.background.setBackgroundResource(R.drawable.image_error_background)
         }
     }

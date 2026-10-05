@@ -209,7 +209,7 @@ object TurtleAiGemini {
 
         val contents = buildContents(userContent, history)
 
-        return runChain(task) { model ->
+        fun chat(withSearch: Boolean): Answer? = runChain(task) { model ->
             val body = JsonObject().apply {
                 add("contents", contents)
                 add("systemInstruction", JsonObject().apply {
@@ -221,7 +221,7 @@ object TurtleAiGemini {
                     addProperty("temperature", 0.3)
                     addProperty("maxOutputTokens", MAX_OUTPUT_TOKENS)
                 })
-                if (useSearch) {
+                if (withSearch) {
                     add("tools", JsonArray().apply {
                         add(JsonObject().apply { add("google_search", JsonObject()) })
                     })
@@ -233,6 +233,17 @@ object TurtleAiGemini {
                 is Call.Stop -> Step.Stop
             }
         }
+
+        val first = chat(useSearch)
+        if (first != null || !useSearch) return first
+        // Grounded request failed on every model (tool rejected, grounding quota...): answer
+        // without search rather than not at all - unless the key/network is the problem.
+        val f = lastFailure
+        if (f == "key rejected" || f == "no key" || f?.contains("UnknownHost") == true ||
+            f?.contains("Connect") == true) return null
+        Logging.w(TAG, "Grounded chat failed ($f); retrying without Google Search")
+        TurtleAiModels.clearCooldowns()
+        return chat(false)
     }
 
     /**
@@ -696,6 +707,7 @@ object TurtleAiGemini {
     private fun Call.Retry.cooldownMs(): Long = when (status) {
         404 -> COOLDOWN_GONE_MS
         403 -> COOLDOWN_GONE_MS
+        0, 400 -> 30_000L
         429 -> COOLDOWN_QUOTA_MS
         else -> COOLDOWN_SERVER_MS
     }
@@ -887,7 +899,10 @@ object TurtleAiGemini {
             // way, so stop rather than walking the chain.
             Logging.w(TAG, "Gemini request failed for $path", t)
             lastFailure = t.javaClass.simpleName
-            Call.Stop(t.javaClass.simpleName)
+            val dead = t is java.net.UnknownHostException || t is java.net.ConnectException ||
+                t is java.net.NoRouteToHostException
+            if (dead) Call.Stop(t.javaClass.simpleName)
+            else Call.Retry(0, t.javaClass.simpleName) // timeout/TLS on one model: try the next
         }
     }
 
@@ -903,12 +918,6 @@ object TurtleAiGemini {
             lower.contains("api key not valid") || lower.contains("api_key_invalid") ||
             lower.contains("api key expired")
         if (keyProblem) return Call.Stop("key rejected")
-        if (status == 400 && lower.contains("invalid") && !lower.contains("not supported")) {
-            // A malformed request repeats identically on every model.
-            if (lower.contains("field") || lower.contains("argument") || lower.contains("format")) {
-                return Call.Stop("bad request")
-            }
-        }
         return Call.Retry(status, detail)
     }
 

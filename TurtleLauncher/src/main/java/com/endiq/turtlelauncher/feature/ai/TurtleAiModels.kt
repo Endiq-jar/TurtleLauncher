@@ -68,6 +68,9 @@ object TurtleAiModels {
     private const val LITE_31 = "gemini-3.1-flash-lite"
     private const val PRO_31 = "gemini-3.1-pro-preview"
     private const val FLASH_30 = "gemini-3-flash-preview"
+    /** Google-maintained aliases that always point at a live model - the chain's safety net. */
+    private const val FLASH_LATEST = "gemini-flash-latest"
+    private const val LITE_LATEST = "gemini-flash-lite-latest"
     private const val FLASH_25 = "gemini-2.5-flash"
     private const val LITE_25 = "gemini-2.5-flash-lite"
     private const val PRO_25 = "gemini-2.5-pro"
@@ -142,10 +145,10 @@ object TurtleAiModels {
 
     /** The model ids this task tries, in order, before the user's override is applied. */
     private val DEFAULT_CHAINS: Map<Task, List<String>> = mapOf(
-        Task.CHAT to listOf(FLASH_38, FLASH_36, FLASH_35, FLASH_25),
-        Task.CODING to listOf(FLASH_37, FLASH_38, PRO_31, FLASH_36, FLASH_35),
-        Task.REASONING to listOf(PRO_31, FLASH_38, FLASH_36, PRO_25, FLASH_25),
-        Task.FAST to listOf(LITE_35, LITE_31, LITE_25, FLASH_35),
+        Task.CHAT to listOf(FLASH_38, FLASH_36, FLASH_35, FLASH_25, FLASH_LATEST, LITE_LATEST),
+        Task.CODING to listOf(FLASH_37, FLASH_38, PRO_31, FLASH_36, FLASH_35, FLASH_LATEST),
+        Task.REASONING to listOf(PRO_31, FLASH_38, FLASH_36, PRO_25, FLASH_25, FLASH_LATEST),
+        Task.FAST to listOf(LITE_35, LITE_31, LITE_25, FLASH_35, LITE_LATEST),
         Task.VISION to listOf(FLASH_36, LITE_35, FLASH_35, LITE_25),
         Task.IMAGE to listOf(IMAGE_31, IMAGE_31_LITE, IMAGE_PRO_3, IMAGE_25),
         Task.VIDEO to listOf(VEO_31, VEO_31_LITE),

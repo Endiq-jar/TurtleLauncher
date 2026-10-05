@@ -219,7 +219,12 @@ class UpdateUtils {
             }
         }
 
+        // @JvmOverloads matters here: Java callers (UpdateLauncher's update-zip handling)
+        // call this with no arguments, and a Kotlin default argument on its own does not
+        // produce a Java-visible no-arg overload - Kotlin callers get the default, javac
+        // just sees a missing parameter.
         @JvmStatic
+        @JvmOverloads
         fun getArchModel(arch: Int = Tools.DEVICE_ARCHITECTURE): String? {
             if (arch == Architecture.ARCH_ARM64) return "arm64-v8a"
             if (arch == Architecture.ARCH_ARM) return "armeabi-v7a"

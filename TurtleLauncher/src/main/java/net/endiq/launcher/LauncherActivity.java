@@ -360,6 +360,11 @@ public class LauncherActivity extends BaseActivity {
 
         handleAssistantShortcut(getIntent());
 
+        // Startup/background music (see the Music screen's "Enable Startup Music" +
+        // playback scope). Gated internally on AllSettings.musicEnabled and a track
+        // actually being set, so this is a no-op otherwise.
+        com.endiq.turtlelauncher.feature.music.MusicManager.INSTANCE.onLauncherStarted();
+
         // Show What's New dialog on first launch of this version
         //showWhatsNewIfNeeded();
 
@@ -602,6 +607,8 @@ public class LauncherActivity extends BaseActivity {
     }
 
     private void launchGame(Version version) {
+        // Stop launcher music unless the scope is set to keep playing into the game too.
+        com.endiq.turtlelauncher.feature.music.MusicManager.INSTANCE.onGameLaunching();
         LocalAccountUtils.checkUsageAllowed(new LocalAccountUtils.CheckResultListener() {
             @Override
             public void onUsageAllowed() {

@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Music screen: left panel (enable toggle, playback scope, current-track preview,
+     volume, preview controls) + right panel (playlist, add from device/URL). No left
+     nav sidebar and no duplicate top app bar here - just the two content panels, same
+     idea as AccountManageScreen's two-column layout elsewhere in this app. -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_app"
+    tools:ignore="ContentDescription">
+
+    <com.endiq.turtlelauncher.ui.view.AnimTextView
+        android:id="@+id/music_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_l"
+        android:layout_marginTop="@dimen/space_m"
+        android:text="@string/music_title"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/turtle_primary_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.endiq.turtlelauncher.ui.view.AnimButton
+        android:id="@+id/return_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/space_l"
+        android:layout_marginTop="@dimen/space_m"
+        android:paddingHorizontal="@dimen/space_m"
+        android:text="@string/generic_return"
+        android:textAllCaps="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- LEFT: playback settings -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="@dimen/space_l"
+        app:layout_constraintTop_toBottomOf="@id/music_title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/playlist_card"
+        app:layout_constraintWidth_percent="0.52">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Enable Startup Music -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_card"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/space_m">
+
+                <ImageView
+                    android:layout_width="@dimen/_24sdp"
+                    android:layout_height="@dimen/_24sdp"
+                    android:src="@drawable/ic_music_note"
+                    android:tint="@color/turtle_accent_dim" />
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_m"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/music_enable_startup"
+                        android:textStyle="bold"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/music_enable_startup_desc"
+                        android:textSize="@dimen/_10ssp"
+                        android:textColor="@color/turtle_text_secondary" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <Switch
+                    android:id="@+id/music_enable_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!-- Playback scope -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:background="@drawable/background_card"
+                android:orientation="vertical"
+                android:padding="@dimen/space_m">
+
+                <com.endiq.turtlelauncher.ui.view.AnimTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/music_playback_scope"
+                    android:textStyle="bold"
+                    android:textColor="@color/turtle_primary_text" />
+
+                <RadioGroup
+                    android:id="@+id/music_scope_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/scope_full_game"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/music_scope_full_game" />
+
+                    <RadioButton
+                        android:id="@+id/scope_only_startup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/music_scope_only_startup" />
+
+                    <RadioButton
+                        android:id="@+id/scope_only_launcher"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/music_scope_only_launcher" />
+
+                </RadioGroup>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!-- Current track -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:background="@drawable/background_card"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/space_m">
+
+                <ImageView
+                    android:layout_width="@dimen/_36sdp"
+                    android:layout_height="@dimen/_36sdp"
+                    android:background="@drawable/background_grid_card"
+                    android:padding="@dimen/space_xs"
+                    android:src="@drawable/ic_music_note"
+                    android:tint="@color/turtle_accent_dim" />
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_m"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/music_current_track"
+                        android:textSize="@dimen/_10ssp"
+                        android:textColor="@color/turtle_text_secondary" />
+
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
+                        android:id="@+id/music_current_track_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textStyle="bold"
+                        android:textColor="@color/turtle_primary_text"
+                        tools:text="Barsaat - Banjaare" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <com.endiq.turtlelauncher.ui.view.AnimTextView
+                    android:id="@+id/music_current_track_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/turtle_text_secondary"
+                    tools:text="03:12" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!-- Volume -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:background="@drawable/background_card"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/space_m">
+
+                <ImageView
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:src="@drawable/ic_speaker"
+                    android:tint="@color/turtle_text_secondary" />
+
+                <com.endiq.turtlelauncher.ui.view.AnimTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:text="@string/music_volume"
+                    android:textColor="@color/turtle_primary_text" />
+
+                <SeekBar
+                    android:id="@+id/music_volume_seekbar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/space_m"
+                    android:layout_weight="1"
+                    android:max="100" />
+
+                <com.endiq.turtlelauncher.ui.view.AnimTextView
+                    android:id="@+id/music_volume_value"
+                    android:layout_width="@dimen/_32sdp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/turtle_text_secondary"
+                    tools:text="55" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!-- Preview controls -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:orientation="horizontal">
+
+                <com.endiq.turtlelauncher.ui.view.AnimButton
+                    android:id="@+id/music_play_preview"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="@dimen/space_xs"
+                    android:background="@drawable/bg_launch_button"
+                    android:paddingVertical="@dimen/space_m"
+                    android:text="@string/music_play_preview"
+                    android:textColor="@color/turtle_text_on_accent" />
+
+                <com.endiq.turtlelauncher.ui.view.AnimButton
+                    android:id="@+id/music_stop_preview"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:background="@drawable/background_grid_card"
+                    android:paddingVertical="@dimen/space_m"
+                    android:text="@string/music_stop_preview" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- RIGHT: playlist -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/playlist_card"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginVertical="@dimen/space_l"
+        android:layout_marginEnd="@dimen/space_l"
+        android:background="@drawable/background_card"
+        android:padding="@dimen/space_m"
+        app:layout_constraintTop_toBottomOf="@id/music_title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.endiq.turtlelauncher.ui.view.AnimTextView
+            android:id="@+id/music_playlist_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/music_playlist_title"
+            android:textStyle="bold"
+            android:textColor="@color/turtle_primary_text"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/music_add_group" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/music_add_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.endiq.turtlelauncher.ui.view.AnimButton
+                android:id="@+id/music_select_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_grid_card"
+                android:paddingHorizontal="@dimen/space_m"
+                android:paddingVertical="@dimen/space_xs"
+                android:text="@string/music_select_file"
+                android:textSize="@dimen/_10ssp" />
+
+            <com.endiq.turtlelauncher.ui.view.AnimButton
+                android:id="@+id/music_add_url"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_xs"
+                android:background="@drawable/background_grid_card"
+                android:paddingHorizontal="@dimen/space_m"
+                android:paddingVertical="@dimen/space_xs"
+                android:text="@string/music_add_url"
+                android:textSize="@dimen/_10ssp" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <com.endiq.turtlelauncher.ui.view.AnimTextView
+            android:id="@+id/music_empty_hint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:gravity="center"
+            android:text="@string/music_empty_hint"
+            android:textColor="@color/turtle_text_secondary"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/music_playlist_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/music_playlist_recycler"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/space_m"
+            android:clipToPadding="false"
+            app:layout_constraintTop_toBottomOf="@id/music_playlist_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:listitem="@layout/item_music_track" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

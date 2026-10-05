@@ -1206,6 +1206,38 @@
     <string name="account_cape_button">Cape</string>
     <string name="account_wardrobe">Wardrobe</string>
 
+    <!-- Music -->
+    <string name="music_title">Music</string>
+    <string name="music_enable_startup">Enable Startup Music</string>
+    <string name="music_enable_startup_desc">Play music automatically when the launcher opens.</string>
+    <string name="music_playback_scope">When should it play?</string>
+    <string name="music_scope_full_game">Full Game - keeps playing after you launch Minecraft</string>
+    <string name="music_scope_only_startup">Only Startup - plays once when the launcher opens</string>
+    <string name="music_scope_only_launcher">Only Launcher - stops the moment the game launches</string>
+    <string name="music_current_track">Current Track</string>
+    <string name="music_volume">Volume</string>
+    <string name="music_play_preview">Play Preview</string>
+    <string name="music_stop_preview">Stop Preview</string>
+    <string name="music_playlist_title">Startup Music Playlist</string>
+    <string name="music_select_file">Select File</string>
+    <string name="music_add_url">Add from URL</string>
+    <string name="music_add_url_title">Add track from a URL</string>
+    <string name="music_add_url_hint">Direct audio file link (.mp3, .ogg…)</string>
+    <string name="music_add_url_not_direct">YouTube, Spotify and YT Music links can\'t be played directly - they don\'t expose a raw audio URL without going through their own official apps/APIs. Paste a direct audio file link instead.</string>
+    <string name="music_empty_hint">No tracks yet - add one from your device or a URL.</string>
+    <string name="music_no_track_selected">No track selected - add or pick one from the playlist first.</string>
+
+    <!-- Discord -->
+    <string name="discord_settings_title">Discord</string>
+    <string name="discord_link_account">Link Discord Account</string>
+    <string name="discord_link_account_desc">Sign in with Discord so the launcher knows who you are there.</string>
+    <string name="discord_connected_as">Connected as %1$s</string>
+    <string name="discord_disconnect">Disconnect</string>
+    <string name="discord_link_failed">Couldn\'t link your Discord account. Try again.</string>
+    <string name="discord_activity_title">Game activity on Discord</string>
+    <string name="discord_activity_unavailable">Not available yet: showing live \"Playing Minecraft\" status to friends needs Discord\'s official Rich Presence mechanism, which only works through the desktop Discord client on the same machine as the game - there\'s no public API for an Android app to set it on a linked account\'s behalf.</string>
+    <string name="music_delete_track">Remove</string>
+
     <string name="whats_new_title">🐢 What\'s New in TurtleLauncher</string>
     <string name="whats_new_version">v3.1</string>
     <string name="whats_new_feature_1">🎭 Emotes: dependencies install themselves</string>

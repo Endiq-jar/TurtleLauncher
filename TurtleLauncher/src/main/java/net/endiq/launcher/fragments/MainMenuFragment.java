@@ -160,6 +160,9 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.topBarCursorButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.endiq.turtlelauncher.ui.fragment.CustomMouseFragment.class,
             com.endiq.turtlelauncher.ui.fragment.CustomMouseFragment.TAG, null));
+        binding.topBarMusicButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
+            com.endiq.turtlelauncher.ui.fragment.MusicFragment.class,
+            com.endiq.turtlelauncher.ui.fragment.MusicFragment.TAG, null));
         binding.topBarSettingsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.endiq.turtlelauncher.ui.fragment.settings.SettingsFragment.class,
             com.endiq.turtlelauncher.ui.fragment.settings.SettingsFragment.TAG, null));

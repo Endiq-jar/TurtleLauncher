@@ -38,6 +38,9 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
 
         // Quick Presets (PvP/Survival) removed per explicit request - was here.
 
+        SwitchSettingsWrapper(context, AllSettings.useAngle, binding.useAngleLayout, binding.useAngle)
+        com.endiq.turtlelauncher.utils.WarningTooltip.attach(binding.useAngleWarning, getString(R.string.setting_warning_angle))
+
         SwitchSettingsWrapper(
             context,
             AllSettings.versionIsolation,

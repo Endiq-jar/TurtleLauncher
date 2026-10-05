@@ -33,6 +33,7 @@ class SettingsFragment : FragmentWithAnim(R.layout.fragment_settings) {
             Triple(binding.launcherSettingsRow, binding.generalSectionContainer, R.string.settings_row_launcher_title),
             Triple(binding.accountSettingsRow, binding.generalSectionContainer, R.string.settings_row_account_title),
             Triple(binding.shizukuSettingsRow, binding.generalSectionContainer, R.string.settings_row_shizuku_title),
+            Triple(binding.discordSettingsRow, binding.generalSectionContainer, R.string.discord_settings_title),
             Triple(binding.videoSettingsRow, binding.performanceSectionContainer, R.string.settings_row_video_title),
             Triple(binding.gameSettingsRow, binding.performanceSectionContainer, R.string.settings_row_game_title),
             Triple(binding.javaSettingsRow, binding.performanceSectionContainer, R.string.settings_row_java_title),
@@ -77,6 +78,9 @@ class SettingsFragment : FragmentWithAnim(R.layout.fragment_settings) {
         }
         binding.shizukuSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, ShizukuSettingsFragment::class.java, ShizukuSettingsFragment.TAG, null)
+        }
+        binding.discordSettingsRow.setOnClickListener {
+            ZHTools.swapFragmentWithAnim(this, com.endiq.turtlelauncher.ui.fragment.settings.DiscordSettingsFragment::class.java, com.endiq.turtlelauncher.ui.fragment.settings.DiscordSettingsFragment.TAG, null)
         }
         binding.videoSettingsRow.setOnClickListener {
             ZHTools.swapFragmentWithAnim(this, VideoSettingsFragment::class.java, VideoSettingsFragment.TAG, null)

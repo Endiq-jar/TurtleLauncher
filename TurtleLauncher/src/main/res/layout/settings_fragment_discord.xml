@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_app"
+    tools:ignore="ContentDescription">
+
+    <LinearLayout
+        android:id="@+id/sub_settings_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/space_l"
+        android:paddingVertical="@dimen/space_m">
+
+        <ImageButton
+            android:id="@+id/sub_settings_back_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_chevron_down"
+            android:rotation="90"
+            android:tint="@color/turtle_text_secondary"
+            android:contentDescription="@string/generic_return"/>
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="@dimen/space_s"
+            android:src="@drawable/ic_discord"
+            android:tint="@color/accent_primary"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_s"
+            android:text="@string/discord_settings_title"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/turtle_text_primary"/>
+
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/space_l">
+
+            <!-- Link / connected state -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_settings_hub_card"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/space_m">
+
+                <ImageView
+                    android:id="@+id/discord_avatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/background_icon_chip"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_discord"
+                    android:tint="@color/accent_primary" />
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_m"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/discord_status_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:textColor="@color/turtle_text_primary"
+                        tools:text="Connected as endiq" />
+
+                    <TextView
+                        android:id="@+id/discord_status_desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/discord_link_account_desc"
+                        android:textSize="11sp"
+                        android:textColor="@color/turtle_text_secondary" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <com.endiq.turtlelauncher.ui.view.AnimButton
+                    android:id="@+id/discord_link_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_launch_button"
+                    android:paddingHorizontal="@dimen/space_m"
+                    android:paddingVertical="@dimen/space_xs"
+                    android:text="@string/discord_link_account"
+                    android:textSize="12sp" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!-- Game activity status -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:background="@drawable/background_settings_hub_card"
+                android:orientation="vertical"
+                android:padding="@dimen/space_m">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/discord_activity_title"
+                        android:textStyle="bold"
+                        android:textColor="@color/turtle_text_primary" />
+
+                    <Switch
+                        android:id="@+id/discord_activity_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:enabled="false" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/discord_activity_unavailable"
+                    android:textSize="11sp"
+                    android:lineSpacingExtra="2dp"
+                    android:textColor="@color/turtle_text_secondary" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

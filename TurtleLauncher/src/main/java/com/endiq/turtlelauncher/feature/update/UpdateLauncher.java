@@ -9,6 +9,7 @@ import android.content.Context;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.endiq.turtlelauncher.R;
 import com.endiq.turtlelauncher.feature.log.Logging;
@@ -166,11 +167,47 @@ public final class UpdateLauncher {
         }
     }
 
+    /**
+     * Extracts the real installable .apk from inside the downloaded update .zip.
+     * <p>
+     * Some releases bundle more than one .apk in the zip (per-ABI splits, e.g.
+     * {@code app-arm64-v8a.apk}/{@code app-armeabi-v7a.apk}/...) rather than a single
+     * universal one. Just grabbing the first .apk entry found - the old behavior - would
+     * silently install whichever split happened to be zipped first, regardless of the
+     * device's real ABI. Extracted in two passes so the device's own ABI (from
+     * {@link UpdateUtils#getArchModel()}, the same string {@code pickBestAsset()}
+     * already matches release-level asset names against) is always preferred, falling
+     * back to the first .apk found if no entry names the device's ABI explicitly.
+     */
     private File extractApkFromZip(File zipFile) throws IOException {
+        String abi = UpdateUtils.getArchModel();
+
+        if (abi != null) {
+            File abiMatch = extractFirstMatchingApk(zipFile, abi);
+            if (abiMatch != null) return abiMatch;
+        }
+
+        File anyApk = extractFirstMatchingApk(zipFile, null);
+        if (anyApk != null) return anyApk;
+
+        throw new IOException("No .apk entry found inside downloaded update package");
+    }
+
+    /**
+     * Scans {@code zipFile} for the first .apk entry whose name contains {@code abiFilter}
+     * (case-insensitively), or the first .apk entry at all if {@code abiFilter} is null.
+     * Returns null (instead of throwing) if nothing matches, so the caller can fall back.
+     */
+    @Nullable
+    private File extractFirstMatchingApk(File zipFile, @Nullable String abiFilter) throws IOException {
         try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(Files.newInputStream(zipFile.toPath())))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                if (entry.isDirectory() || !entry.getName().toLowerCase(Locale.ROOT).endsWith(".apk")) {
+                String name = entry.getName();
+                if (entry.isDirectory() || !name.toLowerCase(Locale.ROOT).endsWith(".apk")) {
+                    continue;
+                }
+                if (abiFilter != null && !name.toLowerCase(Locale.ROOT).contains(abiFilter.toLowerCase(Locale.ROOT))) {
                     continue;
                 }
                 try (OutputStream out = Files.newOutputStream(UpdateUtils.sApkFile.toPath())) {
@@ -183,7 +220,7 @@ public final class UpdateLauncher {
                 return UpdateUtils.sApkFile;
             }
         }
-        throw new IOException("No .apk entry found inside downloaded update package");
+        return null;
     }
 
     public void handleDialog(Consumer<ProgressDialog> func) {

@@ -12,6 +12,22 @@ import net.endiq.launcher.prefs.LauncherPreferences
 
 class AllSettings {
     companion object {
+        // ── Music ──────────────────────────────────────────────────────────────
+        @JvmStatic val musicEnabled = BooleanSettingUnit("musicEnabled", false)
+        @JvmStatic val musicVolume = IntSettingUnit("musicVolume", 55)
+        /** One of MusicManager.Scope.name: FULL_GAME, ONLY_STARTUP, ONLY_LAUNCHER. */
+        @JvmStatic val musicPlaybackScope = StringSettingUnit("musicPlaybackScope", "ONLY_LAUNCHER")
+        @JvmStatic val musicSelectedTrackId = StringSettingUnit("musicSelectedTrackId", "")
+        /** JSON array of saved tracks - see MusicManager for the (de)serialization. */
+        @JvmStatic val musicPlaylistJson = StringSettingUnit("musicPlaylistJson", "[]")
+
+        // ── Discord ────────────────────────────────────────────────────────────
+        @JvmStatic val discordAccessToken = StringSettingUnit("discordAccessToken", "")
+        @JvmStatic val discordRefreshToken = StringSettingUnit("discordRefreshToken", "")
+        @JvmStatic val discordUserId = StringSettingUnit("discordUserId", "")
+        @JvmStatic val discordUsername = StringSettingUnit("discordUsername", "")
+        @JvmStatic val discordAvatarHash = StringSettingUnit("discordAvatarHash", "")
+
         // ── Video ──────────────────────────────────────────────────────────────
         @JvmStatic val renderer = StringSettingUnit("renderer", "4b4b8e4b-083d-429c-97e1-5e8239b6dc17")
         @JvmStatic val driver   = StringSettingUnit("driver", "Turnip")
@@ -108,6 +124,8 @@ class AllSettings {
 
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
+        /** Load ANGLE (libEGL_angle/libGLESv2_angle) instead of the system EGL/GLES driver. */
+        @JvmStatic val useAngle                 = BooleanSettingUnit("useAngle", false)
         @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")
         @JvmStatic val autoSetGameLanguage      = BooleanSettingUnit("autoSetGameLanguage", true)
         @JvmStatic val gameLanguageOverridden   = BooleanSettingUnit("gameLanguageOverridden", false)

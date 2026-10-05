@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_grid_card"
+    android:layout_marginBottom="@dimen/space_xs"
+    android:padding="@dimen/space_m"
+    tools:ignore="ContentDescription">
+
+    <ImageView
+        android:id="@+id/track_icon"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:padding="@dimen/_6sdp"
+        android:src="@drawable/ic_music_note"
+        android:tint="@color/turtle_text_secondary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <com.endiq.turtlelauncher.ui.view.AnimTextView
+        android:id="@+id/track_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_m"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textStyle="bold"
+        android:textColor="@color/turtle_primary_text"
+        app:layout_constraintStart_toEndOf="@id/track_icon"
+        app:layout_constraintTop_toTopOf="@id/track_icon"
+        app:layout_constraintEnd_toStartOf="@id/track_duration"
+        tools:text="LUZ ROJA" />
+
+    <com.endiq.turtlelauncher.ui.view.AnimTextView
+        android:id="@+id/track_artist"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_m"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="@dimen/_10ssp"
+        android:textColor="@color/turtle_text_secondary"
+        app:layout_constraintStart_toEndOf="@id/track_icon"
+        app:layout_constraintTop_toBottomOf="@id/track_title"
+        app:layout_constraintEnd_toStartOf="@id/track_duration"
+        tools:text="Unknown Artist" />
+
+    <com.endiq.turtlelauncher.ui.view.AnimTextView
+        android:id="@+id/track_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/space_xs"
+        android:textColor="@color/turtle_text_secondary"
+        app:layout_constraintEnd_toStartOf="@id/track_select"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:text="04:42" />
+
+    <RadioButton
+        android:id="@+id/track_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toStartOf="@id/track_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageButton
+        android:id="@+id/track_delete"
+        android:layout_width="@dimen/_28sdp"
+        android:layout_height="@dimen/_28sdp"
+        android:layout_marginStart="@dimen/space_xs"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="@dimen/_4sdp"
+        android:src="@drawable/ic_close"
+        android:tint="@color/turtle_text_secondary"
+        android:contentDescription="@string/music_delete_track"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

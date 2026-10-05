@@ -72,7 +72,7 @@
     <string name="crash_repair_button">Fix it</string>
     <string name="self_heal_repairing">Issues Found.\nRepairing automatically...</string>
     <string name="crash_search_online_button">Search online</string>
-    <string name="crash_export_button">Export</string>
+    <string name="crash_export_button">Crash Report</string>
     <string name="crash_export_failed">Couldn\'t export diagnostics</string>
     <string name="crash_export_saved">Diagnostics saved: %1$s</string>
     <string name="error_no_version">No version!</string>
@@ -1033,6 +1033,7 @@
     <string name="download_info_author">Author:</string>
     <string name="download_info_date">Creation Date:</string>
     <string name="download_info_modloader">Compatible With:</string>
+    <string name="download_info_install">Install</string>
     <string name="download_info_dependencies">Dependency Type:</string>
     <string name="download_info_load_screenshot">Show Screenshot</string>
     <string name="download_search_failed">Failed to search for resources!</string>
@@ -1216,6 +1217,39 @@
     <string name="skin_cape_instructions_copied">Copied to clipboard</string>
     <string name="account_skin_button">Skin</string>
     <string name="account_cape_button">Cape</string>
+    <string name="account_wardrobe">Wardrobe</string>
+
+    <!-- Music -->
+    <string name="music_title">Music</string>
+    <string name="music_enable_startup">Enable Startup Music</string>
+    <string name="music_enable_startup_desc">Play music automatically when the launcher opens.</string>
+    <string name="music_playback_scope">When should it play?</string>
+    <string name="music_scope_full_game">Full Game - keeps playing after you launch Minecraft</string>
+    <string name="music_scope_only_startup">Only Startup - plays once when the launcher opens</string>
+    <string name="music_scope_only_launcher">Only Launcher - stops the moment the game launches</string>
+    <string name="music_current_track">Current Track</string>
+    <string name="music_volume">Volume</string>
+    <string name="music_play_preview">Play Preview</string>
+    <string name="music_stop_preview">Stop Preview</string>
+    <string name="music_playlist_title">Startup Music Playlist</string>
+    <string name="music_select_file">Select File</string>
+    <string name="music_add_url">Add from URL</string>
+    <string name="music_add_url_title">Add track from a URL</string>
+    <string name="music_add_url_hint">Direct audio file link (.mp3, .ogg…)</string>
+    <string name="music_add_url_not_direct">YouTube, Spotify and YT Music links can\'t be played directly - they don\'t expose a raw audio URL without going through their own official apps/APIs. Paste a direct audio file link instead.</string>
+    <string name="music_empty_hint">No tracks yet - add one from your device or a URL.</string>
+    <string name="music_no_track_selected">No track selected - add or pick one from the playlist first.</string>
+
+    <!-- Discord -->
+    <string name="discord_settings_title">Discord</string>
+    <string name="discord_link_account">Link Discord Account</string>
+    <string name="discord_link_account_desc">Sign in with Discord so the launcher knows who you are there.</string>
+    <string name="discord_connected_as">Connected as %1$s</string>
+    <string name="discord_disconnect">Disconnect</string>
+    <string name="discord_link_failed">Couldn\'t link your Discord account. Try again.</string>
+    <string name="discord_activity_title">Game activity on Discord</string>
+    <string name="discord_activity_unavailable">Not available yet: showing live \"Playing Minecraft\" status to friends needs Discord\'s official Rich Presence mechanism, which only works through the desktop Discord client on the same machine as the game - there\'s no public API for an Android app to set it on a linked account\'s behalf.</string>
+    <string name="music_delete_track">Remove</string>
 
     <string name="whats_new_title">🐢 What\'s New in TurtleLauncher</string>
     <string name="whats_new_version">v3.1</string>
@@ -1410,4 +1444,16 @@
     <string name="skin_cape_other_login_title">Server-managed skin</string>
     <string name="skin_cape_other_login_message">This account logs in through %s, which serves its own skins - the launcher cannot inject one at launch. The skin was saved locally; to wear it on this account, upload it on the server\'s website.</string>
     <string name="skin_cape_open_site">Open skin website</string>
+    <string name="setting_use_angle_title">Use ANGLE</string>
+    <string name="setting_use_angle_desc">Allows using ANGLE instead of the system driver. Can fix graphical issues with mods on some GPUs</string>
+    <string name="setting_warning_angle">ANGLE may be unstable or slower on some devices and can fail to start the game. Turn it off if you get a black screen or crash.</string>
+    <string name="setting_warning_surface_view">Surface View rendering might be unstable on some devices and could lead to graphical glitches.</string>
+    <string name="setting_category_graphics">Graphics</string>
+    <string name="crash_tab_game_logs">Game Logs</string>
+    <string name="crash_tab_ai_analysis">AI Analysis</string>
+    <string name="crash_inspect_with_ai">Inspect with AI</string>
+    <string name="crash_more_actions">More actions</string>
+    <string name="crash_ai_analysis_placeholder">Tap \"Inspect with AI\" for a deeper look at this crash.</string>
+    <string name="crash_ai_analysis_loading">Analyzing the log…</string>
+    <string name="crash_ai_analysis_unavailable">AI analysis isn\'t available right now. Enable AI crash help with an API key in Settings, or check the Game Logs tab for the raw log.</string>
 </resources>

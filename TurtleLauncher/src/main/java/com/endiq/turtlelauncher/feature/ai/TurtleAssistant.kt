@@ -10,6 +10,7 @@ import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.feature.version.VersionsManager
 import com.endiq.turtlelauncher.renderer.RendererCatalog
 import com.endiq.turtlelauncher.renderer.Renderers
+import com.endiq.turtlelauncher.renderer.renderers.HolyGL4ESRenderer
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.utils.ZHTools
 import com.endiq.turtlelauncher.utils.path.PathManager
@@ -33,24 +34,217 @@ object TurtleAssistant {
         val followUps: List<String> = emptyList()
     )
 
-    /** A finished assistant turn: the text to show plus optional suggestion chips. */
-    data class Reply(val text: String, val suggestions: List<String> = emptyList())
+    /**
+     * Renders a video and files it. Veo takes minutes, so this is the one command where the
+     * chat really does wait - the screen says so the whole time (see AiChatFragment).
+     */
+    private fun videoReply(prompt: String): Reply {
+        if (prompt.isBlank()) {
+            return Reply(
+                "Tell me what the video should show, for example: " +
+                    "/video a creeper walking through a flower forest at sunset",
+                startingSuggestions()
+            )
+        }
+        if (TurtleAiGemini.apiKey().isEmpty()) {
+            return Reply(TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).videoFailed, startingSuggestions())
+        }
+        val video = TurtleAiGemini.generateVideo(prompt)
+            ?: return Reply(
+                TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).videoFailed,
+                startingSuggestions()
+            )
+        val file = TurtleAiFiles.save(video.bytes, video.mimeType, "video")
+            ?: return Reply(
+                TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).videoFailed,
+                startingSuggestions()
+            )
+        return Reply(
+            "Here's your video.\n\nPrompt: " + prompt + "\nModel: " +
+                TurtleAiModels.label(video.modelId) +
+                "\nSaved as " + file.name + " in the launcher's TurtleAI folder.",
+            listOf("/video a slow pan over a Minecraft village at sunrise"),
+            mediaPath = file.absolutePath,
+            mediaLabel = "Open the video"
+        )
+    }
 
-    /** First message shown when a conversation starts. */
+    /**
+     * Reads text aloud and files the audio. Bare "/speak" reads the assistant's previous answer,
+     * which is what the command is usually for - hence [lastAssistantAnswer].
+     */
+    private fun speakReply(context: Context, text: String): Reply {
+        val shell = TurtleAiLanguage.shell(TurtleAiLanguage.replyLanguage(context, text))
+        val toSay = if (text == LAST_ANSWER_PLACEHOLDER) {
+            lastAssistantAnswer() ?: return Reply(
+                "There's no answer to read out yet - ask me something first, or send " +
+                    "/speak <text>.",
+                startingSuggestions()
+            )
+        } else {
+            text
+        }
+        if (toSay.isBlank()) {
+            return Reply(
+                "Tell me what to say, for example: /speak the launcher released 100MB of RAM",
+                startingSuggestions()
+            )
+        }
+        val speech = TurtleAiGemini.speak(toSay.take(SPEAK_MAX_CHARS))
+            ?: return Reply(shell.speechFailed, startingSuggestions())
+        val file = TurtleAiFiles.save(speech.bytes, speech.mimeType, "speech")
+            ?: return Reply(shell.speechFailed, startingSuggestions())
+        val voice = TurtleAiGemini.voiceName()
+        return Reply(
+            "Ready - " + TurtleAiModels.label(speech.modelId) + " reading it in voice " + voice +
+                ".\n\n\"" + toSay.take(180).trim() + if (toSay.length > 180) "\u2026\"" else "\"" +
+                "\n\nSaved as " + file.name + " in the launcher's TurtleAI folder.",
+            listOf("Read it aloud again", "Draw a Minecraft wallpaper at sunset"),
+            mediaPath = file.absolutePath,
+            mediaLabel = "Play the audio"
+        )
+    }
+
+    /**
+     * Transcribes a recording the user handed to the launcher (Android share sheet ->
+     * ShareReceiverActivity -> AiChatFragment). Public because it is an entry point of its own,
+     * the same way [analyzeSharedLog] is.
+     */
+    @JvmStatic
+    fun transcribeFile(context: Context, file: java.io.File): Reply = transcribeReply(file.absolutePath)
+
+    /** Turns an audio file into text. */
+    private fun transcribeReply(path: String): Reply {
+        if (path.isBlank()) {
+            return Reply(
+                "Point me at an audio file - /transcribe <path> - or share a recording with " +
+                    "the launcher and I'll transcribe it.",
+                startingSuggestions()
+            )
+        }
+        val file = java.io.File(path)
+        if (!file.isFile) {
+            return Reply("I can't find a file at \"" + path + "\".", startingSuggestions())
+        }
+        if (file.length() > TRANSCRIBE_MAX_BYTES) {
+            return Reply(
+                "That recording is " + (file.length() / (1024 * 1024)) +
+                    "MB - too big to send. Split it and try again.",
+                startingSuggestions()
+            )
+        }
+        val bytes = runCatching { file.readBytes() }.getOrNull()
+            ?: return Reply("I couldn't read \"" + file.name + "\".", startingSuggestions())
+        val text = TurtleAiGemini.transcribe(bytes, TurtleAiFiles.mimeTypeOf(file))
+            ?: return Reply(
+                TurtleAiLanguage.shell(TurtleAiLanguage.ENGLISH).speechFailed,
+                startingSuggestions()
+            )
+        return Reply(
+            "Transcript of " + file.name + ":\n\n" + text,
+            listOf("Summarize the transcript", "Speak it back")
+        )
+    }
+
+    /**
+     * The assistant's own last answer, for bare "/speak". Read from the saved transcript, so it
+     * works after a restart too - and skipped when it is a footer-only or image-only turn.
+     */
+    private fun lastAssistantAnswer(): String? = runCatching {
+        AssistantHistory.load().lastOrNull { !it.isUser && it.text.isNotBlank() }?.text
+    }.getOrNull()
+
+    /** Bare "/speak" means "read your last answer" - this marks the difference. */
+    private const val LAST_ANSWER_PLACEHOLDER = "\u0000last-answer\u0000"
+
+    /** Speech is billed by input length, and nobody wants a five-minute read-out by accident. */
+    private const val SPEAK_MAX_CHARS = 4000
+
+    /** Inline audio for transcription has a hard request-size ceiling; refuse politely first. */
+    private const val TRANSCRIBE_MAX_BYTES = 18L * 1024 * 1024
+
+    /** Code-shaped requests, routed to the coding model. */
+    private val CODING_MARKERS = listOf(
+        " code", "coding", "program", "script", "function", "method", "class ", "snippet",
+        "compile", "compiler", "stack trace", "exception", "refactor", "unit test", "test case",
+        "regex", "python", "javascript", "typescript", "kotlin", "java ", "c++", "rust ",
+        "bash", "shell command", "gradle", "json", "html", "css", "sql", "yaml", "xml",
+        "implement ", "algorithm", "pseudo", "api call", "endpoint", "parse ", "mod code",
+        "mixins", "fabric api", "neoforge", "compile error", "error log"
+    )
+
+    /** Requests that need careful thinking rather than a quick answer. */
+    private val REASONING_MARKERS = listOf(
+        "calculate", "compute", "how much", "how many", "convert ", "percentage", "average",
+        "sum of", "multiply", "divide", "equation", "formula", "probability", "estimate the",
+        "in mib", "in gib", "per tick", "why does", "why is", "why did", "root cause",
+        "diagnose", "plan ", "strategy", "compare ", "trade-off", "tradeoff", "which is better",
+        "optimi", "benchmark"
+    )
+
+    /** Ways of asking for a video, mirroring the image markers. */
+    private val VIDEO_MARKERS = listOf(
+        "make a video of ", "make me a video of ", "make a video ", "generate a video of ",
+        "generate video of ", "create a video of ", "create a video ", "render a video of ",
+        "animate "
+    )
+
+    /**
+     * Phrases that open a request for a picture. Tight on purpose: "image of a shader" is a
+     * question, "draw me a shader" is a job.
+     */
+    private val DRAW_MARKERS = listOf(
+        "draw me ", "draw a ", "draw an ", "draw the ", "draw ",
+        "generate an image of ", "generate image of ", "generate a picture of ",
+        "create an image of ", "create a picture of ", "make an image of ",
+        "make a picture of ", "make me an image of ", "paint me ", "paint a ",
+        "imagine a picture of "
+    )
+
+    /**
+     * Phrases that mean "produce something for me", checked against the normalised message.
+     * Kept short and specific on purpose: every entry here is a case where the rule engine
+     * would otherwise answer a request for work with a topic blurb.
+     */
+    private val GENERAL_TASK_MARKERS = listOf(
+        // writing
+        "write ", "writing ", "draft ", "compose ", "rewrite ", "reword ", "proofread ",
+        "summarize ", "summarise ", "translate ", "explain in ", "make a list", "write me ",
+        "essay", "poem", "email", "cover letter", "readme", "changelog", "release notes",
+        "documentation for", "guide for", "guide to writing",
+        // code
+        " code", "coding", "program ", "script ", "function ", "method ", "class ", "snippet",
+        "compile", "debug ", "stack trace", "refactor", "unit test", "test case", "regex",
+        "python", "javascript", "typescript", "kotlin code", "java code", "c++", "rust ",
+        "bash ", "shell command", "gradle", "json", "html", "css", "sql", "yaml", "xml",
+        "implement ", "algorithm", "pseudo", "api call", "endpoint for", "parse ",
+        // calculation
+        "calculate", "compute ", "how much is", "how many is", "convert ", "percentage",
+        "average", "sum of", "multiply", "divide ", "equation", "formula", "probability",
+        "how long will", "how much does", "estimate the", "in mib", "in gib", "per tick"
+    )
+
+    /** A finished assistant turn: the text to show plus optional suggestion chips. */
+    data class Reply(
+        val text: String,
+        val suggestions: List<String> = emptyList(),
+        /** Absolute path of an image this turn produced, when it produced one (see /image). */
+        val imagePath: String? = null,
+        /** Absolute path of another generated file (video, speech) and what to call it in the
+         *  chat - images get their own slot because the chat renders them inline. */
+        val mediaPath: String? = null,
+        val mediaLabel: String? = null
+    )
+
+    /**
+     * First message shown when a conversation starts - in the launcher's language, so the
+     * assistant speaks the user's language from the very first line (see [TurtleAiLanguage]).
+     */
     @JvmStatic
     fun greeting(context: Context): Reply {
-        val appName = runCatching { InfoDistributor.APP_NAME }.getOrDefault("TurtleLauncher")
+        val shell = TurtleAiLanguage.shell(TurtleAiLanguage.resolve(context))
         return Reply(
-            "Hi! I'm the $appName assistant. I run entirely on this device - no account, " +
-                "no API key, no internet needed.\n\n" +
-                "Ask me about renderers, crashes, memory, controls, mods, skins, accounts, " +
-                "friends/LAN play, or type /status for a summary of this device and your " +
-                "current setup.\n\n" +
-                "You can also share a game log with me: use Android's share menu on any " +
-                "log file or log text and pick this launcher - I'll read it and tell you " +
-                "what went wrong.\n\n" +
-                "I only know about this launcher, so if I can't help I'll say so rather " +
-                "than guess.",
+            shell.greeting,
             listOf("Status", "Best renderer?", "Why did my game crash?", "Not enough RAM?")
         )
     }
@@ -59,13 +253,27 @@ object TurtleAssistant {
     @JvmStatic
     fun startingSuggestions(): List<String> = listOf(
         "Status", "Best renderer?", "Why did my game crash?", "FPS is low",
-        "How do I install mods?", "Controls", "Friends / LAN"
+        "How do I install mods?", "Draw a Minecraft wallpaper"
     )
 
+    /**
+     * Answers [input]. [history] is the earlier part of the conversation, oldest first, used
+     * only for the cloud brain: without it a follow-up ("make it faster", "now in Python") is
+     * an unanswerable message, because the subject of the question is in the previous turn.
+     * The on-device engine ignores it - its answers never depend on context.
+     */
     @JvmStatic
-    fun respond(context: Context, input: String): Reply {
+    fun respond(
+        context: Context,
+        input: String,
+        history: List<TurtleAiGemini.Exchange> = emptyList()
+    ): Reply {
         val raw = input.trim()
-        if (raw.isEmpty()) return Reply("Type a question, or tap one of the suggestions.")
+        // The language this message should be answered in: what the user actually wrote in,
+        // falling back to the launcher/device language. See TurtleAiLanguage.
+        val language = TurtleAiLanguage.replyLanguage(context, raw)
+        val shell = TurtleAiLanguage.shell(language)
+        if (raw.isEmpty()) return Reply("Type a question, or tap one of the suggestions.", startingSuggestions())
 
         // Slash-commands: explicit, so they always win over keyword matching.
         when (raw.lowercase(Locale.ROOT)) {
@@ -75,22 +283,329 @@ object TurtleAssistant {
             "/renderer", "/renderers" -> return topicReply(context, "renderer")
             "/tips" -> return Reply(tipsAnswer(context), listOf("Best renderer?", "Not enough RAM?"))
             "/about" -> return Reply(aboutAnswer(context))
+            "/language", "/lang" -> return languageReply(context, language)
+            "/models", "/model" -> return modelsReply()
         }
+
+        // Generation commands. An explicit command always runs (typing it *is* the consent);
+        // an unmistakable "draw me ..." is treated the same way while the brain is on.
+        val imagePrompt = imageRequest(raw)
+        if (imagePrompt != null) return imageReply(imagePrompt, shell)
+        videoRequest(raw)?.let { return videoReply(it) }
+        speakRequest(raw)?.let { return speakReply(context, it) }
+        transcribeRequest(raw)?.let { return transcribeReply(it) }
 
         val normalized = normalize(raw)
         val scored = topics.map { it to score(normalized, it.keywords) }
             .sortedWith(compareByDescending<Pair<Topic, Int>> { it.second }.thenBy { it.first.id })
         val best = scored.firstOrNull()
+        // Same rule as before: a very weak match (one short keyword) is not an answer.
+        val matchedTopic = best?.takeIf { it.second >= 2 }?.first
 
-        if (best == null || best.second <= 0) {
-            return Reply(unknownAnswer(raw), startingSuggestions())
+        val brainReady = TurtleAiGemini.isConfigured()
+        // Which model chain this message should use - code goes to the coding model, hard
+        // problems to the reasoning one, everything else to the general one.
+        val task = taskFor(raw)
+
+        // Three things send a message to the brain instead of the rule engine:
+        //  - it is written in another language (the local engine only answers in English);
+        //  - nothing in the topic table matches it;
+        //  - it asks for something to be *produced* - code, a calculation, a piece of writing.
+        //    Keyword matching is the wrong tool for those: "write a Fabric mod that adds a
+        //    block" contains the word "fabric", so the mod topic would happily answer a
+        //    request for code with an explanation about mods. When a topic did match, its
+        //    answer is still passed along as authoritative launcher context, so the model
+        //    writes the code and gets the launcher facts right at the same time.
+        val generalTask = looksLikeGeneralTask(raw)
+        if (brainReady && (!TurtleAiLanguage.isEnglish(language) || matchedTopic == null || generalTask)) {
+            return brainReply(
+                context = context,
+                question = raw,
+                language = language,
+                shell = shell,
+                localAnswer = matchedTopic?.let { safeAnswer(context, it) },
+                suggestions = matchedTopic?.followUps ?: startingSuggestions(),
+                history = history,
+                task = task
+            )
         }
-        // A very weak match (a single short keyword) is not worth presenting as an answer -
-        // better to say "I don't know" and list what I do know.
-        if (best.second < 2) {
-            return Reply(unknownAnswer(raw), startingSuggestions())
+
+        if (matchedTopic != null) {
+            val answer = safeAnswer(context, matchedTopic)
+            val text = if (TurtleAiLanguage.isEnglish(language)) answer else answer + "\n\n" + shell.englishOnly
+            return Reply(text, matchedTopic.followUps)
         }
-        return Reply(safeAnswer(context, best.first), best.first.followUps)
+
+        // Nothing local and no brain: attributed web results are the honest answer, if the
+        // user turned search on.
+        if (TurtleAiWebSearch.isEnabled(context)) return searchReply(context, raw, language, shell)
+
+        return Reply(unknownAnswer(raw, shell), startingSuggestions())
+    }
+
+    /** Live answer for "/language": what the assistant is speaking, and why. */
+    private fun languageReply(context: Context, language: String): Reply {
+        val setting = runCatching { AllSettings.aiLanguage.getValue() }
+            .getOrDefault(TurtleAiLanguage.AUTO)
+        val device = TurtleAiLanguage.deviceLanguage(context)
+        val brain = TurtleAiGemini.isConfigured()
+        val search = TurtleAiGemini.searchEnabled()
+        return Reply(
+            buildString {
+                append("Language: ").append(TurtleAiLanguage.displayName(language))
+                    .append(" (").append(language).append(")\n")
+                append("Launcher/device language: ").append(TurtleAiLanguage.displayName(device))
+                    .append(" (").append(device).append(")\n")
+                append("Setting: ").append(
+                    if (setting == TurtleAiLanguage.AUTO) "Automatic (device language)"
+                    else TurtleAiLanguage.displayName(setting)
+                ).append('\n')
+                append("Offline answers: English only\n")
+                append("AI brain (other languages, open questions): ")
+                    .append(
+                        if (brain) "on (" + TurtleAiModels.label(TurtleAiModels.primary(TurtleAiModels.Task.CHAT)) + ")\n"
+                        else "off - Settings -> Experimental -> \"Assistant: use Gemini\"\n"
+                    )
+                append("Web search: ")
+                    .append(if (search) "on (Google Search grounding)\n" else "off - Settings -> Experimental -> \"Assistant: search the internet\"\n")
+                append("\nI always reply in the language you write in when the AI brain is on.")
+            },
+            listOf("Help", "Status")
+        )
+    }
+
+    /**
+     * Routes a question to Gemini, handing it the launcher's own answer as authoritative
+     * context when the rule engine had one and turning on Google Search grounding when the
+     * user asked for search. If the call fails it falls back to the keyless search providers
+     * (raw, attributed results), and only then to the localized "couldn't reach the service"
+     * line - never to a made-up answer.
+     */
+    private fun brainReply(
+        context: Context,
+        question: String,
+        language: String,
+        shell: TurtleAiLanguage.Shell,
+        localAnswer: String?,
+        suggestions: List<String>,
+        history: List<TurtleAiGemini.Exchange>,
+        task: TurtleAiModels.Task
+    ): Reply {
+        val search = TurtleAiGemini.searchEnabled()
+        val answer = TurtleAiGemini.ask(
+            question = question,
+            languageTag = language,
+            localAnswer = localAnswer,
+            deviceFacts = liveDeviceFacts(context),
+            history = history,
+            useSearch = search,
+            task = task
+        )
+        if (answer != null) {
+            return Reply(
+                answer.text + sourceFooter(answer.sources, shell) +
+                    modelFooter(answer.modelId, task, shell),
+                suggestions
+            )
+        }
+
+        // Gemini failed. If the user also switched on search, the keyless providers are still
+        // worth a try: attributed results beat "couldn't reach the service".
+        if (search) {
+            when (val outcome = TurtleAiWebSearch.search(context, question, language)) {
+                is TurtleAiWebSearch.Outcome.Ok ->
+                    return Reply(
+                        TurtleAiWebSearch.formatForChat(outcome.results, shell, question) +
+                            "\n\n" + shell.requestFailed,
+                        suggestions
+                    )
+                else -> Unit
+            }
+        }
+        return Reply(shell.requestFailed + "\n\n" + shell.offlineHint, suggestions)
+    }
+
+    /**
+     * The sources Google Search grounding actually used, appended under the answer. These
+     * come from the API's grounding metadata, not from the model's text: a URL the model
+     * typed itself could be hallucinated, a grounding chunk cannot.
+     */
+    private fun sourceFooter(
+        sources: List<TurtleAiGemini.Source>,
+        shell: TurtleAiLanguage.Shell
+    ): String =
+        if (sources.isEmpty()) "" else "\n\n" + shell.sources + ":\n" +
+            sources.joinToString("\n") { "\u2022 " + it.url }
+
+    /**
+     * The prompt for image generation, or null when this message is not a request for an
+     * image. Two ways in: the explicit "/image ..." command, and an unmistakable
+     * "draw me a creeper" - which is only honoured while the AI brain is switched on, so a
+     * user who turned the cloud off never gets a surprise upload. The phrase itself is
+     * stripped, because image models take a description, not a chat message.
+     */
+    private fun imageRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT)
+        if (lower.startsWith("/image ") || lower.startsWith("/draw ")) {
+            return raw.substringAfter(' ').trim()
+        }
+        if (lower == "/image" || lower == "/draw") return ""
+        if (!TurtleAiGemini.isConfigured()) return null
+        for (marker in DRAW_MARKERS) {
+            if (lower.startsWith(marker)) {
+                val prompt = raw.substring(marker.length).trim()
+                if (prompt.isNotEmpty()) return prompt
+            }
+        }
+        return null
+    }
+
+    /**
+     * Which chain a question belongs to. Deliberately coarse: the *features* that are not chat
+     * (the skin filter, /image, /video, /speak, /transcribe, the live session) pick their own
+     * task, and a chat message only has to choose between code, hard problems and everything
+     * else.
+     */
+    private fun taskFor(raw: String): TurtleAiModels.Task {
+        val text = " " + normalize(raw).replace(Regex("\\s+"), " ").trim() + " "
+        if (CODING_MARKERS.any { text.contains(it) }) return TurtleAiModels.Task.CODING
+        if (REASONING_MARKERS.any { text.contains(it) }) return TurtleAiModels.Task.REASONING
+        return TurtleAiModels.Task.CHAT
+    }
+
+    /**
+     * The model that answered, in one line under the answer. Worth the two lines it costs:
+     * the user can see which TurtleAI model spent their quota, and can tell when a fallback
+     * answered because the first choice ran out.
+     */
+    private fun modelFooter(
+        modelId: String,
+        task: TurtleAiModels.Task,
+        shell: TurtleAiLanguage.Shell
+    ): String {
+        if (modelId.isBlank()) return ""
+        val label = TurtleAiModels.label(modelId)
+        val preferred = TurtleAiModels.preferred(task)
+        val fellBack = preferred.isNotEmpty() && preferred != modelId
+        return "\n\n\u2014 " + label + if (fellBack) " " + shell.fallbackNote else ""
+    }
+
+    /** "/model": what each job is using, and which models are resting after a failure. */
+    private fun modelsReply(): Reply {
+        val cooling = TurtleAiModels.coolingSummary()
+        val lines = TurtleAiModels.Task.values().joinToString("\n") { task ->
+            "\u2022 " + task.settingLabel + ": " +
+                TurtleAiModels.label(TurtleAiModels.primary(task)) +
+                " (" + task.blurb + ")"
+        }
+        val body = buildString {
+            append("TurtleAI models in use:\n").append(lines)
+            append("\n\nFallback: each job tries its model, then the next cheapest one ")
+            append("that can do the same work - so a model that runs out of quota no longer ")
+            append("takes the feature down with it.")
+            if (cooling.isNotBlank()) {
+                append("\n\nResting after a failure: ").append(cooling)
+            }
+            append("\n\nChange any of these in Settings \u2192 Experimental \u2192 AI models.")
+        }
+        return Reply(body, startingSuggestions())
+    }
+
+    /**
+     * The prompt for video generation, or null when this message is not asking for a video.
+     * "/video" always works; a spoken-style "make me a video of ..." only while the brain is on.
+     */
+    private fun videoRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT)
+        if (lower.startsWith("/video ")) return raw.substringAfter(' ').trim()
+        if (lower == "/video") return ""
+        if (!TurtleAiGemini.isConfigured()) return null
+        for (marker in VIDEO_MARKERS) {
+            if (lower.startsWith(marker)) {
+                val prompt = raw.substring(marker.length).trim()
+                if (prompt.isNotEmpty()) return prompt
+            }
+        }
+        return null
+    }
+
+    /**
+     * "/speak" with text, or a request to read the last answer aloud. The friendly phrasings
+     * are matched as whole messages (never a prefix), so "read it aloud and also explain the
+     * renderer part" is a normal question rather than an accidental read-out.
+     */
+    private fun speakRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT).trim()
+        if (lower.startsWith("/speak ")) return raw.substringAfter(' ').trim()
+        if (lower == "/speak" || lower == "/read") return LAST_ANSWER_PLACEHOLDER
+        if (lower in SPEAK_PHRASES) return LAST_ANSWER_PLACEHOLDER
+        return null
+    }
+
+    /** Whole-message ways of asking for a read-out. */
+    private val SPEAK_PHRASES = setOf(
+        "read it aloud", "read that aloud", "read it aloud again", "read that aloud again",
+        "read it out loud", "read that out loud", "read it to me", "read that to me",
+        "read it again", "speak it back", "say it out loud", "read your last answer",
+        "read your answer aloud"
+    )
+
+    /**
+     * "/transcribe <path>" - turns a recording into text. The path is what the launcher's file
+     * browser shows; a shared audio file arrives through the same function (see
+     * AiChatFragment), which is the way most people will use this.
+     */
+    private fun transcribeRequest(raw: String): String? {
+        val lower = raw.lowercase(Locale.ROOT)
+        if (lower.startsWith("/transcribe ")) return raw.substringAfter(' ').trim()
+        if (lower == "/transcribe") return ""
+        return null
+    }
+
+    /**
+     * Runs one image generation and files the result next to the app's own data. The reply
+     * carries the file path, which the chat screen renders as a picture (see ChatMessage).
+     */
+    private fun imageReply(prompt: String, shell: TurtleAiLanguage.Shell): Reply {
+        if (prompt.isBlank()) {
+            return Reply(
+                "Tell me what to draw, for example: /image a creeper watching a sunset",
+                startingSuggestions()
+            )
+        }
+        if (TurtleAiGemini.apiKey().isEmpty()) {
+            return Reply(shell.imageFailed, startingSuggestions())
+        }
+        val image = TurtleAiGemini.generateImage(prompt)
+            ?: return Reply(shell.imageFailed, startingSuggestions())
+        val file = TurtleAiFiles.save(image.bytes, image.mimeType, "image")
+            ?: return Reply(shell.imageFailed, startingSuggestions())
+        val caption = image.caption.ifBlank { "Here's the image you asked for." }
+        return Reply(
+            caption + "\n\nMade with " + TurtleAiModels.label(image.modelId) +
+                ", saved as " + file.name + " in the launcher's TurtleAI folder.",
+            listOf("Draw a Minecraft wallpaper at sunset"),
+            file.absolutePath
+        )
+    }
+
+    /**
+     * No brain configured, but web search is on. Results are shown attributed and unparaphrased:
+     * without a model to synthesize them, a paraphrase would be the assistant guessing.
+     */
+    private fun searchReply(
+        context: Context,
+        question: String,
+        language: String,
+        shell: TurtleAiLanguage.Shell
+    ): Reply = when (val outcome = TurtleAiWebSearch.search(context, question, language)) {
+        is TurtleAiWebSearch.Outcome.Ok ->
+            Reply(TurtleAiWebSearch.formatForChat(outcome.results, shell, question), startingSuggestions())
+        // Failed = the service was unreachable (and `reason` is a technical English detail, the
+        // same way an error message from the launcher would be).
+        is TurtleAiWebSearch.Outcome.Failed ->
+            Reply(shell.requestFailed + "\n\n(" + outcome.reason + ")", startingSuggestions())
+        else -> Reply(shell.searchNone, startingSuggestions())
     }
 
     /**
@@ -142,17 +657,39 @@ object TurtleAssistant {
             "• Renderers - which one to use, how to change it, shader support\n" +
             "• Crashes - read and explain your last game log\n" +
             "• Memory / RAM - how much to allocate on this device\n" +
+            "• Memory before launch - what the launcher releases for the game\n" +
             "• Performance - FPS, resolution scale, FPS boost flags\n" +
+            "• Renderer overhead / GL state - what can and can't be tuned per frame\n" +
             "• Mods, modpacks, resource packs, shaders, worlds\n" +
             "• Controls, custom buttons, gamepads\n" +
             "• Skins and capes\n" +
             "• Accounts and login\n" +
             "• Game versions, snapshots, LWJGL compatibility\n" +
             "• Friends / LAN play\n" +
-            "• Storage, files, screenshots and recording\n\n" +
-            "Commands: /status /diagnose /renderer /tips /about",
+            "• Storage, files, screenshots and recording\n" +
+            "• Writing, code, maths and general questions (with Gemini)\n" +
+            "• Drawing - /image a creeper at sunset\n" +
+            "• Video - /video a creeper walking through a flower forest\n" +
+            "• Speaking - /speak (reads my last answer), /speak <text>\n" +
+            "• Voice conversation - the microphone button in the chat header\n" +
+            "• Transcribing - /transcribe <path>, or share a recording with the launcher\n\n" +
+            "Commands: /status /diagnose /renderer /tips /language /image /video /speak " +
+            "/models /about",
         startingSuggestions()
     )
+
+    /**
+     * True when the message asks for something to be written, calculated, converted or
+     * explained as a general skill rather than answered from the launcher's knowledge base.
+     *
+     * Deliberately about *intent words*, not topics: a plain keyword match would fire on
+     * "explain the renderer" (which the rule engine answers better) while missing "turn that
+     * into Java". The words below are the ones a request for produced work actually uses.
+     */
+    private fun looksLikeGeneralTask(raw: String): Boolean {
+        val text = " " + normalize(raw).replace(Regex("\\s+"), " ").trim() + " "
+        return GENERAL_TASK_MARKERS.any { text.contains(it) }
+    }
 
     /** Never let one broken live-state read take the whole assistant down. */
     private fun safeAnswer(context: Context, topic: Topic): String =
@@ -177,14 +714,52 @@ object TurtleAssistant {
         return total
     }
 
-    private fun unknownAnswer(input: String): String {
+    private fun unknownAnswer(input: String, shell: TurtleAiLanguage.Shell): String {
         val shown = if (input.length > 60) input.take(60) + "…" else input
-        return "I don't have an answer for \"$shown\".\n\n" +
-            "I only know about this launcher - I'm not connected to the internet and I " +
-            "won't make something up. Try one of these instead, or /help for the full list."
+        // shell.unknown carries the "%s"; the wording (and the promise not to make things up)
+        // is in the user's language where we ship one, English otherwise.
+        return String.format(shell.unknown, shown) + "\n\n" + shell.offlineHint
     }
 
     // ── Live-state answers ──────────────────────────────────────────────────────────
+
+    /**
+     * The device facts a model cannot know and must never guess: what this machine has, what
+     * the launcher is set to, and what is currently in use. Sent with every cloud answer so a
+     * question like "how much RAM can I put on this phone" or "is 4GB enough" starts from real
+     * numbers instead of a plausible-sounding invention. Deliberately English and terse: it is
+     * machine context handed to the model, not text the user reads - the answer itself comes
+     * back in the user's language.
+     */
+    private fun liveDeviceFacts(context: Context): String {
+        val totalMb = runCatching { Tools.getTotalDeviceMemory(context) }.getOrDefault(0)
+        val ramMb = runCatching { AllSettings.ramAllocation.value.getValue() }.getOrDefault(0)
+        val facts = mutableListOf(
+            "Launcher: " + runCatching { InfoDistributor.APP_NAME }.getOrDefault("TurtleLauncher") +
+                " v" + runCatching { ZHTools.getVersionName() }.getOrDefault("?"),
+            "Device: " + Build.MANUFACTURER + " " + Build.MODEL +
+                ", Android API " + Build.VERSION.SDK_INT +
+                ", ABI " + (Build.SUPPORTED_ABIS.firstOrNull() ?: "?"),
+            "Renderer in use: " + currentRendererName(context)
+        )
+        if (totalMb > 0) {
+            facts.add(
+                "RAM: " + totalMb + "MB total on the device, " + ramMb +
+                    "MB currently allocated to Minecraft"
+            )
+        } else {
+            facts.add("RAM allocated to Minecraft: " + ramMb + "MB")
+        }
+        freeStorageGb()?.let { facts.add("Free storage on the game drive: " + it + "GB") }
+        val versions = runCatching { VersionsManager.getVersions() }.getOrDefault(emptyList())
+        facts.add("Installed game versions: " + versions.size +
+            (runCatching { VersionsManager.getCurrentVersion()?.getVersionName() }.getOrNull()
+                ?.let { " (selected: " + it + ")" } ?: " (none selected)"))
+        runCatching { AllSettings.aiLanguage.getValue() }.getOrDefault("")
+            .takeIf { it.isNotBlank() && it != TurtleAiLanguage.AUTO }
+            ?.let { facts.add("Launcher language setting: " + it) }
+        return facts.joinToString("\n")
+    }
 
     private fun statusAnswer(context: Context): String {
         val deviceTotalMb = runCatching { Tools.getTotalDeviceMemory(context) }.getOrDefault(0)
@@ -239,6 +814,21 @@ object TurtleAssistant {
         }
     }.getOrDefault("unknown")
 
+    /**
+     * Renderer id the launcher would actually launch with right now - the same resolution
+     * [currentRendererName] does, without needing [Renderers.getCurrentRenderer] (which
+     * throws until setCurrentRenderer has run).
+     */
+    private fun currentRendererId(context: Context): String? = runCatching {
+        val wanted = AllSettings.renderer.getValue()
+        Renderers.init(false)
+        val compatible = Renderers.getCompatibleRenderers(context).second
+        (compatible.firstOrNull { it.getUniqueIdentifier() == wanted } ?: compatible.firstOrNull())
+            ?.getRendererId()
+    }.getOrNull()
+
+    private fun onOff(value: Boolean): String = if (value) "on" else "off"
+
     private fun freeStorageGb(): String? = runCatching {
         val path = PathManager.DIR_GAME_HOME
         if (path.isBlank()) return@runCatching null
@@ -270,7 +860,7 @@ object TurtleAssistant {
                     "What usually helps next:\n" +
                     "• Share Logs (home screen rail) - uploads the log so someone can read the raw output\n" +
                     "• Settings → Experimental → \"AI crash help\" - optional, sends the log tail to " +
-                    "OpenAI with YOUR OWN key, off by default\n" +
+                    "Google's Gemini API (your key, or the one built into the app), off by default\n" +
                     "• Try a different renderer for this version (Settings → Video → Renderer)",
                 listOf("Best renderer?", "Status")
             )
@@ -295,6 +885,44 @@ object TurtleAssistant {
             "• Ask me \"why did my game crash?\" after a crash - I read the log locally"
     }
 
+    /**
+     * What the assistant is, told from the current configuration rather than from what it was
+     * originally built as. Privacy questions ("do you send my data?") land on this topic, so it
+     * must not claim that nothing ever leaves the device while the user has the AI brain or
+     * internet search switched on - and it must not claim those are running when they aren't.
+     */
+    private fun assistantSelfDescription(context: Context): String {
+        val brain = TurtleAiGemini.isConfigured()
+        val search = TurtleAiGemini.searchEnabled()
+        val model = TurtleAiModels.label(TurtleAiModels.primary(TurtleAiModels.Task.CHAT))
+
+        return buildString {
+            append("I'm the launcher's built-in assistant. My answers about this launcher come ")
+            append("from a knowledge base plus live readings from this device, so those need no ")
+            append("key and no internet - and I don't guess: if something isn't in that knowledge ")
+            append("base, I say so.\n\n")
+
+            if (brain) {
+                append("Gemini is on ($model), so open questions - writing, code, maths, ")
+                append("anything outside the launcher - go to Google with the context I gather ")
+                append("here: version, renderer, RAM, log excerpts.\n\n")
+            }
+            if (search) {
+                append("Internet search is on: answers are grounded in Google Search, and I show ")
+                append("the pages the search actually used underneath the answer.\n\n")
+            }
+            if (!brain && !search) {
+                append("The Gemini brain and internet search are both off, so nothing leaves this ")
+                append("device. Both are in Settings \u2192 Experimental.\n\n")
+            } else {
+                append("Both are switchable in Settings \u2192 Experimental.\n\n")
+            }
+
+            append("Image generation is available too - /image <what you want> - and it always ")
+            append("goes to Google, since no phone can draw locally.")
+        }
+    }
+
     private fun aboutAnswer(context: Context): String {
         val versions = runCatching { VersionsManager.getVersions() }.getOrDefault(emptyList())
         return "TurtleLauncher is a TurtleLauncher Minecraft: Java Edition " +
@@ -303,8 +931,19 @@ object TurtleAssistant {
             "(code ${runCatching { ZHTools.getVersionCode() }.getOrDefault(0)})\n" +
             "• Installed game versions: ${versions.size}\n" +
             "• Renderer in use: ${currentRendererName(context)}\n\n" +
-            "This assistant is part of the launcher itself and works offline - it doesn't " +
-            "call any AI service."
+            "This assistant is part of the launcher itself. " + when {
+                !TurtleAiGemini.isConfigured() && !TurtleAiWebSearch.isEnabled(context) ->
+                    "It answers on-device - it doesn't call any AI service."
+                TurtleAiGemini.isConfigured() && TurtleAiGemini.searchEnabled() ->
+                    "It answers on-device for launcher questions; the Gemini brain and Google " +
+                        "Search grounding you enabled answer the rest - see Settings \u2192 Experimental."
+                TurtleAiGemini.isConfigured() ->
+                    "It answers on-device for launcher questions; the Gemini brain you enabled " +
+                        "handles open questions, writing and code - see Settings \u2192 Experimental."
+                else ->
+                    "It answers on-device for launcher questions; the internet search you " +
+                        "enabled looks the rest up - see Settings \u2192 Experimental."
+            }
     }
 
     private val topics: List<Topic> = listOf(
@@ -393,6 +1032,59 @@ object TurtleAssistant {
             },
             followUps = listOf("FPS is low", "Status")
         ),
+        // The launcher-side half of memory: what the launcher itself releases before the game
+        // starts (feature/turtle/BackgroundServiceManager.kt), and the policy to recommend when
+        // launcher and game compete for RAM. The full spec lives in
+        // TurtleAiPrompt.LAUNCHER_SIDE_MEMORY_MANAGEMENT.
+        Topic(
+            id = "memory_prelaunch",
+            label = "Memory before launch",
+            keywords = listOf(
+                // Multi-word keys on purpose: the plain words ("memory", "ram", "cache")
+                // belong to the RAM / storage topics, and a tie is resolved alphabetically -
+                // which would hand these questions to those topics instead of this one.
+                "before launch", "before launching", "launcher memory", "launcher cache",
+                "free ram", "free up ram", "background apps", "background work",
+                "close apps", "flush caches", "memory before"
+            ),
+            answer = { context ->
+                val deviceTotalMb = runCatching { Tools.getTotalDeviceMemory(context) }.getOrDefault(0)
+                val ramMb = runCatching { AllSettings.ramAllocation.value.getValue() }.getOrDefault(0)
+                val cleanupOn = runCatching { AllSettings.backgroundServiceOptimization.getValue() }
+                    .getOrDefault(false)
+                val monitorOn = runCatching { AllSettings.memoryPressureMonitor.getValue() }
+                    .getOrDefault(false)
+                val prefetchOn = runCatching { AllSettings.backgroundAssetPrefetch.getValue() }
+                    .getOrDefault(false)
+                buildString {
+                    append("Before Minecraft starts, the launcher releases its own memory and gets " +
+                        "out of the way - every MB it holds is one Android can't give the game JVM.\n\n")
+                    append("What happens at launch:\n")
+                    append("• Image/bitmap caches are dropped (cover art, screenshots, launcher " +
+                        "backgrounds) - they re-decode on demand, nothing on disk is touched.\n")
+                    append("• The in-memory download/search caches are dropped - they refill the " +
+                        "next time you open the Download screen.\n")
+                    append("• Background work is held back for the whole session: asset prefetching " +
+                        "and the plugin-update check skip themselves, and the launcher's task " +
+                        "threads drop to background priority.\n")
+                    append("• Launcher animations pause during the session and resume when you " +
+                        "come back.\n")
+                    append("• No world, save, mod, log or shader-cache file is deleted to make room.\n\n")
+                    append("On this device: ${deviceTotalMb}MB total RAM, ${ramMb}MB allocated to " +
+                        "Minecraft.\n")
+                    append("• Pre-launch cleanup (Settings → Experimental → Background Service " +
+                        "Optimization): " + onOff(cleanupOn) + "\n")
+                    append("• Memory pressure monitor (Settings → Phone Settings): " + onOff(monitorOn) + "\n")
+                    append("• Background asset prefetch: " + onOff(prefetchOn) + "\n\n")
+                    append("The rule that matters: keep the heap at roughly half the device total " +
+                        "or less, and leave 2GB+ for Android itself. If the launcher and the game " +
+                        "are fighting over RAM, a smaller heap helps and a bigger one makes it " +
+                        "worse - an oversized heap pushes the system into killing processes, " +
+                        "which looks exactly like a random crash. More RAM never adds FPS.")
+                }
+            },
+            followUps = listOf("Not enough RAM?", "FPS is low", "Status")
+        ),
         Topic(
             id = "performance",
             label = "FPS is low",
@@ -414,6 +1106,69 @@ object TurtleAssistant {
                 }
             },
             followUps = listOf("Best renderer?", "Not enough RAM?")
+        ),
+        // The per-frame half of performance: what the renderer/EGL layer can actually be told
+        // to do about GL state overhead, and what is renderer-internal. Rules come from
+        // TurtleAiPrompt.glStateRules() so this answer can't drift from the AI spec.
+        Topic(
+            id = "renderer_state",
+            label = "Renderer overhead / GL state",
+            keywords = listOf(
+                "gl state", "opengl state", "state change", "state changes", "redundant",
+                "draw call", "draw calls", "bottleneck", "overhead", "frame time", "frame times",
+                "jni batching", "object pooling", "buffer uploads", "readback", "glfinish"
+            ),
+            answer = { context ->
+                val rendererId = currentRendererId(context)
+                val isGl4es = rendererId == HolyGL4ESRenderer.ID
+                val shaderCache = runCatching { AllSettings.rendererShaderCacheEnabled.getValue() }
+                    .getOrDefault(false)
+                val forceVsync = runCatching { AllSettings.forceVsync.getValue() }.getOrDefault(false)
+                val adaptiveVsync = runCatching { AllSettings.adaptiveVsync.getValue() }.getOrDefault(false)
+                val vsyncInZink = runCatching { AllSettings.vsyncInZink.getValue() }.getOrDefault(false)
+                val lowLatency = runCatching { AllSettings.lowLatencyFrontBuffer.getValue() }
+                    .getOrDefault(false)
+                buildString {
+                    append("Current renderer: ${currentRendererName(context)}\n\n")
+                    append("Per-frame GL overhead is where a translated renderer loses time. " +
+                        "Here's what this launcher can actually tell it to do:\n")
+                    if (isGl4es) {
+                        append("• JNI batching (LIBGL_BATCH): " + onOff(
+                            runCatching { AllSettings.jniBatching.getValue() }.getOrDefault(false)
+                        ) + " - batches GL calls instead of one JNI crossing each\n")
+                        append("• Cached buffer references (LIBGL_USEVBO): " + onOff(
+                            runCatching { AllSettings.jniCachedReferences.getValue() }.getOrDefault(false)
+                        ) + " - keeps vertex data in VBOs instead of re-uploading client arrays\n")
+                        append("• Native object pooling (LIBGL_RECYCLEFBO): " + onOff(
+                            runCatching { AllSettings.nativeObjectPooling.getValue() }.getOrDefault(false)
+                        ) + " - reuses framebuffer objects instead of reallocating them\n")
+                        append("• Skip redundant texture copies (LIBGL_SKIPTEXCOPIES): " + onOff(
+                            runCatching { AllSettings.reducedJniCalls.getValue() }.getOrDefault(false)
+                        ) + " - drops a redundant copy on the texture upload path\n")
+                    } else {
+                        append("• The GL4ES state flags (JNI batching, cached buffer references, " +
+                            "native object pooling, skip redundant texture copies) do not apply " +
+                            "to this renderer - they only exist on the GL4ES path (Holy GL4ES). " +
+                            "The equivalent caching is internal to whatever renderer you're on.\n")
+                    }
+                    append("• Renderer shader cache: " + onOff(shaderCache) + " - persists compiled " +
+                        "program caches for Zink and the gallium-based renderers\n")
+                    append("• Swap/pacing: VSync " + onOff(forceVsync) + ", adaptive VSync " +
+                        onOff(adaptiveVsync) + ", Zink VSync " + onOff(vsyncInZink) + ", " +
+                        "low-latency front buffer " + onOff(lowLatency) + "\n\n")
+                    append("What is NOT a switch here - and I won't pretend otherwise: skipping " +
+                        "redundant state changes and texture binds, avoiding redundant clears, " +
+                        "and avoiding GPU readbacks are internal to the renderer and the game. " +
+                        "If one of those is the bottleneck, the lever is a different renderer, " +
+                        "not a setting.\n\n")
+                    append("If you're chasing stutter: check frame-time consistency first " +
+                        "(thermal throttling, GC pauses, other apps) - a 60 FPS average with " +
+                        "35ms spikes is not fixed by any of the above. Then change one flag at a " +
+                        "time and relaunch; the GL4ES flags trade speed for stability on some " +
+                        "devices.")
+                }
+            },
+            followUps = listOf("FPS is low", "Best renderer?", "Why did my game crash?")
         ),
         Topic(
             id = "mods",
@@ -624,16 +1379,7 @@ object TurtleAssistant {
                 "assistant", "ai", "chatgpt", "gpt", "chat bot", "are you", "who are you",
                 "what are you", "api key", "offline", "privacy", "do you send", "llm"
             ),
-            answer = {
-                "I'm the launcher's built-in assistant. I'm not a language model and I don't call any AI " +
-                    "service: everything I say comes from a knowledge base about this launcher plus live " +
-                    "readings from this device, so I work with no API key, no account and no internet.\n\n" +
-                "That also means I can't answer general questions, and I won't pretend to. If I don't know, " +
-                    "I say so.\n\n" +
-                "Two other features in this launcher DO talk to an AI service (crash help and the skin " +
-                    "filter, both in Settings → Experimental). They're off by default and need your own key - " +
-                    "nothing is sent anywhere unless you turn them on."
-            },
+            answer = { ctx -> assistantSelfDescription(ctx) },
             followUps = listOf("Help", "Status")
         ),
         Topic(

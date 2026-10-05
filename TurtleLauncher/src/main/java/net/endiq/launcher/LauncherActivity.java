@@ -111,6 +111,9 @@ public class LauncherActivity extends BaseActivity {
     public static final String EXTRA_OPEN_ASSISTANT = "open_assistant";
     public static final String EXTRA_SHARED_LOG_PATH = "shared_log_path";
 
+    /** Set when the share sheet handed the launcher a recording to transcribe. */
+    public static final String EXTRA_SHARED_AUDIO_PATH = "shared_audio_path";
+
     private final AnimPlayer noticeAnimPlayer = new AnimPlayer();
     public final ActivityResultLauncher<Object> modInstallerLauncher =
             registerForActivityResult(new OpenDocumentWithExtension("jar"), (uris) -> {
@@ -410,9 +413,11 @@ public class LauncherActivity extends BaseActivity {
     private void handleAssistantShortcut(Intent intent) {
         if (intent == null || !intent.getBooleanExtra(EXTRA_OPEN_ASSISTANT, false)) return;
         final String sharedLogPath = intent.getStringExtra(EXTRA_SHARED_LOG_PATH);
-        // Consume the flag so a configuration change/recreation can't reopen the Assistant.
+        final String sharedAudioPath = intent.getStringExtra(EXTRA_SHARED_AUDIO_PATH);
+        // Consume the flags so a configuration change/recreation can't reopen the Assistant.
         intent.removeExtra(EXTRA_OPEN_ASSISTANT);
         intent.removeExtra(EXTRA_SHARED_LOG_PATH);
+        intent.removeExtra(EXTRA_SHARED_AUDIO_PATH);
 
         // processFragment() only *commits* the main menu Fragment; wait a frame for it to
         // actually be attached before swapping on top of it.
@@ -420,9 +425,14 @@ public class LauncherActivity extends BaseActivity {
             Fragment currentFragment = getCurrentFragment();
             if (currentFragment == null) return;
             Bundle bundle = null;
-            if (sharedLogPath != null) {
+            if (sharedLogPath != null || sharedAudioPath != null) {
                 bundle = new Bundle();
-                bundle.putString(com.endiq.turtlelauncher.ui.fragment.AiChatFragment.ARG_SHARED_LOG_PATH, sharedLogPath);
+                if (sharedLogPath != null) {
+                    bundle.putString(com.endiq.turtlelauncher.ui.fragment.AiChatFragment.ARG_SHARED_LOG_PATH, sharedLogPath);
+                }
+                if (sharedAudioPath != null) {
+                    bundle.putString(com.endiq.turtlelauncher.ui.fragment.AiChatFragment.ARG_SHARED_AUDIO_PATH, sharedAudioPath);
+                }
             }
             ZHTools.swapFragmentWithAnim(currentFragment,
                 com.endiq.turtlelauncher.ui.fragment.AiChatFragment.class,

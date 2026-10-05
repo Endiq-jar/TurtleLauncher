@@ -33,7 +33,13 @@ object AssistantHistory {
                 val msgText = obj.get("text")?.takeIf { it.isJsonPrimitive }?.asString
                     ?: return@mapNotNull null
                 val isUser = obj.get("user")?.takeIf { it.isJsonPrimitive }?.asBoolean ?: false
-                ChatMessage(msgText, isUser)
+                val imagePath = obj.get("image")?.takeIf { it.isJsonPrimitive }?.asString
+                    ?.takeIf { it.isNotBlank() }
+                val mediaPath = obj.get("media")?.takeIf { it.isJsonPrimitive }?.asString
+                    ?.takeIf { it.isNotBlank() }
+                val mediaLabel = obj.get("mediaLabel")?.takeIf { it.isJsonPrimitive }?.asString
+                    ?.takeIf { it.isNotBlank() }
+                ChatMessage(msgText, isUser, imagePath, mediaPath, mediaLabel)
             }
         }.onFailure { e ->
             // A corrupt/partial file (process killed mid-write is the realistic case) must
@@ -53,6 +59,10 @@ object AssistantHistory {
                 val obj = JsonObject()
                 obj.addProperty("text", message.text)
                 obj.addProperty("user", message.isUser)
+                message.imagePath?.takeIf { it.isNotBlank() }?.let { obj.addProperty("image", it) }
+                message.mediaPath?.takeIf { it.isNotBlank() }?.let { obj.addProperty("media", it) }
+                message.mediaLabel?.takeIf { it.isNotBlank() }
+                    ?.let { obj.addProperty("mediaLabel", it) }
                 array.add(obj)
             }
             val file = historyFile()
@@ -61,11 +71,16 @@ object AssistantHistory {
         }.onFailure { e -> Logging.e(TAG, "Couldn't save assistant history", e) }
     }
 
+    /**
+     * Deletes the transcript *and* the images it produced: "clear conversation" has to mean
+     * the pictures go too, or the user cannot actually get rid of anything they generated.
+     */
     @JvmStatic
     fun clear() {
         runCatching {
             val file = historyFile()
             if (file.exists()) file.delete()
         }.onFailure { e -> Logging.e(TAG, "Couldn't clear assistant history", e) }
+        TurtleAiFiles.deleteAll()
     }
 }

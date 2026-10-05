@@ -1,20 +1,15 @@
 package com.endiq.turtlelauncher.feature.skin
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.endiq.turtlelauncher.feature.ai.TurtleAiGemini
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.utils.path.UrlManager
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.util.Base64
 import java.util.concurrent.TimeUnit
 
 internal object AiContentModerator {
 
-    private const val ENDPOINT = "https://api.openai.com/v1/chat/completions"
     private const val MAX_CACHE_ENTRIES = 500
 
     private const val PROMPT =
@@ -45,8 +40,9 @@ internal object AiContentModerator {
      */
     fun fetchAndCheck(cacheKey: String, imageUrl: String): Boolean? {
         if (!runCatching { AllSettings.aiSkinFilterEnabled.getValue() }.getOrDefault(false)) return null
-        val apiKey = runCatching { AllSettings.aiApiKey.getValue() }.getOrDefault("").trim()
-        if (apiKey.isEmpty()) return null
+        // No key (and none baked into the build) = the filter stays out of the way and every
+        // image is treated as unknown, exactly as if the feature were off.
+        if (TurtleAiGemini.apiKey().isEmpty()) return null
 
         synchronized(cache) { cache[cacheKey] }?.let { return it }
 
@@ -56,59 +52,32 @@ internal object AiContentModerator {
                 resp.body?.bytes()
             } ?: return@runCatching null
 
-            val model = runCatching { AllSettings.aiModel.getValue() }.getOrDefault("gpt-4o-mini")
-                .ifBlank { "gpt-4o-mini" }
-            val base64Image = Base64.getEncoder().encodeToString(imageBytes)
+            val replyText = TurtleAiGemini.askAboutImage(
+                prompt = PROMPT,
+                imageBytes = imageBytes,
+                mimeType = mimeTypeOf(imageUrl)
+            ) ?: return@runCatching null
 
-            val content = JsonArray().apply {
-                add(JsonObject().apply {
-                    addProperty("type", "text")
-                    addProperty("text", PROMPT)
-                })
-                add(JsonObject().apply {
-                    addProperty("type", "image_url")
-                    add("image_url", JsonObject().apply {
-                        addProperty("url", "data:image/png;base64,$base64Image")
-                    })
-                })
-            }
-            val messages = JsonArray().apply {
-                add(JsonObject().apply {
-                    addProperty("role", "user")
-                    add("content", content)
-                })
-            }
-            val requestBody = JsonObject().apply {
-                addProperty("model", model)
-                add("messages", messages)
-                addProperty("temperature", 0.0)
-                addProperty("max_tokens", 20)
-            }
-
-            val body = requestBody.toString().toRequestBody("application/json".toMediaType())
-            val request = UrlManager.createRequestBuilder(ENDPOINT, body)
-                .header("Authorization", "Bearer $apiKey")
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Logging.w("AiContentModerator", "Moderation request failed: HTTP ${response.code}")
-                    return@runCatching null
-                }
-                val responseBody = response.body?.string() ?: return@runCatching null
-                val replyText = JsonParser.parseString(responseBody).asJsonObject
-                    .getAsJsonArray("choices")?.firstOrNull()?.asJsonObject
-                    ?.getAsJsonObject("message")?.get("content")?.asString
-                    ?: return@runCatching null
-                // Models occasionally wrap JSON in a code fence despite instructions not to -
-                // strip that rather than fail the whole classification over formatting.
-                val cleaned = replyText.trim().removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
-                JsonParser.parseString(cleaned).asJsonObject.get("appropriate")?.asBoolean
-            }
+            // Models occasionally wrap JSON in a code fence despite instructions not to -
+            // strip that rather than fail the whole classification over formatting.
+            val cleaned = replyText.trim()
+                .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
+            JsonParser.parseString(cleaned).asJsonObject.get("appropriate")?.asBoolean
         }.onFailure { e -> Logging.w("AiContentModerator", "Skin/cape moderation failed for $cacheKey", e) }
             .getOrNull()
 
         if (result != null) synchronized(cache) { cache[cacheKey] = result }
         return result
+    }
+
+    /** Gemini is told the media type explicitly; the gallery URLs carry it in the extension. */
+    private fun mimeTypeOf(url: String): String {
+        val path = url.substringBefore('?').substringBefore('#').lowercase()
+        return when {
+            path.endsWith(".jpg") || path.endsWith(".jpeg") -> "image/jpeg"
+            path.endsWith(".webp") -> "image/webp"
+            path.endsWith(".gif") -> "image/gif"
+            else -> "image/png"
+        }
     }
 }

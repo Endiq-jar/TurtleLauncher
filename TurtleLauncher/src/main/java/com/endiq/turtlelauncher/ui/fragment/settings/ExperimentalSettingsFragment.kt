@@ -177,6 +177,46 @@ class ExperimentalSettingsFragment :
             binding.aiSkinFilter
         )
 
+        // Turtle AI: language, optional cloud brain, optional web search. See
+        // feature/ai/TurtleAiLanguage.kt, TurtleAiGemini.kt and TurtleAiWebSearch.kt.
+        BaseSettingsWrapper(context, binding.aiLanguageLayout) {
+            promptSetAssistantLanguage(context)
+        }
+
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.aiAssistantCloudBrain,
+            binding.aiBrainLayout,
+            binding.aiBrain
+        )
+
+        BaseSettingsWrapper(context, binding.aiModelLayout) {
+            promptSetAiModels(context)
+        }
+
+        BaseSettingsWrapper(context, binding.aiVoiceLayout) {
+            promptSetAiVoice(context)
+        }
+
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.aiWebSearchEnabled,
+            binding.aiWebSearchLayout,
+            binding.aiWebSearch
+        )
+
+        BaseSettingsWrapper(context, binding.aiSearchProviderLayout) {
+            promptSetSearchProvider(context)
+        }
+
+        BaseSettingsWrapper(context, binding.aiSearchUrlLayout) {
+            promptSetSearchUrl(context)
+        }
+
+        BaseSettingsWrapper(context, binding.aiSearchKeyLayout) {
+            promptSetSearchApiKey(context)
+        }
+
         BaseSettingsWrapper(context, binding.dependencyGraphLayout) {
             val version = com.endiq.turtlelauncher.feature.version.VersionsManager.getCurrentVersion()
             if (version == null) {
@@ -254,14 +294,192 @@ class ExperimentalSettingsFragment :
     }
 
     private fun promptSetAiCrashHelpApiKey(context: android.content.Context) {
-        val current = runCatching { com.endiq.turtlelauncher.setting.AllSettings.aiApiKey.getValue() }.getOrDefault("")
+        val current = runCatching { AllSettings.aiGeminiApiKey.getValue() }.getOrDefault("")
+        val builtIn = com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.hasBuildKey()
         com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
-            .setTitle(R.string.setting_ai_crash_help_key_title)
-            .setHintText(R.string.setting_ai_crash_help_key_desc)
+            .setTitle(R.string.setting_ai_key_title)
+            .setHintText(
+                if (builtIn) R.string.setting_ai_key_desc_builtin
+                else R.string.setting_ai_key_desc
+            )
+            .setEditText(current)
+            .setInputType(
+                android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            )
+            .setConfirmListener { editText, _ ->
+                AllSettings.aiGeminiApiKey.put(editText.text.toString().trim()).save()
+                Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
+    }
+
+    /**
+     * First screen of the model settings: one row per job, each showing what it uses now.
+     * Ten separate rows in the Settings list would be a wall of text, so the jobs live here
+     * instead.
+     */
+    private fun promptSetAiModels(context: android.content.Context) {
+        val tasks = com.endiq.turtlelauncher.feature.ai.TurtleAiModels.Task.values()
+        val labels = tasks.map { task ->
+            task.settingLabel + "\n" + com.endiq.turtlelauncher.feature.ai.TurtleAiModels.summary(task)
+        }.toTypedArray()
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_model_title)
+            .setItems(labels) { _, which -> promptSetAiTaskModel(context, tasks[which]) }
+            .setNeutralButton(R.string.setting_ai_models_help) { _, _ ->
+                com.endiq.turtlelauncher.ui.dialog.TipDialog.Builder(context)
+                    .setTitle(R.string.setting_ai_model_title)
+                    .setMessage(R.string.setting_ai_models_help_text)
+                    .setCenterMessage(false)
+                    .setSelectable(true)
+                    .setShowCancel(false)
+                    .setConfirm(R.string.generic_ok)
+                    .showDialog()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /**
+     * The model picker for one job. The list is the TurtleAI catalogue (the names the user
+     * knows), with the live list from the API appended for the configured key - model names
+     * change far faster than app releases, and a hand-typed id is still possible.
+     */
+    private fun promptSetAiTaskModel(
+        context: android.content.Context,
+        task: com.endiq.turtlelauncher.feature.ai.TurtleAiModels.Task
+    ) {
+        val auto = com.endiq.turtlelauncher.feature.ai.TurtleAiModels.AUTO
+        val current = runCatching {
+            com.endiq.turtlelauncher.feature.ai.TurtleAiModels.settingFor(task).getValue()
+        }.getOrDefault(auto).ifBlank { auto }
+
+        val entries = mutableListOf<Pair<String, String>>()
+        entries.addAll(com.endiq.turtlelauncher.feature.ai.TurtleAiModels.pickerEntries(task))
+        val fetched = runCatching { com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.listModels() }
+            .getOrDefault(emptyList())
+        fetched.filter { id -> entries.none { it.first == id } }
+            .forEach { id -> entries.add(id to id + " (from Google)") }
+        if (entries.none { it.first == current }) {
+            entries.add(current to current + " (current)")
+        }
+
+        val labels = entries.map { it.second }.toTypedArray()
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(task.settingLabel)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                com.endiq.turtlelauncher.feature.ai.TurtleAiModels.settingFor(task)
+                    .put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNeutralButton(R.string.setting_ai_model_type) { _, _ ->
+                promptSetAiTaskModelManual(context, task, current)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /** Free-text entry, for a model id the catalogue and the API listing do not know about. */
+    private fun promptSetAiTaskModelManual(
+        context: android.content.Context,
+        task: com.endiq.turtlelauncher.feature.ai.TurtleAiModels.Task,
+        current: String
+    ) {
+        com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
+            .setTitle(task.settingLabel)
+            .setHintText(R.string.setting_ai_model_manual_hint)
+            .setEditText(current)
+            .setInputType(android.text.InputType.TYPE_CLASS_TEXT)
+            .setConfirmListener { editText, _ ->
+                com.endiq.turtlelauncher.feature.ai.TurtleAiModels.settingFor(task)
+                    .put(editText.text.toString().trim()).save()
+                Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
+    }
+
+    /** The voice used by /speak and the live conversation. */
+    private fun promptSetAiVoice(context: android.content.Context) {
+        val voices = com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.VOICES
+        val current = runCatching { AllSettings.aiVoice.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.DEFAULT_VOICE)
+            .ifBlank { com.endiq.turtlelauncher.feature.ai.TurtleAiGemini.DEFAULT_VOICE }
+        val entries = voices.toMutableList()
+        if (entries.none { it == current }) entries.add(current)
+        val labels = entries.toTypedArray()
+        val checked = entries.indexOfFirst { it == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_voice_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                AllSettings.aiVoice.put(entries[which]).save()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /** Language picker for the Assistant's answers (see TurtleAiLanguage). */
+    private fun promptSetAssistantLanguage(context: android.content.Context) {
+        val entries = com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage.pickerEntries()
+        val labels = entries.map { it.second }.toTypedArray()
+        val current = runCatching { AllSettings.aiLanguage.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiLanguage.AUTO)
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_language_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                AllSettings.aiLanguage.put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /** Search provider picker; "custom" is what makes the URL/key rows below matter. */
+    private fun promptSetSearchProvider(context: android.content.Context) {
+        val entries = com.endiq.turtlelauncher.feature.ai.TurtleAiWebSearch.PICKER
+        val labels = entries.map { it.second }.toTypedArray()
+        val current = runCatching { AllSettings.aiSearchProvider.getValue() }
+            .getOrDefault(com.endiq.turtlelauncher.feature.ai.TurtleAiWebSearch.PROVIDER_AUTO)
+        val checked = entries.indexOfFirst { it.first == current }.coerceAtLeast(0)
+        android.app.AlertDialog.Builder(context)
+            .setTitle(R.string.setting_ai_search_provider_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                AllSettings.aiSearchProvider.put(entries[which].first).save()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun promptSetSearchUrl(context: android.content.Context) {
+        val current = runCatching { AllSettings.aiSearchUrl.getValue() }.getOrDefault("")
+        com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
+            .setTitle(R.string.setting_ai_search_url_title)
+            .setHintText(R.string.setting_ai_search_url_desc)
+            .setEditText(current)
+            .setInputType(android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI)
+            .setConfirmListener { editText, _ ->
+                AllSettings.aiSearchUrl.put(editText.text.toString().trim()).save()
+                Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
+    }
+
+    private fun promptSetSearchApiKey(context: android.content.Context) {
+        val current = runCatching { AllSettings.aiSearchApiKey.getValue() }.getOrDefault("")
+        com.endiq.turtlelauncher.ui.dialog.EditTextDialog.Builder(context)
+            .setTitle(R.string.setting_ai_search_key_title)
+            .setHintText(R.string.setting_ai_search_key_desc)
             .setEditText(current)
             .setInputType(android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)
             .setConfirmListener { editText, _ ->
-                com.endiq.turtlelauncher.setting.AllSettings.aiApiKey.put(editText.text.toString().trim()).save()
+                AllSettings.aiSearchApiKey.put(editText.text.toString().trim()).save()
                 Toast.makeText(context, R.string.generic_ok, Toast.LENGTH_SHORT).show()
                 true
             }

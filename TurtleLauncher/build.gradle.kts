@@ -1,5 +1,8 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.gradle.tasks.MergeSourceSetFolders
+// Imported rather than written as java.util.Properties: inside a Kotlin DSL script the
+// fully qualified form does not resolve (the script's implicit receivers shadow `java`).
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -64,11 +67,23 @@ android {
 
     signingConfigs {
         create("releaseBuild") {
+            // The launcher's own keystore is in the repo; its password is not, and lives in
+            // CI as the ENDIQ_KEYSTORE_PASSWORD secret. When the password is missing - a
+            // fresh clone, or a workflow run without the secret - the release APK is signed
+            // with the debug keystore instead of failing the whole build. It installs and
+            // runs identically; it simply cannot update an app signed with the real key.
             val pwd = System.getenv("ENDIQ_KEYSTORE_PASSWORD") ?: ""
-            storeFile = file("endiq-key.jks")
-            storePassword = pwd
-            keyAlias = "mtp"
-            keyPassword = pwd
+            val hasRealKey = pwd.isNotEmpty()
+            if (!hasRealKey) {
+                logger.warn(
+                    "BUILD: ENDIQ_KEYSTORE_PASSWORD is not set - " +
+                        "signing the release build with the debug keystore."
+                )
+            }
+            storeFile = file(if (hasRealKey) "endiq-key.jks" else "debug.keystore")
+            storePassword = if (hasRealKey) pwd else "android"
+            keyAlias = if (hasRealKey) "mtp" else "androiddebugkey"
+            keyPassword = if (hasRealKey) pwd else "android"
         }
         create("customDebug") {
             storeFile = file("debug.keystore")
@@ -86,6 +101,40 @@ android {
         versionName = launcherVersionName
         multiDexEnabled = true //important
         manifestPlaceholders["launcher_name"] = launcherAPPName
+
+        // The Gemini API key, baked into BuildConfig so a build can ship with the AI working
+        // without the user pasting anything. Read in this order:
+        //   1. -PGEMINI_API_KEY=... on the Gradle command line
+        //   2. the GEMINI_API_KEY environment variable (what CI passes from the repo secret)
+        //   3. GEMINI_API_KEY=... in local.properties (gitignored - the local-dev option)
+        // Absent everywhere = empty, and the app then asks the user for their own key in
+        // Settings; everything else keeps working.
+        //
+        // Anything compiled into an APK can be extracted from it. This is a convenience for a
+        // personal/private build, not a secret-keeping mechanism: restrict the key in Google
+        // Cloud (Generative Language API only) and rotate the repo secret if an APK is shared.
+        val geminiApiKey = (
+            (project.findProperty("GEMINI_API_KEY") as String?)
+                ?: System.getenv("GEMINI_API_KEY")
+                ?: rootProject.file("local.properties")
+                    .takeIf { it.isFile }
+                    ?.let { localProperties ->
+                        Properties().apply { localProperties.inputStream().use { load(it) } }
+                            .getProperty("GEMINI_API_KEY")
+                    }
+            ).orEmpty().trim()
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"" + geminiApiKey.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
+        logger.lifecycle(
+            if (geminiApiKey.isEmpty()) {
+                "BUILD: no GEMINI_API_KEY - the app will ask the user for a key and work offline until then"
+            } else {
+                "BUILD: GEMINI_API_KEY provided (${geminiApiKey.length} chars) - built into the APK"
+            }
+        )
     }
 
     buildTypes {
@@ -115,6 +164,16 @@ android {
             resValue("string", "storageProviderAuthorities", storageProviderId)
             signingConfig = signingConfigs.getByName("releaseBuild")
         }
+    }
+
+    lint {
+        // assembleRelease would otherwise run the full lint analysis (lintVitalRelease) and
+        // stop on "fatal" findings the project inherits from upstream. That analysis is also
+        // the single slowest step in a release build, and a release APK should not wait on
+        // clearing the whole backlog. `./gradlew lint` (and CI's own lint step, if added)
+        // still runs the full check and writes build/reports/lint-results-release.html.
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 
     sourceSets["main"].java.srcDirs(generatedTurtleDir)

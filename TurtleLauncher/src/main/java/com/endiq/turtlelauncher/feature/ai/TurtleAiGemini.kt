@@ -356,6 +356,62 @@ object TurtleAiGemini {
 
     // ── Image generation ────────────────────────────────────────────────────────────
 
+    /**
+     * Text prompt in, a real raster image out (Nano Banana / Imagen-family models via
+     * `generateContent` with `responseModalities: [IMAGE]`) - this is what makes `/image`
+     * produce an actual photorealistic or illustrated picture instead of [TurtlePixelArt]'s
+     * procedural block scene. Used whenever [isConfigured] is true; the on-device generator
+     * stays as the offline fallback when there's no key or every model in the chain fails.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun generateImage(
+        prompt: String,
+        task: TurtleAiModels.Task = TurtleAiModels.Task.IMAGE
+    ): GeneratedImage? {
+        if (prompt.isBlank()) return null
+        val key = apiKey()
+        if (key.isEmpty()) return null
+
+        return runChain(task) { model ->
+            val body = JsonObject().apply {
+                add("contents", JsonArray().apply {
+                    add(JsonObject().apply {
+                        addProperty("role", "user")
+                        add("parts", JsonArray().apply {
+                            add(JsonObject().apply { addProperty("text", prompt.trim()) })
+                        })
+                    })
+                })
+                add("generationConfig", JsonObject().apply {
+                    add("responseModalities", JsonArray().apply { add("IMAGE") })
+                })
+            }
+            when (val call = performRequest("models/$model:generateContent", body, key)) {
+                is Call.Ok -> {
+                    val candidate = call.root.candidate()
+                    val parts = candidate?.getAsJsonObject("content")?.getAsJsonArray("parts")
+                    val media = firstInlineData(parts)
+                    if (media == null) {
+                        unusable(call.root, model, "no image part")
+                        Step.Next
+                    } else {
+                        Step.Value(
+                            GeneratedImage(
+                                bytes = media.bytes,
+                                mimeType = media.mimeType,
+                                caption = candidate?.let { textOf(it) }.orEmpty(),
+                                modelId = model
+                            )
+                        )
+                    }
+                }
+                is Call.Retry -> stepNext(model, call)
+                is Call.Stop -> Step.Stop
+            }
+        }
+    }
+
     // ── Video generation (Veo) ──────────────────────────────────────────────────────
 
     /**

@@ -663,6 +663,36 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                 popupOtherServersContainer.addView(rowBinding.root)
             }
 
+            // Every account provider, one tap each (no need to open the Auth Server submenu).
+            popupQuickOptionsContainer.removeAllViews()
+            fun quickRow(label: Int, action: () -> Unit) {
+                val row = ViewSingleActionPopupBinding.inflate(LayoutInflater.from(activity))
+                row.icon.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.ic_add))
+                row.text.setText(label)
+                row.root.layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                row.text.setOnClickListener {
+                    mServerActionPopupWindow.dismiss()
+                    action()
+                }
+                popupQuickOptionsContainer.addView(row.root)
+            }
+            quickRow(R.string.other_login_elyby_quick_add) { addOtherServerDirect("ely.by", 0) }
+            quickRow(R.string.other_login_littleskin_quick_add) {
+                addOtherServerDirect("https://littleskin.cn/api/yggdrasil", 0)
+            }
+            quickRow(R.string.other_login_battly_quick_add) {
+                addOtherServerDirect(net.endiq.launcher.authenticator.BattlyAuthlibManager.AUTH_SERVER, 0)
+            }
+            quickRow(R.string.other_login_custom_authlib) {
+                showServerTypeSelectDialog(R.string.other_login_yggdrasil_api, 0)
+            }
+            quickRow(R.string.other_login_uniform_pass) {
+                showServerTypeSelectDialog(R.string.other_login_32_bit_server, 1)
+            }
+
             popupAddServer.setOnClickListener {
                 binding.addServer.performClick()
                 mServerActionPopupWindow.dismiss()
@@ -676,7 +706,11 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
             binding.root.measure(0, 0)
             this.contentView = binding.root
             this.width = binding.root.measuredWidth
-            this.height = binding.root.measuredHeight
+            // Cap at 75% of the screen: the account list is now long enough to scroll.
+            this.height = minOf(
+                binding.root.measuredHeight,
+                (resources.displayMetrics.heightPixels * 0.75f).toInt()
+            )
             showAsDropDown(anchorView)
         }
     }

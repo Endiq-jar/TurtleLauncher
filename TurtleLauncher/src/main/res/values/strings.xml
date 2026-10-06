@@ -1094,6 +1094,8 @@
     <string name="other_login_password">Password</string>
     <string name="other_login_uniform_pass">Unified Passport</string>
     <string name="other_login_elyby_quick_add">ely.by Account</string>
+    <string name="other_login_littleskin_quick_add">LittleSkin Account</string>
+    <string name="other_login_custom_authlib">Authlib-Injector Server</string>
     <string name="other_login_battly_quick_add">Battly Account</string>
     <string name="other_login_battly_title">Enter your Battly authentication server URL</string>
     <string name="other_login_battly_hint">Find this under Account → Minecraft Auth in the Battly Launcher app, then paste its authlib-injector URL here</string>

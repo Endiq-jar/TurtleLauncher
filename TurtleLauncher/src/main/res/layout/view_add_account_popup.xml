@@ -4,17 +4,21 @@
      the add_server "..." menu) into one menu. Rows here just proxy clicks to those
      original (now-hidden) views so all existing login/add-server logic in
      AccountFragment.kt is reused unchanged. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/_240sdp"
     android:layout_height="wrap_content"
     android:background="@drawable/background_card"
-    android:padding="@dimen/_8sdp"
-    android:orientation="vertical"
     android:elevation="@dimen/_8sdp"
     android:translationZ="4dp"
     tools:ignore="ContentDescription">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/_8sdp"
+    android:orientation="vertical">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -71,6 +75,14 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
+    <!-- Quick-add rows for every supported account provider (ely.by, Battly, LittleSkin,
+         custom authlib-injector, Unified Passport) are inserted here at runtime. -->
+    <LinearLayout
+        android:id="@+id/popup_quick_options_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
     <!-- One row per already-configured auth server is inserted here at runtime,
          mirroring AccountFragment.refreshOtherServer()'s dynamic tabs. -->
     <LinearLayout
@@ -108,3 +120,4 @@
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 </LinearLayout>
+</ScrollView>

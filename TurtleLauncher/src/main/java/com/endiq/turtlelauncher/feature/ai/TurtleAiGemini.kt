@@ -853,10 +853,21 @@ object TurtleAiGemini {
             f == "HTTP 429" -> "Gemini quota or rate limit reached - try again in a minute."
             f == "HTTP 404" -> "None of the configured Gemini models exist for this key."
             f.startsWith("HTTP 5") -> "Gemini is having server problems - try again shortly."
-            f.contains("UnknownHost") || f.contains("Connect") || f.contains("Timeout") ->
-                "No internet connection to Gemini."
+            f.contains("UnknownHost") || f.contains("NoRoute") || f == "ConnectException" ->
+                "Can't reach Gemini - check your internet connection or DNS setting."
+            f.contains("Timeout") || f.contains("InterruptedIO") ->
+                "Gemini took too long to answer - try again."
+            f == "HTTP 400" -> "Gemini rejected the request (HTTP 400)."
             else -> "Gemini request failed ($f)."
         }
+    }
+
+    /** Failure text for /image: free-tier keys have no image quota, which Google reports as 429/403. */
+    @JvmStatic
+    fun imageFailureReason(): String? = when (lastFailure) {
+        "HTTP 429", "HTTP 403" ->
+            "Gemini image generation needs a paid-tier API key (free keys have no image quota)."
+        else -> failureReason()
     }
 
     private fun performRequest(
@@ -874,7 +885,12 @@ object TurtleAiGemini {
                 .header("Accept", "application/json")
                 .addHeader("User-Agent", "TurtleLauncher-TurtleAI/1.0")
             val client = UrlManager
-                .createOkHttpClientBuilder { it.callTimeout(timeoutSeconds, TimeUnit.SECONDS) }
+                .createOkHttpClientBuilder {
+                    it.callTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                        .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                        .writeTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                        .connectTimeout(15, TimeUnit.SECONDS)
+                }
                 .build()
             client.newCall(builder.build()).execute().use { response ->
                 val responseBody = response.body?.string().orEmpty()
@@ -940,7 +956,10 @@ object TurtleAiGemini {
             .addHeader("User-Agent", "TurtleLauncher-TurtleAI/1.0")
             .build()
         val client = UrlManager
-            .createOkHttpClientBuilder { it.callTimeout(VIDEO_TIMEOUT_SECONDS, TimeUnit.SECONDS) }
+            .createOkHttpClientBuilder {
+                it.callTimeout(VIDEO_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                    .readTimeout(VIDEO_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            }
             .build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {

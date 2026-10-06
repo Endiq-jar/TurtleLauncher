@@ -40,7 +40,20 @@ class ChatMessageAdapter(
 
     class InnerHolder(private val binding: ItemChatMessageBinding) : RecyclerView.ViewHolder(binding.root) {
         fun setData(message: ChatMessage) {
-            binding.messageBubble.text = message.text
+            if (message.isUser) {
+                binding.messageBubble.text = message.text
+            } else {
+                // Assistant replies are Markdown (Gemini answers with **bold**, lists, code...).
+                val rendered = ChatMarkdown.render(message.text, binding.root.context)
+                binding.messageBubble.text = rendered
+                // Links need LinkMovementMethod, which drops text selection - only swap it in
+                // for bubbles that actually contain a link.
+                if (rendered is android.text.Spanned &&
+                    rendered.getSpans(0, rendered.length, android.text.style.URLSpan::class.java).isNotEmpty()
+                ) {
+                    binding.messageBubble.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+                }
+            }
             // A turn can be an image with a caption, or (when the model returned no text) an
             // image alone - an empty bubble next to a picture looks like a bug.
             binding.messageBubble.visibility =

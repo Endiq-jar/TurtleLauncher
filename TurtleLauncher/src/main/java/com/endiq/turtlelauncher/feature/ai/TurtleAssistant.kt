@@ -613,7 +613,10 @@ object TurtleAssistant {
             return Reply(shell.imageFailed, startingSuggestions())
         }
         val image = TurtleAiGemini.generateImage(prompt)
-            ?: return Reply(shell.imageFailed, startingSuggestions())
+            ?: return Reply(
+                shell.imageFailed + (TurtleAiGemini.imageFailureReason()?.let { "\n" + it } ?: ""),
+                startingSuggestions()
+            )
         val file = TurtleAiFiles.save(image.bytes, image.mimeType, "image")
             ?: return Reply(shell.imageFailed, startingSuggestions())
         val caption = image.caption.ifBlank { "Here's the image you asked for." }

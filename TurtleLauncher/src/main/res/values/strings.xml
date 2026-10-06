@@ -935,6 +935,7 @@
     <string name="setting_set_game_language_system">Follow System Language</string>
     <string name="setting_set_game_language_overridden_title">Override Game Language</string>
     <string name="setting_set_game_language_overridden_desc">Ignore the language set in the game and force it to be the language set in the launcher</string>
+    <string name="setting_launcher_language">Language</string>
     <string name="setting_launcher_theme">Launcher Theme</string>
     <string name="setting_launcher_theme_system">Follow System Theme</string>
     <string name="setting_launcher_theme_light">Light Mode</string>

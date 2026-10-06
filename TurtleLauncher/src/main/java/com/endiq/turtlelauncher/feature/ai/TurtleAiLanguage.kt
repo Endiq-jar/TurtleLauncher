@@ -674,6 +674,9 @@ object TurtleAiLanguage {
     /** The language the launcher itself is running in, as a bare tag ("en", "hi", ...). */
     @JvmStatic
     fun deviceLanguage(context: Context): String = runCatching {
+        // The Language setting wins over the phone's language.
+        com.endiq.turtlelauncher.context.LocaleHelper.selectedLocale()?.language?.takeIf { it.isNotBlank() }
+            ?.let { return@runCatching it }
         val locales = context.resources.configuration.locales
         val tag = if (locales.isEmpty) Locale.getDefault().language else locales[0].language
         tag.ifBlank { ENGLISH }

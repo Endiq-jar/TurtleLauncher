@@ -355,6 +355,32 @@
                     android:textColor="@color/accent_primary" />
     
                 <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/launcherLanguage_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+    
+                    <TextView
+                        android:id="@+id/launcherLanguage_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/setting_launcher_language"
+                        android:textColor="@color/turtle_primary_text" />
+    
+                    <TextView
+                        android:id="@+id/launcherLanguage_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/launcherLanguage_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/generic_default" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+    
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
                     android:id="@+id/launcherTheme_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

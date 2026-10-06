@@ -173,6 +173,9 @@ class AllSettings {
         @JvmStatic val downloadSource           = StringSettingUnit("downloadSource", "default")
         @JvmStatic val maxDownloadThreads       = IntSettingUnit("maxDownloadThreads", 128)
         @JvmStatic val launcherTheme            = StringSettingUnit("launcherTheme", "dark")
+        /** Launcher language: "system" or a Minecraft-style locale code ("pt_br", "ja_jp", ...)
+         *  from R.array.all_game_language_value. See context/LocaleHelper.kt. */
+        @JvmStatic val launcherLanguage         = StringSettingUnit("launcherLanguage", "system")
         @JvmStatic val animation                = BooleanSettingUnit("animation", true)
         @JvmStatic val animationSpeed           = IntSettingUnit("animationSpeed", 300)
         @JvmStatic val animationEnter           = StringSettingUnit("animationEnter", "slide_up")

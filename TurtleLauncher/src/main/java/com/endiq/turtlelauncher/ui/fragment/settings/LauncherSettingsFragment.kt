@@ -120,6 +120,17 @@ class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fr
             ""
         )
 
+        // Every language in the launcher's list (the same one the game-language picker uses),
+        // plus "Follow System Language" first.
+        ListSettingsWrapper(
+            context,
+            AllSettings.launcherLanguage,
+            binding.launcherLanguageLayout,
+            binding.launcherLanguageTitle,
+            binding.launcherLanguageValue,
+            R.array.all_game_language, R.array.all_game_language_value
+        )
+
         ListSettingsWrapper(
             context,
             AllSettings.launcherTheme,

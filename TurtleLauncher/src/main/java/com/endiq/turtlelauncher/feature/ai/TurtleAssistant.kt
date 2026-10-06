@@ -241,7 +241,7 @@ object TurtleAssistant {
     @JvmStatic
     fun startingSuggestions(): List<String> = listOf(
         "Status", "Best renderer?", "Why did my game crash?", "FPS is low",
-        "How do I install mods?"
+        "How do I install mods?", "Draw a creeper at sunset"
     )
 
     /**
@@ -279,6 +279,7 @@ object TurtleAssistant {
         smallTalkReply(raw, language)?.let { return it }
 
         // Generation commands. An explicit command always runs (typing it *is* the consent).
+        imageRequest(raw)?.let { return imageReply(it) }
         videoRequest(raw)?.let { return videoReply(it) }
         speakRequest(raw)?.let { return speakReply(context, it) }
         transcribeRequest(raw)?.let { return transcribeReply(it) }
@@ -457,6 +458,56 @@ object TurtleAssistant {
     ): String =
         if (sources.isEmpty()) "" else "\n\n" + shell.sources + ":\n" +
             sources.joinToString("\n") { "\u2022 " + it.url }
+
+    /** Phrases that open a request for a picture (drawing is done on-device by [TurtlePixelArt]). */
+    private val DRAW_MARKERS = listOf(
+        "draw me ", "draw a ", "draw an ", "draw the ",
+        "generate an image of ", "generate image of ", "generate a picture of ",
+        "create an image of ", "create a picture of ", "make an image of ",
+        "make a picture of ", "make me an image of ", "paint me ", "paint a ",
+        "imagine a picture of "
+    )
+
+    /**
+     * The scene description for the built-in image generator, or null when this message is not
+     * a picture request: the explicit "/image ..." (or "/draw ...") command, or an unmistakable
+     * "draw me a creeper".
+     */
+    private fun imageRequest(raw: String): String? {
+        val lower = raw.trim().lowercase(Locale.ROOT)
+        if (lower.startsWith("/image ") || lower.startsWith("/draw ")) {
+            return raw.trim().substringAfter(' ').trim()
+        }
+        if (lower == "/image" || lower == "/draw") return ""
+        for (marker in DRAW_MARKERS) {
+            if (lower.startsWith(marker)) {
+                val prompt = raw.trim().substring(marker.length).trim()
+                if (prompt.isNotEmpty()) return prompt
+            }
+        }
+        return null
+    }
+
+    /** Renders the picture on-device (no network, no key) and files it in the TurtleAI folder. */
+    private fun imageReply(prompt: String): Reply {
+        if (prompt.isBlank()) {
+            return Reply(
+                "Tell me what to draw, for example: /image a creeper at sunset in the snow",
+                startingSuggestions()
+            )
+        }
+        val art = TurtlePixelArt.generate(prompt)
+            ?: return Reply("I couldn't draw that - the on-device image generator failed.", startingSuggestions())
+        val file = TurtleAiFiles.save(art.bytes, art.mimeType, "image")
+            ?: return Reply("I drew it but couldn't save the file.", startingSuggestions())
+        return Reply(
+            "Here's your " + art.summary + " scene.\n\nDrawn on your device by Turtle's built-in " +
+                "pixel-art generator (no internet, no Gemini), saved as " + file.name +
+                " in the launcher's TurtleAI folder. Ask again for a different one.",
+            listOf("Draw a creeper at night", "Draw steve in the snow"),
+            file.absolutePath
+        )
+    }
 
     /**
      * Which chain a question belongs to. Deliberately coarse: the *features* that are not chat
@@ -639,11 +690,12 @@ object TurtleAssistant {
             "• Friends / LAN play\n" +
             "• Storage, files, screenshots and recording\n" +
             "• Writing, code, maths and general questions (with Gemini)\n" +
+            "• Drawing - /image a creeper at sunset (built-in, on-device pixel art)\n" +
             "• Video - /video a creeper walking through a flower forest\n" +
             "• Speaking - /speak (reads my last answer), /speak <text>\n" +
             "• Voice conversation - the microphone button in the chat header\n" +
             "• Transcribing - /transcribe <path>, or share a recording with the launcher\n\n" +
-            "Commands: /status /diagnose /renderer /tips /language /video /speak " +
+            "Commands: /status /diagnose /renderer /tips /language /image /video /speak " +
             "/models /about",
         startingSuggestions()
     )

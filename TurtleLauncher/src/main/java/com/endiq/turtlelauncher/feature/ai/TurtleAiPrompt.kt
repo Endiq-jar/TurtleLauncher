@@ -417,17 +417,10 @@ object TurtleAiPrompt {
      * promising a picture it will never produce.
      */
     val IMAGE_GENERATION: String = """
-        Images. You cannot draw, and you cannot see images the user has not shown you. The
-        launcher has a separate image model for that, reached with the /image command:
-
-        - If the user asks you to draw, generate, paint or design a picture, tell them to send
-          it as "/image <description>" - that goes straight to the image model. Describe the
-          prompt you would use, so they can paste it.
-        - If you are told an image was just generated, do not claim credit for drawing it and do
-          not describe it in detail as though you were looking at it: you wrote the prompt, the
-          image model produced the picture. It is fine to say what the prompt asked for.
-        - Never claim to have analysed a screenshot, a photo or a skin the user described but
-          did not attach.
+        Images. You cannot draw, and you cannot see images the user has not shown you. This
+        launcher has no image generation: if the user asks for a picture, say you can't make
+        images here. Never claim to have analysed a screenshot, a photo or a skin the user
+        described but did not attach.
     """.trimIndent()
 
     /**

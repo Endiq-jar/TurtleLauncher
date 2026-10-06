@@ -356,65 +356,6 @@ object TurtleAiGemini {
 
     // ── Image generation ────────────────────────────────────────────────────────────
 
-    /**
-     * Text prompt in, image out (`responseModalities` = TEXT + IMAGE). Most image models also
-     * return a short text part - a caption, or the refusal when they will not draw something -
-     * which is kept so the chat can show *something* instead of an empty bubble.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun generateImage(
-        prompt: String,
-        task: TurtleAiModels.Task = TurtleAiModels.Task.IMAGE
-    ): GeneratedImage? {
-        if (prompt.isBlank()) return null
-        val key = apiKey()
-        if (key.isEmpty()) return null
-
-        return runChain(task) { model ->
-            val body = JsonObject().apply {
-                add("contents", JsonArray().apply {
-                    add(JsonObject().apply {
-                        addProperty("role", "user")
-                        add("parts", JsonArray().apply {
-                            add(JsonObject().apply { addProperty("text", prompt.trim()) })
-                        })
-                    })
-                })
-                add("generationConfig", JsonObject().apply {
-                    add("responseModalities", JsonArray().apply {
-                        add("TEXT")
-                        add("IMAGE")
-                    })
-                })
-            }
-            when (val call = performRequest("models/$model:generateContent", body, key)) {
-                is Call.Ok -> {
-                    val parts = call.root.candidate()
-                        ?.getAsJsonObject("content")?.getAsJsonArray("parts")
-                    val media = firstInlineData(parts)
-                    if (media == null) {
-                        // A text-only model answers this request with prose and no image part:
-                        // not an error, just the wrong model - fall through to the next one.
-                        unusable(call.root, model, "no image part")
-                        Step.Next
-                    } else {
-                        Step.Value(
-                            GeneratedImage(
-                                bytes = media.bytes,
-                                mimeType = media.mimeType,
-                                caption = textOfParts(parts),
-                                modelId = model
-                            )
-                        )
-                    }
-                }
-                is Call.Retry -> stepNext(model, call)
-                is Call.Stop -> Step.Stop
-            }
-        }
-    }
-
     // ── Video generation (Veo) ──────────────────────────────────────────────────────
 
     /**
@@ -860,14 +801,6 @@ object TurtleAiGemini {
             f == "HTTP 400" -> "Gemini rejected the request (HTTP 400)."
             else -> "Gemini request failed ($f)."
         }
-    }
-
-    /** Failure text for /image: free-tier keys have no image quota, which Google reports as 429/403. */
-    @JvmStatic
-    fun imageFailureReason(): String? = when (lastFailure) {
-        "HTTP 429", "HTTP 403" ->
-            "Gemini image generation needs a paid-tier API key (free keys have no image quota)."
-        else -> failureReason()
     }
 
     private fun performRequest(

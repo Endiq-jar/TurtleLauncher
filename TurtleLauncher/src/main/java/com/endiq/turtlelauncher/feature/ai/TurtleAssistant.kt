@@ -99,7 +99,7 @@ object TurtleAssistant {
             "Ready - " + TurtleAiModels.label(speech.modelId) + " reading it in voice " + voice +
                 ".\n\n\"" + toSay.take(180).trim() + if (toSay.length > 180) "\u2026\"" else "\"" +
                 "\n\nSaved as " + file.name + " in the launcher's TurtleAI folder.",
-            listOf("Read it aloud again", "Draw a Minecraft wallpaper at sunset"),
+            listOf("Read it aloud again"),
             mediaPath = file.absolutePath,
             mediaLabel = "Play the audio"
         )
@@ -190,18 +190,6 @@ object TurtleAssistant {
     )
 
     /**
-     * Phrases that open a request for a picture. Tight on purpose: "image of a shader" is a
-     * question, "draw me a shader" is a job.
-     */
-    private val DRAW_MARKERS = listOf(
-        "draw me ", "draw a ", "draw an ", "draw the ", "draw ",
-        "generate an image of ", "generate image of ", "generate a picture of ",
-        "create an image of ", "create a picture of ", "make an image of ",
-        "make a picture of ", "make me an image of ", "paint me ", "paint a ",
-        "imagine a picture of "
-    )
-
-    /**
      * Phrases that mean "produce something for me", checked against the normalised message.
      * Kept short and specific on purpose: every entry here is a case where the rule engine
      * would otherwise answer a request for work with a topic blurb.
@@ -253,7 +241,7 @@ object TurtleAssistant {
     @JvmStatic
     fun startingSuggestions(): List<String> = listOf(
         "Status", "Best renderer?", "Why did my game crash?", "FPS is low",
-        "How do I install mods?", "Draw a Minecraft wallpaper"
+        "How do I install mods?"
     )
 
     /**
@@ -290,10 +278,7 @@ object TurtleAssistant {
         // Small talk never needs the network: answer it on-device, instantly.
         smallTalkReply(raw, language)?.let { return it }
 
-        // Generation commands. An explicit command always runs (typing it *is* the consent);
-        // an unmistakable "draw me ..." is treated the same way while the brain is on.
-        val imagePrompt = imageRequest(raw)
-        if (imagePrompt != null) return imageReply(imagePrompt, shell)
+        // Generation commands. An explicit command always runs (typing it *is* the consent).
         videoRequest(raw)?.let { return videoReply(it) }
         speakRequest(raw)?.let { return speakReply(context, it) }
         transcribeRequest(raw)?.let { return transcribeReply(it) }
@@ -474,29 +459,6 @@ object TurtleAssistant {
             sources.joinToString("\n") { "\u2022 " + it.url }
 
     /**
-     * The prompt for image generation, or null when this message is not a request for an
-     * image. Two ways in: the explicit "/image ..." command, and an unmistakable
-     * "draw me a creeper" - which is only honoured while the AI brain is switched on, so a
-     * user who turned the cloud off never gets a surprise upload. The phrase itself is
-     * stripped, because image models take a description, not a chat message.
-     */
-    private fun imageRequest(raw: String): String? {
-        val lower = raw.lowercase(Locale.ROOT)
-        if (lower.startsWith("/image ") || lower.startsWith("/draw ")) {
-            return raw.substringAfter(' ').trim()
-        }
-        if (lower == "/image" || lower == "/draw") return ""
-        if (!TurtleAiGemini.isConfigured()) return null
-        for (marker in DRAW_MARKERS) {
-            if (lower.startsWith(marker)) {
-                val prompt = raw.substring(marker.length).trim()
-                if (prompt.isNotEmpty()) return prompt
-            }
-        }
-        return null
-    }
-
-    /**
      * Which chain a question belongs to. Deliberately coarse: the *features* that are not chat
      * (the skin filter, /image, /video, /speak, /transcribe, the live session) pick their own
      * task, and a chat message only has to choose between code, hard problems and everything
@@ -599,36 +561,6 @@ object TurtleAssistant {
     }
 
     /**
-     * Runs one image generation and files the result next to the app's own data. The reply
-     * carries the file path, which the chat screen renders as a picture (see ChatMessage).
-     */
-    private fun imageReply(prompt: String, shell: TurtleAiLanguage.Shell): Reply {
-        if (prompt.isBlank()) {
-            return Reply(
-                "Tell me what to draw, for example: /image a creeper watching a sunset",
-                startingSuggestions()
-            )
-        }
-        if (TurtleAiGemini.apiKey().isEmpty()) {
-            return Reply(shell.imageFailed, startingSuggestions())
-        }
-        val image = TurtleAiGemini.generateImage(prompt)
-            ?: return Reply(
-                shell.imageFailed + (TurtleAiGemini.imageFailureReason()?.let { "\n" + it } ?: ""),
-                startingSuggestions()
-            )
-        val file = TurtleAiFiles.save(image.bytes, image.mimeType, "image")
-            ?: return Reply(shell.imageFailed, startingSuggestions())
-        val caption = image.caption.ifBlank { "Here's the image you asked for." }
-        return Reply(
-            caption + "\n\nMade with " + TurtleAiModels.label(image.modelId) +
-                ", saved as " + file.name + " in the launcher's TurtleAI folder.",
-            listOf("Draw a Minecraft wallpaper at sunset"),
-            file.absolutePath
-        )
-    }
-
-    /**
      * No brain configured, but web search is on. Results are shown attributed and unparaphrased:
      * without a model to synthesize them, a paraphrase would be the assistant guessing.
      */
@@ -707,12 +639,11 @@ object TurtleAssistant {
             "• Friends / LAN play\n" +
             "• Storage, files, screenshots and recording\n" +
             "• Writing, code, maths and general questions (with Gemini)\n" +
-            "• Drawing - /image a creeper at sunset\n" +
             "• Video - /video a creeper walking through a flower forest\n" +
             "• Speaking - /speak (reads my last answer), /speak <text>\n" +
             "• Voice conversation - the microphone button in the chat header\n" +
             "• Transcribing - /transcribe <path>, or share a recording with the launcher\n\n" +
-            "Commands: /status /diagnose /renderer /tips /language /image /video /speak " +
+            "Commands: /status /diagnose /renderer /tips /language /video /speak " +
             "/models /about",
         startingSuggestions()
     )
@@ -957,8 +888,6 @@ object TurtleAssistant {
                 append("Both are switchable in Settings \u2192 Experimental.\n\n")
             }
 
-            append("Image generation is available too - /image <what you want> - and it always ")
-            append("goes to Google, since no phone can draw locally.")
         }
     }
 

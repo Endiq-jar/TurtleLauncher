@@ -61,7 +61,7 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 * Microsoft, Offline, Battly & Ely.by accounts
 * Download Manager
 * Live launch & crash logs
-* Optional Discord Rich Presence for the active Minecraft version and session time
+* Customizable Discord Rich Presence with version templates, status, timer, and artwork
 * Friends / LAN play (Terracotta over EasyTier) — host or join straight from the home screen
 * Chooseable screen transitions — slide, bounce, fade, or zoom, applied app-wide
 * Backup, import & export

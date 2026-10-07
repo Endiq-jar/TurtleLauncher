@@ -57,6 +57,7 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
         binding.discordRpcConfigureButton.setOnClickListener {
             if (DiscordRpcManager.isConfigured()) showConfiguredMenu() else showRpcWarning()
         }
+        binding.discordRpcCustomizeButton.setOnClickListener { showCustomizationMenu() }
     }
 
     override fun onResume() {
@@ -92,6 +93,15 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
         )
         binding.discordRpcConfigureButton.setText(
             if (configured) R.string.generic_edit else R.string.discord_rpc_configure
+        )
+        val status = AllSettings.discordRpcStatus.getValue().replaceFirstChar { it.uppercaseChar() }
+        val timer = getString(
+            if (AllSettings.discordRpcShowElapsed.getValue()) R.string.discord_rpc_on else R.string.discord_rpc_off
+        )
+        binding.discordRpcCustomizationSummary.text = getString(
+            R.string.discord_rpc_customization_summary,
+            status,
+            timer
         )
     }
 
@@ -137,6 +147,123 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
                 }
             }
             .show()
+    }
+
+    private fun showCustomizationMenu() {
+        val elapsedLabel = getString(
+            if (AllSettings.discordRpcShowElapsed.getValue()) R.string.discord_rpc_on else R.string.discord_rpc_off
+        )
+        val items = arrayOf(
+            getString(R.string.discord_rpc_name),
+            getString(R.string.discord_rpc_details),
+            getString(R.string.discord_rpc_state),
+            getString(R.string.discord_rpc_status),
+            getString(R.string.discord_rpc_elapsed) + ": " + elapsedLabel,
+            getString(R.string.discord_rpc_application_id),
+            getString(R.string.discord_rpc_large_image),
+            getString(R.string.discord_rpc_large_text),
+            getString(R.string.discord_rpc_reset_customization)
+        )
+        AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+            .setTitle(R.string.discord_rpc_customization_title)
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_name,
+                        R.string.discord_rpc_name_hint,
+                        AllSettings.discordRpcName.getValue(),
+                        required = true
+                    ) { AllSettings.discordRpcName.put(it).save() }
+                    1 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_details,
+                        R.string.discord_rpc_details_hint,
+                        AllSettings.discordRpcDetails.getValue()
+                    ) { AllSettings.discordRpcDetails.put(it).save() }
+                    2 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_state,
+                        R.string.discord_rpc_state_hint,
+                        AllSettings.discordRpcState.getValue()
+                    ) { AllSettings.discordRpcState.put(it).save() }
+                    3 -> showStatusPicker()
+                    4 -> {
+                        AllSettings.discordRpcShowElapsed
+                            .put(!AllSettings.discordRpcShowElapsed.getValue()).save()
+                        refreshRpcState()
+                    }
+                    5 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_application_id,
+                        R.string.discord_rpc_application_id_hint,
+                        AllSettings.discordRpcApplicationId.getValue(),
+                        inputType = InputType.TYPE_CLASS_NUMBER,
+                        showTemplateHelp = false
+                    ) { AllSettings.discordRpcApplicationId.put(it).save() }
+                    6 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_large_image,
+                        R.string.discord_rpc_large_image_hint,
+                        AllSettings.discordRpcLargeImage.getValue(),
+                        showTemplateHelp = false
+                    ) { AllSettings.discordRpcLargeImage.put(it).save() }
+                    7 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_large_text,
+                        R.string.discord_rpc_large_text_hint,
+                        AllSettings.discordRpcLargeText.getValue()
+                    ) { AllSettings.discordRpcLargeText.put(it).save() }
+                    8 -> resetCustomization()
+                }
+            }
+            .show()
+    }
+
+    private fun showCustomizationTextEditor(
+        title: Int,
+        hint: Int,
+        current: String,
+        inputType: Int = InputType.TYPE_CLASS_TEXT,
+        required: Boolean = false,
+        showTemplateHelp: Boolean = true,
+        onSave: (String) -> Unit
+    ) {
+        val builder = EditTextDialog.Builder(requireContext())
+            .setTitle(title)
+            .setHintText(hint)
+            .setEditText(current)
+            .setInputType(inputType)
+            .setConfirmText(R.string.generic_save)
+            .setConfirmListener { editText, _ ->
+                onSave(editText.text.toString().trim())
+                refreshRpcState()
+                true
+            }
+        if (required) builder.setAsRequired()
+        if (showTemplateHelp) builder.setMessage(R.string.discord_rpc_template_help)
+        builder.showDialog()
+    }
+
+    private fun showStatusPicker() {
+        val values = arrayOf("online", "idle", "dnd", "invisible")
+        val labels = arrayOf("Online", "Idle", "Do not disturb", "Invisible")
+        val selected = values.indexOf(AllSettings.discordRpcStatus.getValue()).coerceAtLeast(0)
+        AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+            .setTitle(R.string.discord_rpc_status)
+            .setSingleChoiceItems(labels, selected) { dialog, which ->
+                AllSettings.discordRpcStatus.put(values[which]).save()
+                dialog.dismiss()
+                refreshRpcState()
+            }
+            .show()
+    }
+
+    private fun resetCustomization() {
+        AllSettings.discordRpcName.reset()
+        AllSettings.discordRpcDetails.reset()
+        AllSettings.discordRpcState.reset()
+        AllSettings.discordRpcStatus.reset()
+        AllSettings.discordRpcShowElapsed.reset()
+        AllSettings.discordRpcApplicationId.reset()
+        AllSettings.discordRpcLargeImage.reset()
+        AllSettings.discordRpcLargeText.reset()
+        refreshRpcState()
+        Toast.makeText(requireContext(), R.string.discord_rpc_reset_done, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {

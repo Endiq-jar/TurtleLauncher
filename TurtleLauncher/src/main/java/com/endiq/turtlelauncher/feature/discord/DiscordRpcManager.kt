@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
 object DiscordRpcManager {
     private const val TAG = "DiscordRPC"
     private const val GATEWAY_URL = "wss://gateway.discord.gg/?v=10&encoding=json"
+    private val VALID_STATUSES = setOf("online", "idle", "dnd", "invisible")
 
     private val lock = Any()
     private val scheduler = Executors.newSingleThreadScheduledExecutor { runnable ->
@@ -126,29 +127,49 @@ object DiscordRpcManager {
 
     private fun sendPresence(webSocket: WebSocket) {
         val version = synchronized(lock) { currentVersion } ?: return
+        val status = AllSettings.discordRpcStatus.getValue().takeIf { it in VALID_STATUSES } ?: "online"
+        val applicationId = AllSettings.discordRpcApplicationId.getValue().trim()
+            .takeIf { it.isNotEmpty() && it.all { char -> char.isDigit() } }
+        val largeImage = AllSettings.discordRpcLargeImage.getValue().trim()
+
         val activity = JsonObject().apply {
-            addProperty("name", "Minecraft: Java Edition")
-            addProperty("details", "Playing $version")
-            addProperty("state", "Launched with Turtle Launcher")
+            addProperty("name", renderText(AllSettings.discordRpcName.getValue(), version, "Minecraft: Java Edition"))
+            renderText(AllSettings.discordRpcDetails.getValue(), version, "").takeIf { it.isNotEmpty() }
+                ?.let { addProperty("details", it) }
+            renderText(AllSettings.discordRpcState.getValue(), version, "").takeIf { it.isNotEmpty() }
+                ?.let { addProperty("state", it) }
             addProperty("type", 0)
-            add("timestamps", JsonObject().apply { addProperty("start", startedAt) })
+            if (AllSettings.discordRpcShowElapsed.getValue()) {
+                add("timestamps", JsonObject().apply { addProperty("start", startedAt) })
+            }
+            applicationId?.let { addProperty("application_id", it) }
+            if (applicationId != null && largeImage.isNotEmpty()) {
+                add("assets", JsonObject().apply {
+                    addProperty("large_image", largeImage.take(256))
+                    AllSettings.discordRpcLargeText.getValue().trim().takeIf { it.isNotEmpty() }
+                        ?.let { addProperty("large_text", renderText(it, version, "")) }
+                })
+            }
         }
         val activities = JsonArray().apply { add(activity) }
         val presence = JsonObject().apply {
-            addProperty("since", startedAt)
+            addProperty("since", if (AllSettings.discordRpcShowElapsed.getValue()) startedAt else 0)
             add("activities", activities)
-            addProperty("status", "online")
+            addProperty("status", status)
             addProperty("afk", false)
         }
         send(webSocket, 3, presence)
         Logging.i(TAG, "Discord Rich Presence started for Minecraft $version")
     }
 
+    private fun renderText(template: String, version: String, fallback: String): String =
+        template.trim().ifEmpty { fallback }.replace("{version}", version).take(128)
+
     private fun sendClear(webSocket: WebSocket) {
         val presence = JsonObject().apply {
             addProperty("since", 0)
             add("activities", JsonArray())
-            addProperty("status", "online")
+            addProperty("status", AllSettings.discordRpcStatus.getValue().takeIf { it in VALID_STATUSES } ?: "online")
             addProperty("afk", false)
         }
         send(webSocket, 3, presence)

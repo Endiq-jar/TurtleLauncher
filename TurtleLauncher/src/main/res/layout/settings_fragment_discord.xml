@@ -145,13 +145,25 @@
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <TextView
+                    android:id="@+id/discord_activity_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/discord_activity_unavailable"
+                    android:text="@string/discord_activity_description"
                     android:textSize="11sp"
                     android:lineSpacingExtra="2dp"
                     android:textColor="@color/turtle_text_secondary" />
+
+                <com.endiq.turtlelauncher.ui.view.AnimButton
+                    android:id="@+id/discord_rpc_configure_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m"
+                    android:background="@drawable/bg_launch_button"
+                    android:paddingHorizontal="@dimen/space_m"
+                    android:paddingVertical="@dimen/space_xs"
+                    android:text="@string/discord_rpc_configure"
+                    android:textSize="12sp" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 

@@ -27,6 +27,9 @@ class AllSettings {
         @JvmStatic val discordUserId = StringSettingUnit("discordUserId", "")
         @JvmStatic val discordUsername = StringSettingUnit("discordUsername", "")
         @JvmStatic val discordAvatarHash = StringSettingUnit("discordAvatarHash", "")
+        /** Opt-in Gateway RPC. A user token is required because Discord has no Android IPC. */
+        @JvmStatic val discordRpcEnabled = BooleanSettingUnit("discordRpcEnabled", false)
+        @JvmStatic val discordRpcToken = StringSettingUnit("discordRpcToken", "")
 
         // ── Video ──────────────────────────────────────────────────────────────
         @JvmStatic val renderer = StringSettingUnit("renderer", "4b4b8e4b-083d-429c-97e1-5e8239b6dc17")

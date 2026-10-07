@@ -1251,7 +1251,15 @@
     <string name="discord_disconnect">Disconnect</string>
     <string name="discord_link_failed">Couldn\'t link your Discord account. Try again.</string>
     <string name="discord_activity_title">Game activity on Discord</string>
-    <string name="discord_activity_unavailable">Not available yet: showing live \"Playing Minecraft\" status to friends needs Discord\'s official Rich Presence mechanism, which only works through the desktop Discord client on the same machine as the game - there\'s no public API for an Android app to set it on a linked account\'s behalf.</string>
+    <string name="discord_activity_description">Shows the Minecraft version and session time on your Discord profile while the game is running.</string>
+    <string name="discord_rpc_configure">Configure RPC</string>
+    <string name="discord_rpc_configured">RPC credentials configured. Activity starts automatically with Minecraft.</string>
+    <string name="discord_rpc_not_configured">Configure a Discord user token before enabling activity.</string>
+    <string name="discord_rpc_token_title">Discord RPC token</string>
+    <string name="discord_rpc_token_hint">Discord user token</string>
+    <string name="discord_rpc_token_warning">Android Discord does not provide official local RPC. This fallback connects your account directly to the Discord Gateway. It may violate Discord\'s rules and can put your account at risk. The token is stored only in this app\'s private settings. Continue only if you accept that risk.</string>
+    <string name="discord_rpc_token_saved">Discord RPC configured</string>
+    <string name="discord_rpc_remove">Remove RPC token</string>
     <string name="music_delete_track">Remove</string>
 
     <string name="whats_new_title">🐢 What\'s New in TurtleLauncher</string>

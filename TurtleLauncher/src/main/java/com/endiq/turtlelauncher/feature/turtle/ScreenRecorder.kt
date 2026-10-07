@@ -15,9 +15,12 @@ import android.media.MediaMuxer
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
+import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
+import android.os.ResultReceiver
 import android.view.PixelCopy
 import android.view.Surface
 import android.view.SurfaceView
@@ -131,18 +134,47 @@ object ScreenRecorder {
         pendingConsentActivity = null
 
         if (resultCode == Activity.RESULT_OK && data != null) {
+            // Starting a foreground service is asynchronous. Android 14 throws a SecurityException
+            // if getMediaProjection() wins that race and runs before startForeground(). Wait for
+            // the service's explicit ready callback, then obtain/use the one-shot consent token.
+            val targetRef = WeakReference(target)
+            val appContext = target.applicationContext
+            val readyReceiver = object : ResultReceiver(Handler(Looper.getMainLooper())) {
+                override fun onReceiveResult(serviceResult: Int, resultData: Bundle?) {
+                    val readyTarget = targetRef.get()
+                    if (readyTarget == null || readyTarget.isFinishing ||
+                        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && readyTarget.isDestroyed)
+                    ) {
+                        ScreenRecorderAudioService.stop(appContext)
+                        return
+                    }
+                    if (serviceResult != ScreenRecorderAudioService.RESULT_READY) {
+                        Toast.makeText(
+                            readyTarget,
+                            "Game audio capture unavailable - recording video only",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        startInternal(readyTarget, null)
+                        return
+                    }
+                    try {
+                        val projectionManager = readyTarget.getSystemService(Context.MEDIA_PROJECTION_SERVICE)
+                                as MediaProjectionManager
+                        val projection = projectionManager.getMediaProjection(resultCode, data)
+                        startInternal(readyTarget, projection)
+                    } catch (t: Throwable) {
+                        Logging.e(TAG, "Failed to obtain MediaProjection, recording video-only", t)
+                        ScreenRecorderAudioService.stop(readyTarget.applicationContext)
+                        startInternal(readyTarget, null)
+                    }
+                }
+            }
             try {
-                val projectionManager = target.getSystemService(Context.MEDIA_PROJECTION_SERVICE)
-                        as MediaProjectionManager
-                // Must be running before the MediaProjection is actually used - see
-                // ScreenRecorderAudioService's class doc.
-                ScreenRecorderAudioService.start(target.applicationContext)
-                val projection = projectionManager.getMediaProjection(resultCode, data)
-                startInternal(target, projection)
+                ScreenRecorderAudioService.start(appContext, readyReceiver)
                 return
             } catch (t: Throwable) {
-                Logging.e(TAG, "Failed to obtain MediaProjection, recording video-only", t)
-                ScreenRecorderAudioService.stop(target.applicationContext)
+                Logging.e(TAG, "Failed to start audio-capture service, recording video-only", t)
+                ScreenRecorderAudioService.stop(appContext)
             }
         } else {
             Toast.makeText(target, "Audio capture declined - recording video only", Toast.LENGTH_SHORT).show()
@@ -342,12 +374,18 @@ object ScreenRecorder {
         val surface = inputSurface ?: return
         try {
             val canvas = surface.lockCanvas(null)
-            canvas.drawBitmap(bitmap, 0f, 0f, null)
-            surface.unlockCanvasAndPost(canvas)
+            try {
+                canvas.drawBitmap(bitmap, 0f, 0f, null)
+            } finally {
+                surface.unlockCanvasAndPost(canvas)
+            }
+            // PixelCopy delivers this callback asynchronously, outside captureLoop's try/catch.
+            // Keep codec/driver failures from escaping the HandlerThread and killing the process.
+            drainVideoEncoder(endOfStream = false)
         } catch (t: Throwable) {
-            Logging.e(TAG, "Failed to draw frame to encoder surface", t)
+            Logging.e(TAG, "Failed to submit a frame to the video encoder; stopping safely", t)
+            stop(null)
         }
-        drainVideoEncoder(endOfStream = false)
     }
 
     private fun drainVideoEncoder(endOfStream: Boolean) {

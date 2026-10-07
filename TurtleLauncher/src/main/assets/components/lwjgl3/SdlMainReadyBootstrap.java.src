@@ -74,10 +74,30 @@ import java.lang.reflect.Method;
  * namespace), but it only installs from libpojavexec's JNI_OnLoad on the GUEST
  * VM - which for SDL launches nothing ever triggered (GLFW is never touched, so
  * the guest never loaded libpojavexec; the hs_err dll event log shows only
- * libpojavexec_awt). Touching org.lwjgl.glfw.GLFW here runs its static
- * initializer, which loads libpojavexec and installs the hook BEFORE Minecraft
- * reaches SDL. This does not load SDL3 from the guest, so the constraint above
- * still holds.
+ * libpojavexec_awt). This does not load SDL3 from the guest, so the constraint
+ * above still holds.
+ *
+ * ── Oct 6 2026 FIX: stopped touching org.lwjgl.glfw.GLFW for the hook trigger ──
+ * The previous approach (`Class.forName("org.lwjgl.glfw.GLFW", ...)`) relied on
+ * GLFW.class's own static initializer calling System.loadLibrary("pojavexec")
+ * as a side effect. GLFW.class only exists in the bundled, older
+ * lwjgl-glfw-classes.jar - it is not part of the official LWJGL distribution
+ * MC 26.3 downloads. Because lwjgl-3.4.3.jar sits earlier on the game -cp than
+ * lwjgl-glfw-classes.jar (see Tools.getLWJGL3ClassPath/LaunchArgs), the JVM
+ * resolves org.lwjgl.system.Callback$Descriptor from the NEW 3.4.3 jar, while
+ * our bundled GLFW.class bytecode was compiled against the OLD Descriptor
+ * constructor signature. Result: GLFW's static init threw
+ *   NoSuchMethodError: org.lwjgl.system.Callback$Descriptor.<init>(...)
+ * before it ever reached its System.loadLibrary("pojavexec") call, so the hook
+ * never installed - and because the hook never installed, Minecraft's own
+ * later NativeLibrariesBootstrap.loadLWJGLSystem() -> Library.<clinit> could no
+ * longer locate the (perfectly present) bundled liblwjgl.so either, crashing
+ * the whole launch with UnsatisfiedLinkError: Failed to locate library:
+ * liblwjgl.so. The fix: load libpojavexec directly via System.loadLibrary
+ * below. This is exactly what GLFW.class's static init used to do as a side
+ * effect, but doing it directly means we never touch any class from the
+ * version-mismatched lwjgl-glfw-classes.jar, so this can't break again just
+ * because a future Minecraft version bumps its official LWJGL jar.
  */
 public class SdlMainReadyBootstrap {
     public static void main(String[] args) throws Exception {
@@ -90,10 +110,14 @@ public class SdlMainReadyBootstrap {
         }
 
         try {
-            Class.forName("org.lwjgl.glfw.GLFW", true, SdlMainReadyBootstrap.class.getClassLoader());
+            // Load libpojavexec directly (see Oct 6 2026 FIX note above) instead of
+            // touching org.lwjgl.glfw.GLFW, which only exists in the bundled,
+            // LWJGL-version-mismatched lwjgl-glfw-classes.jar and threw
+            // NoSuchMethodError against the official lwjgl-3.4.3 classpath entries.
+            System.loadLibrary("pojavexec");
             System.out.println("TurtleSDL3: guest libpojavexec loaded, LWJGL dlopen hook installed");
         } catch (Throwable t) {
-            System.out.println("TurtleSDL3: could not install the LWJGL dlopen hook (" + t
+            System.out.println("TurtleSDL3: could not load libpojavexec (" + t
                 + ") - SDL3 may load as a second, uninitialized instance");
         }
 

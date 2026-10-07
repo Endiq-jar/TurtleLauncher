@@ -1,4 +1,4 @@
-name: Build with LWJGL 3.4.2 native fix
+name: Build with LWJGL 3.4.3 native fix
 
 # Manual trigger only - this is a heavier build than the normal Auto Build
 # (it cross-compiles LWJGL's native C core for Android arm64 first).
@@ -37,7 +37,14 @@ jobs:
         run: |
           git config --global core.autocrlf false
           export JAVA8_HOME=$JAVA_HOME_8_X64
-          export LWJGL_VERSION='3.4.2'
+          # Oct 6 2026: bumped from 3.4.2 to match the official LWJGL jars MC
+          # 26.3 actually downloads at launch (lwjgl-3.4.3.jar / lwjgl-sdl-3.4.3.jar
+          # on the game -cp) - a mismatched native build here is exactly the kind
+          # of thing that produces "Failed to locate library: liblwjgl.so" /
+          # NoSuchMethodError crashes at launch. Keep this in sync with whatever
+          # LWJGL version Mojang's version JSON pins for the newest supported MC
+          # version.
+          export LWJGL_VERSION='3.4.3'
           export LIBFFI_VERSION='3.7.0'
           bash ci_build_all.bash
 

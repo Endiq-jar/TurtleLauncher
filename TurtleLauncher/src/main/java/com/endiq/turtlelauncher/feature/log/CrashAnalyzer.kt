@@ -89,6 +89,33 @@ object CrashAnalyzer {
     // "steal" a match that already has a much better explanation.
     private val rules: List<Rule> by lazy {
         listOf(
+            // Checked before the more generic "native_library_path" rule below,
+            // since this one identifies the specific trigger (the GLFW-touch
+            // dlopen-hook installer failing against a version-mismatched classpath)
+            // rather than just the downstream symptom.
+            Rule(
+                title = "sdl_hook_glfw_classpath_mismatch",
+                matches = { has(it, "could not install the LWJGL dlopen hook") && has(it, "Callback\$Descriptor") },
+                diagnosis = fixed(
+                    "SDL dlopen-hook installer failed due to a stale bundled LWJGL class (fixed Oct 6 2026)",
+                    "SdlMainReadyBootstrap used to touch org.lwjgl.glfw.GLFW to trigger libpojavexec's dlopen " +
+                        "hook install. GLFW.class only exists in the bundled, older lwjgl-glfw-classes.jar, while " +
+                        "the official lwjgl-3.4.x jar (needed for the launching Minecraft version) sits earlier on " +
+                        "the game -cp and provides a newer org.lwjgl.system.Callback\$Descriptor with a different " +
+                        "constructor - so GLFW's static initializer threw NoSuchMethodError before it ever reached " +
+                        "its System.loadLibrary(\"pojavexec\") call. Because the hook never installed, the real " +
+                        "native library load later in the launch (NativeLibrariesBootstrap.loadLWJGLSystem) could " +
+                        "no longer locate the bundled (perfectly present) liblwjgl.so either, crashing the launch.",
+                    listOf(
+                        "Update to the latest TurtleLauncher build - SdlMainReadyBootstrap now loads libpojavexec " +
+                            "directly instead of touching org.lwjgl.glfw.GLFW, so it no longer depends on any class " +
+                            "from the version-mismatched lwjgl-glfw-classes.jar.",
+                        "If it still happens after updating: the official LWJGL jar version Minecraft downloaded " +
+                            "has likely moved again - check Tools.getLWJGL3ClassPath()/LaunchArgs and the " +
+                            "\"Build with LWJGL native fix\" workflow's LWJGL_VERSION are pointed at the same version."
+                    )
+                )
+            ),
             Rule(
                 title = "native_library_path",
                 matches = { has(it, "Failed to locate library:", "no pojavexec in java.library.path", "no pojavexec_awt in java.library.path") },

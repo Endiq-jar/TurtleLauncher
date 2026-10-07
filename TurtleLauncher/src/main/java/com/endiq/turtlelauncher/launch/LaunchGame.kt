@@ -373,8 +373,13 @@ class LaunchGame {
                 FFmpegPlugin.discover(activity)
 
                 androidx.tracing.Trace.beginSection("LaunchGame.launchWithUtils")
-                JREUtils.launchWithUtils(activity, runtime, minecraftVersion, launchArgs, customArgs)
-                androidx.tracing.Trace.endSection()
+                try {
+                    com.endiq.turtlelauncher.feature.discord.DiscordRpcManager.start(minecraftVersion.getVersionName())
+                    JREUtils.launchWithUtils(activity, runtime, minecraftVersion, launchArgs, customArgs)
+                } finally {
+                    com.endiq.turtlelauncher.feature.discord.DiscordRpcManager.stop()
+                    androidx.tracing.Trace.endSection()
+                }
             } finally {
                 androidx.tracing.Trace.endSection()
             }

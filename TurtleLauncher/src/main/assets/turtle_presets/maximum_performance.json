@@ -1,0 +1,13 @@
+{
+  "name": "Maximum Performance",
+  "description": "Maximum FPS with highest RAM allocation: Unlimited FPS, aggressive GC tuning, maximum heap. Optimized for high-end devices.",
+  "javaArgs": "-XX:+UseG1GC -XX:MaxGCPauseMillis=4 -XX:G1HeapRegionSize=32M -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=50 -XX:G1ReservePercent=15 -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:+PerfDisableSharedMem -XX:+UseStringDeduplication -Dorg.lwjgl.util.NoChecks=true",
+  "ramAllocation": 4096,
+  "unlimitedFps": true,
+  "lowLatencyRendering": true,
+  "framePacing": true,
+  "frameSkipping": true,
+  "adaptiveFrameTiming": true,
+  "equalHeapSizes": true,
+  "autoRamCalculator": false
+}

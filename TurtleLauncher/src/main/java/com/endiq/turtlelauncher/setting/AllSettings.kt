@@ -72,7 +72,7 @@ class AllSettings {
         @JvmStatic val zinkPreferSystemDriver   = BooleanSettingUnit("zinkPreferSystemDriver", false)
 
         /** Auto Settings Optimizer: automatically tunes renderer/driver, RAM allocation, resolution scale, and FPS boost flags for this device at launch. */
-        @JvmStatic val autoSettingsOptimizer    = BooleanSettingUnit("autoSettingsOptimizer", false)
+        @JvmStatic val autoSettingsOptimizer    = BooleanSettingUnit("autoSettingsOptimizer", true)
 
         // ── Control ───────────────────────────────────────────────────────────
         @JvmStatic val disableGestures          = BooleanSettingUnit("disableGestures", true)
@@ -144,8 +144,9 @@ class AllSettings {
         @JvmStatic val selectRuntimeMode        = StringSettingUnit("selectRuntimeMode", "auto")
         @JvmStatic val javaArgs = StringSettingUnit(
             "javaArgs",
-            "-XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:G1HeapRegionSize=16M " +
-            "-XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20"
+            "-XX:+UseG1GC -XX:MaxGCPauseMillis=4 -XX:G1HeapRegionSize=32M " +
+            "-XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=40 -XX:G1ReservePercent=15 " +
+            "-XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:+PerfDisableSharedMem -XX:+UseStringDeduplication"
         )
         @JvmStatic val ramAllocation = lazy {
             IntSettingUnit("allocation", LauncherPreferences.findBestRAMAllocation(ContextExecutor.getApplication()))
@@ -239,7 +240,7 @@ class AllSettings {
         @JvmStatic val equalHeapSizes           = BooleanSettingUnit("equalHeapSizes", true)
         /** Quick RAM presets shown in Phone Settings; "custom" defers entirely to the Game
          *  Settings slider / autoRamCalculator above. */
-        @JvmStatic val ramPreset                = StringSettingUnit("ramPreset", "balanced")
+        @JvmStatic val ramPreset                = StringSettingUnit("ramPreset", "high")
         @JvmStatic val memoryPressureMonitor    = BooleanSettingUnit("memoryPressureMonitor", false)
         /** Adds -Xlog:gc (JDK unified logging) to the launch args and appends a running
          *  pause-count/total-pause-time summary to the launcher log on exit. */

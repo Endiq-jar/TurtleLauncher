@@ -546,8 +546,21 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
         }.ended(TaskExecutors.getAndroidUI()) {
             refreshOtherServer()
             runCatching { mProgressDialog.dismiss() }
-        }.onThrowable { e ->
+        }.onThrowable(TaskExecutors.getAndroidUI()) { e ->
+            // performMainTask() throwing (e.g. malformed/non-JSON response from an
+            // incompatible server) skips onEnded() entirely in Task.execute(), so without
+            // this the progress dialog shown in beforeStart() never gets dismissed and the
+            // "Tasks are being executed" overlay sticks forever - this IS the dialog in
+            // the bug report, reproducible on any non-offline/non-Microsoft account add.
             Logging.e("Add Other Server (direct)", Tools.printToString(e))
+            runCatching { mProgressDialog.dismiss() }
+            if (isAdded) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.other_login_error) + (e.message ?: e.toString()),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }.execute()
     }
 
@@ -601,8 +614,19 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
         }.ended(TaskExecutors.getAndroidUI()) {
             refreshOtherServer()
             runCatching { mProgressDialog.dismiss() }
-        }.onThrowable { e ->
+        }.onThrowable(TaskExecutors.getAndroidUI()) { e ->
+            // Same fix as addOtherServerDirect() above: an uncaught throw in
+            // performMainTask() (malformed JSON/URL from the target server) skips
+            // onEnded() in Task.execute(), so the progress dialog never dismissed here.
             Logging.e("Add Other Server", Tools.printToString(e))
+            runCatching { mProgressDialog.dismiss() }
+            if (isAdded) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.other_login_error) + (e.message ?: e.toString()),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }.execute()
     }
 

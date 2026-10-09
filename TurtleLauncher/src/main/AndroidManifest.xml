@@ -100,7 +100,7 @@
         <activity
             android:name="com.endiq.turtlelauncher.ui.activity.ErrorActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
-            android:theme="@style/CustomDialogStyle"
+            android:theme="@style/AppTheme"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name="com.endiq.turtlelauncher.ui.activity.ConfigEditorActivity"

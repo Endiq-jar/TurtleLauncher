@@ -16,7 +16,7 @@
     <string name="generic_zip">Nén</string>
     <string name="generic_extract">Giải nén</string>
     <string name="file_zip_title">Nén thành ZIP</string>
-    <string name="file_zip_message">Nén \"%s\" thành tệp ZIP trong cùng thư mục?</string>
+    <string name="file_zip_message">Nén "%s" thành tệp ZIP trong cùng thư mục?</string>
     <string name="file_zip_message_multi">Nén %d mục đã chọn thành tệp ZIP?</string>
     <string name="file_zip_name_hint">Tên tệp nén (không có .zip)</string>
     <string name="generic_search">Tìm kiếm</string>
@@ -51,7 +51,7 @@
     <string name="generic_no_more_reminders">Không còn nhắc nhở nào</string>
     <string name="generic_no_network">Không có kết nối Internet. Vui lòng kiểm tra kết nối mạng của thiết bị!</string>
     <string name="generic_input_invalid">Dữ liệu nhập không hợp lệ, vui lòng thử lại</string>
-    <string name="generic_input_invalid_character">Tên chứa ký tự không hợp lệ: \"%s\"</string>
+    <string name="generic_input_invalid_character">Tên chứa ký tự không hợp lệ: "%s"</string>
     <string name="generic_input_too_small">Giá trị quá nhỏ, phải tối thiểu là %s</string>
     <string name="generic_input_too_big">Giá trị quá lớn, tối đa là %s</string>
     <string name="generic_copied">Đã sao chép</string>
@@ -70,7 +70,8 @@
     <string name="crash_copy_log">Sao chép</string>
     <string name="crash_log_copied">Đã sao chép nhật ký vào bộ nhớ tạm</string>
     <string name="crash_repair_button">Sửa ngay</string>
-    <string name="self_heal_repairing">Phát hiện vấn đề.\nĐang tự động sửa...</string>
+    <string name="self_heal_repairing">Phát hiện vấn đề.
+Đang tự động sửa...</string>
     <string name="crash_search_online_button">Tìm kiếm trực tuyến</string>
     <string name="crash_export_button">Báo cáo sự cố</string>
     <string name="crash_export_failed">Không thể xuất chẩn đoán</string>
@@ -156,15 +157,15 @@
     <string name="dl_tampered_manifest_title">Cảnh báo xác minh tệp</string>
     <string name="dl_tampered_manifest"><![CDATA[Danh sách phiên bản game trên máy chủ gương không khớp với danh sách chính thức của Mojang, có nghĩa là nó có thể đã bị chỉnh sửa.<br/>
         <b>Điều này không an toàn. Thông tin cá nhân của bạn có thể gặp rủi ro nếu tiếp tục.</b><br/>
-        Nếu vẫn muốn dùng máy chủ gương, nhấn \"Tắt kiểm tra danh sách\" rồi bắt đầu tải lại.<br/>
-        Nếu muốn dùng nguồn tải chính thức, nhấn \"Chuyển sang trang chính thức\" rồi bắt đầu tải lại.<br/>]]></string>
+        Nếu vẫn muốn dùng máy chủ gương, nhấn "Tắt kiểm tra danh sách" rồi bắt đầu tải lại.<br/>
+        Nếu muốn dùng nguồn tải chính thức, nhấn "Chuyển sang trang chính thức" rồi bắt đầu tải lại.<br/>]]></string>
     <string name="dl_turn_off_manifest_checks">Tắt kiểm tra danh sách phiên bản game</string>
     <string name="dl_switch_to_official_site">Chuyển sang nguồn tải chính thức</string>
     <string name="notif_download_finished">Game đã sẵn sàng để khởi chạy</string>
     <string name="notif_download_finished_desc">Nhấn vào đây để khởi chạy!</string>
     <string name="notification_permission_dialog_title">Yêu cầu quyền</string>
     <string name="notification_permission_dialog_text">%1$s cần quyền thông báo để việc tải tệp game không bị dừng khi bạn rời khỏi ứng dụng. Nếu không có quyền này, Android có thể dừng tiến trình tải khi %2$s chạy nền.</string>
-    <string name="notification_permission_toast">Bạn có thể thay đổi ý kiến bất cứ lúc nào trong \"Cài đặt hệ thống\"</string>
+    <string name="notification_permission_toast">Bạn có thể thay đổi ý kiến bất cứ lúc nào trong "Cài đặt hệ thống"</string>
     <string name="newdl_starting">Đang đọc siêu dữ liệu game…</string>
     <string name="newdl_downloading_metadata">Đang tải siêu dữ liệu game (%s)</string>
     <string name="newdl_downloading_game_files">Đang tải tệp game… (%1$d/%2$d, %3$.2f MB)</string>
@@ -193,7 +194,9 @@
     <string name="mod_check_valkyrien_skies">Valkyrien Skies/Valkyrien Warfare (%s) không thể chạy trực tiếp ở chế độ một người chơi. Bạn phải chạy trên máy chủ, nếu không game sẽ crash.</string>
     <string name="mod_check_yes_steve_model">Yes, Steve Model (%s) 2.2.2–2.5.1 không thể chạy trên Android.</string>
     <string name="mod_check_imblocker">IMBlocker/In-GameIME (%s) không tương thích với Android và sẽ khiến game crash khi khởi động.</string>
-    <string name="mod_check_replay_mod">ReplayMod (%1$s) cần FFmpeg để render video. Vui lòng cài plugin FFmpeg riêng\n%2$s\n%3$s</string>
+    <string name="mod_check_replay_mod">ReplayMod (%1$s) cần FFmpeg để render video. Vui lòng cài plugin FFmpeg riêng
+%2$s
+%3$s</string>
     <string name="mod_check_borderlesswindow">Borderless Window (%s) không tương thích với Android và sẽ khiến game crash khi khởi động.</string>
     <!-- Điều khiển -->
     <string name="control_primary">Chuột trái</string>
@@ -231,7 +234,8 @@
     <string name="customctrl_swipeable">Có thể vuốt</string>
     <string name="customctrl_forward_lock">Khóa chuyển tiếp</string>
     <string name="customctrl_absolute_tracking">Buộc theo dõi ngón tay</string>
-    <string name="controls_tip">Nhấn biểu tượng bánh răng để mở menu ⚙\nNhấn một nút để tùy chỉnh: chỉnh sửa, đổi kích thước, xóa hoặc đổi ánh xạ</string>
+    <string name="controls_tip">Nhấn biểu tượng bánh răng để mở menu ⚙
+Nhấn một nút để tùy chỉnh: chỉnh sửa, đổi kích thước, xóa hoặc đổi ánh xạ</string>
     <string name="controls_add_control_button">Nút</string>
     <string name="controls_add_control_drawer">Ngăn kéo</string>
     <string name="controls_visibility">Hiển thị</string>
@@ -332,10 +336,10 @@
     <string name="modpack_export_progress_title">Đang xuất modpack…</string>
     <string name="modpack_export_success">Đã xuất modpack tới %s</string>
     <string name="modpack_export_failure">Xuất modpack thất bại: %s</string>
-    <string name="version_manager_copy_tip">Sao chép phiên bản hiện tại thành một phiên bản mới với cách ly phiên bản được bật mặc định. Nếu bật \"Sao chép tất cả tệp\" bên dưới, mọi tệp do phiên bản hiện tại tạo ra (gói tài nguyên, thế giới, cài đặt game, v.v.) cũng sẽ được sao chép.</string>
+    <string name="version_manager_copy_tip">Sao chép phiên bản hiện tại thành một phiên bản mới với cách ly phiên bản được bật mặc định. Nếu bật "Sao chép tất cả tệp" bên dưới, mọi tệp do phiên bản hiện tại tạo ra (gói tài nguyên, thế giới, cài đặt game, v.v.) cũng sẽ được sao chép.</string>
     <string name="version_manager_copy_all">Sao chép tất cả tệp</string>
     <string name="version_manager_delete">Xóa phiên bản</string>
-    <string name="version_manager_delete_tip">Xóa phiên bản sẽ xóa toàn bộ tệp trong thư mục \"./versions/%s\", bao gồm các tài nguyên quan trọng như thế giới, gói tài nguyên, mod, v.v., ngay cả khi không bật cách ly phiên bản. Vì vậy, hãy đảm bảo sao lưu trước khi thực hiện!</string>
+    <string name="version_manager_delete_tip">Xóa phiên bản sẽ xóa toàn bộ tệp trong thư mục "./versions/%s", bao gồm các tài nguyên quan trọng như thế giới, gói tài nguyên, mod, v.v., ngay cả khi không bật cách ly phiên bản. Vì vậy, hãy đảm bảo sao lưu trước khi thực hiện!</string>
     <string name="version_manager_delete_tip_invalid">Phiên bản hiện tại thiếu tệp JSON phiên bản nên được coi là không hợp lệ. Bạn không thể chọn phiên bản này. Nhấn Xác nhận để xóa phiên bản lỗi này.</string>
     <string name="version_manager_task_in_progress">Đang thực hiện tác vụ, quản lý phiên bản tạm thời không khả dụng</string>
     <string name="version_manager_invalid">Phiên bản này không hợp lệ</string>
@@ -385,7 +389,10 @@
     <string name="account_microsoft_xerr_unauthorized">Thông tin đăng nhập tài khoản Microsoft của bạn có vẻ đã hết hạn, thường xảy ra sau khi đổi mật khẩu. Vui lòng gỡ tài khoản hiện tại và đăng nhập lại để đặt lại thông tin.</string>
     <string name="account_local_account">Tài khoản ngoại tuyến</string>
     <string name="account_local_account_empty">Tên người dùng không được để trống!</string>
-    <string name="account_local_account_invalid">Tên người dùng hợp lệ chỉ hỗ trợ chữ cái tiếng Anh (viết hoa và thường), số và dấu gạch dưới. Độ dài tên phải từ 3 đến 16 ký tự. [RED;BOLD]Nếu không, game có thể không hoạt động đúng.[/RED;BOLD]\nVí dụ tên hợp lệ: Name, Name_, Name123\nVí dụ tên không hợp lệ: Name@, N ame, name_name_name_name\nTuy nhiên, nếu bạn dùng mod hoặc plugin bỏ giới hạn này, bạn vẫn có thể tiếp tục dùng tên này. Nếu không, hãy đổi tên!</string>
+    <string name="account_local_account_invalid">Tên người dùng hợp lệ chỉ hỗ trợ chữ cái tiếng Anh (viết hoa và thường), số và dấu gạch dưới. Độ dài tên phải từ 3 đến 16 ký tự. [RED;BOLD]Nếu không, game có thể không hoạt động đúng.[/RED;BOLD]
+Ví dụ tên hợp lệ: Name, Name_, Name123
+Ví dụ tên không hợp lệ: Name@, N ame, name_name_name_name
+Tuy nhiên, nếu bạn dùng mod hoặc plugin bỏ giới hạn này, bạn vẫn có thể tiếp tục dùng tên này. Nếu không, hãy đổi tên!</string>
     <string name="account_login_local_name">Tên người dùng</string>
     <string name="account_login_start">Bắt đầu đăng nhập!</string>
     <string name="account_login_microsoft_progress">Đang đăng nhập tài khoản Microsoft: %s</string>
@@ -441,7 +448,7 @@
     <string name="custom_background_desc">Mở giao diện quản lý ảnh nền trình khởi chạy, nơi bạn có thể thêm ảnh nền yêu thích và đặt ảnh nền khác nhau cho từng giao diện</string>
     <string name="custom_background_main_menu">Menu chính</string>
     <string name="custom_background_in_game">Giao diện trong game</string>
-    <string name="custom_background_dialog_message">Nhấn nút \"Chọn\" để đặt ảnh này làm nền cho %s</string>
+    <string name="custom_background_dialog_message">Nhấn nút "Chọn" để đặt ảnh này làm nền cho %s</string>
     <string name="custom_background_selected">Đã đặt ảnh nền cho %s thành công:</string>
     <string name="custom_background_reset">Đặt lại ảnh nền cho %s</string>
     <string name="custom_background_nothing">Không có ảnh nền nào ở đây, hãy thêm trước!</string>
@@ -923,7 +930,9 @@
     <string name="setting_max_download_threads_title">Số luồng tải tối đa</string>
     <string name="setting_max_download_threads_desc">Số lượt tải đồng thời tối đa khi tải nhiều tệp cùng lúc, nhưng quá nhiều luồng sẽ làm trình khởi chạy bị lag. 64 luồng là đủ!</string>
     <string name="setting_version_isolation_title">Cách ly phiên bản</string>
-    <string name="setting_version_isolation_desc">Bật cách ly phiên bản cho phiên bản game\nKhi tắt, đường dẫn game là .minecraft/\nKhi bật, đường dẫn game sẽ đổi thành .minecraft/versions/&lt;tên phiên bản&gt;/</string>
+    <string name="setting_version_isolation_desc">Bật cách ly phiên bản cho phiên bản game
+Khi tắt, đường dẫn game là .minecraft/
+Khi bật, đường dẫn game sẽ đổi thành .minecraft/versions/&lt;tên phiên bản&gt;/</string>
     <string name="setting_version_custom_info_title">Thông tin tùy chỉnh</string>
     <string name="setting_version_custom_info_desc">Thông tin tùy chỉnh sẽ hiện ở góc dưới bên trái menu chính của game và góc trên bên trái màn hình gỡ lỗi F3. Sau khi thêm trường [zl_version], trình khởi chạy sẽ thay bằng số phiên bản của trình khởi chạy.</string>
     <string name="setting_curseforge_api_key_title">Khóa API CurseForge</string>
@@ -1100,7 +1109,8 @@
     <string name="other_login_battly_hint">Tìm mục này trong Tài khoản → Xác thực Minecraft trên ứng dụng Battly Launcher, rồi dán URL authlib-injector vào đây</string>
     <string name="other_login_yggdrasil_api">Vui lòng nhập địa chỉ máy chủ xác thực Yggdrasil API</string>
     <string name="other_login_32_bit_server">Vui lòng nhập ID máy chủ 32-bit</string>
-    <string name="other_login_error">Có lỗi khi đăng nhập:\n</string>
+    <string name="other_login_error">Có lỗi khi đăng nhập:
+</string>
     <string name="other_login_baseurl_not_set">Chưa đặt URL gốc</string>
     <string name="other_login_server_not_empty">Máy chủ không được để trống, vui lòng kiểm tra cài đặt máy chủ xác thực!</string>
     <string name="other_login_select_role_title">Chọn vai trò</string>
@@ -1127,7 +1137,7 @@
     <string name="about_tab">Giới thiệu về %s</string>
     <string name="about_dec1">%s là trình khởi chạy Minecraft do Endiq phát triển, cho phép Minecraft: Java Edition chạy trên thiết bị Android.</string>
     <string name="about_dec2">%s tập trung vào tối ưu trải nghiệm người dùng, thiết kế lại giao diện và bổ sung nhiều tính năng thiết thực, nhằm giảm rào cản khi chơi và giúp nhiều người dễ dàng tận hưởng niềm vui Minecraft.</string>
-    <string name="about_dec3">%s sử dụng giấy phép mã nguồn mở GPL 3.0, có tính \"lan truyền\". Mọi mã sử dụng, chỉnh sửa hoặc phát sinh từ thư viện hay phần mềm GPL cũng phải áp dụng giấy phép GPL để mở mã nguồn. Nếu bạn định phân phối phần mềm này, hãy tuân thủ các quy định liên quan của giấy phép GPL 3.0.</string>
+    <string name="about_dec3">%s sử dụng giấy phép mã nguồn mở GPL 3.0, có tính "lan truyền". Mọi mã sử dụng, chỉnh sửa hoặc phát sinh từ thư viện hay phần mềm GPL cũng phải áp dụng giấy phép GPL để mở mã nguồn. Nếu bạn định phân phối phần mềm này, hãy tuân thủ các quy định liên quan của giấy phép GPL 3.0.</string>
     <string name="about_contributors">Người đóng góp và ghi nhận:</string>
     <string name="about_sponsors">Cảm ơn các nhà tài trợ:</string>
     <string name="about_sponsors_list">Xem danh sách nhà tài trợ</string>
@@ -1296,7 +1306,7 @@
 
     <string name="preset_pvp_title">Cài đặt sẵn PvP</string>
     <string name="preset_survival_title">Cài đặt sẵn Sinh tồn</string>
-    <string name="preset_apply_confirm">Áp dụng cài đặt sẵn \"%s\"? Thao tác này sẽ ghi đè tham số Java và cài đặt FPS hiện tại của bạn.</string>
+    <string name="preset_apply_confirm">Áp dụng cài đặt sẵn "%s"? Thao tác này sẽ ghi đè tham số Java và cài đặt FPS hiện tại của bạn.</string>
     <string name="preset_applied">Đã áp dụng cài đặt sẵn thành công!</string>
     <string name="preset_failed">Không tải được tệp cài đặt sẵn.</string>
     <string name="setting_game_presets_title">Cài đặt sẵn nhanh</string>
@@ -1356,7 +1366,11 @@
     <string name="setting_ai_model_type">Nhập ID mô hình</string>
     <string name="setting_ai_model_manual_hint">ID mô hình, ví dụ gemini-2.5-pro</string>
     <string name="setting_ai_models_help">Cách hoạt động của dự phòng</string>
-    <string name="setting_ai_models_help_text">Mỗi tác vụ có một danh sách mô hình, cái tốt nhất đứng đầu. Turtle AI bắt đầu từ đầu danh sách; nếu mô hình đó từ chối yêu cầu, hết hạn mức hoặc tạm thời không khả dụng, nó sẽ lặng lẽ chuyển sang mô hình tiếp theo và vẫn trả lời. Mô hình vừa hết hạn mức sẽ nghỉ một phút rưỡi, mô hình không khả dụng lâu hơn sẽ nghỉ lâu hơn, để tránh lãng phí yêu cầu vào nó mỗi lần.\n\nTự động dùng danh sách khuyên dùng. Khi chọn một mô hình, nó sẽ được đưa lên đầu và phần còn lại làm dự phòng.\n\nMô hình thực sự trả lời được hiển thị bằng chữ nhỏ bên dưới mỗi câu trả lời trong khung chat.</string>
+    <string name="setting_ai_models_help_text">Mỗi tác vụ có một danh sách mô hình, cái tốt nhất đứng đầu. Turtle AI bắt đầu từ đầu danh sách; nếu mô hình đó từ chối yêu cầu, hết hạn mức hoặc tạm thời không khả dụng, nó sẽ lặng lẽ chuyển sang mô hình tiếp theo và vẫn trả lời. Mô hình vừa hết hạn mức sẽ nghỉ một phút rưỡi, mô hình không khả dụng lâu hơn sẽ nghỉ lâu hơn, để tránh lãng phí yêu cầu vào nó mỗi lần.
+
+Tự động dùng danh sách khuyên dùng. Khi chọn một mô hình, nó sẽ được đưa lên đầu và phần còn lại làm dự phòng.
+
+Mô hình thực sự trả lời được hiển thị bằng chữ nhỏ bên dưới mỗi câu trả lời trong khung chat.</string>
     <string name="setting_ai_voice_title">Giọng nói</string>
     <string name="setting_ai_voice_desc">Giọng Turtle AI dùng khi nói trong /speak và trong cuộc trò chuyện bằng giọng nói trực tiếp. Hãy thử vài giọng - tất cả đều có sẵn và không tốn thêm chi phí.</string>
     <string name="setting_ai_web_search_title">Trợ lý: tìm kiếm Internet</string>
@@ -1409,7 +1423,7 @@
     <string name="settings_row_shizuku_desc">Quyền đặc biệt tùy chọn cho quyền truy cập, tinh chỉnh giữ kết nối và nhật ký crash đầy đủ</string>
     <string name="settings_hub_subtitle">Mọi thứ định hình cách Turtle trông, chạy và chơi</string>
     <string name="settings_hub_search_hint">Tìm cài đặt</string>
-    <string name="settings_hub_empty_result">Không có cài đặt nào khớp với \"%1$s\"</string>
+    <string name="settings_hub_empty_result">Không có cài đặt nào khớp với "%1$s"</string>
     <string name="setting_category_shizuku_status">TRẠNG THÁI</string>
     <string name="setting_category_shizuku_options">TÙY CHỌN</string>
     <string name="setting_category_shizuku_actions">THAO TÁC ĐẶC QUYỀN</string>
@@ -1486,7 +1500,7 @@
     <string name="crash_tab_ai_analysis">Phân tích AI</string>
     <string name="crash_inspect_with_ai">Kiểm tra bằng AI</string>
     <string name="crash_more_actions">Thao tác khác</string>
-    <string name="crash_ai_analysis_placeholder">Nhấn \"Kiểm tra bằng AI\" để xem sâu hơn về lỗi crash này.</string>
+    <string name="crash_ai_analysis_placeholder">Nhấn "Kiểm tra bằng AI" để xem sâu hơn về lỗi crash này.</string>
     <string name="crash_ai_analysis_loading">Đang phân tích nhật ký…</string>
     <string name="crash_ai_analysis_unavailable">Hiện không có phân tích AI. Hãy bật trợ giúp crash AI bằng khóa API trong Cài đặt, hoặc xem nhật ký thô ở tab Nhật ký game.</string>
 </resources>

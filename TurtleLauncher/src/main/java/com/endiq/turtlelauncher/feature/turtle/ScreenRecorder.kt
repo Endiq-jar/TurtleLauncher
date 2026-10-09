@@ -1,6 +1,7 @@
 package com.endiq.turtlelauncher.feature.turtle
 
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,6 +15,7 @@ import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -21,6 +23,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.ResultReceiver
+import android.provider.MediaStore
 import android.view.PixelCopy
 import android.view.Surface
 import android.view.SurfaceView
@@ -33,6 +36,8 @@ import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.task.TaskExecutors
 import net.endiq.launcher.services.ScreenRecorderAudioService
 import java.io.File
+import java.io.FileInputStream
+import java.io.OutputStream
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -219,12 +224,46 @@ object ScreenRecorder {
             }
 
             val codec = MediaCodec.createEncoderByType(MIME_TYPE)
+            if (codec == null) {
+                throw RuntimeException("No H.264 encoder found on this device")
+            }
             codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             val surface = codec.createInputSurface()
+            if (surface == null) {
+                codec.release()
+                throw RuntimeException("Failed to create input surface for encoder")
+            }
             codec.start()
 
-            val dir = File(activity.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "recordings").apply { mkdirs() }
-            val file = File(dir, "turtle_${nameFormat.format(Date())}.mp4")
+            // Try to use external movies directory, fall back to cache dir
+            val moviesDir = activity.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
+            val cacheDir = activity.cacheDir
+            val baseDir = moviesDir ?: cacheDir
+            
+            val dir = File(baseDir, "recordings").apply {
+                if (!exists()) {
+                    Logging.i(TAG, "Creating recordings directory at: ${absolutePath}")
+                    if (!mkdirs()) {
+                        Logging.e(TAG, "Failed to create recordings directory")
+                    }
+                }
+            }
+            
+            val actualDir = if (dir.exists() && dir.isDirectory) {
+                dir
+            } else {
+                Logging.e(TAG, "Recordings directory does not exist or is not a directory, trying cache")
+                // Fallback to cache directory
+                val cacheRecordingsDir = File(cacheDir, "recordings").apply { mkdirs() }
+                if (cacheRecordingsDir.exists() && cacheRecordingsDir.isDirectory) {
+                    Logging.i(TAG, "Using cache directory for recordings")
+                    cacheRecordingsDir
+                } else {
+                    throw IOException("Cannot create recordings directory in either location")
+                }
+            }
+            val file = File(actualDir, "turtle_${nameFormat.format(Date())}.mp4")
+            Logging.i(TAG, "Recording to: ${file.absolutePath}")
             val mediaMuxer = MediaMuxer(file.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
 
             encoder = codec
@@ -315,11 +354,54 @@ object ScreenRecorder {
                 }
             }
             val savedFile = outputFile
+            
+            // Wait for all data to be written to the muxer before releasing
+            // This ensures the MP4 file is properly finalized
+            val muxerLocal = muxer
+            if (muxerLocal != null && muxerStarted) {
+                try {
+                    // Give time for remaining frames to be written
+                    Thread.sleep(300)
+                } catch (t: Throwable) {
+                    // Ignore
+                }
+            }
+            
             releaseQuietly()
+            
+            // Wait for file to be fully written to disk after muxer release
+            // Try multiple times with increasing delays
+            var fileValid = false
+            var galleryAdded = false
+            if (savedFile != null) {
+                val maxAttempts = 5
+                for (attempt in 1..maxAttempts) {
+                    try {
+                        Thread.sleep(200L * attempt)
+                    } catch (t: Throwable) {
+                        // Ignore
+                    }
+                    if (savedFile.exists() && savedFile.length() > 0) {
+                        fileValid = true
+                        // Try to add to gallery once file is valid
+                        if (attempt == 1) {
+                            galleryAdded = addVideoToGallery(activity.applicationContext, savedFile)
+                        }
+                        break
+                    }
+                }
+                Logging.i(TAG, "File validation attempts: ${if (fileValid) "success" else "failed"} for ${savedFile.absolutePath}")
+                if (fileValid && !galleryAdded) {
+                    // Try once more if first attempt failed
+                    galleryAdded = addVideoToGallery(activity.applicationContext, savedFile)
+                }
+            }
+            
             TaskExecutors.getAndroidUI().execute {
                 if (activity != null) {
-                    val message = if (savedFile != null && savedFile.length() > 0)
-                        "Recording saved: ${savedFile.name}" else "Recording failed"
+                    val message = if (savedFile != null && fileValid)
+                        "Recording saved: ${savedFile.name}" + if (galleryAdded) " (Added to gallery)" else ""
+                        else "Recording failed"
                     Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -588,6 +670,48 @@ object ScreenRecorder {
         audioEncoder = null
         mediaProjection = null
         audioServiceContext = null
+    }
+
+    /**
+     * Adds the recorded video to the device's MediaStore so it appears in the Gallery app.
+     * Uses MediaStore API for Android 10+ (Q) or the legacy approach for older versions.
+     */
+    private fun addVideoToGallery(context: Context, videoFile: File): Boolean {
+        return try {
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, videoFile.name)
+                put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "Movies/TurtleLauncher")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    put(MediaStore.Video.Media.IS_PENDING, 0)
+                }
+            }
+
+            val resolver = context.contentResolver
+            val uri: Uri? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+            } else {
+                // Legacy approach for Android 9 and below
+                resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+            }
+
+            if (uri != null) {
+                // Copy file to MediaStore
+                resolver.openOutputStream(uri)?.use { outputStream ->
+                    FileInputStream(videoFile).use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                Logging.i(TAG, "Video added to gallery: $uri")
+                true
+            } else {
+                Logging.e(TAG, "Failed to create MediaStore entry for video")
+                false
+            }
+        } catch (t: Throwable) {
+            Logging.e(TAG, "Error adding video to gallery", t)
+            false
+        }
     }
 
     /** Finds the SurfaceView/TextureView Minecraft actually renders into - see MinecraftGLSurface.start(),

@@ -393,7 +393,10 @@ class LaunchGame {
             val args = mutableListOf<String>()
 
             args += "-XX:+UseG1GC"
-            args += if (AllSettings.adaptiveFrameTiming.getValue()) "-XX:MaxGCPauseMillis=10"
+            // A 10 ms target can be overly aggressive on mobile CPUs: G1 may spend more
+            // time collecting and less time running the game. 20 ms is a more balanced target
+            // for adaptive mode; the relaxed path stays at 50 ms.
+            args += if (AllSettings.adaptiveFrameTiming.getValue()) "-XX:MaxGCPauseMillis=20"
                 else "-XX:MaxGCPauseMillis=50"
 
             if (AllSettings.unlimitedFps.getValue()) {

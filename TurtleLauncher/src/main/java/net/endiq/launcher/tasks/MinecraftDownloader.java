@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -128,12 +128,16 @@ public class MinecraftDownloader {
         if (mScheduledDownloadTasks.size() <= maxThreads) {
             maxThreads = mScheduledDownloadTasks.size();
         }
+        // Core == max, with an unbounded queue: ThreadPoolExecutor only grows past the core
+        // size when the queue is full, so a bounded queue sized to the task count kept the pool
+        // at maxThreads / 2 threads and silently halved download concurrency.
+        int threads = Math.max(1, maxThreads);
         return new ThreadPoolExecutor(
-                Math.max(1, (int) (maxThreads / 2)),
-                maxThreads,
-                500,
+                threads,
+                threads,
+                0,
                 TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(mScheduledDownloadTasks.size(), false)
+                new LinkedBlockingQueue<>()
         );
     }
 

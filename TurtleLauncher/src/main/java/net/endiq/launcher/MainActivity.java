@@ -692,7 +692,6 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         try {
             MainActivity.binding.mainControlLayout.loadLayout((CustomControls)null);
             MainActivity.binding.mainControlLayout.setModifiable(false);
-            System.gc();
             MainActivity.binding.mainControlLayout.loadLayout(minecraftVersion.getControl());
             mGameMenuWrapper.setVisibility(!binding.mainControlLayout.hasMenuButton());
         } catch (IOException e) {

@@ -5,7 +5,6 @@ import android.opengl.EGL14
 import android.os.Build
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.renderer.renderers.FreedrenoRenderer
-import com.endiq.turtlelauncher.renderer.renderers.MobileGluesRenderer
 import com.endiq.turtlelauncher.renderer.renderers.ZinkRenderer
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.utils.platform.BatterySaverManager
@@ -53,75 +52,15 @@ object AutoSettingsOptimizer {
     }
 
     private fun applyGraphics(context: Context, mcVersionId: String, gpu: String) {
-        val isMC26Plus = LaunchArgs.isMinecraftVersionAtLeast(mcVersionId, 26, 1, 0)
-        @Suppress("DEPRECATION")
-        val display = if (Build.VERSION.SDK_INT >= 30) context.display
-            else (context.getSystemService(Context.WINDOW_SERVICE) as? android.view.WindowManager)?.defaultDisplay
-        val refreshRate = display?.refreshRate?.toInt() ?: 60
-        val metrics = context.resources.displayMetrics
-        val cpuCores = Runtime.getRuntime().availableProcessors()
-        // Queried via ActivityManager, not a live GL context (none exists yet at this point -
-        // the game hasn't started) - the standard, correct way to get this ahead of time.
-        val glEsVersionPacked = (context.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager)
-            ?.deviceConfigurationInfo?.reqGlEsVersion ?: 0
-        val glEsVersion = "${glEsVersionPacked shr 16}.${glEsVersionPacked and 0xffff}"
-        Logging.i(TAG, "Detected GPU: $gpu | Manufacturer: ${Build.MANUFACTURER} | Android ${Build.VERSION.SDK_INT} | " +
-                "MC26+: $isMC26Plus | Refresh rate: ${refreshRate}Hz | Resolution: ${metrics.widthPixels}x${metrics.heightPixels} | " +
-                "CPU cores: $cpuCores | OpenGL ES: $glEsVersion")
-
-        // Do not force-switch renderers on Adreno 610-class phones. Vulkan being present is
-        // not proof that the installed Turnip/Zink/Freedreno path is compatible with this
-        // Minecraft version and Android driver. In particular, this device class often runs
-        // more reliably with the user-selected MobileGLUES renderer. Preserve BOTH renderer
-        // and driver; the Video settings screen remains the explicit place to change them.
-        if (isSnapdragon665Class(gpu)) {
-            Logging.i(TAG, "Adreno 610 / Snapdragon 665-class device detected; preserving selected renderer=" +
-                    "${AllSettings.renderer.getValue()} and driver=${AllSettings.driver.getValue()}")
-            return
-        }
-
-        val hasVulkan = Tools.checkVulkanSupport(context.packageManager)
-
-        val (rendererUuid, driver) = when {
-            gpu.contains("adreno", ignoreCase = true) -> {
-                // Freedreno is explicitly "optimized primarily for Qualcomm Adreno GPUs"
-                // (see FreedrenoRenderer's doc comment) - a better match than a generic
-                // GL4ES build now that it's an actual available option.
-                val driverChoice = if (hasVulkan) "Turnip" else "default"
-                Pair(FreedrenoRenderer().getUniqueIdentifier(), driverChoice)
-            }
-            gpu.contains("mali", ignoreCase = true) -> {
-                if (hasVulkan) {
-                    Pair(ZinkRenderer().getUniqueIdentifier(), "default")
-                } else {
-                    // MobileGlues, not LTW: matches the launcher default (see class doc).
-                    Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
-                }
-            }
-            gpu.contains("powervr", ignoreCase = true) ||
-            gpu.contains("sgx", ignoreCase = true) ||
-            gpu.contains("apple", ignoreCase = true) -> {
-                if (isMC26Plus && hasVulkan) {
-                    Logging.i(TAG, "MC 26.1+ on PowerVR/Apple GPU: switching to Zink to avoid CubeMap GL_INVALID_ENUM crash")
-                    Pair(ZinkRenderer().getUniqueIdentifier(), "default")
-                } else {
-                    Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
-                }
-            }
-            else -> {
-                if (isMC26Plus && hasVulkan) {
-                    Logging.i(TAG, "MC 26.1+ unknown GPU: attempting Zink to avoid CubeMap GL_INVALID_ENUM crash")
-                    Pair(ZinkRenderer().getUniqueIdentifier(), "default")
-                } else {
-                    Logging.i(TAG, "Unknown GPU, leaving renderer/driver unchanged")
-                    return
-                }
-            }
-        }
-
-        Logging.i(TAG, "Auto-selected renderer=$rendererUuid driver=$driver")
-        AllSettings.renderer.put(rendererUuid).save()
-        AllSettings.driver.put(driver).save()
+        // Renderer auto-selection intentionally disabled. Some renderer implementations
+        // were removed from this source tree; do not reference or instantiate them here.
+        // Keep the renderer and driver selected by the user, and let the launch-time
+        // validity check handle a renderer that is no longer installed.
+        Logging.i(
+            TAG,
+            "GPU detected: $gpu | Minecraft=$mcVersionId | preserving user-selected renderer=" +
+                "${AllSettings.renderer.getValue()} and driver=${AllSettings.driver.getValue()}"
+        )
     }
 
     private fun applyPerformanceTier(context: Context, gpu: String) {

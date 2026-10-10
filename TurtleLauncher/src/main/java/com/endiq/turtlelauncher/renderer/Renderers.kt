@@ -3,6 +3,7 @@ package com.endiq.turtlelauncher.renderer
 import android.content.Context
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.renderer.renderers.AngleRenderer
+import com.endiq.turtlelauncher.renderer.renderers.MobileGluesRenderer
 import com.endiq.turtlelauncher.renderer.renderers.FreedrenoRenderer
 import com.endiq.turtlelauncher.renderer.renderers.HolyGL4ESRenderer
 import com.endiq.turtlelauncher.renderer.renderers.NWRenderer

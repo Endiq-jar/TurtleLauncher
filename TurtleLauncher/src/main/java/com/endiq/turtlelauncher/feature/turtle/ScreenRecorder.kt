@@ -37,6 +37,7 @@ import com.endiq.turtlelauncher.task.TaskExecutors
 import net.endiq.launcher.services.ScreenRecorderAudioService
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.io.OutputStream
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
@@ -329,6 +330,11 @@ object ScreenRecorder {
     fun stop(activity: Activity?) {
         if (!isRecordingFlag.compareAndSet(true, false)) return
 
+        // stop() may be called with no Activity at all (e.g. from the capture loop when the
+        // game surface goes away), so resolve the non-null pieces we need up front instead of
+        // dereferencing a nullable Activity inside the background task below.
+        val appContext = activity?.applicationContext
+
         captureThread?.quitSafely()
         captureThread = null
         captureHandler = null
@@ -385,7 +391,7 @@ object ScreenRecorder {
                         fileValid = true
                         // Try to add to gallery once file is valid
                         if (attempt == 1) {
-                            galleryAdded = addVideoToGallery(activity.applicationContext, savedFile)
+                            galleryAdded = appContext != null && addVideoToGallery(appContext, savedFile)
                         }
                         break
                     }
@@ -393,7 +399,7 @@ object ScreenRecorder {
                 Logging.i(TAG, "File validation attempts: ${if (fileValid) "success" else "failed"} for ${savedFile.absolutePath}")
                 if (fileValid && !galleryAdded) {
                     // Try once more if first attempt failed
-                    galleryAdded = addVideoToGallery(activity.applicationContext, savedFile)
+                    galleryAdded = appContext != null && addVideoToGallery(appContext, savedFile)
                 }
             }
             

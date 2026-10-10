@@ -508,7 +508,13 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         super.onConfigurationChanged(newConfig);
 
         mGyroControl.updateOrientation();
-        Tools.updateWindowSize(this);
+        // computeNotchSize() was only ever called once, in onAttachedToWindow() - before
+        // the forced sensorLandscape orientation had necessarily settled - so a later
+        // rotation kept using a stale, wrong-orientation cutout value here and the game
+        // surface ended up undersized against the real screen. Recompute it on every
+        // config change (it calls Tools.updateWindowSize() itself) so it matches the
+        // orientation refreshSize() is about to use.
+        LauncherPreferences.computeNotchSize(this);
         binding.mainGameRenderView.refreshSize();
         runOnUiThread(() -> binding.mainControlLayout.refreshControlButtonPositions());
     }

@@ -26,7 +26,8 @@ import net.endiq.launcher.Tools
 import org.apache.commons.io.FileUtils
 import org.greenrobot.eventbus.EventBus
 import java.io.File
-import java.util.concurrent.CopyOnWriteArrayList
+import java.io.IOException
+import kotlin.coroutines.cancellation.CancellationException
 
 
 /**
@@ -34,7 +35,9 @@ import java.util.concurrent.CopyOnWriteArrayList
  * @see Version
  */
 object VersionsManager {
-    private val versions = CopyOnWriteArrayList<Version>()
+    // Immutable snapshots make reads cheap and ensure screens never observe an empty/partially
+    // rebuilt list while the scanner is running on Dispatchers.IO.
+    @Volatile private var versions: List<Version> = emptyList()
 
     /**
      * @return the current game info
@@ -44,8 +47,8 @@ object VersionsManager {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName("VersionsManager"))
     private val refreshMutex = Mutex()
-    private var isRefreshing: Boolean = false
-    private var lastRefreshTime = 0L
+    @Volatile private var isRefreshing: Boolean = false
+    @Volatile private var lastRefreshTime = 0L
 
     /**
      * @return whether a refresh is allowed
@@ -56,7 +59,7 @@ object VersionsManager {
     /**
      * @return all version data
      */
-    fun getVersions() = versions.toList()
+    fun getVersions(): List<Version> = versions
 
     /**
      * Check whether the version already exists.
@@ -87,65 +90,85 @@ object VersionsManager {
     private fun handleRefreshOperation(refreshVersionInfo: Boolean) {
         isRefreshing = true
         EventBus.getDefault().post(RefreshVersionsEvent(START))
-
-        versions.clear()
-
-        val versionsHome: String = ProfilePathHome.getVersionsHome()
-        File(versionsHome).listFiles()?.forEach { versionFile ->
-            runCatching {
-                processVersionFile(versionsHome, versionFile, refreshVersionInfo)
+        try {
+            val refreshedVersions = ArrayList<Version>()
+            val versionsHome = ProfilePathHome.getVersionsHome()
+            val versionsDirectory = File(versionsHome)
+            val versionFolders = when {
+                !versionsDirectory.exists() -> emptyArray()
+                !versionsDirectory.isDirectory -> throw IOException("Versions path is not a directory: $versionsHome")
+                else -> versionsDirectory.listFiles()
+                    ?: throw IOException("Cannot list versions directory: $versionsHome")
             }
-        }
-
-        versions.sortWith { o1, o2 ->
-            var sort = -SortStrings.compareClassVersions(
-                o1.getVersionInfo()?.minecraftVersion ?: o1.getVersionName(),
-                o2.getVersionInfo()?.minecraftVersion ?: o2.getVersionName()
-            )
-            if (sort == 0) sort = SortStrings.compareChar(o1.getVersionName(), o2.getVersionName())
-            sort
-        }
-
-        currentGameInfo = CurrentGameInfo.refreshCurrentInfo()
-
-        // Notify through the event bus that versions were refreshed.
-        EventBus.getDefault().post(RefreshVersionsEvent(END))
-        isRefreshing = false
-    }
-
-    private fun processVersionFile(versionsHome: String, versionFile: File, refreshVersionInfo: Boolean) {
-        if (versionFile.exists() && versionFile.isDirectory) {
-            var isVersion = false
-
-            // A folder counts as a version when its .json file exists.
-            val jsonFile = File(versionFile, "${versionFile.name}.json")
-            if (jsonFile.exists() && jsonFile.isFile) {
-                isVersion = true
-                if (jsonFile.length() > 0) {
-                    val versionInfoFile = File(getTurtleVersionPath(versionFile), "VersionInfo.json")
-                    if (refreshVersionInfo) FileUtils.deleteQuietly(versionInfoFile)
-                    if (!versionInfoFile.exists()) {
-                        VersionInfoUtils.parseJson(jsonFile)?.save(versionFile)
-                    }
-                } else {
-                    Logging.w("VersionsManager", "Skipping empty version json: ${jsonFile.path}")
+            versionFolders.forEach { versionFile ->
+                try {
+                    processVersionFile(versionsHome, versionFile, refreshVersionInfo)?.let(refreshedVersions::add)
+                } catch (e: Exception) {
+                    // A malformed/corrupt version folder should not prevent every other version
+                    // from being listed. Keep the failure visible in the log for diagnosis.
+                    Logging.e("VersionsManager", "Failed to scan version folder ${versionFile.path}", e)
                 }
             }
 
-            val versionConfig = VersionConfig.parseConfig(versionFile)
+            refreshedVersions.sortWith { first, second ->
+                var sort = -SortStrings.compareClassVersions(
+                    first.getVersionInfo()?.minecraftVersion ?: first.getVersionName(),
+                    second.getVersionInfo()?.minecraftVersion ?: second.getVersionName()
+                )
+                if (sort == 0) sort = SortStrings.compareChar(first.getVersionName(), second.getVersionName())
+                sort
+            }
 
-            val version = Version(
-                versionsHome,
-                versionFile.absolutePath,
-                versionConfig,
-                isVersion
-            )
-            versions.add(version)
-
-            Logging.i("VersionsManager", "Identified and added version: ${version.getVersionName()}, " +
-                    "Path: (${version.getVersionPath()}), " +
-                    "Info: ${version.getVersionInfo()?.getInfoString()}")
+            val refreshedCurrentInfo = CurrentGameInfo.refreshCurrentInfo()
+            // Publish one completed snapshot instead of clear()/add() mutating the shared list
+            // while adapters and launch-button handlers are reading it.
+            versions = refreshedVersions.toList()
+            currentGameInfo = refreshedCurrentInfo
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Logging.e("VersionsManager", "Version refresh failed; keeping the previous snapshot", e)
+        } finally {
+            isRefreshing = false
+            // Always release progress indicators, including when one global scan step fails.
+            EventBus.getDefault().post(RefreshVersionsEvent(END))
         }
+    }
+
+    private fun processVersionFile(
+        versionsHome: String,
+        versionFile: File,
+        refreshVersionInfo: Boolean
+    ): Version? {
+        if (!versionFile.exists() || !versionFile.isDirectory) return null
+
+        var isVersion = false
+        // A folder counts as a version when its .json file exists.
+        val jsonFile = File(versionFile, "${versionFile.name}.json")
+        if (jsonFile.exists() && jsonFile.isFile) {
+            isVersion = true
+            if (jsonFile.length() > 0) {
+                val versionInfoFile = File(getTurtleVersionPath(versionFile), "VersionInfo.json")
+                if (refreshVersionInfo) FileUtils.deleteQuietly(versionInfoFile)
+                if (!versionInfoFile.exists()) {
+                    VersionInfoUtils.parseJson(jsonFile)?.save(versionFile)
+                }
+            } else {
+                Logging.w("VersionsManager", "Skipping empty version json: ${jsonFile.path}")
+            }
+        }
+
+        val versionConfig = VersionConfig.parseConfig(versionFile)
+        val version = Version(
+            versionsHome,
+            versionFile.absolutePath,
+            versionConfig,
+            isVersion
+        )
+        Logging.i("VersionsManager", "Identified and scanned version: ${version.getVersionName()}, " +
+                "Path: (${version.getVersionPath()}), " +
+                "Info: ${version.getVersionInfo()?.getInfoString()}")
+        return version
     }
 
     /**

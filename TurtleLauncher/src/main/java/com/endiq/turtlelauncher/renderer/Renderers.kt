@@ -30,6 +30,7 @@ object Renderers {
         }
         // Only register renderer implementations that still exist in this source tree.
         addRenderers(
+            MobileGluesRenderer(),
             HolyGL4ESRenderer(),
             NWRenderer(),
             AngleRenderer(),

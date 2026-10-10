@@ -5,6 +5,8 @@ import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.utils.path.PathManager
 import net.endiq.launcher.Tools
 import java.io.File
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.security.MessageDigest
 
 internal object SkinCapeHistoryStore {
@@ -41,16 +43,58 @@ internal object SkinCapeHistoryStore {
      */
     fun recordApplied(mode: String, appliedFile: File, label: String) {
         runCatching {
-            val bytes = appliedFile.readBytes()
-            val hash = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+            if (!appliedFile.isFile || appliedFile.length() <= 0L) {
+                error("Applied image does not exist or is empty: ${appliedFile.path}")
+            }
+            historyDir.mkdirs()
+
+            // Hash in bounded chunks rather than readBytes(), which created a second full-size
+            // copy of the original skin/cape image on the heap.
+            val digest = MessageDigest.getInstance("SHA-256")
+            BufferedInputStream(appliedFile.inputStream()).use { input ->
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                while (true) {
+                    val read = input.read(buffer)
+                    if (read < 0) break
+                    digest.update(buffer, 0, read)
+                }
+            }
+            val hash = digest.digest().joinToString("") { "%02x".format(it) }
             val thumbName = "$hash.png"
             val thumb = File(historyDir, thumbName)
-            if (!thumb.exists()) thumb.writeBytes(bytes)
+            if (!thumb.exists()) {
+                val temporary = File(historyDir, "$thumbName.tmp")
+                try {
+                    BufferedInputStream(appliedFile.inputStream()).use { input ->
+                        BufferedOutputStream(temporary.outputStream()).use { output ->
+                            input.copyTo(output, DEFAULT_BUFFER_SIZE)
+                        }
+                    }
+                    if (!temporary.renameTo(thumb)) {
+                        // A parallel call may have created the same hash file; accept that,
+                        // otherwise fail rather than leave a partially written history item.
+                        if (!thumb.exists()) error("Could not commit image history file")
+                        temporary.delete()
+                    }
+                } finally {
+                    if (temporary.exists()) temporary.delete()
+                }
+            }
 
             val existing = loadHistoryRaw(mode).filterNot { it.thumbFileName == thumbName }
             val updated = (listOf(HistoryEntry(hash.take(16), label, thumbName, System.currentTimeMillis())) + existing)
                 .take(MAX_ENTRIES)
-            indexFile(mode).writeText(Tools.GLOBAL_GSON.toJson(updated))
+            val index = indexFile(mode)
+            val temporaryIndex = File(historyDir, "${mode}_index.json.tmp")
+            try {
+                temporaryIndex.writeText(Tools.GLOBAL_GSON.toJson(updated))
+                if (!temporaryIndex.renameTo(index)) {
+                    index.writeText(Tools.GLOBAL_GSON.toJson(updated))
+                    temporaryIndex.delete()
+                }
+            } finally {
+                if (temporaryIndex.exists()) temporaryIndex.delete()
+            }
 
             cleanupOrphanedThumbs()
         }.onFailure { e -> Logging.e("SkinCapeHistoryStore", "Failed to record $mode history", e) }

@@ -8,6 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.GridLayoutManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.endiq.anim.AnimPlayer
 import com.endiq.anim.animations.Animations
 import com.endiq.turtlelauncher.R
@@ -25,44 +32,95 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
         const val TAG: String = "FileSelectorFragment"
     }
 
-    private lateinit var binding: FragmentVersionBinding
+    private var _binding: FragmentVersionBinding? = null
+    private val binding: FragmentVersionBinding
+        get() = checkNotNull(_binding) { "VersionSelectorFragment view is not available" }
+
     private var allCards: List<SeriesCardAdapter.CardEntry> = emptyList()
+    private lateinit var cardsAdapter: SeriesCardAdapter
+    private var viewScope: CoroutineScope? = null
+    private var buildCardsJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentVersionBinding.inflate(layoutInflater)
+        _binding = FragmentVersionBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        viewScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         binding.apply {
-            allCards = buildCards()
+            cardsAdapter = SeriesCardAdapter { card ->
+                val bundle = Bundle().apply {
+                    putString(VersionSeriesDetailFragment.BUNDLE_SERIES_LABEL, card.label)
+                }
+                ZHTools.swapFragmentWithAnim(
+                    this@VersionSelectorFragment,
+                    VersionSeriesDetailFragment::class.java,
+                    VersionSeriesDetailFragment.TAG,
+                    bundle
+                )
+            }
             seriesGrid.layoutManager = GridLayoutManager(requireContext(), 3)
-            renderCards(allCards)
+            seriesGrid.adapter = cardsAdapter
 
             searchVersion.doAfterTextChanged { text -> applyFilter(text?.toString()) }
-
             returnButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
         }
+        rebuildCardsAsync()
     }
 
     private fun applyFilter(query: String?) {
+        if (_binding == null || !::cardsAdapter.isInitialized) return
         val trimmed = query?.trim().orEmpty()
-        renderCards(
-            if (trimmed.isEmpty()) allCards
+        val filtered = if (trimmed.isEmpty()) allCards
             else allCards.filter { it.label.contains(trimmed, ignoreCase = true) }
-        )
+        // AsyncListDiffer does the diff away from the UI thread. Do not recreate the adapter
+        // or rerun list-entry animations for every keystroke.
+        cardsAdapter.submitList(filtered)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     fun onVersionListUpdated(event: MinecraftVersionValueEvent) {
-        if (!isAdded || view == null) return
-        allCards = buildCards()
-        applyFilter(binding.searchVersion.text?.toString())
+        if (!isAdded || _binding == null) return
+        rebuildCardsAsync()
+    }
+
+    private fun rebuildCardsAsync() {
+        val scope = viewScope ?: return
+        val currentBinding = _binding ?: return
+        buildCardsJob?.cancel()
+        // Snapshot the event payload and localized labels on the main thread; grouping/sorting
+        // the full Minecraft version list happens on Dispatchers.Default.
+        val versions = VersionSeriesUtils.fetchAllVersions()
+        val betaLabel = getString(R.string.version_beta)
+        val alphaLabel = getString(R.string.version_alpha)
+        val searchText = currentBinding.searchVersion.text?.toString()
+        buildCardsJob = scope.launch {
+            val built = withContext(Dispatchers.Default) {
+                buildCards(versions, betaLabel, alphaLabel)
+            }
+            if (_binding == null) return@launch
+            allCards = built
+            // Read the live query after the background grouping completes so typing while the
+            // job runs doesn't restore an old filter value.
+            applyFilter(_binding?.searchVersion?.text?.toString() ?: searchText)
+        }
+    }
+
+    override fun onDestroyView() {
+        buildCardsJob?.cancel()
+        buildCardsJob = null
+        viewScope?.cancel()
+        viewScope = null
+        buildCardsJob = null
+        allCards = emptyList()
+        _binding = null
+        super.onDestroyView()
     }
 
     override fun onStart() {
@@ -75,17 +133,12 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
         EventBus.getDefault().unregister(this)
     }
 
-    private fun renderCards(cards: List<SeriesCardAdapter.CardEntry>) {
-        binding.seriesGrid.adapter = SeriesCardAdapter(cards) { card ->
-            val bundle = Bundle()
-            bundle.putString(VersionSeriesDetailFragment.BUNDLE_SERIES_LABEL, card.label)
-            ZHTools.swapFragmentWithAnim(this, VersionSeriesDetailFragment::class.java, VersionSeriesDetailFragment.TAG, bundle)
-        }
-        binding.seriesGrid.post { TurtleTransitions.animateList(binding.seriesGrid) }
-    }
-
-    private fun buildCards(): List<SeriesCardAdapter.CardEntry> {
-        val grouped = VersionSeriesUtils.group(VersionSeriesUtils.fetchAllVersions())
+    private fun buildCards(
+        versions: List<net.endiq.launcher.JMinecraftVersionList.Version>,
+        betaLabel: String,
+        alphaLabel: String
+    ): List<SeriesCardAdapter.CardEntry> {
+        val grouped = VersionSeriesUtils.group(versions)
         val newestSeriesLabel = grouped.seriesCards.firstOrNull()?.seriesLabel
 
         val cards = mutableListOf<SeriesCardAdapter.CardEntry>()
@@ -103,7 +156,7 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
         if (grouped.betaVersions.isNotEmpty()) {
             cards.add(
                 SeriesCardAdapter.CardEntry(
-                    label = getString(R.string.version_beta),
+                    label = betaLabel,
                     versionCount = grouped.betaVersions.size,
                     iconRes = R.drawable.ic_old_cobblestone,
                     isLatest = false,
@@ -114,7 +167,7 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
         if (grouped.alphaVersions.isNotEmpty()) {
             cards.add(
                 SeriesCardAdapter.CardEntry(
-                    label = getString(R.string.version_alpha),
+                    label = alphaLabel,
                     versionCount = grouped.alphaVersions.size,
                     iconRes = R.drawable.ic_old_grass_block,
                     isLatest = false,
@@ -126,12 +179,14 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, TurtleTransitions.enter()))
-            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()))
+        val currentBinding = _binding ?: return
+        animPlayer.apply(AnimPlayer.Entry(currentBinding.versionLayout, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(currentBinding.operateLayout, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.versionLayout, TurtleTransitions.exit()))
-            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
+        val currentBinding = _binding ?: return
+        animPlayer.apply(AnimPlayer.Entry(currentBinding.versionLayout, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(currentBinding.operateLayout, TurtleTransitions.exit()))
     }
 }

@@ -27,8 +27,7 @@ object Renderers {
             compatibleRenderers = null
             currentRenderer = null
         }
-
-        // LTWRenderer and MobileGluesRenderer were removed from this source tree.
+        // Only register renderer implementations that still exist in this source tree.
         addRenderers(
             HolyGL4ESRenderer(),
             NWRenderer(),
@@ -40,29 +39,30 @@ object Renderers {
         )
     }
 
-    fun getCompatibleRenderers(context: Context): Pair<RenderersList, List<RendererInterface>> = compatibleRenderers?.let { it.first to it.second }
-        ?: run {
-            val deviceHasVulkan = Tools.checkVulkanSupport(context.packageManager)
-            val compatibleRenderers1: MutableList<RendererInterface> = mutableListOf()
+    fun getCompatibleRenderers(context: Context): Pair<RenderersList, List<RendererInterface>> {
+        val cached = compatibleRenderers
+        if (cached != null) return Pair(cached.first, cached.second)
 
-            renderers.forEach { renderer ->
-                if (renderer.getRendererId() == ZinkRenderer.ID && !deviceHasVulkan) return@forEach
-                if (!hasRequiredLibrary(renderer)) {
-                    Logging.w(
-                        "Renderers",
-                        "${renderer.getRendererName()} (${renderer.getRendererId()}) references a library not found in this ABI's jniLibs - excluding it from the picker"
-                    )
-                    return@forEach
-                }
-                compatibleRenderers1.add(renderer)
+        val deviceHasVulkan = Tools.checkVulkanSupport(context.packageManager)
+        val compatible: MutableList<RendererInterface> = mutableListOf()
+        for (renderer in renderers) {
+            if (renderer.getRendererId() == ZinkRenderer.ID && !deviceHasVulkan) continue
+            if (!hasRequiredLibrary(renderer)) {
+                Logging.w(
+                    "Renderers",
+                    "${renderer.getRendererName()} (${renderer.getRendererId()}) references a library not found in this ABI's jniLibs - excluding it from the picker"
+                )
+                continue
             }
-
-            val rendererIdentifiers = compatibleRenderers1.map { it.getUniqueIdentifier() }.toMutableList()
-            val rendererNames = compatibleRenderers1.map { it.getRendererName() }.toMutableList()
-            val rendererPair = Pair(RenderersList(rendererIdentifiers, rendererNames), compatibleRenderers1)
-            compatibleRenderers = rendererPair
-            rendererPair.first to rendererPair.second
+            compatible.add(renderer)
         }
+
+        val identifiers = compatible.map { it.getUniqueIdentifier() }
+        val names = compatible.map { it.getRendererName() }
+        val result = Pair(RenderersList(identifiers, names), compatible)
+        compatibleRenderers = result
+        return Pair(result.first, result.second)
+    }
 
     private fun hasRequiredLibrary(renderer: RendererInterface): Boolean {
         fun exists(libName: String): Boolean =
@@ -78,31 +78,31 @@ object Renderers {
 
     @JvmStatic
     fun addRenderers(vararg renderers: RendererInterface) {
-        renderers.forEach { renderer -> addRenderer(renderer) }
+        renderers.forEach { addRenderer(it) }
     }
 
     @JvmStatic
     fun addRenderer(renderer: RendererInterface): Boolean {
-        return if (this.renderers.any { it.getUniqueIdentifier() == renderer.getUniqueIdentifier() }) {
+        if (this.renderers.any { it.getUniqueIdentifier() == renderer.getUniqueIdentifier() }) {
             Logging.w(
                 "Renderers",
-                "The unique identifier of this renderer (${renderer.getRendererName()} - ${renderer.getUniqueIdentifier()}) conflicts with an already loaded renderer. Normally, this shouldn't happen."
+                "The unique identifier of this renderer (${renderer.getRendererName()} - ${renderer.getUniqueIdentifier()}) conflicts with an already loaded renderer."
             )
-            false
-        } else {
-            this.renderers.add(renderer)
-            Logging.i("Renderers", "Renderer loaded: ${renderer.getRendererName()} (${renderer.getRendererId()} - ${renderer.getUniqueIdentifier()})")
-            compatibleRenderers = null
-            true
+            return false
         }
+        this.renderers.add(renderer)
+        Logging.i("Renderers", "Renderer loaded: ${renderer.getRendererName()} (${renderer.getRendererId()} - ${renderer.getUniqueIdentifier()})")
+        compatibleRenderers = null
+        return true
     }
 
     fun setCurrentRenderer(context: Context, uniqueIdentifier: String, retryToFirstOnFailure: Boolean = true) {
         if (!isInitialized) throw IllegalStateException("Uninitialized renderer!")
         val compatible = getCompatibleRenderers(context).second
         currentRenderer = compatible.find { it.getUniqueIdentifier() == uniqueIdentifier } ?: run {
-            if (retryToFirstOnFailure && compatible.isNotEmpty()) {
-                val renderer = compatible.first()
+            if (retryToFirstOnFailure) {
+                val renderer = compatible.firstOrNull()
+                    ?: throw IllegalStateException("No compatible renderer is available for this device")
                 Logging.w("Renderers", "Incompatible renderer $uniqueIdentifier will be replaced with ${renderer.getUniqueIdentifier()} (${renderer.getRendererName()})")
                 renderer
             } else null
@@ -112,8 +112,8 @@ object Renderers {
     fun removeRenderers(uniqueIdentifiers: Collection<String>) {
         if (uniqueIdentifiers.isEmpty()) return
         renderers.removeAll { it.getUniqueIdentifier() in uniqueIdentifiers }
-        currentRenderer?.let { cur ->
-            if (cur.getUniqueIdentifier() in uniqueIdentifiers) currentRenderer = null
+        currentRenderer?.let { current ->
+            if (current.getUniqueIdentifier() in uniqueIdentifiers) currentRenderer = null
         }
         compatibleRenderers = null
     }

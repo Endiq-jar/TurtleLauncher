@@ -334,7 +334,7 @@ dependencies {
     // Coil 3 splits networking into a separate artifact. This app currently uses Android
     // Views (not Compose), so include Coil's Android API plus its OkHttp fetcher; existing
     // OkHttp is reused through Gradle's normal dependency resolution.
-    val coilVersion = "3.6.3"
+    val coilVersion = "3.3.0"
     implementation("io.coil-kt.coil3:coil:$coilVersion")
     implementation("io.coil-kt.coil3:coil-network-okhttp:$coilVersion")
     implementation("com.github.angcyo.DslTablayout:TabLayout:3.6.5")

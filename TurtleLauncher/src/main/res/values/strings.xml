@@ -187,7 +187,7 @@
     <string name="mod_check_dialog_title">Mod Check Report</string>
     <string name="mod_check_progress_message">Checking mods (%d / %d)</string>
     <string name="mod_check_touch_controller">Detected that Touch Controller mod (%s) is installed, the launcher is ready to enable control proxy to adapt to the mod.</string>
-    <string name="mod_check_sodium_or_embeddium">Detected installed Sodium or Embeddium mod (%s). The launcher will disable this mod\'s warnings or prevent it from intentionally crashing on Android devices. However, please note that the mod\'s community has explicitly stated that they will no longer accept any issues related to Android devices. Therefore, if you encounter any problems while using this mod, do not report them to the mod\'s community!</string>
+    <string name="mod_check_sodium_or_embeddium">Detected a Sodium-family renderer mod (%s). Compatibility depends on the exact mod version and renderer. Check the mod release\'s graphics-driver requirements; TurtleLauncher does not suppress or patch crashes from these mods. Use the crash log for diagnosis.</string>
     <string name="mod_check_physics">The currently used physics mod (%s) is unpatched (replacing libPhysXJniBindings_64.so from x86_64 architecture to arm64), will crash on launch.</string>
     <string name="mod_check_mcef">MCEF (%s) cannot run on Android. It is usually used as a prerequisite dependency for WebDisplays/In-game Browser (browser).</string>
     <string name="mod_check_valkyrien_skies">Valkyrien Skies/Valkyrien Warfare (%s) cannot run directly in single-player mode. You must run it on a server otherwise the game will crash.</string>
@@ -1004,8 +1004,10 @@
     <string name="mod_update_dialog_header">%d mod(s) have a newer version available:</string>
     <string name="mod_conflict_dialog_title">Possible mod conflicts detected</string>
     <string name="mod_conflict_dialog_header">%d class(es) are targeted by more than one mod\'s Mixin patches — this is a common cause of startup crashes when both are enabled together:</string>
-    <string name="setting_mod_conflict_detection_title">Mod Conflict Detector</string>
-    <string name="setting_mod_conflict_detection_desc">Before launch, scans installed mods\' Mixin patches for two or more mods targeting the exact same class — a common cause of cryptic startup crashes. Local check only, no network.</string>
+    <string name="mod_metadata_conflict_dialog_title">Mod metadata reports compatibility problems</string>
+    <string name="mod_metadata_conflict_dialog_header">%1$d potential problem(s) found from installed mod metadata. Review these before launch; Turtle Launcher will not alter or disable any mod:</string>
+    <string name="setting_mod_conflict_detection_title">Mod Compatibility Checks</string>
+    <string name="setting_mod_conflict_detection_desc">Before launch, checks for overlapping Mixin targets, duplicate/provided mod IDs, and Fabric/Quilt metadata that declares incompatible mod pairs. Local archive scan only; no network.</string>
     <string name="mod_update_dialog_update_now">Update Now</string>
     <string name="mod_update_dialog_later">Later</string>
     <string name="mod_update_result_message">Updated %1$d mod(s) successfully. %2$d failed. Restart the game for changes to take effect.</string>

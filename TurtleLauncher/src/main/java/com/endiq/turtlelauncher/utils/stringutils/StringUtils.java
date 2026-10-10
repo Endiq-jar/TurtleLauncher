@@ -107,13 +107,15 @@ public class StringUtils {
      * @param str the string to check
      * @return whether the string contains Chinese characters
      */
+    private static final Pattern CHINESE_PATTERN =
+            Pattern.compile("[一-龥|！，。（）《》“”？：；【】]");
+
     public static boolean containsChinese(String str) {
         if (str == null || str.isEmpty()) {
             return false;
         }
 
-        Pattern pattern = Pattern.compile("[一-龥|！，。（）《》“”？：；【】]");
-        Matcher matcher = pattern.matcher(str);
+        Matcher matcher = CHINESE_PATTERN.matcher(str);
         return matcher.find();
     }
 

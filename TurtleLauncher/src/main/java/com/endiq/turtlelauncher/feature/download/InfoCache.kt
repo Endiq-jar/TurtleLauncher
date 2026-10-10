@@ -4,18 +4,33 @@ import com.endiq.turtlelauncher.feature.download.item.DependenciesInfoItem
 import com.endiq.turtlelauncher.feature.download.item.ModLikeVersionItem
 import com.endiq.turtlelauncher.feature.download.item.ModVersionItem
 import com.endiq.turtlelauncher.feature.download.item.VersionItem
-import java.util.concurrent.ConcurrentHashMap
+import java.util.Collections
+import java.util.LinkedHashMap
 
+private const val DEPENDENCY_CACHE_MAX_ENTRIES = 48
+private const val VERSION_CACHE_MAX_ENTRIES = 12
+private const val MOD_VERSION_CACHE_MAX_ENTRIES = 24
+private const val MODPACK_CACHE_MAX_ENTRIES = 12
 
 /**
  * Cache search results in memory so the next load can reuse them directly.
  */
 class InfoCache {
-    abstract class CacheBase<V> {
-        // ConcurrentHashMap, not HashMap: entries are written from the download worker
-        // threads (the Modrinth helpers) while [clear] can be called from the main thread by
-        // the pre-launch cleanup in BackgroundServiceManager.onGameSessionStart.
-        private val cache: MutableMap<String, V> = ConcurrentHashMap()
+    abstract class CacheBase<V>(private val maxEntries: Int) {
+        init {
+            require(maxEntries > 0) { "maxEntries must be positive" }
+        }
+
+        // Access-ordered bounded cache: the old ConcurrentHashMaps could grow without limit
+        // while browsing many projects. All access is synchronized by the wrapper; callers
+        // never iterate the map, so the short critical sections keep the LRU policy simple.
+        private val cache: MutableMap<String, V> = Collections.synchronizedMap(
+            object : LinkedHashMap<String, V>(16, 0.75f, true) {
+                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, V>?): Boolean {
+                    return size > maxEntries
+                }
+            }
+        )
 
         /**
          * Store a looked-up value in memory, keyed by mod id.
@@ -47,10 +62,10 @@ class InfoCache {
         }
     }
 
-    object DependencyInfoCache : CacheBase<DependenciesInfoItem>()
-    object VersionCache : CacheBase<MutableList<VersionItem>>()
-    object ModVersionCache : CacheBase<MutableList<ModVersionItem>>()
-    object ModPackVersionCache : CacheBase<MutableList<ModLikeVersionItem>>()
+    object DependencyInfoCache : CacheBase<DependenciesInfoItem>(DEPENDENCY_CACHE_MAX_ENTRIES)
+    object VersionCache : CacheBase<MutableList<VersionItem>>(VERSION_CACHE_MAX_ENTRIES)
+    object ModVersionCache : CacheBase<MutableList<ModVersionItem>>(MOD_VERSION_CACHE_MAX_ENTRIES)
+    object ModPackVersionCache : CacheBase<MutableList<ModLikeVersionItem>>(MODPACK_CACHE_MAX_ENTRIES)
 
     companion object {
         /**

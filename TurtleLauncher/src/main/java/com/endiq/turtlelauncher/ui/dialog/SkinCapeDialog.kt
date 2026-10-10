@@ -251,7 +251,7 @@ class SkinCapeDialog(
                     val buffer = java.io.ByteArrayOutputStream()
                     net.endiq.launcher.utils.DownloadUtils.download(url, buffer)
                     val bytes = buffer.toByteArray()
-                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    decodeSampledBitmap(bytes, 512)
                 }.onFailure { e -> Logging.e("SkinCapeDialog", "Failed to load browse preview", e) }.getOrNull()
             }
             BrowseSearchResult(lookup, resolvedUrl, previewBitmap)
@@ -353,11 +353,54 @@ class SkinCapeDialog(
         }
         SkinCapeHistoryStore.loadHistory(mode).forEach { entry ->
             val bitmap = runCatching {
-                BitmapFactory.decodeFile(SkinCapeHistoryStore.thumbFile(mode, entry).absolutePath)
+                decodeSampledBitmap(SkinCapeHistoryStore.thumbFile(mode, entry), 192)
             }.onFailure { e -> Logging.e("SkinCapeDialog", "Failed to load history thumb for ${entry.label}", e) }.getOrNull()
             items += GalleryDisplayItem(entry, false, entry.label, bitmap)
         }
         return items
+    }
+
+    /**
+     * Decode a gallery image at thumbnail resolution. Remote skins can be larger than the
+     * traditional 64x64 texture; decoding every item at full resolution needlessly multiplies
+     * bitmap RAM while the gallery is open. Decode is called by the existing Task worker.
+     */
+    private fun decodeSampledBitmap(file: File, maxDimension: Int): Bitmap? {
+        if (!file.isFile) return null
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        return BitmapFactory.decodeFile(
+            file.absolutePath,
+            BitmapFactory.Options().apply {
+                inSampleSize = calculateSampleSize(bounds.outWidth, bounds.outHeight, maxDimension)
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+        )
+    }
+
+    private fun decodeSampledBitmap(bytes: ByteArray, maxDimension: Int): Bitmap? {
+        if (bytes.isEmpty()) return null
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        return BitmapFactory.decodeByteArray(
+            bytes,
+            0,
+            bytes.size,
+            BitmapFactory.Options().apply {
+                inSampleSize = calculateSampleSize(bounds.outWidth, bounds.outHeight, maxDimension)
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+        )
+    }
+
+    private fun calculateSampleSize(width: Int, height: Int, maxDimension: Int): Int {
+        var sampleSize = 1
+        while (maxOf(width / (sampleSize * 2), height / (sampleSize * 2)) > maxDimension) {
+            sampleSize *= 2
+        }
+        return sampleSize
     }
 
     private fun renderGallery(items: List<GalleryDisplayItem>) {

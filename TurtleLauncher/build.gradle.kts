@@ -63,7 +63,7 @@ configurations {
 
 android {
     namespace = namespaceId
-    compileSdk = 36
+    compileSdk = 37
 
     signingConfigs {
         create("releaseBuild") {

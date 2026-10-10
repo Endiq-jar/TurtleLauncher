@@ -31,6 +31,7 @@ import net.endiq.launcher.Tools
 import net.endiq.launcher.authenticator.microsoft.PresentedException
 import net.endiq.launcher.lifecycle.ContextAwareDoneListener
 import java.io.File
+import java.io.IOException
 import net.endiq.launcher.multirt.MultiRTUtils
 import net.endiq.launcher.plugins.FFmpegPlugin
 import net.endiq.launcher.progresskeeper.ProgressKeeper
@@ -348,6 +349,7 @@ class LaunchGame {
 
                 // Pre-processing.
                 Tools.disableSplash(gameDirPath)
+                applyUncappedFpsOptions(gameDirPath)
                 androidx.tracing.Trace.beginSection("LaunchGame.classpath")
                 val launchClassPath = Tools.generateLaunchClassPath(versionInfo, minecraftVersion)
                 androidx.tracing.Trace.endSection()
@@ -374,6 +376,39 @@ class LaunchGame {
                 }
             } finally {
                 androidx.tracing.Trace.endSection()
+            }
+        }
+
+        /**
+         * "Unlimited FPS" used to only toggle a JVM flag, so Minecraft's own frame cap and V-Sync
+         * stayed whatever options.txt said (often 60/120 FPS with V-Sync on). When the toggle is on,
+         * raise maxFps to Minecraft's "Unlimited" value (260) and turn V-Sync off before launch.
+         * Only keys that already exist or are missing are touched; the rest of the file is kept.
+         */
+        private fun applyUncappedFpsOptions(gameDir: File) {
+            if (!AllSettings.unlimitedFps.getValue()) return
+            val optionsFile = File(gameDir, "options.txt")
+            if (!optionsFile.isFile) return
+            val overrides = linkedMapOf("maxFps" to "260", "enableVsync" to "false")
+            try {
+                val original = optionsFile.readLines()
+                val seen = mutableSetOf<String>()
+                val updated = original.map { line ->
+                    val key = line.substringBefore(':')
+                    val value = overrides[key]
+                    if (value != null) {
+                        seen += key
+                        "$key:$value"
+                    } else {
+                        line
+                    }
+                }.toMutableList()
+                overrides.forEach { (key, value) ->
+                    if (key !in seen) updated += "$key:$value"
+                }
+                if (updated != original) optionsFile.writeText(updated.joinToString("\n"))
+            } catch (e: IOException) {
+                Logging.w("LaunchGame", "Could not apply the FPS options to options.txt", e)
             }
         }
 

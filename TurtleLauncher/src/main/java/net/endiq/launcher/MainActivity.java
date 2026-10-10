@@ -49,6 +49,7 @@ import com.endiq.turtlelauncher.databinding.ViewGameMenuBinding;
 import com.endiq.turtlelauncher.event.single.RefreshHotbarEvent;
 import com.endiq.turtlelauncher.event.value.HotbarChangeEvent;
 import com.endiq.turtlelauncher.feature.MCOptions;
+import com.endiq.turtlelauncher.feature.DarkModeManager;
 import com.endiq.turtlelauncher.feature.ProfileLanguageSelector;
 import com.endiq.turtlelauncher.feature.background.BackgroundManager;
 import com.endiq.turtlelauncher.feature.background.BackgroundType;
@@ -131,6 +132,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         if (minecraftVersion == null) throw new RuntimeException("The game version is not selected!");
 
         MCOptions.INSTANCE.setup(this, () -> minecraftVersion);
+        // Reconcile Dark Mode with the saved preference before the game reads options.txt.
+        DarkModeManager.INSTANCE.applyOnLaunch(this);
         if (AllSettings.getAutoSetGameLanguage().getValue()) {
             ProfileLanguageSelector.setGameLanguage(minecraftVersion, AllSettings.getGameLanguageOverridden().getValue());
         }
@@ -781,6 +784,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             this.binding.enableGyro.setChecked(AllSettings.getEnableGyro().getValue());
             this.binding.gyroInvertX.setChecked(AllSettings.getGyroInvertX().getValue());
             this.binding.gyroInvertY.setChecked(AllSettings.getGyroInvertY().getValue());
+            // Dark Mode (Debug tab): reflects the persisted preference.
+            this.binding.darkMode.setChecked(AllSettings.getDarkModeEnabled().getValue());
 
             refreshLayoutVisible(this.binding.timeLongPressTriggerLayout, !AllSettings.getDisableGestures().getValue());
             refreshLayoutVisible(this.binding.gyroLayout, AllSettings.getEnableGyro().getValue());
@@ -867,6 +872,10 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             this.binding.gyroInvertY.setOnCheckedChangeListener(this);
             this.binding.gyroInvertYLayout.setOnClickListener(this);
 
+            // Dark Mode (Debug tab): toggle row + switch.
+            this.binding.darkMode.setOnCheckedChangeListener(this);
+            this.binding.darkModeLayout.setOnClickListener(this);
+
             ObjectSpinnerAdapter<HotbarType> hotbarTypeAdapter = new ObjectSpinnerAdapter<>(
                     this.binding.hotbarType,
                     hotbarType -> getString(hotbarType.getNameId())
@@ -909,6 +918,27 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             if (keycode >= LwjglGlfwKeycode.GLFW_KEY_UNKNOWN) {
                 CallbackBridge.sendKeyPress(lwjglKeycode, CallbackBridge.getCurrentMods(), isDown);
                 CallbackBridge.setModifiers(lwjglKeycode, isDown);
+            }
+        }
+
+        /** Simulate Minecraft's F3+T ("reload resource packs") so a Dark Mode toggle
+         *  applies without a manual keypress or a restart. F3 is held as the debug
+         *  modifier, T is tapped, then F3 is released. Small gaps let the game register
+         *  the held modifier before T is processed. */
+        private void triggerResourcePackReload() {
+            try {
+                final int f3 = LwjglGlfwKeycode.GLFW_KEY_F3;
+                final int tKey = LwjglGlfwKeycode.GLFW_KEY_T;
+                final int mods = CallbackBridge.getCurrentMods();
+                final android.os.Handler ui = TaskExecutors.getUIHandler();
+                CallbackBridge.sendKeyPress(f3, mods, true);
+                ui.postDelayed(() -> {
+                    CallbackBridge.sendKeyPress(tKey, mods, true);
+                    CallbackBridge.sendKeyPress(tKey, mods, false);
+                    ui.postDelayed(() -> CallbackBridge.sendKeyPress(f3, mods, false), 60);
+                }, 60);
+            } catch (Throwable tr) {
+                Logging.w("MainActivity", "Resource pack reload (F3+T) failed", tr);
             }
         }
 
@@ -976,6 +1006,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             else if (v == binding.gyroSensitivityAdd) MenuUtils.adjustSeekbar(binding.gyroSensitivity, 1);
             else if (v == binding.gyroInvertXLayout) MenuUtils.toggleSwitchState(binding.gyroInvertX);
             else if (v == binding.gyroInvertYLayout) MenuUtils.toggleSwitchState(binding.gyroInvertY);
+            else if (v == binding.darkModeLayout) MenuUtils.toggleSwitchState(binding.darkMode);
             else if (v == binding.hotbarWidthRemove) MenuUtils.adjustSeekbar(binding.hotbarWidth, -1);
             else if (v == binding.hotbarWidthAdd) MenuUtils.adjustSeekbar(binding.hotbarWidth, 1);
             else if (v == binding.hotbarHeightRemove) MenuUtils.adjustSeekbar(binding.hotbarHeight, -1);
@@ -1095,6 +1126,15 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             } else if (v == binding.gyroInvertY) {
                 AllSettings.getGyroInvertY().put(isChecked).save();
                 AllStaticSettings.gyroInvertY = isChecked;
+            } else if (v == binding.darkMode) {
+                // Dark Mode: persist the preference, install/enable or disable the
+                // bundled dark GUI resource pack, then auto-run F3+T so it applies now.
+                DarkModeManager.INSTANCE.setEnabled(MainActivity.this, isChecked);
+                triggerResourcePackReload();
+                Toast.makeText(MainActivity.this,
+                        getString(isChecked ? R.string.setting_dark_mode_enabled_toast
+                                            : R.string.setting_dark_mode_disabled_toast),
+                        Toast.LENGTH_SHORT).show();
             }
         }
 

@@ -88,6 +88,10 @@
     <string name="option_force_close">Force Close</string>
     <string name="option_log_out">Live Logs</string>
     <string name="option_send_custom_key">Send Key Code</string>
+    <string name="setting_dark_mode_title">Dark Mode</string>
+    <string name="setting_dark_mode_desc">Darker in-game menus, buttons and containers via the bundled resource pack. The game auto-reloads resource packs (F3+T) when toggled.</string>
+    <string name="setting_dark_mode_enabled_toast">Dark Mode on — reloading resource packs…</string>
+    <string name="setting_dark_mode_disabled_toast">Dark Mode off — reloading resource packs…</string>
     <string name="option_edit_controls">Edit Control Layout</string>
     <string name="option_hotbar_type">Hotbar Detection Mode</string>
     <string name="option_hotbar_type_auto">Adaptive (may be inaccurate)</string>

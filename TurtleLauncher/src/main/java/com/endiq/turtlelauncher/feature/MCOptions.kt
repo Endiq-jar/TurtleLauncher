@@ -104,6 +104,13 @@ object MCOptions {
             return if (guiScale == 0 || scale < guiScale) scale else guiScale
         }
 
+    /**
+     * The game directory backing this options.txt. Exposed so other features
+     * (e.g. Dark Mode's resource-pack install) write to the exact same directory.
+     */
+    @JvmStatic
+    fun getGameDir(): File = versionGetter.getVersion().getGameDir()
+
     private fun getOptionsFile() = File(versionGetter.getVersion().getGameDir(), "options.txt")
 
     private fun setupFileObserver() {

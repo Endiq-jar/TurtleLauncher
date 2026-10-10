@@ -165,6 +165,11 @@ class AllSettings {
         @JvmStatic val gameMenuInfoRefreshRate  = IntSettingUnit("gameMenuInfoRefreshRate", 250)
         @JvmStatic val gameMenuAlpha            = IntSettingUnit("gameMenuAlpha", 100)
         @JvmStatic val hudAlpha                 = IntSettingUnit("hudAlpha", 100)
+        /** Dark Mode: enables the bundled "Turtle Dark GUI" resource pack so every
+         *  in-game GUI/menu/container is darker. Toggled from the in-game menu's
+         *  Debug tab; the pack is added to/removed from options.txt resourcePacks
+         *  and an F3+T reload is auto-triggered so it applies immediately. */
+        @JvmStatic val darkModeEnabled          = BooleanSettingUnit("darkModeEnabled", false)
         @JvmStatic val pvpOverlayPreset         = BooleanSettingUnit("pvpOverlayPreset", false)
         @JvmStatic val modConflictDetection     = BooleanSettingUnit("modConflictDetection", true)
 

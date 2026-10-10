@@ -124,7 +124,7 @@ jobs:
             echo "::error title=Gradle build failed::No build output was captured."
             exit 0
           fi
-          ERRORS=$(grep -E "^e: |^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED" "$LOG" | head -40 || true)
+          ERRORS=$(grep -E "^e: |^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED|AAR metadata|requires libraries and applications|currently compiled against|minimum compile SDK|minCompileSdk" "$LOG" | head -60 || true)
           # assembleRelease also runs lintVitalRelease, whose findings are in its own report
           # rather than in the Gradle output.
           for REPORT in $(find . -name "lint-results*.txt" -o -name "lint-results*.xml" 2>/dev/null | head -3); do

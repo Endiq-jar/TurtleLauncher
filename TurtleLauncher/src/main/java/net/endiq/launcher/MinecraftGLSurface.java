@@ -87,6 +87,9 @@ public class MinecraftGLSurface extends View implements GrabListener {
 
     private volatile boolean mSurfaceValid = false;
 
+    /** Resolution scale the window was last sized with; NaN until the first refreshSize(). */
+    private float mAppliedScale = Float.NaN;
+
     /* Source token (SurfaceHolder or SurfaceTexture) of the Surface currently
      * registered with SDL, for matching destroy callbacks to their Surface. */
     private Object mSdlSurfaceSource = null;
@@ -454,6 +457,17 @@ public class MinecraftGLSurface extends View implements GrabListener {
         }
 
         CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight);
+
+        // The cursor is stored in window pixels. When the resolution scale changes, the window
+        // is resized, so the stored position must be converted to the new pixel grid. Otherwise
+        // the game keeps the old coordinates and the next click lands somewhere else.
+        float scale = AllStaticSettings.scaleFactor;
+        if (!Float.isNaN(mAppliedScale) && mAppliedScale > 0f && scale != mAppliedScale) {
+            float ratio = scale / mAppliedScale;
+            CallbackBridge.sendCursorPos(CallbackBridge.mouseX * ratio, CallbackBridge.mouseY * ratio);
+        }
+        mAppliedScale = scale;
+
         notifySdlOfSurfaceSize();
         EventBus.getDefault().post(new RefreshHotbarEvent());
     }

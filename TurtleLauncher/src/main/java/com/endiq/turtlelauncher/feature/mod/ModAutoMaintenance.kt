@@ -17,6 +17,13 @@ object ModAutoMaintenance {
 
     private val MIN_RECHECK_INTERVAL_MS = java.util.concurrent.TimeUnit.HOURS.toMillis(6)
 
+    private data class MaintenanceResult(
+        val dependencies: ModDependencyResolver.ResolveResult? = null,
+        val updates: List<ModUpdateChecker.UpdateInfo> = emptyList(),
+        val mixinConflicts: List<ModConflictDetector.Conflict> = emptyList(),
+        val metadataFindings: List<ModMetadataConflictDetector.Finding> = emptyList()
+    )
+
     private fun maintenanceMarkerFile(version: Version): File =
         File(version.getGameDir(), "mods/.turtle_maintenance_check")
 
@@ -58,7 +65,8 @@ object ModAutoMaintenance {
         Task.runTask {
             var dependencyResult: ModDependencyResolver.ResolveResult? = null
             var updates: List<ModUpdateChecker.UpdateInfo> = emptyList()
-            var conflicts: List<ModConflictDetector.Conflict> = emptyList()
+            var mixinConflicts: List<ModConflictDetector.Conflict> = emptyList()
+            var metadataFindings: List<ModMetadataConflictDetector.Finding> = emptyList()
 
             runCatching {
                 val versionInfo = version.getVersionInfo()
@@ -77,22 +85,24 @@ object ModAutoMaintenance {
                     }
                 }
                 if (conflictCheckEnabled) {
-                    val modsFolderForConflicts = File(version.getGameDir(), "mods")
-                    if (modsFolderForConflicts.isDirectory) {
-                        conflicts = ModConflictDetector.detectConflicts(modsFolderForConflicts)
+                    if (modsFolder.isDirectory) {
+                        mixinConflicts = ModConflictDetector.detectConflicts(modsFolder)
                     }
+                    metadataFindings = ModMetadataConflictDetector.detect(modInfoList, loader)
                 }
             }.onFailure { e -> Logging.e("ModAutoMaintenance", "Mod auto-maintenance failed", e) }
 
-            Triple(dependencyResult, updates, conflicts)
+            MaintenanceResult(dependencyResult, updates, mixinConflicts, metadataFindings)
         }.ended { result ->
-            val safeResult: Triple<ModDependencyResolver.ResolveResult?, List<ModUpdateChecker.UpdateInfo>, List<ModConflictDetector.Conflict>> =
-                result ?: Triple(null, emptyList(), emptyList())
-            val dependencyResult = safeResult.first
-            val updates = safeResult.second
-            val conflicts = safeResult.third
+            val safeResult = result ?: MaintenanceResult()
+            val dependencyResult = safeResult.dependencies
+            val updates = safeResult.updates
+            val mixinConflicts = safeResult.mixinConflicts
+            val metadataFindings = safeResult.metadataFindings
 
-            if ((dependencyResult != null && !dependencyResult.isEmpty) || updates.isNotEmpty() || conflicts.isNotEmpty()) {
+            if ((dependencyResult != null && !dependencyResult.isEmpty) || updates.isNotEmpty() ||
+                mixinConflicts.isNotEmpty() || metadataFindings.isNotEmpty()
+            ) {
                 TaskExecutors.getAndroidUI().execute {
                     if (dependencyResult != null && !dependencyResult.isEmpty) {
                         showDependencyResultDialog(context, dependencyResult)
@@ -100,8 +110,11 @@ object ModAutoMaintenance {
                     if (updates.isNotEmpty()) {
                         showUpdateAvailableDialog(context, updates)
                     }
-                    if (conflicts.isNotEmpty()) {
-                        showConflictWarningDialog(context, conflicts)
+                    if (mixinConflicts.isNotEmpty()) {
+                        showConflictWarningDialog(context, mixinConflicts)
+                    }
+                    if (metadataFindings.isNotEmpty()) {
+                        showMetadataWarningDialog(context, metadataFindings)
                     }
                 }
             }
@@ -186,6 +199,25 @@ object ModAutoMaintenance {
 
         TipDialog.Builder(context)
             .setTitle(R.string.mod_conflict_dialog_title)
+            .setMessage(message)
+            .setCenterMessage(false)
+            .setSelectable(true)
+            .setShowCancel(false)
+            .setConfirm(R.string.generic_ok)
+            .showDialog()
+    }
+
+    private fun showMetadataWarningDialog(
+        context: Context,
+        findings: List<ModMetadataConflictDetector.Finding>
+    ) {
+        val message = buildString {
+            append(context.getString(R.string.mod_metadata_conflict_dialog_header, findings.size))
+            findings.forEach { finding -> append("\n • ").append(finding.message) }
+        }
+
+        TipDialog.Builder(context)
+            .setTitle(R.string.mod_metadata_conflict_dialog_title)
             .setMessage(message)
             .setCenterMessage(false)
             .setSelectable(true)

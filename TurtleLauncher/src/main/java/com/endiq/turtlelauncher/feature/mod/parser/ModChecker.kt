@@ -6,11 +6,16 @@ import android.os.Parcelable
 import com.mio.util.AndroidUtil
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.log.Logging
+import com.endiq.turtlelauncher.feature.mod.ModCompatibilityAdvisor
+import com.endiq.turtlelauncher.feature.version.Version
+import com.endiq.turtlelauncher.renderer.RendererCatalog
+import com.endiq.turtlelauncher.renderer.Renderers
 import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.ui.dialog.TipDialog
 import net.endiq.launcher.Architecture
 import net.endiq.launcher.Logger
 import net.endiq.launcher.plugins.FFmpegPlugin
+import java.io.File
 
 class ModChecker {
     class ModCheckResult() : Parcelable {
@@ -67,7 +72,16 @@ class ModChecker {
     /**
      * Inspect every mod and apply checks for known mods.
      */
-    fun check(context: Context, modInfoList: List<ModInfo>, executeTask: (ModCheckResult?) -> Unit) {
+    fun check(context: Context, modInfoList: List<ModInfo>, executeTask: (ModCheckResult?) -> Unit) =
+        check(context, modInfoList, null, executeTask)
+
+    /** Same checks with renderer/version context for renderer-aware compatibility advice. */
+    fun check(
+        context: Context,
+        modInfoList: List<ModInfo>,
+        version: Version?,
+        executeTask: (ModCheckResult?) -> Unit
+    ) {
         runCatching {
             val modCheckSettings = mutableMapOf<AllModCheckSettings, Pair<String, String>>()
 
@@ -88,7 +102,7 @@ class ModChecker {
                             )
                         }
                     }
-                    "sodium", "embeddium" -> {
+                    "sodium", "embeddium", "rubidium", "chlorine" -> {
                         if (!modResult.hasSodiumOrEmbeddium) {
                             modResult.hasSodiumOrEmbeddium = true
                             modCheckSettings[AllModCheckSettings.SODIUM_OR_EMBEDDIUM] = Pair(
@@ -182,6 +196,38 @@ class ModChecker {
                             )
                         }
                     }
+                }
+            }
+
+            version?.let { selectedVersion ->
+                val rendererUniqueId = selectedVersion.getRenderer()
+                val renderer = runCatching {
+                    Renderers.getCompatibleRenderers(context).second
+                        .firstOrNull { it.getUniqueIdentifier() == rendererUniqueId }
+                }.getOrNull()
+                val rendererId = renderer?.getRendererId() ?: rendererUniqueId
+                val rendererName = renderer?.getRendererName() ?: rendererId
+                val modsFolder = File(selectedVersion.getGameDir(), "mods")
+                val environment = ModCompatibilityAdvisor.Environment(
+                    minecraftVersion = selectedVersion.getVersionName(),
+                    rendererId = rendererId,
+                    rendererName = rendererName,
+                    rendererSupportsShaderPacks = RendererCatalog.supportsShaderPacks(rendererId),
+                    rendererUsesAndroidOpenGlTranslationLayer =
+                        RendererCatalog.usesAndroidOpenGlTranslationLayer(rendererId)
+                )
+                val findings = ModCompatibilityAdvisor.inspect(modInfoList, modsFolder, environment)
+                if (findings.isNotEmpty()) {
+                    val reminderValue = ModCompatibilityAdvisor.reminderValue(modInfoList, modsFolder, environment)
+                    val message = buildString {
+                        append("Minecraft ").append(environment.minecraftVersion)
+                            .append(" | renderer ").append(rendererName)
+                            .append("\r\n\r\n")
+                        append(findings.joinToString("\r\n\r\n") { finding ->
+                            "${finding.affectedMods.joinToString(", ")} — ${finding.message}"
+                        })
+                    }
+                    modCheckSettings[AllModCheckSettings.ANDROID_COMPATIBILITY] = Pair(reminderValue, message)
                 }
             }
 

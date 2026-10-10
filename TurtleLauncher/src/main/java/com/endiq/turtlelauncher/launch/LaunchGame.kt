@@ -233,7 +233,7 @@ class LaunchGame {
                 }
 
                 if (modCheckResult.hasSodiumOrEmbeddium) {
-                    Logger.appendToLog("Mod Perception: Sodium or Embeddium Mod found, attempting to load the disable warning tool later!")
+                    Logger.appendToLog("Mod Perception: Sodium-family renderer mod found; renderer compatibility advice was checked before launch.")
                 }
             }
 

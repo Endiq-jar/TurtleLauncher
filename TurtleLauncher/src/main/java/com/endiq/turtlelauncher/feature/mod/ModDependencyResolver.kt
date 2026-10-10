@@ -19,7 +19,7 @@ object ModDependencyResolver {
     data class ResolveResult(
         /** Human-readable "filename (version)" descriptions of what got installed. */
         val installed: List<String>,
-        /** Mod IDs that were found missing but could not be auto-resolved. */
+        /** Missing dependency IDs or actionable reasons that prevented auto-resolution. */
         val failed: List<String>
     ) {
         val isEmpty: Boolean get() = installed.isEmpty() && failed.isEmpty()
@@ -53,12 +53,50 @@ object ModDependencyResolver {
         }.onFailure { e -> Logging.e("ModDependencyResolver", "Failed to save dependency ledger", e) }
     }
 
+    private fun normalizeId(value: String): String = value.trim().lowercase()
+
+    /** Normalizes common mod filename separators without changing metadata-ID comparisons. */
+    private fun normalizeFileName(value: String): String = value.trim().lowercase().replace('_', '-')
+
+    private fun filenameLooksLikeMod(fileName: String, modId: String, disabled: Boolean): Boolean {
+        val suffix = if (disabled) ".jar.disabled" else ".jar"
+        if (!fileName.endsWith(suffix, ignoreCase = true)) return false
+        val stem = normalizeFileName(fileName.dropLast(suffix.length))
+        val id = normalizeFileName(modId)
+        return id.isNotBlank() && (stem == id || stem.startsWith("$id-") || stem.startsWith("$id."))
+    }
+
+    /**
+     * A disabled jar is not an installed dependency: loaders do not scan it. Keep it out of
+     * [alreadyPresentOnDisk] so we can tell the player why resolution stopped instead of
+     * silently treating a `.jar.disabled` file as satisfying a required dependency.
+     */
+    internal fun findMatchingDisabledJar(modsFolder: File, modId: String): File? {
+        if (normalizeFileName(modId).isBlank()) return null
+        return modsFolder.listFiles()?.firstOrNull { file ->
+            file.isFile && filenameLooksLikeMod(file.name, modId, disabled = true)
+        }
+    }
+
     private fun alreadyPresentOnDisk(modsFolder: File, modId: String): Boolean {
-        val needle = modId.replace("-", "").replace("_", "").lowercase()
         return modsFolder.listFiles()?.any { file ->
-            val isJar = file.extension.equals("jar", true) || file.name.endsWith(".jar.disabled", true)
-            isJar && file.name.replace("-", "").replace("_", "").lowercase().contains(needle)
+            file.isFile && filenameLooksLikeMod(file.name, modId, disabled = false)
         } ?: false
+    }
+
+    /** Returns required IDs not already satisfied by a mod's primary or advertised alias ID. */
+    internal fun missingDependencyIds(modInfoList: List<ModInfo>): List<String> {
+        val installedIds = modInfoList
+            .flatMap { info -> listOfNotNull(info.id) + info.providedIds.orEmpty() }
+            .map { normalizeId(it) }
+            .filter { it.isNotBlank() }
+            .toSet()
+        val ignoredIds = IGNORED_IDS.map { normalizeId(it) }.toSet()
+        return modInfoList
+            .flatMap { it.dependencies.keys }
+            .map { it.trim().lowercase() }
+            .distinct()
+            .filter { normalizeId(it) !in ignoredIds && normalizeId(it) !in installedIds }
     }
 
     /**
@@ -78,13 +116,9 @@ object ModDependencyResolver {
         if (loader == null || loader == ModLoader.ALL || mcVersion.isBlank()) return EMPTY_RESULT
         if (modInfoList.isEmpty()) return EMPTY_RESULT
 
-        val installedIds = modInfoList.map { it.id.lowercase() }.toSet()
-        val missingIds = modInfoList
-            .flatMap { it.dependencies.keys }
-            .map { it.lowercase() }
-            .distinct()
-            .filter { it !in IGNORED_IDS && it !in installedIds }
-
+        // `provides` aliases are included here, so alternate IDs don't trigger a duplicate
+        // auto-download. Disabled jars are handled separately below because loaders skip them.
+        val missingIds = missingDependencyIds(modInfoList)
         if (missingIds.isEmpty()) return EMPTY_RESULT
 
         val ledger = loadLedger(modsFolder)
@@ -94,14 +128,27 @@ object ModDependencyResolver {
         val failed = mutableListOf<String>()
 
         missingIds.forEach { modId ->
+            val disabledJar = findMatchingDisabledJar(modsFolder, modId)
+            if (disabledJar != null) {
+                // Do not auto-enable or install over a jar the player deliberately disabled.
+                // More importantly, don't report success: the loader will still see this
+                // required dependency as missing. Surface the actionable reason in the result.
+                failed.add("$modId (matching jar is disabled: ${disabledJar.name})")
+                return@forEach
+            }
+
             val entry = ledger[modId]
 
             if (entry?.declined == true) return@forEach // player already said no to this one
 
             if (entry != null) {
-                val stillThere = File(modsFolder, entry.fileName).exists() ||
-                    File(modsFolder, "${entry.fileName}.disabled").exists()
-                if (stillThere) return@forEach // just disabled, not our problem to fix
+                val installedFile = File(modsFolder, entry.fileName)
+                if (installedFile.isFile) return@forEach
+                val disabledFile = File(modsFolder, "${entry.fileName}.disabled")
+                if (disabledFile.isFile) {
+                    failed.add("$modId (matching jar is disabled: ${disabledFile.name})")
+                    return@forEach
+                }
                 ledger[modId] = entry.copy(declined = true) // player deleted it outright
                 ledgerChanged = true
                 return@forEach

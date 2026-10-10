@@ -24,6 +24,7 @@ import net.endiq.launcher.progresskeeper.ProgressKeeper;
 import net.endiq.launcher.tasks.AsyncMinecraftDownloader;
 import net.endiq.launcher.utils.NotificationUtils;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -62,12 +63,17 @@ public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneLi
             @Override
             public void onParseEnded(@NonNull List<? extends ModInfo> modInfoList) {
                 ProgressLayout.clearProgress(ProgressLayout.CHECKING_MODS);
-                if (modInfoList.isEmpty()) executeTask();
+                File modsFolder = new File(mVersion.getGameDir(), "mods");
+                File[] modFiles = modsFolder.listFiles();
+                boolean hasModJars = modFiles != null &&
+                        java.util.Arrays.stream(modFiles)
+                                .anyMatch(file -> file.isFile() && file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".jar"));
+                if (modInfoList.isEmpty() && !hasModJars) executeTask();
                 else {
                     ContextExecutor.executeTaskWithAllContext(context ->
                         com.endiq.turtlelauncher.feature.mod.ModAutoMaintenance.runForVersion(
                             context, mVersion, modInfoList, () ->
-                                new ModChecker().check(context, modInfoList, modCheckResult -> {
+                                new ModChecker().check(context, modInfoList, mVersion, modCheckResult -> {
                                     mVersion.setModCheckResult(modCheckResult);
                                     executeTask();
                                     return null;

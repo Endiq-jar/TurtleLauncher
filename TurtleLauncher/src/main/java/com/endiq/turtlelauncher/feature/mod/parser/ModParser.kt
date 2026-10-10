@@ -108,7 +108,9 @@ class ModParser {
         }
     }
 
-    private fun fingerprintOf(file: File): String = "${file.name}:${file.length()}:${file.lastModified()}"
+    // Bump the metadata cache key when the parsed model changes so old cache records that
+    // predate `provides` are reparsed instead of hiding dependency aliases until the jar changes.
+    private fun fingerprintOf(file: File): String = "v2:${file.name}:${file.length()}:${file.lastModified()}"
 
     private fun parseModContents(modFile: File): ModInfo? {
         return try {
@@ -167,8 +169,19 @@ class ModParser {
                 }
                 authorsList.toTypedArray()
             } ?: emptyArray(),
-            parseFabricDependencies(jsonObject)
+            parseFabricDependencies(jsonObject),
+            parseFabricProvides(jsonObject)
         ).apply { file = modFile }
+    }
+
+    /** Fabric's `provides` metadata advertises aliases that satisfy dependencies on those IDs. */
+    private fun parseFabricProvides(jsonObject: com.google.gson.JsonObject): Set<String> {
+        return runCatching {
+            jsonObject.getAsJsonArray("provides")?.mapNotNull { element ->
+                element.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }
+                    ?.asString?.takeIf { it.isNotBlank() }
+            }?.toSet() ?: emptySet()
+        }.getOrDefault(emptySet())
     }
 
     /** Fabric "depends" is a flat object: { "modid": "version-predicate-or-array" } */
@@ -195,8 +208,23 @@ class ModParser {
             metadata?.get("description")?.takeIf { it.isJsonPrimitive }?.asString ?: "",
             metadata?.get("contributors")?.takeIf { it.isJsonObject }?.asJsonObject
                 ?.keySet()?.toTypedArray() ?: emptyArray(),
-            parseQuiltDependencies(quiltLoader)
+            parseQuiltDependencies(quiltLoader),
+            parseQuiltProvides(quiltLoader)
         ).apply { file = modFile }
+    }
+
+    /** Quilt may advertise provided IDs as strings or objects with an `id` field. */
+    private fun parseQuiltProvides(quiltLoader: com.google.gson.JsonObject): Set<String> {
+        return runCatching {
+            quiltLoader.getAsJsonArray("provides")?.mapNotNull { element ->
+                when {
+                    element.isJsonPrimitive && element.asJsonPrimitive.isString -> element.asString
+                    element.isJsonObject -> element.asJsonObject.get("id")
+                        ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+                    else -> null
+                }?.takeIf { it.isNotBlank() }
+            }?.toSet() ?: emptySet()
+        }.getOrDefault(emptySet())
     }
 
     /** Quilt "depends" is an array; entries are either a plain modid string or { id, versions }. */

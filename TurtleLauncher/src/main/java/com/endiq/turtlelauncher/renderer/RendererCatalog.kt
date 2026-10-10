@@ -41,13 +41,19 @@ object RendererCatalog {
          * default (an incorrectly-false renderer just gets an unnecessary warning; an
          * incorrectly-true one sends someone chasing a shader bug that isn't fixable).
          */
-        val supportsShaderPacks: Boolean = false
+        val supportsShaderPacks: Boolean = false,
+        /**
+         * True only where external compatibility guidance explicitly identifies this renderer as an
+         * Android OpenGL translation layer. This is not an OpenGL version/extension report.
+         */
+        val usesAndroidOpenGlTranslationLayer: Boolean = false
     )
 
     private val entries: Map<String, Entry> = mapOf(
         HolyGL4ESRenderer.ID to Entry(
             maxMinecraftVersion = "1.21.4",
-            badge = Badge.STABLE
+            badge = Badge.STABLE,
+            usesAndroidOpenGlTranslationLayer = true
         ),
         // LTW: actively maintained upstream (MojoLauncher's own featured renderer,
         // ongoing changelog entries), badged the same as Krypton Wrapper's old slot.
@@ -61,7 +67,10 @@ object RendererCatalog {
             minMinecraftVersion = "1.16.5",
             badge = Badge.EXPERIMENTAL
         ),
-        AngleRenderer.ID to Entry(badge = Badge.EXPERIMENTAL)
+        AngleRenderer.ID to Entry(
+            badge = Badge.EXPERIMENTAL,
+            usesAndroidOpenGlTranslationLayer = true
+        )
     )
 
     fun get(rendererId: String): Entry? = entries[rendererId]
@@ -69,4 +78,11 @@ object RendererCatalog {
     /** False (including for unknown/unlisted renderer ids) is the safe default - see
      *  [Entry.supportsShaderPacks]'s doc comment for why. */
     fun supportsShaderPacks(rendererId: String): Boolean = entries[rendererId]?.supportsShaderPacks ?: false
+
+    /**
+     * A conservative static classification used for pre-launch advice. It does not claim an
+     * OpenGL version or extension set; those are only knowable from the game's actual context.
+     */
+    fun usesAndroidOpenGlTranslationLayer(rendererId: String): Boolean =
+        entries[rendererId]?.usesAndroidOpenGlTranslationLayer ?: false
 }

@@ -330,6 +330,13 @@ dependencies {
     implementation("com.github.skydoves:powerspinner:1.2.7")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Coil 3 splits networking into a separate artifact. This app currently uses Android
+    // Views (not Compose), so include Coil's Android API plus its OkHttp fetcher; existing
+    // OkHttp is reused through Gradle's normal dependency resolution.
+    val coilVersion = "3.6.3"
+    implementation("io.coil-kt.coil3:coil:$coilVersion")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:$coilVersion")
     implementation("com.github.angcyo.DslTablayout:TabLayout:3.6.5")
 
     implementation("top.fifthlight.touchcontroller:proxy-client-android:0.0.2")
@@ -399,6 +406,7 @@ dependencies {
     implementation("com.getkeepsafe.taptargetview:taptargetview:1.14.0")
     implementation("io.github.petterpx:floatingx:2.3.3")
     implementation("org.greenrobot:eventbus:3.3.1")
+    testImplementation("junit:junit:4.13.2")
     implementation("com.moandjiezana.toml:toml4j:0.7.2") {
         exclude(group = "com.google.code.gson", module = "gson")
     }

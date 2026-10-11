@@ -15,7 +15,7 @@ import com.endiq.turtlelauncher.utils.path.PathManager
 import net.endiq.launcher.Tools
 import net.endiq.launcher.authenticator.listener.DoneListener
 import net.endiq.launcher.authenticator.listener.ErrorListener
-import net.endiq.launcher.multrt.MultiRTUtils
+import net.endiq.launcher.multirt.MultiRTUtils
 import net.endiq.launcher.tasks.AsyncMinecraftDownloader
 import net.endiq.launcher.tasks.MinecraftDownloader
 import java.io.File

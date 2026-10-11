@@ -159,6 +159,47 @@
                 android:layout_marginTop="@dimen/_8sdp"
                 android:background="@color/game_panel_overlay"/>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_8sdp"
+                android:textStyle="bold"
+                android:textColor="@color/turtle_primary_text"
+                android:text="@string/setting_dark_mode_title"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_1sdp"
+                android:background="@color/game_panel_overlay"/>
+
+            <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                android:id="@+id/dark_mode_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_8sdp"
+                android:background="@drawable/background_item"
+                android:padding="@dimen/_8sdp"
+                app:ripple_for_relative="true">
+
+                <TextView
+                    android:id="@+id/dark_mode_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="@dimen/_8sdp"
+                    android:layout_toStartOf="@+id/dark_mode"
+                    android:text="@string/setting_dark_mode_title"
+                    android:textColor="@color/turtle_primary_text" />
+
+                <Switch
+                    android:id="@+id/dark_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+
             </LinearLayout>
 
             <LinearLayout

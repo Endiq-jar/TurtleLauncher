@@ -33,11 +33,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MinecraftDownloader {
     private static final double ONE_MEGABYTE = (1024d * 1024d);
     public static final String MINECRAFT_RES = "https://resources.download.minecraft.net/";
     private static final String MAVEN_CENTRAL_REPO1 = "https://repo1.maven.org/maven2/";
+
+    /** Serializes game-file preparation so a Fast Boot background preload and a real launch
+     *  never download/extract the same version's files at the same time (which could corrupt
+     *  them). The second caller simply waits, then finds everything already in place. */
+    private static final ReentrantLock GAME_FILE_LOCK = new ReentrantLock();
     private AtomicReference<Exception> mDownloaderThreadException;
     private ArrayList<DownloaderTask> mScheduledDownloadTasks;
     private ArrayList<File> mDeclaredNatives;
@@ -62,8 +68,13 @@ public class MinecraftDownloader {
                       @NonNull String realVersion, // this was there for a reason
                       @NonNull AsyncMinecraftDownloader.DoneListener listener) {
         Task.runTask(() -> {
-            downloadGame(version, realVersion);
-            listener.onDownloadDone();
+            GAME_FILE_LOCK.lock();
+            try {
+                downloadGame(version, realVersion);
+                listener.onDownloadDone();
+            } finally {
+                GAME_FILE_LOCK.unlock();
+            }
             return null;
         }).onThrowable(listener::onDownloadFailed)
                 .finallyTask(() -> ProgressLayout.clearProgress(ProgressLayout.DOWNLOAD_MINECRAFT))

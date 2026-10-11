@@ -87,6 +87,7 @@ Shizuku is completely optional — Turtle Launcher works fine without it.
 * Animation controls
 * Performance profiles
 * JVM & RAM settings
+* Dark Mode — a bundled resource pack that darkens every in-game menu, button and container. Toggle it from the in-game menu's **Debug** tab; the game auto-reloads resource packs (F3+T) so it applies right away.
 
 ---
 

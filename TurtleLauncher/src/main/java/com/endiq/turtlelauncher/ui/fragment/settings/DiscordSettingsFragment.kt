@@ -153,15 +153,23 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
         val elapsedLabel = getString(
             if (AllSettings.discordRpcShowElapsed.getValue()) R.string.discord_rpc_on else R.string.discord_rpc_off
         )
+        val typeLabel = typeLabel(AllSettings.discordRpcType.getValue())
         val items = arrayOf(
             getString(R.string.discord_rpc_name),
             getString(R.string.discord_rpc_details),
             getString(R.string.discord_rpc_state),
             getString(R.string.discord_rpc_status),
             getString(R.string.discord_rpc_elapsed) + ": " + elapsedLabel,
+            getString(R.string.discord_rpc_type) + ": " + typeLabel,
             getString(R.string.discord_rpc_application_id),
             getString(R.string.discord_rpc_large_image),
             getString(R.string.discord_rpc_large_text),
+            getString(R.string.discord_rpc_small_image),
+            getString(R.string.discord_rpc_small_text),
+            getString(R.string.discord_rpc_button1),
+            getString(R.string.discord_rpc_button1_url),
+            getString(R.string.discord_rpc_button2),
+            getString(R.string.discord_rpc_button2_url),
             getString(R.string.discord_rpc_reset_customization)
         )
         AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
@@ -190,25 +198,63 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
                             .put(!AllSettings.discordRpcShowElapsed.getValue()).save()
                         refreshRpcState()
                     }
-                    5 -> showCustomizationTextEditor(
+                    5 -> showTypePicker()
+                    6 -> showCustomizationTextEditor(
                         R.string.discord_rpc_application_id,
                         R.string.discord_rpc_application_id_hint,
                         AllSettings.discordRpcApplicationId.getValue(),
                         inputType = InputType.TYPE_CLASS_NUMBER,
                         showTemplateHelp = false
                     ) { AllSettings.discordRpcApplicationId.put(it).save() }
-                    6 -> showCustomizationTextEditor(
+                    7 -> showCustomizationTextEditor(
                         R.string.discord_rpc_large_image,
                         R.string.discord_rpc_large_image_hint,
                         AllSettings.discordRpcLargeImage.getValue(),
                         showTemplateHelp = false
                     ) { AllSettings.discordRpcLargeImage.put(it).save() }
-                    7 -> showCustomizationTextEditor(
+                    8 -> showCustomizationTextEditor(
                         R.string.discord_rpc_large_text,
                         R.string.discord_rpc_large_text_hint,
                         AllSettings.discordRpcLargeText.getValue()
                     ) { AllSettings.discordRpcLargeText.put(it).save() }
-                    8 -> resetCustomization()
+                    9 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_small_image,
+                        R.string.discord_rpc_small_image_hint,
+                        AllSettings.discordRpcSmallImage.getValue(),
+                        showTemplateHelp = false
+                    ) { AllSettings.discordRpcSmallImage.put(it).save() }
+                    10 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_small_text,
+                        R.string.discord_rpc_small_text_hint,
+                        AllSettings.discordRpcSmallText.getValue()
+                    ) { AllSettings.discordRpcSmallText.put(it).save() }
+                    11 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_button1,
+                        R.string.discord_rpc_button1_hint,
+                        AllSettings.discordRpcButton1.getValue(),
+                        showTemplateHelp = false
+                    ) { AllSettings.discordRpcButton1.put(it).save() }
+                    12 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_button1_url,
+                        R.string.discord_rpc_button1_url_hint,
+                        AllSettings.discordRpcButton1Url.getValue(),
+                        inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI,
+                        showTemplateHelp = false
+                    ) { AllSettings.discordRpcButton1Url.put(it).save() }
+                    13 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_button2,
+                        R.string.discord_rpc_button2_hint,
+                        AllSettings.discordRpcButton2.getValue(),
+                        showTemplateHelp = false
+                    ) { AllSettings.discordRpcButton2.put(it).save() }
+                    14 -> showCustomizationTextEditor(
+                        R.string.discord_rpc_button2_url,
+                        R.string.discord_rpc_button2_url_hint,
+                        AllSettings.discordRpcButton2Url.getValue(),
+                        inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI,
+                        showTemplateHelp = false
+                    ) { AllSettings.discordRpcButton2Url.put(it).save() }
+                    15 -> resetCustomization()
                 }
             }
             .show()
@@ -253,15 +299,52 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
             .show()
     }
 
+    private fun showTypePicker() {
+        val values = arrayOf("0", "1", "2", "3", "5")
+        val labels = arrayOf(
+            getString(R.string.discord_rpc_type_playing),
+            getString(R.string.discord_rpc_type_streaming),
+            getString(R.string.discord_rpc_type_listening),
+            getString(R.string.discord_rpc_type_watching),
+            getString(R.string.discord_rpc_type_competing)
+        )
+        val selected = values.indexOf(AllSettings.discordRpcType.getValue()).coerceAtLeast(0)
+        AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+            .setTitle(R.string.discord_rpc_type)
+            .setSingleChoiceItems(labels, selected) { dialog, which ->
+                AllSettings.discordRpcType.put(values[which]).save()
+                dialog.dismiss()
+                refreshRpcState()
+            }
+            .show()
+    }
+
+    private fun typeLabel(value: String): String = getString(
+        when (value.trim()) {
+            "1" -> R.string.discord_rpc_type_streaming
+            "2" -> R.string.discord_rpc_type_listening
+            "3" -> R.string.discord_rpc_type_watching
+            "5" -> R.string.discord_rpc_type_competing
+            else -> R.string.discord_rpc_type_playing
+        }
+    )
+
     private fun resetCustomization() {
         AllSettings.discordRpcName.reset()
         AllSettings.discordRpcDetails.reset()
         AllSettings.discordRpcState.reset()
         AllSettings.discordRpcStatus.reset()
         AllSettings.discordRpcShowElapsed.reset()
+        AllSettings.discordRpcType.reset()
         AllSettings.discordRpcApplicationId.reset()
         AllSettings.discordRpcLargeImage.reset()
         AllSettings.discordRpcLargeText.reset()
+        AllSettings.discordRpcSmallImage.reset()
+        AllSettings.discordRpcSmallText.reset()
+        AllSettings.discordRpcButton1.reset()
+        AllSettings.discordRpcButton1Url.reset()
+        AllSettings.discordRpcButton2.reset()
+        AllSettings.discordRpcButton2Url.reset()
         refreshRpcState()
         Toast.makeText(requireContext(), R.string.discord_rpc_reset_done, Toast.LENGTH_SHORT).show()
     }

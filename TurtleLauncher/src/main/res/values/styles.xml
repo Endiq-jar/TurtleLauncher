@@ -78,6 +78,9 @@
     <style name="ShapeAppearance.Turtle.Large" parent="ShapeAppearance.Material3.Corner.Large">
         <item name="cornerSize">28dp</item>
     </style>
+    <style name="ShapeAppearance.Turtle.SeriesCard" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerSize">@dimen/radius_panel</item>
+    </style>
 
     <style name="CustomDialogStyle" parent="Theme.Material3.DayNight.Dialog">
         <item name="android:windowBackground">@drawable/bg_dialog</item>

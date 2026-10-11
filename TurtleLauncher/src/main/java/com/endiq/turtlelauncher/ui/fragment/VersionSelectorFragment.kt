@@ -41,7 +41,7 @@ class VersionSelectorFragment : FragmentWithAnim(R.layout.fragment_version) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.apply {
             allCards = buildCards()
-            seriesGrid.layoutManager = GridLayoutManager(requireContext(), 3)
+            seriesGrid.layoutManager = GridLayoutManager(requireContext(), 2)
             renderCards(allCards)
 
             searchVersion.doAfterTextChanged { text -> applyFilter(text?.toString()) }

@@ -5,7 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.endiq.turtlelauncher.R
-import com.endiq.turtlelauncher.feature.download.utils.VersionSeriesUtils
+import com.endiq.turtlelauncher.feature.download.utils.SeriesBannerResolver
+import com.endiq.turtlelauncher.feature.download.utils.VersionSeriesCodenames
 
 
 /**
@@ -28,8 +29,9 @@ class SeriesCardAdapter(
     )
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val icon: android.widget.ImageView = view.findViewById(R.id.series_icon)
+        val banner: com.google.android.material.imageview.ShapeableImageView = view.findViewById(R.id.series_banner)
         val label: android.widget.TextView = view.findViewById(R.id.series_label)
+        val codename: android.widget.TextView = view.findViewById(R.id.series_codename)
         val count: android.widget.TextView = view.findViewById(R.id.series_count)
         val latestBadge: android.widget.TextView = view.findViewById(R.id.series_latest_badge)
     }
@@ -41,8 +43,14 @@ class SeriesCardAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = cards[position]
-        holder.icon.setImageResource(card.iconRes)
+
+        holder.banner.setImageDrawable(SeriesBannerResolver.resolve(holder.itemView.context, card))
         holder.label.text = card.label
+
+        val codename = VersionSeriesCodenames.of(card.label)
+        holder.codename.visibility = if (codename != null) View.VISIBLE else View.GONE
+        holder.codename.text = codename ?: ""
+
         holder.count.text = holder.itemView.resources.getQuantityString(
             R.plurals.version_series_count, card.versionCount, card.versionCount
         )

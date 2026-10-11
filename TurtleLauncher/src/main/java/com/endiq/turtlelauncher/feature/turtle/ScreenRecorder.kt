@@ -38,7 +38,6 @@ import net.endiq.launcher.services.ScreenRecorderAudioService
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import java.io.OutputStream
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -56,9 +55,10 @@ object ScreenRecorder {
     /** Request code for the MediaProjection consent activity, handled in onActivityResult(). */
     const val REQUEST_CODE_AUDIO_CAPTURE = 8422
 
-    private val nameFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US)
+    private val nameFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS", Locale.US)
 
     private val isRecordingFlag = AtomicBoolean(false)
+    private val stopInProgress = AtomicBoolean(false)
     private var encoder: MediaCodec? = null
     private var muxer: MediaMuxer? = null
     private var inputSurface: Surface? = null
@@ -68,13 +68,18 @@ object ScreenRecorder {
     private val videoBufferInfo = MediaCodec.BufferInfo()
     private var addedTrackCount = 0
     private var expectedTrackCount = 1
+    private var encodedVideoSampleCount = 0L
 
     private var captureThread: HandlerThread? = null
     private var captureHandler: Handler? = null
+    private val captureLock = Any()
+    private var pixelCopyInFlight = false
+    private var pixelCopyThread: HandlerThread? = null
     private var frameBitmap: Bitmap? = null
     private var startTimeNanos = 0L
     private var frameIntervalMs = 1000L / 30L
     private var outputFile: File? = null
+    private var recordingContext: Context? = null
     private var targetSurfaceView: SurfaceView? = null
     private var targetTextureView: TextureView? = null
     private var maxDurationMs = 0L
@@ -89,6 +94,7 @@ object ScreenRecorder {
     private var audioCaptureThread: HandlerThread? = null
     private var audioCaptureHandler: Handler? = null
     private var pendingConsentActivity: WeakReference<Activity>? = null
+    @Volatile private var audioCaptureFailed = false
 
     fun isRecording(): Boolean = isRecordingFlag.get()
 
@@ -109,7 +115,7 @@ object ScreenRecorder {
      * not need to know about this indirection, same as before audio existed.
      */
     fun start(activity: Activity) {
-        if (isRecordingFlag.get()) return
+        if (isRecordingFlag.get() || stopInProgress.get()) return
 
         val wantsAudio = AllSettings.recordingCaptureAudio.getValue() &&
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
@@ -189,7 +195,7 @@ object ScreenRecorder {
     }
 
     private fun startInternal(activity: Activity, projection: MediaProjection?) {
-        if (isRecordingFlag.get()) {
+        if (isRecordingFlag.get() || stopInProgress.get()) {
             // A second consent round-trip could in theory land here after another start() already
             // went through video-only in the meantime - don't leak an unused projection.
             try { projection?.stop() } catch (t: Throwable) { Logging.e(TAG, "projection.stop() failed", t) }
@@ -228,19 +234,20 @@ object ScreenRecorder {
             if (codec == null) {
                 throw RuntimeException("No H.264 encoder found on this device")
             }
+            encoder = codec
             codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             val surface = codec.createInputSurface()
             if (surface == null) {
-                codec.release()
                 throw RuntimeException("Failed to create input surface for encoder")
             }
+            inputSurface = surface
             codec.start()
 
             // Try to use external movies directory, fall back to cache dir
             val moviesDir = activity.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
             val cacheDir = activity.cacheDir
             val baseDir = moviesDir ?: cacheDir
-            
+
             val dir = File(baseDir, "recordings").apply {
                 if (!exists()) {
                     Logging.i(TAG, "Creating recordings directory at: ${absolutePath}")
@@ -249,7 +256,7 @@ object ScreenRecorder {
                     }
                 }
             }
-            
+
             val actualDir = if (dir.exists() && dir.isDirectory) {
                 dir
             } else {
@@ -265,17 +272,18 @@ object ScreenRecorder {
             }
             val file = File(actualDir, "turtle_${nameFormat.format(Date())}.mp4")
             Logging.i(TAG, "Recording to: ${file.absolutePath}")
-            val mediaMuxer = MediaMuxer(file.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-
-            encoder = codec
-            inputSurface = surface
-            muxer = mediaMuxer
             outputFile = file
+            recordingContext = activity.applicationContext
+            val mediaMuxer = MediaMuxer(file.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+            muxer = mediaMuxer
+
             videoTrackIndex = -1
             audioTrackIndex = -1
             addedTrackCount = 0
             expectedTrackCount = 1
+            encodedVideoSampleCount = 0L
             muxerStarted = false
+            audioCaptureFailed = false
 
             when (renderSurfaceView) {
                 is SurfaceView -> {
@@ -313,103 +321,184 @@ object ScreenRecorder {
             isRecordingFlag.set(true)
             captureHandler?.post(captureLoop(activity))
 
+            // Do not start the audio worker from setupAudioCapture(). It checks
+            // isRecordingFlag before reading, and could otherwise run before the flag was set.
+            // That race left the expected audio track missing, so MediaMuxer never started and
+            // the resulting MP4 stayed at 0 bytes.
+            if (audioReady && !startAudioCaptureLoop()) {
+                onAudioCaptureFailed(IllegalStateException("Could not start audio capture thread"))
+            }
+
             Toast.makeText(
                 activity,
-                if (audioReady) "Recording started (with audio)" else "Recording started",
+                if (audioReady && !audioCaptureFailed) "Recording started (with audio)" else "Recording started",
                 Toast.LENGTH_SHORT
             ).show()
         } catch (t: Throwable) {
             Logging.e(TAG, "Failed to start recording", t)
+            isRecordingFlag.set(false)
+            val incompleteFile = outputFile
             try { projection?.stop() } catch (inner: Throwable) { Logging.e(TAG, "projection.stop() failed", inner) }
             if (projection != null) ScreenRecorderAudioService.stop(activity.applicationContext)
+            captureThread?.quitSafely()
+            audioCaptureThread?.quitSafely()
             releaseQuietly()
+            if (incompleteFile != null && incompleteFile.exists() && !incompleteFile.delete()) {
+                Logging.e(TAG, "Could not delete failed recording: ${incompleteFile.absolutePath}")
+            }
             Toast.makeText(activity, "Recording failed to start", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun stop(activity: Activity?) {
         if (!isRecordingFlag.compareAndSet(true, false)) return
+        stopInProgress.set(true)
 
-        // stop() may be called with no Activity at all (e.g. from the capture loop when the
-        // game surface goes away), so resolve the non-null pieces we need up front instead of
-        // dereferencing a nullable Activity inside the background task below.
-        val appContext = activity?.applicationContext
+        // onDestroy() and capture failures may stop with no live Activity. Keep the application
+        // context captured at start so a finished recording can still be published to Gallery.
+        val appContext = activity?.applicationContext ?: recordingContext
+        val videoThread = captureThread
+        val audioThread = audioCaptureThread
 
-        captureThread?.quitSafely()
+        synchronized(captureLock) {
+            // Keep the handler alive until PixelCopy has finished writing into frameBitmap. Its
+            // completion callback quits the thread if stop() happened while the copy was pending.
+            if (!pixelCopyInFlight) videoThread?.quitSafely()
+        }
         captureThread = null
         captureHandler = null
 
-        audioCaptureThread?.quitSafely()
+        audioThread?.quitSafely()
         audioCaptureThread = null
         audioCaptureHandler = null
 
-        // Drain and tear down on a background thread - MediaCodec/MediaMuxer teardown can
-        // block briefly and this is invoked directly from a UI click listener.
+        // Drain and tear down on a background thread. Stop the AudioRecord first to unblock a
+        // pending read, then join both workers before touching their codecs from this thread.
         TaskExecutors.getDefault().execute {
             try {
-                drainVideoEncoder(endOfStream = true)
-            } catch (t: Throwable) {
-                Logging.e(TAG, "Error draining video encoder on stop", t)
-            }
-            if (audioEncoder != null) {
-                try {
-                    try { audioRecord?.stop() } catch (t: Throwable) { Logging.e(TAG, "audioRecord.stop() failed", t) }
-                    finishAudioEncoding()
-                } catch (t: Throwable) {
-                    Logging.e(TAG, "Error draining audio encoder on stop", t)
-                }
-            }
-            val savedFile = outputFile
-            
-            // Wait for all data to be written to the muxer before releasing
-            // This ensures the MP4 file is properly finalized
-            val muxerLocal = muxer
-            if (muxerLocal != null && muxerStarted) {
-                try {
-                    // Give time for remaining frames to be written
-                    Thread.sleep(300)
-                } catch (t: Throwable) {
-                    // Ignore
-                }
-            }
-            
-            releaseQuietly()
-            
-            // Wait for file to be fully written to disk after muxer release
-            // Try multiple times with increasing delays
-            var fileValid = false
-            var galleryAdded = false
-            if (savedFile != null) {
-                val maxAttempts = 5
-                for (attempt in 1..maxAttempts) {
+                try { audioRecord?.stop() } catch (t: Throwable) { Logging.e(TAG, "audioRecord.stop() failed", t) }
+                val audioWorkerStopped = waitForThread(audioThread, "audio capture")
+                val videoWorkerStopped = waitForThread(videoThread, "video capture")
+
+                if (audioEncoder != null && !audioCaptureFailed && audioWorkerStopped) {
                     try {
-                        Thread.sleep(200L * attempt)
+                        // Drain audio first: the muxer cannot start until both track formats are
+                        // registered, and video must not be drained while its samples would be
+                        // discarded waiting for the audio format.
+                        finishAudioEncoding()
                     } catch (t: Throwable) {
-                        // Ignore
+                        Logging.e(TAG, "Error draining audio encoder on stop", t)
                     }
-                    if (savedFile.exists() && savedFile.length() > 0) {
-                        fileValid = true
-                        // Try to add to gallery once file is valid
-                        if (attempt == 1) {
-                            galleryAdded = appContext != null && addVideoToGallery(appContext, savedFile)
+                } else if (audioEncoder != null && !audioWorkerStopped) {
+                    audioCaptureFailed = true
+                    Logging.e(TAG, "Audio capture worker did not stop cleanly; finalizing video without audio")
+                }
+
+                // Audio is optional. If it never produced a track, release the video track rather
+                // than leaving the muxer waiting forever (which produced empty, unplayable 0-byte MP4s).
+                allowVideoOnlyMuxingIfAudioTrackMissing()
+
+                if (videoWorkerStopped) {
+                    try {
+                        drainVideoEncoder(endOfStream = true)
+                    } catch (t: Throwable) {
+                        Logging.e(TAG, "Error draining video encoder on stop", t)
+                    }
+                } else {
+                    Logging.e(TAG, "Video capture worker did not stop cleanly; skipping a concurrent codec drain")
+                }
+
+                val savedFile = outputFile
+                val videoSamplesWritten = encodedVideoSampleCount
+                val muxerWasStarted = synchronized(muxerLock) { muxerStarted }
+                if (muxer != null && muxerWasStarted) {
+                    try {
+                        // Allow the final muxer writes to settle before release.
+                        Thread.sleep(100)
+                    } catch (t: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                    }
+                }
+
+                releaseQuietly()
+
+                // A nonempty MP4 header alone is not a playable recording; require at least one
+                // video sample and remove empty files instead of leaving misleading 0-byte entries.
+                var fileValid = false
+                var galleryAdded = false
+                if (savedFile != null) {
+                    val maxAttempts = 5
+                    for (attempt in 1..maxAttempts) {
+                        try {
+                            Thread.sleep(200L * attempt)
+                        } catch (t: InterruptedException) {
+                            Thread.currentThread().interrupt()
+                            break
                         }
-                        break
+                        if (savedFile.exists() && savedFile.length() > 0 && videoSamplesWritten > 0) {
+                            fileValid = true
+                            if (attempt == 1) {
+                                galleryAdded = appContext != null && addVideoToGallery(appContext, savedFile)
+                            }
+                            break
+                        }
+                    }
+                    Logging.i(
+                        TAG,
+                        "Recording validation: ${if (fileValid) "success" else "failed"} " +
+                            "(video samples=$videoSamplesWritten, file=${savedFile.absolutePath})"
+                    )
+                    if (fileValid && !galleryAdded) {
+                        galleryAdded = appContext != null && addVideoToGallery(appContext, savedFile)
+                    } else if (!fileValid && savedFile.exists() && !savedFile.delete()) {
+                        Logging.e(TAG, "Could not delete incomplete recording: ${savedFile.absolutePath}")
                     }
                 }
-                Logging.i(TAG, "File validation attempts: ${if (fileValid) "success" else "failed"} for ${savedFile.absolutePath}")
-                if (fileValid && !galleryAdded) {
-                    // Try once more if first attempt failed
-                    galleryAdded = appContext != null && addVideoToGallery(appContext, savedFile)
+
+                TaskExecutors.getAndroidUI().execute {
+                    if (activity != null) {
+                        val message = if (savedFile != null && fileValid)
+                            "Recording saved: ${savedFile.name}" + if (galleryAdded) " (Added to gallery)" else ""
+                        else "Recording failed - no video frames were captured"
+                        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+                    }
                 }
+            } catch (t: Throwable) {
+                Logging.e(TAG, "Unexpected error while finalizing recording", t)
+                releaseQuietly()
+                TaskExecutors.getAndroidUI().execute {
+                    if (activity != null) {
+                        Toast.makeText(activity, "Recording failed to save", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } finally {
+                stopInProgress.set(false)
             }
-            
-            TaskExecutors.getAndroidUI().execute {
-                if (activity != null) {
-                    val message = if (savedFile != null && fileValid)
-                        "Recording saved: ${savedFile.name}" + if (galleryAdded) " (Added to gallery)" else ""
-                        else "Recording failed"
-                    Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
-                }
+        }
+    }
+
+    private fun waitForThread(thread: HandlerThread?, label: String): Boolean {
+        if (thread == null || thread === Thread.currentThread()) return true
+        return try {
+            thread.join(5_000L)
+            if (thread.isAlive) {
+                Logging.e(TAG, "$label worker did not stop within 5 seconds")
+                false
+            } else {
+                true
+            }
+        } catch (t: InterruptedException) {
+            Thread.currentThread().interrupt()
+            Logging.e(TAG, "Interrupted while waiting for $label worker", t)
+            false
+        }
+    }
+
+    private fun allowVideoOnlyMuxingIfAudioTrackMissing() {
+        synchronized(muxerLock) {
+            if (!muxerStarted && audioTrackIndex == -1 && expectedTrackCount > 1) {
+                expectedTrackCount = 1
+                startMuxerIfReadyLocked()
             }
         }
     }
@@ -417,6 +506,8 @@ object ScreenRecorder {
     // ---- Video capture ----
 
     private fun captureLoop(activity: Activity): Runnable = object : Runnable {
+        private var consecutiveCaptureFailures = 0
+
         override fun run() {
             if (!isRecordingFlag.get()) return
 
@@ -426,41 +517,95 @@ object ScreenRecorder {
             }
 
             try {
-                captureFrame()
+                captureFrame { captured ->
+                    if (!isRecordingFlag.get()) return@captureFrame
+                    if (captured) {
+                        consecutiveCaptureFailures = 0
+                    } else {
+                        consecutiveCaptureFailures++
+                        if (consecutiveCaptureFailures == 1 || consecutiveCaptureFailures % 10 == 0) {
+                            Logging.e(TAG, "Could not capture game frame ($consecutiveCaptureFailures consecutive failures)")
+                        }
+                        if (consecutiveCaptureFailures >= 30) {
+                            Logging.e(TAG, "Stopping recording after repeated game-frame capture failures")
+                            stop(activity)
+                            return@captureFrame
+                        }
+                    }
+                    // PixelCopy is asynchronous. Schedule the next frame only after this one has
+                    // finished so it cannot overwrite the shared bitmap while the encoder reads it.
+                    if (isRecordingFlag.get()) captureHandler?.postDelayed(this, frameIntervalMs)
+                }
             } catch (t: Throwable) {
                 Logging.e(TAG, "Frame capture failed, stopping recording", t)
                 TaskExecutors.getAndroidUI().execute { stop(activity) }
-                return
             }
-
-            captureHandler?.postDelayed(this, frameIntervalMs)
         }
     }
 
-    private fun captureFrame() {
-        val bitmap = frameBitmap ?: return
+    private fun captureFrame(onComplete: (Boolean) -> Unit) {
+        val bitmap = frameBitmap ?: run {
+            onComplete(false)
+            return
+        }
         val surfaceView = targetSurfaceView
         val textureView = targetTextureView
 
         when {
             surfaceView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
-                // PixelCopy is async but this loop only ever has one request in flight since
-                // each tick waits for the previous drawFrame() before scheduling the next.
-                PixelCopy.request(surfaceView, bitmap, { result ->
-                    if (result == PixelCopy.SUCCESS) drawFrame(bitmap)
-                }, captureHandler ?: return)
+                // The next frame is scheduled from this callback, so only one PixelCopy request
+                // can write into the recording bitmap at a time. Coordinate request startup with
+                // stop() so the callback thread remains alive until PixelCopy releases the bitmap.
+                val callbackHandler = synchronized(captureLock) {
+                    if (!isRecordingFlag.get()) {
+                        null
+                    } else {
+                        pixelCopyInFlight = true
+                        pixelCopyThread = captureThread
+                        captureHandler
+                    }
+                }
+                if (callbackHandler == null) {
+                    synchronized(captureLock) {
+                        pixelCopyInFlight = false
+                        pixelCopyThread = null
+                    }
+                    onComplete(false)
+                    return
+                }
+
+                try {
+                    PixelCopy.request(surfaceView, bitmap, { result ->
+                        val shouldContinue = synchronized(captureLock) {
+                            pixelCopyInFlight = false
+                            val active = isRecordingFlag.get()
+                            if (!active) pixelCopyThread?.quitSafely()
+                            pixelCopyThread = null
+                            active
+                        }
+                        if (!shouldContinue) return@request
+                        if (result == PixelCopy.SUCCESS) onComplete(drawFrame(bitmap))
+                        else onComplete(false)
+                    }, callbackHandler)
+                } catch (t: Throwable) {
+                    synchronized(captureLock) {
+                        pixelCopyInFlight = false
+                        pixelCopyThread = null
+                    }
+                    throw t
+                }
             }
             textureView != null -> {
-                textureView.getBitmap(bitmap)
-                drawFrame(bitmap)
+                val copied = textureView.getBitmap(bitmap)
+                onComplete(copied != null && drawFrame(bitmap))
             }
-            else -> { /* no capturable surface this tick - skip the frame rather than crash */ }
+            else -> onComplete(false)
         }
     }
 
-    private fun drawFrame(bitmap: Bitmap) {
-        val surface = inputSurface ?: return
-        try {
+    private fun drawFrame(bitmap: Bitmap): Boolean {
+        val surface = inputSurface ?: return false
+        return try {
             val canvas = surface.lockCanvas(null)
             try {
                 canvas.drawBitmap(bitmap, 0f, 0f, null)
@@ -470,9 +615,11 @@ object ScreenRecorder {
             // PixelCopy delivers this callback asynchronously, outside captureLoop's try/catch.
             // Keep codec/driver failures from escaping the HandlerThread and killing the process.
             drainVideoEncoder(endOfStream = false)
+            true
         } catch (t: Throwable) {
             Logging.e(TAG, "Failed to submit a frame to the video encoder; stopping safely", t)
             stop(null)
+            false
         }
     }
 
@@ -487,9 +634,12 @@ object ScreenRecorder {
 
     // ---- Audio capture ----
 
-    /** @return true if audio capture was actually started; false leaves recording video-only. */
+    /** @return true if audio capture was initialized; false leaves recording video-only. */
     private fun setupAudioCapture(projection: MediaProjection): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false
+
+        var record: AudioRecord? = null
+        var codec: MediaCodec? = null
         return try {
             val captureConfig = AudioPlaybackCaptureConfiguration.Builder(projection)
                 .addMatchingUsage(AudioAttributes.USAGE_GAME)
@@ -500,7 +650,7 @@ object ScreenRecorder {
             val channelMask = AudioFormat.CHANNEL_IN_STEREO
             val encoding = AudioFormat.ENCODING_PCM_16BIT
             val minBufferSize = AudioRecord.getMinBufferSize(AUDIO_SAMPLE_RATE, channelMask, encoding)
-            if (minBufferSize <= 0) return false
+            if (minBufferSize <= 0) throw IOException("AudioRecord returned an invalid buffer size")
 
             val audioFormat = AudioFormat.Builder()
                 .setSampleRate(AUDIO_SAMPLE_RATE)
@@ -508,38 +658,63 @@ object ScreenRecorder {
                 .setEncoding(encoding)
                 .build()
 
-            val record = AudioRecord.Builder()
+            val createdRecord = AudioRecord.Builder()
                 .setAudioFormat(audioFormat)
                 .setBufferSizeInBytes(minBufferSize * 2)
                 .setAudioPlaybackCaptureConfig(captureConfig)
                 .build()
-
-            if (record.state != AudioRecord.STATE_INITIALIZED) {
-                record.release()
-                return false
+            record = createdRecord
+            if (createdRecord.state != AudioRecord.STATE_INITIALIZED) {
+                throw IOException("AudioRecord could not be initialized")
             }
 
             val encodeFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, AUDIO_SAMPLE_RATE, AUDIO_CHANNEL_COUNT).apply {
                 setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC)
                 setInteger(MediaFormat.KEY_BIT_RATE, AUDIO_BIT_RATE)
             }
-            val codec = MediaCodec.createEncoderByType(AUDIO_MIME_TYPE)
-            codec.configure(encodeFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            codec.start()
+            val createdCodec = MediaCodec.createEncoderByType(AUDIO_MIME_TYPE)
+            codec = createdCodec
+            createdCodec.configure(encodeFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            createdCodec.start()
+            createdRecord.startRecording()
+            if (createdRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+                throw IOException("AudioRecord did not enter the recording state")
+            }
 
-            audioRecord = record
-            audioEncoder = codec
+            audioRecord = createdRecord
+            audioEncoder = createdCodec
             audioTrackIndex = -1
-
-            record.startRecording()
-
-            val thread = HandlerThread("ScreenRecorder-Audio").apply { start() }
-            audioCaptureThread = thread
-            audioCaptureHandler = Handler(thread.looper)
-            audioCaptureHandler?.post(audioCaptureLoop())
             true
         } catch (t: Throwable) {
             Logging.e(TAG, "Audio capture setup failed, continuing video-only", t)
+            try { record?.stop() } catch (inner: Throwable) { Logging.e(TAG, "audioRecord.stop() after setup failure", inner) }
+            try { record?.release() } catch (inner: Throwable) { Logging.e(TAG, "audioRecord.release() after setup failure", inner) }
+            try { codec?.stop() } catch (inner: Throwable) { Logging.e(TAG, "audioEncoder.stop() after setup failure", inner) }
+            try { codec?.release() } catch (inner: Throwable) { Logging.e(TAG, "audioEncoder.release() after setup failure", inner) }
+            audioRecord = null
+            audioEncoder = null
+            false
+        }
+    }
+
+    /** Starts only after isRecordingFlag is true, so the worker cannot exit before the muxer starts. */
+    private fun startAudioCaptureLoop(): Boolean {
+        if (audioRecord == null || audioEncoder == null || !isRecordingFlag.get()) return false
+        return try {
+            val thread = HandlerThread("ScreenRecorder-Audio").apply { start() }
+            audioCaptureThread = thread
+            val handler = Handler(thread.looper)
+            audioCaptureHandler = handler
+            if (handler.post(audioCaptureLoop())) {
+                true
+            } else {
+                thread.quitSafely()
+                audioCaptureThread = null
+                audioCaptureHandler = null
+                false
+            }
+        } catch (t: Throwable) {
+            Logging.e(TAG, "Could not start audio capture thread", t)
             false
         }
     }
@@ -551,18 +726,41 @@ object ScreenRecorder {
             try {
                 captureAudioChunk(pcmBuffer)
             } catch (t: Throwable) {
-                Logging.e(TAG, "Audio capture failed, video continues without further audio", t)
+                if (isRecordingFlag.get()) onAudioCaptureFailed(t)
+                else Logging.i(TAG, "Audio capture stopped while the recording was finishing")
                 return
             }
-            audioCaptureHandler?.post(this)
+            if (isRecordingFlag.get()) audioCaptureHandler?.post(this)
         }
     }
 
+    private fun onAudioCaptureFailed(error: Throwable) {
+        audioCaptureFailed = true
+        Logging.e(TAG, "Audio capture failed; continuing with video-only recording", error)
+        try { audioRecord?.stop() } catch (t: Throwable) { Logging.e(TAG, "audioRecord.stop() after capture failure", t) }
+        audioCaptureThread?.quitSafely()
+
+        synchronized(muxerLock) {
+            if (!muxerStarted && audioTrackIndex == -1 && expectedTrackCount > 1) {
+                expectedTrackCount = 1
+                startMuxerIfReadyLocked()
+            }
+        }
+
+        try { mediaProjection?.stop() } catch (t: Throwable) { Logging.e(TAG, "mediaProjection.stop() after capture failure", t) }
+        mediaProjection = null
+        audioServiceContext?.let {
+            try { ScreenRecorderAudioService.stop(it) } catch (t: Throwable) { Logging.e(TAG, "Audio service stop after capture failure", t) }
+        }
+        audioServiceContext = null
+    }
+
     private fun captureAudioChunk(buffer: ByteArray) {
-        val record = audioRecord ?: return
-        val codec = audioEncoder ?: return
+        val record = audioRecord ?: throw IllegalStateException("AudioRecord is unavailable")
+        val codec = audioEncoder ?: throw IllegalStateException("Audio encoder is unavailable")
         val read = record.read(buffer, 0, buffer.size)
-        if (read <= 0) return
+        if (read < 0) throw IOException("AudioRecord.read failed with code $read")
+        if (read == 0) return
 
         val inputIndex = codec.dequeueInputBuffer(10_000L)
         if (inputIndex >= 0) {
@@ -579,15 +777,31 @@ object ScreenRecorder {
 
     private fun finishAudioEncoding() {
         val codec = audioEncoder ?: return
+        var signaledEndOfStream = false
+        val deadlineNanos = System.nanoTime() + 2_000_000_000L
         try {
-            val inputIndex = codec.dequeueInputBuffer(10_000L)
-            if (inputIndex >= 0) {
-                codec.queueInputBuffer(inputIndex, 0, 0, System.nanoTime() / 1000L, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+            while (!signaledEndOfStream && System.nanoTime() < deadlineNanos) {
+                val inputIndex = codec.dequeueInputBuffer(10_000L)
+                if (inputIndex >= 0) {
+                    codec.queueInputBuffer(
+                        inputIndex, 0, 0, System.nanoTime() / 1000L,
+                        MediaCodec.BUFFER_FLAG_END_OF_STREAM
+                    )
+                    signaledEndOfStream = true
+                } else {
+                    // Free output buffers while waiting for an input slot. A single dequeue
+                    // can return INFO_TRY_AGAIN_LATER even though the encoder is still healthy.
+                    drainAudioEncoder(endOfStream = false)
+                }
             }
         } catch (t: Throwable) {
             Logging.e(TAG, "Failed to signal audio end-of-stream", t)
         }
-        drainAudioEncoder(endOfStream = true)
+        if (signaledEndOfStream) {
+            drainAudioEncoder(endOfStream = true)
+        } else {
+            Logging.e(TAG, "Timed out while signaling audio end-of-stream")
+        }
     }
 
     private fun drainAudioEncoder(endOfStream: Boolean) {
@@ -598,6 +812,16 @@ object ScreenRecorder {
 
     // ---- Shared encoder draining ----
 
+    /** Must be called with muxerLock held. */
+    private fun startMuxerIfReadyLocked() {
+        val mediaMuxer = muxer ?: return
+        if (!muxerStarted && addedTrackCount >= expectedTrackCount) {
+            mediaMuxer.start()
+            muxerStarted = true
+            Logging.i(TAG, "Media muxer started with $addedTrackCount track(s)")
+        }
+    }
+
     private fun drainEncoderCommon(
         codec: MediaCodec,
         info: MediaCodec.BufferInfo,
@@ -606,11 +830,16 @@ object ScreenRecorder {
         setTrackIndex: (Int) -> Unit
     ) {
         val mediaMuxer = muxer ?: return
+        val drainDeadlineNanos = if (endOfStream) System.nanoTime() + 5_000_000_000L else Long.MAX_VALUE
         while (true) {
             val outputIndex = codec.dequeueOutputBuffer(info, 10_000L)
             when {
                 outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER -> {
                     if (!endOfStream) return
+                    if (System.nanoTime() >= drainDeadlineNanos) {
+                        Logging.e(TAG, "Timed out waiting for encoder end-of-stream")
+                        return
+                    }
                 }
                 outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     synchronized(muxerLock) {
@@ -618,24 +847,31 @@ object ScreenRecorder {
                             val idx = mediaMuxer.addTrack(codec.outputFormat)
                             setTrackIndex(idx)
                             addedTrackCount++
-                            if (addedTrackCount >= expectedTrackCount && !muxerStarted) {
-                                mediaMuxer.start()
-                                muxerStarted = true
-                            }
+                            startMuxerIfReadyLocked()
                         }
                     }
                 }
                 outputIndex >= 0 -> {
                     val encodedData = codec.getOutputBuffer(outputIndex)
                     val trackIndex = getTrackIndex()
-                    if (encodedData != null && info.size > 0 && trackIndex != -1) {
-                        encodedData.position(info.offset)
-                        encodedData.limit(info.offset + info.size)
-                        synchronized(muxerLock) {
-                            if (muxerStarted) mediaMuxer.writeSampleData(trackIndex, encodedData, info)
+                    try {
+                        if (encodedData != null && info.size > 0 && trackIndex != -1) {
+                            encodedData.position(info.offset)
+                            encodedData.limit(info.offset + info.size)
+                            synchronized(muxerLock) {
+                                if (muxerStarted) {
+                                    mediaMuxer.writeSampleData(trackIndex, encodedData, info)
+                                    if (trackIndex == videoTrackIndex &&
+                                        (info.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0
+                                    ) {
+                                        encodedVideoSampleCount++
+                                    }
+                                }
+                            }
                         }
+                    } finally {
+                        codec.releaseOutputBuffer(outputIndex, false)
                     }
-                    codec.releaseOutputBuffer(outputIndex, false)
                     if ((info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) return
                 }
             }
@@ -659,6 +895,7 @@ object ScreenRecorder {
         }
         frameBitmap?.recycle()
 
+        isRecordingFlag.set(false)
         encoder = null
         muxer = null
         inputSurface = null
@@ -667,15 +904,24 @@ object ScreenRecorder {
         audioTrackIndex = -1
         addedTrackCount = 0
         expectedTrackCount = 1
+        encodedVideoSampleCount = 0L
         frameBitmap = null
         targetSurfaceView = null
         targetTextureView = null
         outputFile = null
+        recordingContext = null
         startTimeNanos = 0L
         audioRecord = null
         audioEncoder = null
         mediaProjection = null
         audioServiceContext = null
+        audioCaptureThread = null
+        audioCaptureHandler = null
+        synchronized(captureLock) {
+            pixelCopyInFlight = false
+            pixelCopyThread = null
+        }
+        audioCaptureFailed = false
     }
 
     /**
@@ -683,38 +929,44 @@ object ScreenRecorder {
      * Uses MediaStore API for Android 10+ (Q) or the legacy approach for older versions.
      */
     private fun addVideoToGallery(context: Context, videoFile: File): Boolean {
+        val resolver = context.contentResolver
+        var uri: Uri? = null
         return try {
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, videoFile.name)
                 put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "Movies/TurtleLauncher")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.Video.Media.IS_PENDING, 0)
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, "Movies/TurtleLauncher")
+                    // Keep the item hidden until the complete MP4 has been copied. Marking it
+                    // published at insert time could leave a visible zero-byte gallery entry.
+                    put(MediaStore.Video.Media.IS_PENDING, 1)
                 }
             }
 
-            val resolver = context.contentResolver
-            val uri: Uri? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
-            } else {
-                // Legacy approach for Android 9 and below
-                resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+            val insertedUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+                ?: throw IOException("Failed to create MediaStore entry for video")
+            uri = insertedUri
+
+            val outputStream = resolver.openOutputStream(insertedUri, "w")
+                ?: throw IOException("Could not open MediaStore output stream for $insertedUri")
+            outputStream.use { output ->
+                FileInputStream(videoFile).use { input -> input.copyTo(output) }
             }
 
-            if (uri != null) {
-                // Copy file to MediaStore
-                resolver.openOutputStream(uri)?.use { outputStream ->
-                    FileInputStream(videoFile).use { inputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val published = ContentValues().apply { put(MediaStore.Video.Media.IS_PENDING, 0) }
+                if (resolver.update(insertedUri, published, null, null) <= 0) {
+                    throw IOException("Could not publish recorded video in MediaStore: $insertedUri")
                 }
-                Logging.i(TAG, "Video added to gallery: $uri")
-                true
-            } else {
-                Logging.e(TAG, "Failed to create MediaStore entry for video")
-                false
             }
+
+            Logging.i(TAG, "Video added to gallery: $insertedUri")
+            true
         } catch (t: Throwable) {
+            uri?.let { insertedUri ->
+                try { resolver.delete(insertedUri, null, null) }
+                catch (deleteError: Throwable) { Logging.e(TAG, "Could not remove incomplete gallery item", deleteError) }
+            }
             Logging.e(TAG, "Error adding video to gallery", t)
             false
         }

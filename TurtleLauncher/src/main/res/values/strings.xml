@@ -1411,7 +1411,7 @@
     <string name="crash_rule_editor_tip_hint">Tip to show when this matches</string>
     <string name="crash_rule_editor_empty">No custom rules yet. Add one below.</string>
     <string name="setting_fast_boot_title">Fast Boot</string>
-    <string name="setting_fast_boot_desc">Skips file checksum/manifest verification and the pre-launch RAM check dialog to launch Minecraft faster. Only enable if your game files are already known-good — corrupted files won\'t be auto-redownloaded.</string>
+    <string name="setting_fast_boot_desc">Preloads the selected version\'s game files (libraries, assets, natives) in the background and skips checksum/manifest verification and the pre-launch RAM check dialog, so Minecraft starts almost instantly. Only enable if your game files are already known-good — corrupted files won\'t be auto-redownloaded.</string>
     <string name="setting_crash_diagnostics_title">View Crash Diagnostics</string>
     <string name="setting_crash_diagnostics_desc">Shows how many times each known crash pattern has been detected on this device. Counts only, stored locally, never uploaded.</string>
     <string name="crash_diagnostics_dialog_title">Crash Diagnostics</string>

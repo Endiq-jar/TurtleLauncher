@@ -9,11 +9,15 @@ import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.feature.version.VersionsManager
 import com.endiq.turtlelauncher.renderer.Renderers
 import com.endiq.turtlelauncher.setting.AllSettings
+import com.endiq.turtlelauncher.task.TaskExecutors
+import com.endiq.turtlelauncher.utils.http.NetworkUtils
 import com.endiq.turtlelauncher.utils.path.PathManager
 import net.endiq.launcher.Tools
 import net.endiq.launcher.authenticator.listener.DoneListener
 import net.endiq.launcher.authenticator.listener.ErrorListener
-import net.endiq.launcher.multirt.MultiRTUtils
+import net.endiq.launcher.multrt.MultiRTUtils
+import net.endiq.launcher.tasks.AsyncMinecraftDownloader
+import net.endiq.launcher.tasks.MinecraftDownloader
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
@@ -34,8 +38,18 @@ object LauncherWarmStart {
     private val executor = Executors.newFixedThreadPool(2, backgroundThreadFactory)
     private val alreadyRunning = AtomicBoolean(false)
 
+    /** Guards the Fast Boot game-file preload so only one runs at a time. */
+    private val gameFilesRunning = AtomicBoolean(false)
+
+    /** Version id whose game files were already preloaded this process; avoids redoing it. */
+    @Volatile private var lastPreloadedVersionId: String? = null
+
     @JvmStatic
     fun warmStart(context: Context) {
+        // Fast Boot game-file preload is gated by fastBoot and runs independently of the
+        // smartWarmStart page-cache warming below.
+        warmGameFiles(context)
+
         if (!AllSettings.smartWarmStart.getValue()) return
         if (!alreadyRunning.compareAndSet(false, true)) return
 
@@ -50,6 +64,44 @@ object LauncherWarmStart {
                 alreadyRunning.set(false)
             }
         }
+    }
+
+    /**
+     * Fast Boot: pre-download / pre-extract the currently selected version's game files
+     * (libraries, assets, client jar, natives) in the background while the user is still in the
+     * launcher, so that when they press Play the launcher-side preparation is already done and
+     * the game starts almost instantly.
+     *
+     * This reuses the exact [MinecraftDownloader] pipeline the real launch uses (now serialized
+     * by a shared lock so the two never touch the same files at once), with a silent
+     * [AsyncMinecraftDownloader.DoneListener] so it never triggers a launch. It runs at most once
+     * per version per process and only when a network is available and no game is running.
+     */
+    private fun warmGameFiles(context: Context) {
+        if (!AllSettings.fastBoot.getValue()) return
+        if (TaskExecutors.isGameSessionActive) return
+        if (!NetworkUtils.isNetworkAvailable(context)) return
+        val version = VersionsManager.getCurrentVersion() ?: return
+        val versionId = version.getVersionName()
+        if (versionId.isBlank() || lastPreloadedVersionId == versionId) return
+        if (!gameFilesRunning.compareAndSet(false, true)) return
+
+        // Matches the real launch: the listed version may be null for custom/imported versions,
+        // in which case the downloader falls back to the local version JSON.
+        val listed = AsyncMinecraftDownloader.getListedVersion(versionId)
+        Logging.i(TAG, "Fast Boot: preloading game files for $versionId")
+        MinecraftDownloader().start(listed, versionId, object : AsyncMinecraftDownloader.DoneListener {
+            override fun onDownloadDone() {
+                lastPreloadedVersionId = versionId
+                gameFilesRunning.set(false)
+                Logging.i(TAG, "Fast Boot: game files ready for $versionId")
+            }
+
+            override fun onDownloadFailed(t: Throwable?) {
+                gameFilesRunning.set(false)
+                Logging.i(TAG, "Fast Boot: game-file preload skipped for $versionId: ${t?.message}")
+            }
+        })
     }
 
     /** Page-cache-warms the currently selected renderer's main library plus anything

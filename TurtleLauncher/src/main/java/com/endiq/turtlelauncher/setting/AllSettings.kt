@@ -38,6 +38,15 @@ class AllSettings {
         @JvmStatic val discordRpcApplicationId = StringSettingUnit("discordRpcApplicationId", "")
         @JvmStatic val discordRpcLargeImage = StringSettingUnit("discordRpcLargeImage", "")
         @JvmStatic val discordRpcLargeText = StringSettingUnit("discordRpcLargeText", "Turtle Launcher")
+        @JvmStatic val discordRpcSmallImage = StringSettingUnit("discordRpcSmallImage", "")
+        @JvmStatic val discordRpcSmallText = StringSettingUnit("discordRpcSmallText", "")
+        /** Discord activity type: 0 Playing, 1 Streaming, 2 Listening, 3 Watching, 5 Competing. */
+        @JvmStatic val discordRpcType = StringSettingUnit("discordRpcType", "0")
+        /** Up to two Rich Presence buttons (labels) with their click-through URLs. */
+        @JvmStatic val discordRpcButton1 = StringSettingUnit("discordRpcButton1", "")
+        @JvmStatic val discordRpcButton1Url = StringSettingUnit("discordRpcButton1Url", "")
+        @JvmStatic val discordRpcButton2 = StringSettingUnit("discordRpcButton2", "")
+        @JvmStatic val discordRpcButton2Url = StringSettingUnit("discordRpcButton2Url", "")
 
         // ── Video ──────────────────────────────────────────────────────────────
         @JvmStatic val renderer = StringSettingUnit("renderer", "4b4b8e4b-083d-429c-97e1-5e8239b6dc17")

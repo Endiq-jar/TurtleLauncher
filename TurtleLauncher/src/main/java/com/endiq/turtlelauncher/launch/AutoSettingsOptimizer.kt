@@ -75,12 +75,19 @@ object AutoSettingsOptimizer {
             gpu.contains("powervr", ignoreCase = true) ||
             gpu.contains("sgx", ignoreCase = true) ||
             gpu.contains("apple", ignoreCase = true) -> {
-                if (isMC26Plus && hasVulkan) {
-                    Logging.i(TAG, "MC 26.1+ on PowerVR/Apple GPU: switching to Zink to avoid CubeMap GL_INVALID_ENUM crash")
-                    Pair(ZinkRenderer().getUniqueIdentifier(), "default")
-                } else {
-                    Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
-                }
+                // MobileGlues on every version, including MC 26.1+ - the Zink pick this used to make
+                // for 26.x avoided the CubeMap GL_INVALID_ENUM crash but lands in the opposite
+                // problem on 26.3+: Amethyst-Android's release notes list MobileGlues and Krypton
+                // Wrapper as crashing there because of how SDL now creates its EGL window, and MC
+                // 26.3 hangs on PowerVR unless the renderer is MobileGlues (see CrashAnalyzer's rule
+                // for that log shape). MobileGlues is also what the ANGLE hook has to sit under:
+                // GL -> MobileGlues -> ANGLE -> Vulkan, with the same wrapper on every MC version.
+                Logging.i(
+                    TAG,
+                    "PowerVR/Apple GPU: selecting MobileGlues (MC26+: $isMC26Plus, Vulkan: $hasVulkan); " +
+                        "ANGLE sits under it when the ANGLE hook applies"
+                )
+                Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
             }
             else -> {
                 if (isMC26Plus && hasVulkan) {
@@ -176,7 +183,12 @@ object AutoSettingsOptimizer {
         }
     }
 
-    private fun detectGpu(): String {
+    /**
+     * Best-effort GPU name for the auto-picker. Internal rather than private because
+     * [com.endiq.turtlelauncher.renderer.angle.AnglePluginManager] reuses it for its PowerVR probe
+     * instead of running a second EGL probe of its own.
+     */
+    internal fun detectGpu(): String {
         queryGlRenderer()?.let { return it }
         return try {
             val display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)

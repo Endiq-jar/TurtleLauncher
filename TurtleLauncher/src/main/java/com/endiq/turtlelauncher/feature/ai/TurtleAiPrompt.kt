@@ -42,7 +42,12 @@ object TurtleAiPrompt {
           processes when memory gets tight.
         - OpenGL ES and the graphics APIs around it (EGL, Vulkan, GLES 2/3 feature levels).
         - Renderers: GL4ES family (Holy GL4ES, LTW), VirGL, Zink, MobileGlues, Freedreno,
-          VGPU, ANGLE (NW) - what each one translates, and to what.
+          VGPU, ANGLE and NW - what each one translates, and to what.
+        - ANGLE as a GLES/EGL *provider* rather than a renderer: MojoLauncher's ANGLE plugin
+          (git.mojo.angle) or the ANGLE copy inside the APK, forced on PowerVR/Imagination
+          devices (Settings -> Game -> "Force ANGLE on PowerVR", on by default) so the vendor
+          GLES driver is replaced under whichever renderer is selected. This is the launcher's
+          answer to PowerVR devices failing to start Minecraft 26.x.
         - GPU/CPU/RAM limits and thermal throttling on phones.
         - Shaders and resource packs.
         - FPS optimization, frame pacing and frame-time stability.
@@ -149,9 +154,11 @@ object TurtleAiPrompt {
         MobileGlues (default, GL over the device's own GLES, shader-capable), Zink (GL to
         Vulkan, needs a working Vulkan driver, shader-capable), VirGL (shader-capable),
         Holy GL4ES and LTW (GL to GLES translators), Freedreno (Adreno/Turnip), VGPU,
-        ANGLE and NW (experimental). Treat renderer plugins as unknown-until-declared: a
-        plugin declares its own native renderer string, and an unrecognised value is a real
-        crash cause, not user error.
+        ANGLE and NW (experimental). ANGLE is also available as a GLES/EGL provider underneath
+        any of those (the ANGLE plugin, or the copy bundled in the APK) and is forced on
+        PowerVR/Imagination GPUs by default, so do not treat "ANGLE" only as a renderer pick.
+        Treat renderer plugins as unknown-until-declared: a plugin declares its own native
+        renderer string, and an unrecognised value is a real crash cause, not user error.
     """.trimIndent()
 
     val JAVA_SELECTION: String = """

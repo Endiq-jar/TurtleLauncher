@@ -98,11 +98,52 @@ class LaunchGame {
                 val rendererUniqueId = version.getRenderer()
                 val isLtw = rendererUniqueId == com.endiq.turtlelauncher.renderer.renderers.LTWRenderer().getUniqueIdentifier()
                 val isPowerVr = File("/vendor/lib64/libsrv_um.so").exists() || File("/vendor/lib/libsrv_um.so").exists()
+                // ANGLE replaces the GLES/EGL driver on PowerVR, which is exactly the thing LTW could
+                // not get a context out of, so the warning below is only relevant while ANGLE is off -
+                // and the check is only worth its GL probe on that combination.
                 if (isLtw && isPowerVr) {
-                    Logging.w("LaunchGame", "LTW selected on a PowerVR GPU - it failed to create a GL context on this GPU family (no context current at RenderSystem init)")
-                    Toast.makeText(context, "LTW can fail to create a GL context on PowerVR GPUs. If the game crashes at startup, switch this version to MobileGlues.", Toast.LENGTH_LONG).show()
+                    val angleHandlesGpu = runCatching {
+                        com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.isAutoForceWanted(context)
+                    }.getOrDefault(false)
+                    if (!angleHandlesGpu) {
+                        Logging.w("LaunchGame", "LTW selected on a PowerVR GPU - it failed to create a GL context on this GPU family (no context current at RenderSystem init)")
+                        Toast.makeText(context, "LTW can fail to create a GL context on PowerVR GPUs. If the game crashes at startup, switch this version to MobileGlues, or re-enable \"Force ANGLE on PowerVR\".", Toast.LENGTH_LONG).show()
+                    } else {
+                        Logging.i("LaunchGame", "LTW on PowerVR: ANGLE is forced for this device and takes over the EGL/GLES layer LTW failed on")
+                    }
                 }
             }.onFailure { e -> Logging.e("LaunchGame", "PowerVR/LTW check failed", e) }
+
+            // ANGLE for this device: on PowerVR/Imagination GPUs (and after any launch that ended
+            // without a GL context) MojoLauncher's ANGLE plugin - or the ANGLE pair bundled in this
+            // APK, until the plugin is installed - is forced to be the GLES/EGL driver under the
+            // selected renderer. This is what lets PowerVR devices run MC 26.3, whose SDL3 window path
+            // never gets a context out of the vendor driver. The same call offers the plugin install
+            // (background, non-blocking) when it's missing or outdated.
+            // Runs off the UI thread: the device probe creates a throwaway GL context and the plugin
+            // check may unpack/statically inspect files, none of which belongs on the main thread in
+            // the middle of a launch.
+            TaskExecutors.getDefault().execute {
+                runCatching {
+                    val wanted = com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.isAutoForceWanted(context)
+                    if (wanted) {
+                        val pluginInstalled = com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.isPluginInstalled(context)
+                        Logging.i(
+                            "LaunchGame",
+                            "ANGLE forced for ${version.getVersionName()}: " +
+                                com.endiq.turtlelauncher.renderer.angle.AngleLaunchPolicy.describeStatus(context)
+                        )
+                        if (!pluginInstalled) {
+                            TaskExecutors.runInUIThread {
+                                Toast.makeText(context, R.string.angle_launch_bundled_fallback, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                    com.endiq.turtlelauncher.renderer.angle.AngleLaunchPolicy.ensurePluginReady(context) { message ->
+                        TaskExecutors.runInUIThread { Toast.makeText(context, message, Toast.LENGTH_LONG).show() }
+                    }
+                }.onFailure { e -> Logging.e("LaunchGame", "ANGLE setup check failed", e) }
+            }
 
 
             val networkAvailable = NetworkUtils.isNetworkAvailable(context)

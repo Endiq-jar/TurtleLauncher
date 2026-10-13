@@ -66,7 +66,7 @@ data class AngleLibraries(
     /** Plugin version code when [source] is [AngleSource.PLUGIN], else 0. */
     val versionCode: Int = 0,
     /** True when the files were unpacked out of the plugin APK by the launcher rather than read
-     *  from the plugin's own `nativeLibraryDir` (see AnglePluginManager.ensureExtracted). */
+     *  from the plugin's own `nativeLibraryDir` (see AnglePluginManager.ensureLibrariesOnDisk). */
     val extracted: Boolean = false
 ) {
     val eglName: String get() = eglPath.substringAfterLast('/')

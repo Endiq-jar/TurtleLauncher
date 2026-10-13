@@ -185,8 +185,8 @@ object AnglePluginManager {
      * Makes sure the plugin's two libraries exist as real files on disk and returns the pair.
      *
      * Fast path: the plugin's `nativeLibraryDir` already contains them (normal case once the plugin
-     * app has been launched by the system at least once). Slow path: unpack the `lib/<abi>/*.so`
-     * entries of the installed APK into the launcher's own files dir - an extractNativeLibs APK is
+     * app has been launched by the system at least once). Slow path: unpack the `lib/<abi>` files out of
+     * the installed APK into the launcher's own files dir - an extractNativeLibs APK is
      * only guaranteed to be unpacked by the installer on older Android versions, so this keeps the
      * feature working on installs where that directory is empty. Extracted copies are keyed by the
      * plugin's version code + install time, so an updated plugin never reuses stale files.
@@ -299,6 +299,34 @@ object AnglePluginManager {
             Logging.w(TAG, "No ANGLE libraries available (plugin not installed and none bundled for this ABI)")
         }
         return resolved
+    }
+
+    /**
+     * Directory that has to be on the game's `LD_LIBRARY_PATH`, or null when ANGLE lives in the
+     * launcher's own native lib dir (which is already on it).
+     *
+     * Deliberately free of I/O beyond a couple of `File` checks: it is called from
+     * [JREUtils.relocateLibPath] on the launch path, *before* the ANGLE pair is resolved. The
+     * extraction path is returned even when the files are not unpacked yet - the policy unpacks them
+     * during the same launch, and the linker namespace has to know the directory by then (that is the
+     * same `android_update_LD_LIBRARY_PATH` mechanism this launcher already uses to load its JVM out
+     * of its own data dir).
+     */
+    fun librarySearchDir(context: Context): String? {
+        cachedLibraries?.let { libs ->
+            val dir = File(libs.eglPath).parentFile ?: return null
+            return if (dir.absolutePath == PathManager.DIR_NATIVE_LIB.absolutePath) null else dir.absolutePath
+        }
+        val plugin = installedPlugin(context) ?: return null
+        val nativeDir = plugin.nativeLibraryDir
+        if (!nativeDir.isNullOrBlank() &&
+            isUsableLibrary(File(nativeDir, AnglePlugin.EGL_LIBRARY)) &&
+            isUsableLibrary(File(nativeDir, AnglePlugin.GLES_LIBRARY))
+        ) {
+            return nativeDir
+        }
+        val apkPath = plugin.sourceDir ?: return null
+        return File(extractRoot, "${plugin.versionCode}-${File(apkPath).lastModified()}-${deviceAbi()}").absolutePath
     }
 
     /**

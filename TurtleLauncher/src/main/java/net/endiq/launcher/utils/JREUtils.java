@@ -189,6 +189,22 @@ public final class JREUtils {
         if (customRenderer != null) {
             ldLibraryPath.append(customRenderer.getPath()).append(":");
         }
+        // ANGLE (MojoLauncher's plugin, or the copy the launcher unpacks out of it) lives outside the
+        // launcher's own native lib dir, so its directory has to be on LD_LIBRARY_PATH for the same
+        // reason the renderer plugin's is: this is the update that makes the linker accept the
+        // absolute paths AngleLaunchPolicy pre-loads, and every bare-name lookup afterwards (ANGLE's
+        // own libGLESv2_angle.so, SDL_EGL_LIBRARY, MobileGlues' enableAngle path). The bundled ANGLE
+        // pair needs none of this - it sits in DIR_NATIVE_LIB.
+        try {
+            String angleDir = com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.INSTANCE
+                    .librarySearchDir(com.endiq.turtlelauncher.context.ContextExecutor.getApplication());
+            if (angleDir != null && !angleDir.isEmpty()) {
+                ldLibraryPath.append(angleDir).append(":");
+                Logging.i("DynamicLoader", "ANGLE directory on LD_LIBRARY_PATH: " + angleDir);
+            }
+        } catch (Throwable t) {
+            Logging.w("DynamicLoader", "Could not add the ANGLE directory to LD_LIBRARY_PATH: " + t.getMessage());
+        }
         ldLibraryPath.append(jreHome)
                 .append("/").append(Tools.DIRNAME_HOME_JRE)
                 .append("/jli:").append(jreHome).append("/").append(Tools.DIRNAME_HOME_JRE)

@@ -54,8 +54,6 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
         setupAnglePluginRow()
 
         SwitchSettingsWrapper(
-
-        SwitchSettingsWrapper(
             context,
             AllSettings.versionIsolation,
             binding.versionIsolationLayout,
@@ -115,17 +113,18 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
         BaseSettingsWrapper(context, binding.anglePluginLayout) {
             if (!com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.isNetworkAvailable(context)) {
                 Toast.makeText(context, R.string.setting_angle_plugin_no_network, Toast.LENGTH_LONG).show()
-                return@BaseSettingsWrapper
-            }
-            binding.anglePluginAction.text = getString(R.string.setting_angle_plugin_downloading)
-            Toast.makeText(context, R.string.setting_angle_plugin_downloading, Toast.LENGTH_SHORT).show()
-            com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.downloadAndInstall(context) { success, message ->
-                if (!isAdded) return@downloadAndInstall
-                binding.anglePluginAction.text = getString(R.string.setting_angle_plugin_action_install)
-                val text = if (success) getString(R.string.setting_angle_plugin_installed_toast)
-                else getString(R.string.setting_angle_plugin_failed, message)
-                Toast.makeText(context, text, Toast.LENGTH_LONG).show()
-                refreshAnglePluginRow()
+            } else {
+                binding.anglePluginAction.text = getString(R.string.setting_angle_plugin_downloading)
+                Toast.makeText(context, R.string.setting_angle_plugin_downloading, Toast.LENGTH_SHORT).show()
+                com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.downloadAndInstall(context) { success, message ->
+                    if (isAdded) {
+                        binding.anglePluginAction.text = getString(R.string.setting_angle_plugin_action_install)
+                        val text = if (success) getString(R.string.setting_angle_plugin_installed_toast)
+                        else getString(R.string.setting_angle_plugin_failed, message)
+                        Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+                        refreshAnglePluginRow()
+                    }
+                }
             }
         }
         binding.anglePluginLayout.setOnLongClickListener {

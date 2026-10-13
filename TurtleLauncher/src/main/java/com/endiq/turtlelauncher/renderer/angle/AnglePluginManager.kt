@@ -315,7 +315,7 @@ object AnglePluginManager {
     fun librarySearchDir(context: Context): String? {
         cachedLibraries?.let { libs ->
             val dir = File(libs.eglPath).parentFile ?: return null
-            return if (dir.absolutePath == PathManager.DIR_NATIVE_LIB.absolutePath) null else dir.absolutePath
+            return if (dir.absolutePath == File(PathManager.DIR_NATIVE_LIB).absolutePath) null else dir.absolutePath
         }
         val plugin = installedPlugin(context) ?: return null
         val nativeDir = plugin.nativeLibraryDir
@@ -363,7 +363,18 @@ object AnglePluginManager {
      * [AngleLibraries], so no consumer can end up with a second copy of the same file.
      */
     fun preload(libraries: AngleLibraries): Boolean {
-        if (preloadedLibraries == libraries) return true
+        preloadedLibraries?.let { previous ->
+            if (previous == libraries) return true
+            // A different ANGLE pair is already in this process. Loading a second pair would put two
+            // libraries with the same soname in it, and every later bare-name lookup (ANGLE's own
+            // libGLESv2_angle.so, SDL_EGL_LIBRARY, the wrappers) could resolve to either one - so the
+            // first pair wins and the caller degrades to "ANGLE not applied" instead of mixing copies.
+            Logging.w(
+                TAG,
+                "ANGLE is already loaded from ${previous.source} in this process - not loading ${libraries.source}"
+            )
+            return false
+        }
         // JREUtils.dlopen is libpojavexec's own dlopen (RTLD_GLOBAL | RTLD_LAZY), i.e. the same
         // loader call the launcher already uses to pull in renderer/plugin libraries - including
         // absolute paths inside another app's folder, which is the case for the plugin's own pair.

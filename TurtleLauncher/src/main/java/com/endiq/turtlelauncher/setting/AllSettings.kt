@@ -146,6 +146,18 @@ class AllSettings {
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
         /** Load ANGLE (libEGL_angle/libGLESv2_angle) instead of the system EGL/GLES driver. */
         @JvmStatic val useAngle                 = BooleanSettingUnit("useAngle", false)
+        /**
+         * "Always active" ANGLE for PowerVR devices: force MojoLauncher's ANGLE plugin
+         * (git.mojo.angle, or the ANGLE copy bundled in this APK when the plugin is missing) to be the
+         * GLES/EGL driver under whichever renderer is selected, so the vendor PowerVR driver - the one
+         * that hangs/black-screens Minecraft 26.x - is taken out of the picture. On by default; the
+         * switch only ever applies on PowerVR/Imagination GPUs (or after a launch that ended without a
+         * GL context), and is ignored for renderers that bring their own EGL. See AngleLaunchPolicy.
+         */
+        @JvmStatic val angleForceOnPowerVr      = BooleanSettingUnit("angleForceOnPowerVr", true)
+        /** Whether the launcher may download+prompt the install of the ANGLE plugin when it is
+         *  missing or outdated on a device the hook applies to. */
+        @JvmStatic val angleAutoInstall         = BooleanSettingUnit("angleAutoInstall", true)
         @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")
         @JvmStatic val autoSetGameLanguage      = BooleanSettingUnit("autoSetGameLanguage", true)
         @JvmStatic val gameLanguageOverridden   = BooleanSettingUnit("gameLanguageOverridden", false)

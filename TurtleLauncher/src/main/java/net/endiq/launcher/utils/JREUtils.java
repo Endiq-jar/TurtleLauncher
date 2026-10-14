@@ -189,6 +189,22 @@ public final class JREUtils {
         if (customRenderer != null) {
             ldLibraryPath.append(customRenderer.getPath()).append(":");
         }
+        // ANGLE (MojoLauncher's plugin, or the copy the launcher unpacks out of it) lives outside the
+        // launcher's own native lib dir, so its directory has to be on LD_LIBRARY_PATH for the same
+        // reason the renderer plugin's is: this is the update that makes the linker accept the
+        // absolute paths AngleLaunchPolicy pre-loads, and every bare-name lookup afterwards (ANGLE's
+        // own libGLESv2_angle.so, SDL_EGL_LIBRARY, MobileGlues' enableAngle path). The bundled ANGLE
+        // pair needs none of this - it sits in DIR_NATIVE_LIB.
+        try {
+            String angleDir = com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.INSTANCE
+                    .librarySearchDir(com.endiq.turtlelauncher.context.ContextExecutor.getApplication());
+            if (angleDir != null && !angleDir.isEmpty()) {
+                ldLibraryPath.append(angleDir).append(":");
+                Logging.i("DynamicLoader", "ANGLE directory on LD_LIBRARY_PATH: " + angleDir);
+            }
+        } catch (Throwable t) {
+            Logging.w("DynamicLoader", "Could not add the ANGLE directory to LD_LIBRARY_PATH: " + t.getMessage());
+        }
         ldLibraryPath.append(jreHome)
                 .append("/").append(Tools.DIRNAME_HOME_JRE)
                 .append("/jli:").append(jreHome).append("/").append(Tools.DIRNAME_HOME_JRE)
@@ -262,7 +278,7 @@ public final class JREUtils {
             envMap.put("POJAV_FFMPEG_PATH", FFmpegPlugin.executablePath);
     }
 
-    private static void setRendererEnv(Map<String, String> envMap) {
+    private static void setRendererEnv(Map<String, String> envMap, String mcVersionName) {
         RendererInterface currentRenderer = Renderers.INSTANCE.getCurrentRenderer();
         String rendererId = currentRenderer.getRendererId();
 
@@ -288,24 +304,18 @@ public final class JREUtils {
         envMap.putAll(currentRenderer.getRendererEnv().getValue());
 
         String eglName = currentRenderer.getRendererEGL();
-        if (eglName != null) envMap.put("POJAVEXEC_EGL", eglName);
 
-        // "Use ANGLE" game setting: swap the system EGL/GLES driver for the bundled ANGLE libs.
-        // Only for renderers that ride the system EGL ("libEGL.so"); renderers shipping their own
-        // EGL (Zink, MobileGlues, ANGLE renderer itself) and plugin renderers are left untouched.
-        if (com.endiq.turtlelauncher.setting.AllSettings.getUseAngle().getValue()
-                && "libEGL.so".equals(eglName)
-                && RendererPluginManager.getSelectedRendererPlugin() == null) {
-            java.io.File angleEgl = new java.io.File(DIR_NATIVE_LIB, "libEGL_angle.so");
-            java.io.File angleGles = new java.io.File(DIR_NATIVE_LIB, "libGLESv2_angle.so");
-            if (angleEgl.exists() && angleGles.exists()) {
-                envMap.put("POJAVEXEC_EGL", "libEGL_angle.so");
-                envMap.put("LIBGL_GLES", "libGLESv2_angle.so"); // egl_loader.c maps this to libEGL_angle.so
-                Logging.i("JREUtils", "Use ANGLE enabled: EGL/GLES -> ANGLE for renderer " + rendererId);
-            } else {
-                Logging.w("JREUtils", "Use ANGLE enabled but ANGLE libs missing in native lib dir; using system driver");
-            }
-        }
+        // ANGLE - MojoLauncher's ANGLE plugin when it is installed, otherwise the ANGLE pair bundled
+        // in this APK - is the GLES/EGL provider *underneath* the selected renderer, not a renderer of
+        // its own. AngleLaunchPolicy owns that decision (Settings → Game → "Use ANGLE", plus the
+        // automatic PowerVR hook), pre-loads the chosen pair so every later bare-name dlopen resolves
+        // to it, and on PowerVR replaces the vendor GLES driver that MC 26.x's SDL window path cannot
+        // get a context out of. It runs before the renderer's own EGL is published, because replacing
+        // that EGL is the whole point.
+        com.endiq.turtlelauncher.renderer.angle.AngleLaunchPolicy.AngleApplyResult angleResult =
+                com.endiq.turtlelauncher.renderer.angle.AngleLaunchPolicy.applyToGameEnvironment(
+                        envMap, rendererId, eglName, mcVersionName);
+        if (eglName != null && !angleResult.getEglReplaced()) envMap.put("POJAVEXEC_EGL", eglName);
 
         envMap.put("POJAV_RENDERER", currentRenderer.getNativeRendererId());
 
@@ -414,7 +424,7 @@ public final class JREUtils {
             }
 
             if (Renderers.INSTANCE.isCurrentRendererValid()) {
-                setRendererEnv(envMap);
+                setRendererEnv(envMap, gameVersion.getVersionName());
             }
 
             String eglLibraryName = envMap.get("POJAVEXEC_EGL");

@@ -45,7 +45,12 @@ object CrashAnalyzer {
         REPAIR_RUNTIME,
         /** Flips Settings → Video → Performance → "Native object pooling" off, i.e.
          *  AllSettings.nativeObjectPooling → LIBGL_RECYCLEFBO=0 on next launch. */
-        DISABLE_FBO_RECYCLING
+        DISABLE_FBO_RECYCLING,
+        /** Flips Settings → Game → "Force ANGLE on PowerVR" on and remembers the GL-context failure
+         *  that led here, so the next launch runs on ANGLE (MojoLauncher's ANGLE plugin when it is
+         *  installed, the copy bundled in this APK otherwise) instead of the GPU driver that just
+         *  failed - the fix for PowerVR devices on Minecraft 26.x. */
+        FORCE_ANGLE
     }
 
     data class RepairAction(
@@ -69,7 +74,11 @@ object CrashAnalyzer {
     private class Rule(
         val title: String,
         val matches: (text: String) -> Boolean,
-        val diagnosis: (text: String) -> Diagnosis
+        val diagnosis: (text: String) -> Diagnosis,
+        /** True for the crash families that mean "the GPU driver gave the renderer no usable GL
+         *  context" - those get remembered in AnglePluginManager, which then forces ANGLE on the next
+         *  launch even on a GPU the PowerVR probe doesn't recognize. */
+        val glContextFailure: Boolean = false
     )
 
     private fun fixed(
@@ -157,17 +166,29 @@ object CrashAnalyzer {
             Rule(
                 title = "gl_context_not_current",
                 matches = { has(it, "No context is current", "GL.createCapabilities") && has(it, "RenderSystem", "initRenderer", "createCapabilities") },
+                glContextFailure = true,
                 diagnosis = fixed(
                     "The renderer didn't create an OpenGL context",
                     "Minecraft asked LWJGL for GL capabilities before any GL context was current, so the selected " +
                         "renderer failed to create one on this GPU/driver. The window and GL info are empty in the report, " +
-                        "which means it failed before Minecraft drew anything.",
+                        "which means it failed before Minecraft drew anything. On PowerVR/Imagination GPUs this is the " +
+                        "signature of the vendor GLES driver refusing to hand out a context at all - and that driver is " +
+                        "exactly what the ANGLE plugin's libraries replace.",
                     listOf(
-                        "Switch this version's renderer to MobileGlues (Settings → Video → Renderer), especially on PowerVR GPUs.",
+                        "Force ANGLE for this device (button below): ANGLE - MojoLauncher's ANGLE plugin when it is " +
+                            "installed, the copy built into the launcher otherwise - becomes the GLES/EGL driver under " +
+                            "whichever renderer is selected, taking the driver that just failed out of the picture. This " +
+                            "is the known fix for PowerVR devices on MC 26.x.",
+                        "Then pick MobileGlues as the renderer (Settings → Video → Renderer) if you are not already on it - " +
+                            "it is the renderer MC 26.3 is verified to start with on PowerVR hardware, with ANGLE underneath.",
                         "Reset the version's renderer override below to fall back to the launcher default.",
-                        "If you are on LTW, note it has failed to create a context on PowerVR devices."
+                        "If you are on LTW, note it has failed to create a context on PowerVR devices - with ANGLE forced, " +
+                            "LTW gets its context from ANGLE instead, which is the combination MojoLauncher ships."
                     ),
-                    repairActions = listOf(RepairAction(RepairActionType.RESET_RENDERER_OVERRIDE, "Reset renderer override"))
+                    repairActions = listOf(
+                        RepairAction(RepairActionType.FORCE_ANGLE, "Force ANGLE for this device"),
+                        RepairAction(RepairActionType.RESET_RENDERER_OVERRIDE, "Reset renderer override")
+                    )
                 )
             ),
             // 2b. Krypton Wrapper's native GL4ES backend (libng_gl4es.so) SIGSEGV - seen in an
@@ -365,16 +386,53 @@ object CrashAnalyzer {
             Rule(
                 title = "native_crash",
                 matches = { has(it, "SIGSEGV", "Native crash", "tombstone", "backtrace:") },
+                glContextFailure = true,
                 diagnosis = fixed(
                     "The GPU driver crashed natively (SIGSEGV)",
                     "A native (non-Java) crash happened inside the graphics driver itself, not in Minecraft's Java " +
                         "code. This is most common on devices with PowerVR GPUs, where certain OpenGL code paths are " +
-                        "known to crash the driver.",
+                        "known to crash the driver - and replacing that driver is what ANGLE does.",
                     listOf(
+                        "Force ANGLE for this device (button below): the platform GLES driver is swapped for ANGLE " +
+                            "(MojoLauncher's ANGLE plugin, or the copy built into the launcher), so the code path that " +
+                            "crashed here is no longer on the vendor driver.",
                         "Switch renderer: try Vulkan-Zink instead of OpenGL ES (or vice-versa) in Settings → Video.",
                         "Enable the Auto Graphics Optimizer so the launcher picks a renderer/driver combo known to work on your GPU.",
                         "Lower resolution scale, which reduces load on the driver and can avoid some driver crash conditions.",
                         "Update TurtleLauncher — PowerVR-specific renderer fixes are an active area of work."
+                    ),
+                    Severity.WARNING,
+                    repairActions = listOf(RepairAction(RepairActionType.FORCE_ANGLE, "Force ANGLE for this device"))
+                )
+            ),
+            // 11b. The ANGLE pair itself could not be loaded, so the forced-ANGLE path (PowerVR, or
+            // "Use ANGLE") silently fell back to the platform GLES driver - i.e. whatever the user
+            // wanted ANGLE for is still in play. Both the pre-load (AnglePluginManager.preload via
+            // libpojavexec's dlopen, which logs "DLOPEN: ..., failed (...)") and bionic's own loader
+            // messages ("not found", "cannot locate symbol") land here.
+            Rule(
+                title = "angle_libraries_unusable",
+                matches = {
+                    has(it, "libEGL_angle.so", "libGLESv2_angle.so", "angle_plugin") &&
+                        has(it, ", failed (", "not found", "cannot locate symbol", "UnsatisfiedLinkError", "is not accessible for the namespace")
+                },
+                diagnosis = fixed(
+                    "ANGLE was requested but its libraries could not be loaded",
+                    "The launcher tried to pre-load the ANGLE pair (MojoLauncher's ANGLE plugin, or the ANGLE copy " +
+                        "inside this APK) before the renderer started, and the load failed. The launch then continues " +
+                        "on the platform GLES driver - which on a PowerVR device is usually exactly the driver ANGLE " +
+                        "was meant to replace, so the original black screen/hang can come back.",
+                    listOf(
+                        "Check the log lines around the failure for the exact path: 'DLOPEN: <path> , failed (...)' records " +
+                            "which file was tried and what the loader said.",
+                        "If the path points into the ANGLE plugin's own app folder, reinstall the plugin (Settings → Game → " +
+                            "ANGLE plugin → Install). An 'is not accessible for the namespace' message there means the " +
+                            "device's loaders refused another app's library file - the launcher then unpacks the plugin's " +
+                            "libraries itself on the next launch.",
+                        "If the failure names the launcher's own native lib dir, the APK is missing its ANGLE libraries " +
+                            "(a stripped split APK): reinstall the launcher with the universal/arm64 build.",
+                        "Update TurtleLauncher and the ANGLE plugin, then relaunch - both are shipped/updated independently " +
+                            "and the newer build is tried first."
                     ),
                     Severity.WARNING
                 )
@@ -661,9 +719,16 @@ object CrashAnalyzer {
                             "If it still crashes, share the log: the 'TurtleSDL3:' and 'SdlAndroidJniPrep' lines " +
                                 "now record exactly which SDL3 file was pinned and what was removed - that's " +
                                 "what's needed to finish this fix on the affected device.",
+                            "On a PowerVR/Imagination device this is what the forced-ANGLE hook is for: SDL creates " +
+                                "its window through EGL, and ANGLE (Settings → Game → \"Force ANGLE on PowerVR\", on by " +
+                                "default there) replaces the vendor GLES/EGL driver that SDL is failing on. It uses " +
+                                "MojoLauncher's ANGLE plugin when installed, the ANGLE copy built into the launcher " +
+                                "otherwise - so try that before anything else on PowerVR hardware.",
                             "Also try Settings → Video → Renderer: on MC 26.3-snapshot4+, Amethyst-Android's own " +
                                 "notes flag MobileGlues and Krypton Wrapper as crashing 'due to changes in how " +
-                                "SDL creates EGL window' - Zink or LTW are the safer picks.",
+                                "SDL creates EGL window'. With the forced-ANGLE hook active, MobileGlues runs on top " +
+                                "of ANGLE instead of the vendor driver, which is the combination to try first on " +
+                                "PowerVR; otherwise Zink or LTW are the alternatives.",
                             "Worst case, play an MC version at or below 26.2 (pre-SDL3, GLFW-based LWJGL), which " +
                                 "this crash cannot affect."
                         ),
@@ -848,6 +913,13 @@ object CrashAnalyzer {
                 if (seen.add(diagnosis.title)) {
                     results.add(diagnosis)
                     recordRuleFired(rule.title)
+                    if (rule.glContextFailure) {
+                        // Remembered persistently: the next launch then runs on ANGLE instead of the
+                        // driver that just failed (see AnglePluginManager.hasRecentGlContextFailure).
+                        runCatching {
+                            com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.noteGlContextFailure(rule.title)
+                        }
+                    }
                 }
             }
         }
@@ -1093,6 +1165,33 @@ object CrashAnalyzer {
                     RepairResult(true, "Native object pooling (FBO recycling) turned off. Try launching again - this is an unconfirmed candidate fix, so please report back either way.")
                 }
 
+                RepairActionType.FORCE_ANGLE -> {
+                    // Turning the hook on is enough by itself; the failure reason is remembered too, so
+                    // the next launch still runs on ANGLE even on a GPU the PowerVR probe doesn't
+                    // recognize (the hook also applies after any recorded GL-context failure).
+                    AllSettings.angleForceOnPowerVr.put(true).save()
+                    runCatching {
+                        com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.noteGlContextFailure(
+                            "Crash repair action: FORCE_ANGLE"
+                        )
+                    }
+                    val ctx = runCatching {
+                        com.endiq.turtlelauncher.context.ContextExecutor.getApplication()
+                    }.getOrNull()
+                    val pluginMissing = ctx == null ||
+                        !com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.isPluginInstalled(ctx)
+                    val source = if (pluginMissing) {
+                        "the ANGLE copy built into the launcher (install MojoLauncher's ANGLE plugin in Settings → Game for a newer ANGLE)"
+                    } else {
+                        "MojoLauncher's ANGLE plugin"
+                    }
+                    RepairResult(
+                        true,
+                        "ANGLE is now forced for this device - the next launch runs on $source instead of the GPU driver. " +
+                            "Relaunch the game; if it still fails, share the log."
+                    )
+                }
+
                 RepairActionType.DELETE_FILE -> {
                     val path = action.targetPath
                     if (path.isNullOrBlank()) {
@@ -1319,6 +1418,11 @@ object CrashAnalyzer {
      */
     @JvmStatic
     fun analyzeGameExit(gameVersion: Version?, exitCode: Int): String {
+        // A clean exit means whatever the launcher used this time worked, so a remembered GL-context
+        // failure (which forces ANGLE on the next launch) is cleared again.
+        if (exitCode == 0) {
+            runCatching { com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.noteCleanGameExit() }
+        }
         return runCatching {
             val logTail = tailOf(File(PathManager.DIR_GAME_HOME, "latestlog.txt"), MAX_LOG_BYTES)
 

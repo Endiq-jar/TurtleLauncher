@@ -86,7 +86,21 @@ class DownloadModFragment : ModListFragment() {
                     StringUtilsKt.getNonEmptyOrBlank(type.getMcmodUrl(it))
                 )
             }
-            loadScreenshots()
+            // Versions are the main pane; tapping content also exposes full project details.
+            listOf("description" to R.string.content_description,
+                "gallery" to R.string.content_gallery,
+                "changelog" to R.string.content_changelog).forEach { (page, label) ->
+                addMoreView(AnimButton(requireContext()).apply {
+                    setText(label)
+                    setOnClickListener {
+                        com.endiq.turtlelauncher.ui.dialog.ContentDetailsDialog
+                            .create(projectId, title, page).show(childFragmentManager, "content-$page")
+                    }
+                })
+            }
+            addMoreView(android.widget.TextView(requireContext()).apply {
+                setText(R.string.content_versions)
+            })
 
             iconUrl?.let { url ->
                 fragmentActivity?.let { activity ->

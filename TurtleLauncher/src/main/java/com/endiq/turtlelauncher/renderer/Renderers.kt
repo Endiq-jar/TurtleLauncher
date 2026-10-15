@@ -2,7 +2,7 @@ package com.endiq.turtlelauncher.renderer
 
 import android.content.Context
 import com.endiq.turtlelauncher.feature.log.Logging
-import com.endiq.turtlelauncher.renderer.renderers.AngleRenderer
+import com.endiq.turtlelauncher.renderer.renderers.SFPEWRenderer
 import com.endiq.turtlelauncher.renderer.renderers.FreedrenoRenderer
 import com.endiq.turtlelauncher.renderer.renderers.HolyGL4ESRenderer
 import com.endiq.turtlelauncher.renderer.renderers.LTWRenderer
@@ -37,7 +37,7 @@ object Renderers {
             LTWRenderer(),
             HolyGL4ESRenderer(),
             NWRenderer(),
-            AngleRenderer(),
+            SFPEWRenderer(),
             VirGLRenderer(),
             ZinkRenderer(),
             FreedrenoRenderer(),
@@ -78,6 +78,8 @@ object Renderers {
             if (libName.startsWith("/")) File(libName).exists()
             else File(PathManager.DIR_NATIVE_LIB, libName).exists()
         if (!exists(renderer.getRendererLibrary())) return false
+        if (renderer.getRendererId() == SFPEWRenderer.ID &&
+            (!exists("libSimpleFPEWrapper.so") || !exists("libmobileglues.so"))) return false
         renderer.getRendererEGL()?.let { eglName ->
 
             if (eglName != "libEGL.so" && !exists(eglName)) return false

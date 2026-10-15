@@ -95,6 +95,12 @@ android {
 
     defaultConfig {
         applicationId = nameId
+        externalNativeBuild {
+            cmake {
+                arguments += "-DANDROID_STL=c++_static"
+                targets += listOf("SimpleFPEWrapper", "turtlefiledialogs", "lwjgl_nfd", "lwjgl_nfd_portal")
+            }
+        }
         minSdk = 26
         targetSdk = 34
         versionCode = launcherVersionCode
@@ -227,13 +233,13 @@ android {
         }
     }
 
-    // ndkVersion = "25.2.9519653"
-
-    // externalNativeBuild {
-    //     ndkBuild {
-    //         path = file("src/main/jni/Android.mk")
-    //     }
-    // }
+    ndkVersion = "27.2.12479018"
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/native/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -410,4 +416,10 @@ dependencies {
     implementation("com.moandjiezana.toml:toml4j:0.7.2") {
         exclude(group = "com.google.code.gson", module = "gson")
     }
+}
+
+// The game-side bootstrap is source, not a stale prebuilt asset.
+tasks.named("preBuild") { dependsOn(":jre_lwjgl3glfw:fileDialogBridgeJar") }
+tasks.withType<MergeSourceSetFolders>().configureEach {
+    if (name.endsWith("Assets")) dependsOn(":jre_lwjgl3glfw:fileDialogBridgeJar")
 }

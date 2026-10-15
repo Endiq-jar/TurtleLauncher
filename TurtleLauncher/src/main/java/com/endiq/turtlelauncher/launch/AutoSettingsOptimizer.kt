@@ -185,7 +185,7 @@ object AutoSettingsOptimizer {
 
     /**
      * Best-effort GPU name for the auto-picker. Internal rather than private because
-     * [com.endiq.turtlelauncher.renderer.angle.AnglePluginManager] reuses it for its PowerVR probe
+     * Used to identify the hardware for automatic settings.
      * instead of running a second EGL probe of its own.
      */
     internal fun detectGpu(): String {

@@ -60,19 +60,16 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 * Java Manager
 * Microsoft, Offline, Battly & Ely.by accounts
 * Download Manager
+* Tap content for descriptions, galleries, versions and changelogs
+* Manual Java 8 / 17 / 21 / 25 downloads with package-signature checks
+* MobileGlues settings and SFPEW / MobileGlues renderer
+* In-game LWJGL tinyfd / NFD file-manager integration
 * Live launch & crash logs
 * Customizable Discord Rich Presence with version templates, status, timer, and artwork
 * Friends / LAN play (Terracotta over EasyTier) — host or join straight from the home screen
 * Chooseable screen transitions — slide, bounce, fade, or zoom, applied app-wide
 * Backup, import & export
 
-### 🧩 ANGLE Support (PowerVR fix for MC 26.x)
-
-* Runs games on **ANGLE** — MojoLauncher's [ANGLE plugin](https://github.com/MojoLauncher/AnglePlugin) when it is installed, otherwise the ANGLE copy built into the launcher — instead of the device's own GLES/EGL driver
-* **Forced by default on PowerVR/Imagination GPUs** (Settings → Game → *Force ANGLE on PowerVR*), which is what lets those devices start **Minecraft 26.3**: its SDL3 windowing path never gets a GL context out of the PowerVR vendor driver
-* ANGLE sits *under* whichever renderer is selected (GL → MobileGlues → ANGLE → Vulkan, or LTW over ANGLE), exactly like MojoLauncher's GLES provider model; renderers that ship their own driver (Zink, VirGL, VGPU, Freedreno) are left untouched
-* One-tap install/update of the ANGLE plugin from Settings → Game (downloaded from the release above; the launcher's built-in ANGLE keeps working until then)
-* Also applies automatically after a launch that ended without a GL context, and the crash screen offers a *Force ANGLE for this device* repair button
 
 ### 🔓 Shizuku Support (optional)
 
@@ -107,7 +104,6 @@ Shizuku is completely optional — Turtle Launcher works fine without it.
 * LWJGL 3
 * GL4ES
 * Mesa3D
-* ANGLE (MojoLauncher ANGLE plugin)
 * OpenJDK
 
 ---
@@ -145,7 +141,6 @@ Shizuku is completely optional — Turtle Launcher works fine without it.
 - [x] Skin & Cape Manager
 - [x] Turtle Client integration
 - [x] Replace OSMesa with a real EGL implementation
-- [x] ANGLE plugin integration (forced on PowerVR — MC 26.3 support)
 - [x] Shizuku Support
 - [x] Beryllium Integration
 - [x] Modpack Instance
@@ -212,3 +207,5 @@ If you enjoy Turtle Launcher:
 * 📢 Share the project
 
 Every contribution helps make Turtle Launcher better.
+
+Implementation notes, upstream attribution and device-test checklist: [ported features](docs/UPSTREAM_PORTS.md).

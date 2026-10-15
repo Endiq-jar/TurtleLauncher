@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobileglues_settings">MobileGlues settings</string>
+    <string name="mobileglues_restart_notice">These settings apply to MobileGlues and SFPEW on the next game launch. ANGLE is disabled.</string>
+    <string name="mobileglues_config_error">Could not read MobileGlues config: %1$s. The existing file has not been changed.</string>
+    <string name="mobileglues_save">Save</string>
+    <string name="mobileglues_invalid_setting">Invalid setting or unable to save. Check numeric limits and MultiDraw backend names.</string>
+    <string name="java_download_manual">Download Java runtime</string>
+    <string name="java_download_progress">Downloading and verifying Java %1$d for this device…</string>
+    <string name="java_download_success">%1$s installed. Select it in the Java runtime picker.</string>
+    <string name="java_download_failure">Java installation failed: %1$s</string>
+    <string name="content_description">Description</string>
+    <string name="content_gallery">Gallery</string>
+    <string name="content_changelog">Changelogs</string>
+    <string name="content_versions">Versions and downloads</string>
+    <string name="content_details_empty">No content provided by the author.</string>
+    <string name="content_details_failed">Unable to load details: %1$s</string>
+    <string name="content_details_retry">Retry</string>
+    <string name="native_file_dialog_error">Could not import the selected file: %1$s</string>
+</resources>

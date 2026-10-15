@@ -45,18 +45,6 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
             }
         }
 
-        binding.discordActivitySwitch.setOnCheckedChangeListener { _, checked ->
-            if (checked && !DiscordRpcManager.isConfigured()) {
-                binding.discordActivitySwitch.isChecked = false
-                showRpcWarning()
-            } else {
-                AllSettings.discordRpcEnabled.put(checked).save()
-                refreshRpcState()
-            }
-        }
-        binding.discordRpcConfigureButton.setOnClickListener {
-            if (DiscordRpcManager.isConfigured()) showConfiguredMenu() else showRpcWarning()
-        }
         binding.discordRpcCustomizeButton.setOnClickListener { showCustomizationMenu() }
     }
 
@@ -80,20 +68,11 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
 
     private fun refreshRpcState() {
         if (_binding == null) return
-        val configured = DiscordRpcManager.isConfigured()
-        binding.discordActivitySwitch.setOnCheckedChangeListener(null)
-        binding.discordActivitySwitch.isEnabled = configured
-        binding.discordActivitySwitch.isChecked = configured && AllSettings.discordRpcEnabled.getValue()
-        binding.discordActivitySwitch.setOnCheckedChangeListener { _, checked ->
-            AllSettings.discordRpcEnabled.put(checked).save()
-            refreshRpcState()
-        }
         binding.discordActivityDescription.setText(
-            if (configured) R.string.discord_rpc_configured else R.string.discord_rpc_not_configured
+            if (DiscordRpcManager.isConfigured()) R.string.discord_rpc_automatic
+            else R.string.discord_rpc_auth_unavailable
         )
-        binding.discordRpcConfigureButton.setText(
-            if (configured) R.string.generic_edit else R.string.discord_rpc_configure
-        )
+        com.endiq.turtlelauncher.feature.discord.DiscordPresenceLifecycle.refresh()
         val status = AllSettings.discordRpcStatus.getValue().replaceFirstChar { it.uppercaseChar() }
         val timer = getString(
             if (AllSettings.discordRpcShowElapsed.getValue()) R.string.discord_rpc_on else R.string.discord_rpc_off
@@ -103,50 +82,6 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
             status,
             timer
         )
-    }
-
-    private fun showRpcWarning() {
-        AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
-            .setTitle(R.string.generic_warning)
-            .setMessage(R.string.discord_rpc_token_warning)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.generic_confirm) { _, _ -> showTokenEditor() }
-            .show()
-    }
-
-    private fun showTokenEditor() {
-        EditTextDialog.Builder(requireContext())
-            .setTitle(R.string.discord_rpc_token_title)
-            .setMessage(R.string.discord_rpc_token_warning)
-            .setHintText(R.string.discord_rpc_token_hint)
-            .setInputType(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)
-            .setAsRequired()
-            .setConfirmText(R.string.generic_save)
-            .setConfirmListener { editText, _ ->
-                val token = editText.text.toString().trim()
-                AllSettings.discordRpcToken.put(token).save()
-                AllSettings.discordRpcEnabled.put(true).save()
-                refreshRpcState()
-                Toast.makeText(requireContext(), R.string.discord_rpc_token_saved, Toast.LENGTH_SHORT).show()
-                true
-            }
-            .showDialog()
-    }
-
-    private fun showConfiguredMenu() {
-        AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
-            .setTitle(R.string.discord_rpc_configure)
-            .setItems(arrayOf(getString(R.string.generic_edit), getString(R.string.discord_rpc_remove))) { _, which ->
-                if (which == 0) {
-                    showRpcWarning()
-                } else {
-                    AllSettings.discordRpcEnabled.put(false).save()
-                    AllSettings.discordRpcToken.put("").save()
-                    DiscordRpcManager.stop()
-                    refreshRpcState()
-                }
-            }
-            .show()
     }
 
     private fun showCustomizationMenu() {

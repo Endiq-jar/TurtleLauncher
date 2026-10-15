@@ -27,6 +27,7 @@ import net.endiq.launcher.utils.NotificationUtils;
 public class GameService extends Service {
     private final Messenger mMessenger = new Messenger(new IncomingHandler());
     private static boolean isActive;
+    private static com.endiq.turtlelauncher.feature.discord.DiscordPresenceClient discordPresence;
 
     public static boolean isActive() {
         return isActive;
@@ -47,6 +48,13 @@ public class GameService extends Service {
             stopSelf();
             Process.killProcess(Process.myPid());
             return START_NOT_STICKY;
+        }
+        if (discordPresence == null) {
+            discordPresence = new com.endiq.turtlelauncher.feature.discord.DiscordPresenceClient(
+                this, intent != null ? intent.getStringExtra("discordVersion") : "Minecraft");
+            discordPresence.connect();
+        } else if (intent != null && intent.hasExtra("discordVersion")) {
+            discordPresence.refresh(intent.getStringExtra("discordVersion"));
         }
         Intent killIntent = new Intent(getApplicationContext(), GameService.class);
         killIntent.putExtra("kill", true);
@@ -76,6 +84,19 @@ public class GameService extends Service {
             startForeground(NotificationUtils.NOTIFICATION_ID_GAME_SERVICE, notification);
         }
         return START_NOT_STICKY; // non-sticky so android wont try restarting the game after the user uses the "Quit" button
+    }
+
+    public static void endDiscordPresence() {
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (discordPresence != null) discordPresence.close();
+            discordPresence = null;
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        endDiscordPresence();
+        super.onDestroy();
     }
 
     @Override

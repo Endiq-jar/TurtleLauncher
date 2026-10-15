@@ -24,7 +24,7 @@ import kotlin.random.Random
  * mirrors how community libraries such as dead8309/KizzyRPC and the DiscordRP app work: it opens
  * a direct connection to the Discord Gateway with the signed-in account and publishes a presence
  * (Gateway op-code 3) on that account. It never touches the account password; the only credential
- * used is the user-supplied Discord token, which is read from the launcher's private settings and
+ * used is an existing legacy Discord session, read from the launcher's private settings and
  * never logged.
  *
  * Gateway op-codes handled:
@@ -64,6 +64,11 @@ object DiscordRpcManager {
 
     private var socket: WebSocket? = null
     private var heartbeat: ScheduledFuture<*>? = null
+    private var reconnect: ScheduledFuture<*>? = null
+    private var retryAttempt = 0
+    private var wanted = false
+    private var awaitingAck = false
+    private var rejectedToken: String? = null
     private var sequence: Long? = null
     private var sessionId: String? = null
     private var resumeGatewayUrl: String? = null
@@ -80,31 +85,32 @@ object DiscordRpcManager {
     /**
      * Opens (or re-uses) the RPC connection for [versionName].
      *
-     * @param versionName the selected Minecraft version, used to fill the `{version}` placeholder.
+     * @param versionName the running Minecraft version, or null for launcher browsing.
      */
     @JvmStatic
     @JvmOverloads
     fun start(versionName: String? = null) {
         val effectiveToken = AllSettings.discordRpcToken.getValue().trim()
         if (effectiveToken.isEmpty()) {
-            Log.w(TAG, "No Discord RPC token configured; skipping start().")
+            stop()
             return
         }
         synchronized(lock) {
-            // Already connected and READY with the same token → just refresh the presence in place.
-            if (isConnected() && ready && token == effectiveToken) {
-                if (versionName != null) currentVersion = versionName
-                if (startedAt == 0L) startedAt = System.currentTimeMillis()
-                sendPresence()
+            if (rejectedToken == effectiveToken) return // do not retry invalid credentials
+            wanted = true
+            if (currentVersion != versionName || startedAt == 0L) startedAt = System.currentTimeMillis()
+            currentVersion = versionName // null explicitly switches back to browsing
+            if (token == effectiveToken && (socket != null || reconnect != null)) {
+                if (ready) sendPresence()
                 return
             }
-            // Recreate the connection for a new token / a fresh session.
+            reconnect?.cancel(false)
+            reconnect = null
             closeSocketLocked(clearSession = true)
             token = effectiveToken
-            currentVersion = versionName ?: currentVersion
-            startedAt = System.currentTimeMillis()
-            ready = false
-            openSocketLocked(token!!, resumeGatewayUrl ?: GATEWAY_URL)
+            rejectedToken = null
+            retryAttempt = 0
+            openSocketLocked(effectiveToken, GATEWAY_URL)
         }
     }
 
@@ -112,8 +118,10 @@ object DiscordRpcManager {
     @JvmStatic
     fun stop() {
         synchronized(lock) {
-            heartbeat?.cancel(false)
-            heartbeat = null
+            wanted = false
+            reconnect?.cancel(false)
+            reconnect = null
+            retryAttempt = 0
             // Best-effort "clear activity" so the presence disappears promptly for others.
             if (isConnected()) sendClear()
             closeSocketLocked(clearSession = true)
@@ -132,9 +140,9 @@ object DiscordRpcManager {
     @JvmStatic
     fun isConfigured(): Boolean = AllSettings.discordRpcToken.getValue().trim().isNotEmpty()
 
-    /** True when the gateway socket is currently open. */
+    /** True only after the Gateway reports READY or RESUMED. */
     @JvmStatic
-    fun isConnected(): Boolean = socket != null
+    fun isConnected(): Boolean = synchronized(lock) { socket != null && ready }
 
     /**
      * Re-sends the presence over an existing, READY connection. Used when the activity content
@@ -161,11 +169,13 @@ object DiscordRpcManager {
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                if (gen != generation) return
-                try {
-                    handlePayload(JsonParser.parseString(text).asJsonObject)
-                } catch (t: Throwable) {
-                    Log.w(TAG, "Failed to handle gateway frame: ${t.message}")
+                synchronized(lock) {
+                    if (gen != generation) return
+                    try {
+                        handlePayload(JsonParser.parseString(text).asJsonObject)
+                    } catch (_: Exception) {
+                        Log.w(TAG, "Failed to handle gateway frame.")
+                    }
                 }
             }
 
@@ -194,6 +204,7 @@ object DiscordRpcManager {
                 1 -> sendHeartbeat()                  // server-requested heartbeat
                 7 -> requestReconnect()               // RECONNECT
                 9 -> handleInvalidSession()           // INVALID SESSION
+                11 -> awaitingAck = false             // HEARTBEAT ACK
                 10 -> handleHello(payload)            // HELLO
                 else -> Unit
             }
@@ -209,11 +220,13 @@ object DiscordRpcManager {
                     resumeGatewayUrl = if (it.startsWith("wss://")) "$it/?v=10&encoding=json" else it
                 }
                 ready = true
+                retryAttempt = 0
                 Log.i(TAG, "READY; session established. Now publishing presence.")
                 sendPresence()
             }
             "RESUMED" -> {
                 ready = true
+                retryAttempt = 0
                 Log.i(TAG, "Session resumed; refreshing presence.")
                 sendPresence()
             }
@@ -240,7 +253,7 @@ object DiscordRpcManager {
         sessionId = null
         resumeGatewayUrl = null
         ready = false
-        sendIdentify()
+        handleDisconnect(generation, RECONNECT_CLOSE_CODE)
     }
 
     private fun requestReconnect() {
@@ -249,39 +262,45 @@ object DiscordRpcManager {
     }
 
     private fun handleDisconnect(gen: Long, code: Int) {
-        // Called both from the locked frame handler (via RECONNECT) and directly from OkHttp's
-        // close/failure callbacks, so it must take the lock itself (synchronized is reentrant).
         synchronized(lock) {
-            // A newer socket has since been created; this stale callback must be ignored without
-            // disturbing the live connection's heartbeat.
-            if (gen != generation) return
-
+            if (gen != generation || !wanted) return
+            generation += 1 // ignore both failure and close callbacks for this socket
             heartbeat?.cancel(false)
             heartbeat = null
+            awaitingAck = false
             ready = false
-
-            // Close code 4000 (either from the gateway's RECONNECT op or a manual resume trigger)
-            // means "reconnect immediately to the resume gateway url". Anything else is a real
-            // failure: drop the session and stop.
-            if (code == RECONNECT_CLOSE_CODE) {
-                socket?.cancel()
-                socket = null
-                openSocketLocked(token ?: return, resumeGatewayUrl ?: GATEWAY_URL)
-            } else {
-                socket?.cancel()
-                socket = null
-                Log.w(TAG, "Gateway closed (code=$code); RPC stopped.")
-                token = null
-                currentVersion = null
+            socket?.cancel()
+            socket = null
+            if (code == 4004 || code in 4010..4014) {
+                rejectedToken = token
+                wanted = false
+                Log.w(TAG, "RPC authentication or Gateway configuration rejected (code=$code).")
+                return
+            }
+            if (code == 4007 || code == 4009) {
                 sequence = null
                 sessionId = null
                 resumeGatewayUrl = null
-                startedAt = 0L
             }
+            reconnect?.cancel(false)
+            val delay = if (code == RECONNECT_CLOSE_CODE) 1L else
+                (1L shl retryAttempt.coerceAtMost(6)).coerceAtMost(60L)
+            retryAttempt++
+            val expected = generation
+            reconnect = scheduler.schedule({
+                synchronized(lock) {
+                    if (wanted && generation == expected) {
+                        reconnect = null
+                        token?.let { openSocketLocked(it, resumeGatewayUrl ?: GATEWAY_URL) }
+                    }
+                }
+            }, delay, TimeUnit.SECONDS)
         }
     }
 
     private fun closeSocketLocked(clearSession: Boolean) {
+        generation += 1
+        awaitingAck = false
         heartbeat?.cancel(false)
         heartbeat = null
         socket?.close(1000, null)
@@ -303,12 +322,18 @@ object DiscordRpcManager {
      */
     private fun startHeartbeatLocked(intervalMs: Long) {
         heartbeat?.cancel(false)
+        awaitingAck = false
+        val expected = generation
         val safeInterval = if (intervalMs > 0) intervalMs else 41250L
         val initialDelay = (safeInterval * (0.5 + 0.5 * Random.nextDouble())).toLong()
         heartbeat = scheduler.scheduleAtFixedRate({
             // Guard the loop so a transient send error cannot cancel the fixed-rate heartbeat.
             try {
-                synchronized(lock) { sendHeartbeat() }
+                synchronized(lock) {
+                    if (expected == generation && wanted) {
+                        if (awaitingAck) handleDisconnect(expected, -1) else sendHeartbeat()
+                    }
+                }
             } catch (t: Throwable) {
                 Log.w(TAG, "Heartbeat send failed: ${t.message}")
             }
@@ -355,12 +380,13 @@ object DiscordRpcManager {
 
     private fun sendHeartbeat() {
         // d is the last received sequence number, or null before the first dispatch.
+        awaitingAck = true
         send(1, sequence)
     }
 
     /** Builds the presence payload from the current settings and publishes it (op 3). */
     private fun sendPresence() {
-        val version = currentVersion ?: ""
+        val version = currentVersion.orEmpty()
         val activity = buildActivity(version)
         val presence = JsonObject()
         presence.addProperty("status", safeStatus(AllSettings.discordRpcStatus.getValue()))
@@ -391,10 +417,11 @@ object DiscordRpcManager {
         val activity = JsonObject()
         activity.addProperty(
             "name",
-            renderText(AllSettings.discordRpcName.getValue(), version).ifEmpty { "Minecraft: Java Edition" }
+            renderText(AllSettings.discordRpcName.getValue(), version).ifEmpty { "Turtle Launcher" }
         )
 
-        val details = renderText(AllSettings.discordRpcDetails.getValue(), version)
+        val configuredDetails = AllSettings.discordRpcDetails.getValue()
+        val details = if (currentVersion == null) "Browsing Turtle Launcher" else renderText(configuredDetails, version)
         if (details.isNotEmpty()) activity.addProperty("details", details.take(MAX_STATE_DETAILS_LEN))
 
         val state = renderText(AllSettings.discordRpcState.getValue(), version)
@@ -460,10 +487,12 @@ object DiscordRpcManager {
 
     // ── Helpers ─────────────────────────────────────────────────────────────────────
 
-    /** Replaces the `{version}` placeholder and trims the result. */
+    /** Renders the running version and the browsing/playing activity placeholders. */
     private fun renderText(template: String, version: String): String {
         val safeVersion = version.ifBlank { "Minecraft" }
-        return template.replace("{version}", safeVersion).trim()
+        return template.replace("{version}", safeVersion)
+            .replace("{activity}", if (currentVersion == null) "Browsing Turtle Launcher" else "Playing Minecraft")
+            .trim()
     }
 
     private fun safeStatus(value: String): String = value.trim().lowercase().takeIf { it in VALID_STATUSES } ?: "online"

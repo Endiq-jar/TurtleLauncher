@@ -122,6 +122,8 @@ object DiscordAuthManager {
     }
 
     fun unlink() {
+        // Signing out also revokes the launcher's saved legacy RPC session locally.
+        AllSettings.discordRpcToken.put("").save()
         AllSettings.discordAccessToken.put("").save()
         AllSettings.discordRefreshToken.put("").save()
         AllSettings.discordUserId.put("").save()

@@ -73,3 +73,5 @@
 -keepclassmembers class net.endiq.launcher.MainActivity {
     public int messageboxShowMessageBox(...);
 }
+
+-keep class com.endiq.turtlelauncher.bridge.NativeFileDialogs { *; }

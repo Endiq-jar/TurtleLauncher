@@ -34,3 +34,22 @@ java {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 }
+
+// Build only the ABI-independent guest bridge. Do not rebuild/replace the existing
+// GLFW fat jar: it also contains manually maintained compatibility classes.
+val compileFileDialogBridge by tasks.registering(JavaCompile::class) {
+    source(fileTree("src/bridge/java") { include("**/*.java") })
+    classpath = files()
+    destinationDirectory.set(layout.buildDirectory.dir("classes/fileDialogBridge"))
+    options.release.set(8)
+}
+val fileDialogBridgeJar by tasks.registering(Jar::class) {
+    dependsOn(compileFileDialogBridge)
+    archiveFileName.set("turtle-filedialogs.jar")
+    destinationDirectory.set(file("../TurtleLauncher/src/main/assets/components/lwjgl3/"))
+    from(compileFileDialogBridge.flatMap { it.destinationDirectory })
+    doLast {
+        file("../TurtleLauncher/src/main/assets/components/lwjgl3/version")
+            .writeText(System.currentTimeMillis().toString())
+    }
+}

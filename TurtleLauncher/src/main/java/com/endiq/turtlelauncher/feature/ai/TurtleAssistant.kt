@@ -873,11 +873,6 @@ object TurtleAssistant {
      * Whether the forced-ANGLE hook applies to this device right now, and which ANGLE copy it would
      * use - so the renderer answer can state it instead of describing the feature in the abstract.
      */
-    private fun angleStatusLine(context: Context): String = runCatching {
-        val forced = com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.isAutoForceWanted(context)
-        val status = com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.describe(context)
-        if (forced) "FORCED for this device - $status" else "not forced - $status"
-    }.getOrDefault("unknown")
 
     /**
      * Renderer id the launcher would actually launch with right now - the same resolution
@@ -1026,7 +1021,6 @@ object TurtleAssistant {
                 }.getOrDefault(false)
                 buildString {
                     append("You're currently on: $current\n")
-                    append("ANGLE: " + angleStatusLine(context) + "\n\n")
                     append("How to change it: Settings → Video → Renderer. The Graphics Backend switch " +
                         "above it is a shortcut - on = OpenGL family, off = Vulkan (Zink).\n\n")
                     append("Rough guide:\n")
@@ -1037,18 +1031,8 @@ object TurtleAssistant {
                     append("• LTW / Holy GL4ES - GL→GLES translators, the safe fallback when the above glitch. " +
                         "Holy GL4ES is documented up to MC 1.21.4 only.\n")
                     append("• Freedreno (+ Turnip driver) - Adreno-specific.\n")
-                    append("• VirGL / VGPU / NW / ANGLE - niche, badged experimental.\n\n")
-                    append("Independent of the renderer pick, this launcher can run everything on **ANGLE** " +
-                        "instead of your device's GLES driver: Settings → Game → \"Force ANGLE on PowerVR\" " +
-                        "(on by default) uses MojoLauncher's ANGLE plugin when it is installed, and the ANGLE " +
-                        "copy built into the launcher otherwise. That is the fix for PowerVR/Imagination " +
-                        "devices, where the vendor GLES driver is what hangs Minecraft 26.3 - there the " +
-                        "recommended combination is MobileGlues with ANGLE underneath it. Renderers that " +
-                        "ship their own driver (Zink, VirGL, VGPU, Freedreno) are left alone.\n\n")
-                    append("One real caveat: Amethyst-Android's release notes list MobileGlues and Krypton " +
-                        "Wrapper as crashing on Minecraft 26.3-snapshot4 and above because of how SDL now " +
-                        "creates its EGL window - which is exactly the layer the forced-ANGLE path replaces. " +
-                        "Without ANGLE, Zink or LTW are the alternatives on those versions.")
+                    append("• VirGL / VGPU / NW / SFPEW - niche, badged experimental.\n\n")
+                    append("ANGLE support has been removed. Renderer compatibility depends on your GPU and Minecraft version.")
                 }
             },
             followUps = listOf("Shaders not working", "Why did my game crash?", "Status")

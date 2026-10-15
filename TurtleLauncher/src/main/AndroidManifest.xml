@@ -167,6 +167,10 @@
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Tracks progress of local background tasks (downloads, asset extraction, version installs) and keeps the process alive while they run. Not data sync with a remote server."/>
         </service>
+        <service
+            android:name="com.endiq.turtlelauncher.feature.discord.DiscordPresenceService"
+            android:exported="false"
+            android:process=":presence" />
         <service android:name="net.endiq.launcher.services.GameService" android:process=":game"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -197,11 +201,6 @@
     <queries>
         <package android:name="moe.shizuku.privileged.api"/>
         <package android:name="net.kdt.pojavlaunch.ffmpeg"/>
-        <!-- MojoLauncher's ANGLE plugin (a library-only APK, so it never shows up as an installed
-             app activity): the forced-ANGLE path for PowerVR devices talks to it by package name to
-             find its native ANGLE libraries. Without this entry Android 11+ package-visibility rules
-             would hide the plugin and the launcher would silently fall back to its bundled ANGLE. -->
-        <package android:name="git.mojo.angle"/>
         <intent>
             <action android:name="android.intent.action.MAIN" />
         </intent>

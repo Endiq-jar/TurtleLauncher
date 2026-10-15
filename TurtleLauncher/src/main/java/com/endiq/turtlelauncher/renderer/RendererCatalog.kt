@@ -1,6 +1,6 @@
 package com.endiq.turtlelauncher.renderer
 
-import com.endiq.turtlelauncher.renderer.renderers.AngleRenderer
+import com.endiq.turtlelauncher.renderer.renderers.SFPEWRenderer
 import com.endiq.turtlelauncher.renderer.renderers.FreedrenoRenderer
 import com.endiq.turtlelauncher.renderer.renderers.HolyGL4ESRenderer
 import com.endiq.turtlelauncher.renderer.renderers.LTWRenderer
@@ -36,7 +36,7 @@ object RendererCatalog {
          * shader support requires the VirGL/Zink/MobileGlues renderer), which is a reasonable
          * source here since this launcher's VirGL/Zink renderer classes are themselves sourced
          * directly from FCL's RendererManager.kt (see their own doc comments). Plain GL4ES-family
-         * translation (Holy GL4ES/LTW/NW/ANGLE) and the other Mesa gallium backends
+         * translation (Holy GL4ES/LTW/NW/SFPEW) and the other Mesa gallium backends
          * (Freedreno/VGPU) are left false pending their own confirmation - false is the safe
          * default (an incorrectly-false renderer just gets an unnecessary warning; an
          * incorrectly-true one sends someone chasing a shader bug that isn't fixable).
@@ -67,7 +67,7 @@ object RendererCatalog {
             minMinecraftVersion = "1.16.5",
             badge = Badge.EXPERIMENTAL
         ),
-        AngleRenderer.ID to Entry(
+        SFPEWRenderer.ID to Entry(
             badge = Badge.EXPERIMENTAL,
             usesAndroidOpenGlTranslationLayer = true
         )

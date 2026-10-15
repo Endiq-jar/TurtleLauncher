@@ -14,16 +14,13 @@ class ModCompatibilityAdvisorTest {
     val temporaryFolder = TemporaryFolder()
 
     @Test
-    fun sodiumGetsTranslationLayerCaveatOnlyForKnownGl4esAndAngleRenderers() {
+    fun sodiumGetsTranslationLayerCaveatOnlyForKnownGl4esRenderers() {
         val sodium = mod("sodium", "0.6.0")
         val mods = listOf(sodium)
         val folder = temporaryFolder.newFolder("sodium-mods")
 
         val gl4es = ModCompatibilityAdvisor.inspect(mods, folder, environment("GL4ES"))
         assertTrue(gl4es.any { it.key == "sodium-translation-layer" })
-
-        val angle = ModCompatibilityAdvisor.inspect(mods, folder, environment("ANGLE"))
-        assertTrue(angle.any { it.key == "sodium-translation-layer" })
 
         val zink = ModCompatibilityAdvisor.inspect(mods, folder, environment("ZINK"))
         assertFalse(zink.any { it.key == "sodium-translation-layer" })
@@ -112,7 +109,7 @@ class ModCompatibilityAdvisorTest {
             rendererId = rendererId,
             rendererName = rendererId,
             rendererSupportsShaderPacks = shaderSupport,
-            rendererUsesAndroidOpenGlTranslationLayer = rendererId in setOf("GL4ES", "ANGLE")
+            rendererUsesAndroidOpenGlTranslationLayer = rendererId in setOf("GL4ES")
         )
 
     private fun mod(id: String, version: String) =

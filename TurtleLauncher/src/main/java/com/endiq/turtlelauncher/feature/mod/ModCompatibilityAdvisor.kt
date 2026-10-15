@@ -105,7 +105,7 @@ object ModCompatibilityAdvisor {
                 "sodium-translation-layer",
                 sodiumMods,
                 "Sodium's current hardware guidance says Android OpenGL translation layers such as " +
-                    "GL4ES and ANGLE are unsupported. That statement is Sodium-specific: forks and newer " +
+                    "GL4ES are unsupported. That statement is Sodium-specific: forks and newer " +
                     "Vulkan backends can differ by Minecraft/mod version. The selected ${environment.rendererName} " +
                     "does not become desktop OpenGL through a launcher flag; verify this exact stack before " +
                     "changing mods or reporting a crash."

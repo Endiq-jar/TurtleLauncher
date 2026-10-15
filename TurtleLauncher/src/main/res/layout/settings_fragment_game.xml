@@ -296,26 +296,6 @@
                 </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
     
             </androidx.appcompat.widget.LinearLayoutCompat>
-    
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/graphics_category"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_12sdp"
-                android:background="@drawable/background_card"
-                android:orientation="vertical"
-                android:paddingHorizontal="@dimen/_2sdp"
-                android:paddingVertical="@dimen/_12sdp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="@dimen/_12sdp"
-                    android:text="@string/setting_category_graphics"
-                    android:textColor="@color/accent_primary" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     

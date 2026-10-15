@@ -1495,7 +1495,6 @@
     <string name="skin_cape_other_login_message">This account logs in through %s, which serves its own skins - the launcher cannot inject one at launch. The skin was saved locally; to wear it on this account, upload it on the server\'s website.</string>
     <string name="skin_cape_open_site">Open skin website</string>
     <string name="setting_warning_surface_view">Surface View rendering might be unstable on some devices and could lead to graphical glitches.</string>
-    <string name="setting_category_graphics">Graphics</string>
     <string name="crash_tab_game_logs">Game Logs</string>
     <string name="crash_tab_ai_analysis">AI Analysis</string>
     <string name="crash_inspect_with_ai">Inspect with AI</string>

@@ -50,7 +50,12 @@ object CrashAnalyzer {
          *  that led here, so the next launch runs on ANGLE (MojoLauncher's ANGLE plugin when it is
          *  installed, the copy bundled in this APK otherwise) instead of the GPU driver that just
          *  failed - the fix for PowerVR devices on Minecraft 26.x. */
-        FORCE_ANGLE
+        FORCE_ANGLE,
+        /** Flips Settings → Game → "Force ANGLE on PowerVR" and "Use ANGLE" both off, and clears the
+         *  remembered GL-context failure, so the next launch stops routing through ANGLE. The
+         *  counterpart to [FORCE_ANGLE]: used when ANGLE itself is the thing that crashed, so forcing
+         *  it again would only repeat the same crash. */
+        DISABLE_ANGLE
     }
 
     data class RepairAction(
@@ -380,6 +385,46 @@ object CrashAnalyzer {
                         "Update your device's GPU driver/Turnip driver plugin if one is installed.",
                         "Some Adreno/Mali chips don't expose every Vulkan 1.2 feature Minecraft's experimental Vulkan backend requires — this may not be fixable on this device."
                     )
+                )
+            ),
+            // 10b. Native SIGSEGV with the fault frame inside ANGLE's own libraries
+            // (libGLESv2_angle.so / libEGL_angle.so) - i.e. ANGLE was already active (forced by
+            // PowerVR auto-detection, a remembered GL-context failure, or "Use ANGLE") and it is
+            // ANGLE itself that crashed, not the platform driver ANGLE was meant to replace.
+            // Deliberately checked before the generic native_crash rule below and deliberately NOT
+            // marked glContextFailure: that flag calls AnglePluginManager.noteGlContextFailure(),
+            // which re-arms the auto-force-ANGLE hook for another 7 days - if this specific crash hit
+            // that path too, every following launch would force ANGLE back on and crash again,
+            // forever. This rule breaks that loop instead of feeding it.
+            Rule(
+                title = "angle_backend_sigsegv",
+                matches = {
+                    has(it, "libGLESv2_angle.so", "libEGL_angle.so") &&
+                        has(it, "SIGSEGV", "Native crash", "tombstone", "backtrace:")
+                },
+                diagnosis = fixed(
+                    "ANGLE's own GLES/EGL backend crashed natively (SIGSEGV)",
+                    "ANGLE was already active for this launch (Force ANGLE on PowerVR, a remembered " +
+                        "GL-context failure, or Use ANGLE) and the crash happened inside ANGLE's own " +
+                        "libGLESv2_angle.so/libEGL_angle.so - not the platform GPU driver ANGLE normally " +
+                        "replaces. On this device's GPU, ANGLE (commonly its Vulkan backend) is the broken " +
+                        "path, so forcing it again on the next launch would just repeat this crash.",
+                    listOf(
+                        "Disable ANGLE for this device (button below): turns off both \"Force ANGLE on " +
+                            "PowerVR\" and \"Use ANGLE\" and clears the remembered failure, so the next " +
+                            "launch runs on the platform GLES driver (or whichever renderer's own EGL is " +
+                            "selected) instead of ANGLE.",
+                        "If the platform driver was the original problem (that's usually why ANGLE was " +
+                            "forced on in the first place), try a different renderer's own EGL path " +
+                            "instead of ANGLE - Zink, VirGL or Freedreno, if your GPU supports one.",
+                        "Update or reinstall MojoLauncher's ANGLE plugin (Settings → Game → ANGLE plugin) " +
+                            "- a newer ANGLE build may not crash on this GPU.",
+                        "If you installed the ANGLE plugin yourself expecting it to fix a different issue, " +
+                            "uninstalling it falls back to the ANGLE copy built into the launcher, which may " +
+                            "behave differently."
+                    ),
+                    Severity.WARNING,
+                    repairActions = listOf(RepairAction(RepairActionType.DISABLE_ANGLE, "Disable ANGLE for this device"))
                 )
             ),
             // 11. Native (C/C++) crash — driver-level segfault, common on PowerVR GPUs.
@@ -1189,6 +1234,24 @@ object CrashAnalyzer {
                         true,
                         "ANGLE is now forced for this device - the next launch runs on $source instead of the GPU driver. " +
                             "Relaunch the game; if it still fails, share the log."
+                    )
+                }
+
+                RepairActionType.DISABLE_ANGLE -> {
+                    // Counterpart to FORCE_ANGLE: turn both toggles off and drop the remembered
+                    // failure so isAutoForceWanted() returns false on the next launch (it bails out
+                    // immediately on angleForceOnPowerVr being false, before even checking the
+                    // remembered-failure state - see AnglePluginManager.isAutoForceWanted).
+                    AllSettings.angleForceOnPowerVr.put(false).save()
+                    AllSettings.useAngle.put(false).save()
+                    runCatching {
+                        com.endiq.turtlelauncher.renderer.angle.AnglePluginManager.noteCleanGameExit()
+                    }
+                    RepairResult(
+                        true,
+                        "ANGLE turned off for this device - the next launch runs on the platform GLES " +
+                            "driver (or the selected renderer's own EGL) instead. Relaunch the game; if it " +
+                            "still fails, share the new log."
                     )
                 }
 

@@ -88,6 +88,7 @@ jobs:
       - name: Native bridge regression tests
         working-directory: ${{ steps.locate.outputs.dir }}
         run: |
+          python3 tests/check_resources.py
           tests/native/run.sh
           tests/native/run-discord.sh
 

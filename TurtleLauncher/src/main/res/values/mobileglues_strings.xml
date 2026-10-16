@@ -1,2 +1,23 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources />
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compatibility model labels; removed ANGLE controls are not exposed by the editor. -->
+    <string name="option_angle_disable_if_possible">Disable if possible</string>
+    <string name="option_angle_enable_if_possible">Enable if possible</string>
+    <string name="option_angle_disable">Disabled</string>
+    <string name="option_angle_enable">Enabled</string>
+    <string name="option_no_error_auto">Automatic</string>
+    <string name="option_no_error_enable">Keep error checks</string>
+    <string name="option_no_error_disable_pri">Skip shader and program checks</string>
+    <string name="option_no_error_disable_sec">Skip shader, program and framebuffer checks</string>
+    <string name="md_backend_unroll">Unroll into individual draws</string>
+    <string name="md_backend_basevertex">Base-vertex draws</string>
+    <string name="md_backend_indirect">Indirect draws</string>
+    <string name="md_backend_multiarrays">Multi-array draws</string>
+    <string name="md_backend_multibasevertex">Multi base-vertex draws</string>
+    <string name="md_backend_multiindirect">Multi-indirect draws</string>
+    <string name="md_backend_compute">Compute shader</string>
+    <string name="md_item_native">Native extension</string>
+    <string name="option_angle_clear_workaround_disable">Disabled</string>
+    <string name="option_angle_clear_workaround_enable_1">Workaround mode 1</string>
+    <string name="option_custom_gl_version_default">Renderer default</string>
+</resources>

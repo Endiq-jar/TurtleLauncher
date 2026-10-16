@@ -13,8 +13,8 @@ class DiscordPresenceClient(context: Context, private var version: String? = nul
     private val reply = Messenger(Handler(Looper.getMainLooper()) { message ->
         if (message.sendingUid == Process.myUid()) {
             when (message.what) {
-                DiscordPresenceService.ACTIVATE -> if (!closing) DiscordRpcManager.start(message.data.getString("version"))
-                DiscordPresenceService.DEACTIVATE -> DiscordRpcManager.stop { send(DiscordPresenceService.STOPPED) }
+                DiscordPresenceService.ACTIVATE -> if (!closing) DiscordRpcManager.start(message.data.getString("version"), this)
+                DiscordPresenceService.DEACTIVATE -> DiscordRpcManager.stop(this) { send(DiscordPresenceService.STOPPED) }
             }
         }
         true
@@ -37,7 +37,7 @@ class DiscordPresenceClient(context: Context, private var version: String? = nul
         if (closing) return
         closing = true
         // Do not elect another process until this one has released its Discord connection.
-        DiscordRpcManager.stop {
+        DiscordRpcManager.stop(this) {
             send(DiscordPresenceService.REMOVE)
             if (bound) context.unbindService(this)
             bound = false
@@ -61,13 +61,13 @@ class DiscordPresenceClient(context: Context, private var version: String? = nul
     }
     override fun onServiceDisconnected(name: ComponentName?) {
         remote = null
-        DiscordRpcManager.stop()
+        DiscordRpcManager.stop(this)
     }
     override fun onBindingDied(name: ComponentName?) {
         if (bound) context.unbindService(this)
         bound = false
         remote = null
-        DiscordRpcManager.stop()
+        DiscordRpcManager.stop(this)
         if (!closing) connect()
     }
     override fun onNullBinding(name: ComponentName?) { close() }

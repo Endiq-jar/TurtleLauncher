@@ -36,6 +36,7 @@ object DiscordRpcManager {
     @Volatile private var initializedApplicationId: Long? = null
     private var currentVersion: String? = null
     private var startedAt = 0L
+    private var owner: Any? = null // actor-thread only; stale lease shutdowns cannot stop a new owner
 
     /** Resolves the configured application id, falling back to the launcher's own. */
     private fun applicationId(): Long =
@@ -75,8 +76,9 @@ object DiscordRpcManager {
         startedAt = 0L
     }
 
-    @JvmStatic @JvmOverloads fun start(versionName: String? = null) {
+    @JvmStatic @JvmOverloads fun start(versionName: String? = null, lease: Any? = null) {
         executor.execute {
+            owner = lease
             runCatching {
                 Settings.refreshSettings()
                 // Erase unused legacy credentials rather than leaving them in private storage.
@@ -102,9 +104,15 @@ object DiscordRpcManager {
     }
 
     /** Completion runs on the main thread after native shutdown has finished. */
-    @JvmStatic @JvmOverloads fun stop(onStopped: (() -> Unit)? = null) {
+    @JvmStatic @JvmOverloads fun stop(lease: Any? = null, onStopped: (() -> Unit)? = null) {
         executor.execute {
-            try { active = false; shutdown() }
+            try {
+                if (lease == null || lease === owner) {
+                    active = false
+                    shutdown()
+                    owner = null
+                }
+            }
             catch (e: Exception) { android.util.Log.w("DiscordPresence", "Could not stop presence", e) }
             finally { if (onStopped != null) main.post { onStopped() } }
         }
@@ -113,7 +121,14 @@ object DiscordRpcManager {
     /** SDK availability, not a claim that Discord accepted an activity. */
     @JvmStatic fun isConfigured(): Boolean = DiscordSocialBridge.available()
     @JvmStatic fun isConnected(): Boolean = active && initializedApplicationId != null && DiscordSocialBridge.lastResultOk()
-    @JvmStatic fun updatePresence() { if (active) start(currentVersion) }
+    @JvmStatic fun updatePresence() {
+        executor.execute {
+            if (active) {
+                Settings.refreshSettings()
+                publish()
+            }
+        }
+    }
 
     // ── Activity model ──────────────────────────────────────────────────────────────
 

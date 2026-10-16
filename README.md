@@ -9,6 +9,9 @@
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android)
 ![Last Commit](https://img.shields.io/github/last-commit/Endiq-jar/TurtleLauncher?style=for-the-badge)
 
+![Static Badge](https://img.shields.io/badge/TurtleOfficials-EXPLORE-grey?style=for-the-badge&labelColor=green&link=https%3A%2F%2Fgithub.com%2FEndiq-jar)
+
+
 <H1 ALIGN= "CENTER">A modern, high-performance Android launcher for Minecraft: Java Edition.</H1>
 
 Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher built for Android by **Endiq**. Based on the open-source **Turtle Launcher** project, it combines a modern Material 3 interface with powerful customization, performance optimizations, and extensive modding support.

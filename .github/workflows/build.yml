@@ -121,6 +121,18 @@ jobs:
           $GRADLE_CMD :TurtleLauncher:testDebugUnitTest :TurtleLauncher:assembleRelease --no-daemon --stacktrace 2>&1 \
             | tee /tmp/gradle-build.log
 
+      - name: Verify release APK packaging
+        working-directory: ${{ steps.locate.outputs.dir }}
+        run: python3 tests/check_apk.py
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TurtleLauncher-unit-test-reports
+          path: "**/build/test-results/testDebugUnitTest/*.xml"
+          if-no-files-found: warn
+
       # The raw job log is a separate download and can be unreachable from a restricted
       # network, so the errors are repeated as annotations on the run itself.
       - name: Report the build failure

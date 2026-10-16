@@ -67,6 +67,24 @@ The new C++20 targets use NDK **27.2.12479018** and `c++_shared`. Old bundled
 `libc++_shared.so` copies are removed so AGP packages the runtime used by that NDK.
 The Discord bridge class has explicit R8 keeps for its JNI entrypoints.
 
+## SDK notices and redistribution review
+
+The SDK is proprietary software supplied under [Discord Social SDK Terms](https://support-dev.discord.com/hc/en-us/articles/30225844245271-Discord-Social-SDK-Terms),
+not under this repository's GPL. Its original third-party open-source notices are
+packaged unchanged at `assets/notices/discord/License-Notices.txt` and readable in
+Discord settings. These notices are **not** a license for the SDK itself.
+Maintainers must review SDK redistribution terms and compatibility with the project's
+GPL/upstream licenses before publishing or merging the bundled SDK. No GPL linking
+exception or additional redistribution rights are assumed or granted by this change.
+
+Notice provenance: [SDK 1.10.19337 notices](https://github.com/SFG5453/Orchard/blob/3c8acc1e1e397a5934918c84accfa7bbb1313ab2/vendor/discord_social_sdk/License-Notices.txt),
+cross-checked against the [mobile SDK checksum manifest](https://github.com/spotiflacapp/SpotiFLAC-Mobile/blob/5a8952659b247fd95f1914a56db60825657fe26d/scripts/prepare_discord_sdk.py).
+Both the bundled AAR and its `discordpp.h` match that manifest exactly:
+
+- AAR SHA-256: `b1b2491f1e1848c79fd6f1986d5aa1e0c8019e88a6e62c7be06b89e8e4870933`
+- Header SHA-256: `822e71509bf11b7155becca5fb00d215a7db7b305f357c0f3b5f6e27ff45b6ab`
+- Notices SHA-256: `e8afa66340c225431e69768543cc34a7240f3494a9d759189fe118620ea8eebf`
+
 ## Verification
 
 - The native bridge compiles against the **real headers from the bundled AAR**.
@@ -82,10 +100,22 @@ The Discord bridge class has explicit R8 keeps for its JNI entrypoints.
 - Kotlin client, coordinator, lifecycle, manager and JNI facade compile against Android
   API 35 and the actual SDK Java classes with minimal launcher/settings stubs.
 - Existing native file-dialog sanitizer checks are rerun as a regression check.
+- Payload unit tests enforce the SDK's 2–128-character state/details and image-tooltip
+  bounds, preserve supplementary Unicode characters and reject invalid/overlong button
+  URLs instead of truncating them.
+- `tests/check_apk.py` checks the generated universal APK for all four native CPU ABIs,
+  the SDK/bridge/shared STL, both renderers, dialog libraries and Java-8 guest bootstrap.
+
+Full GitHub CI (run `38890705914`, commit `f890ee1`) passed both
+`:TurtleLauncher:testDebugUnitTest` and `:TurtleLauncher:assembleRelease` on
+2026-10-16 and uploaded the release APK. Subsequent changes still require their own
+successful CI run, including the new packaging check.
 
 The GitHub release build is the full Android compilation gate. Its result must be
 checked separately; targeted checks are not a substitute for a successful APK build.
 Device testing is still required: launcher/game handoff, launcher open during play,
 Quit Launcher, process death, rotation, absent/signed-out Discord, network reconnect,
-activity sharing settings, artwork/buttons and release-R8 JNI loading. Android force
+activity sharing settings and artwork/buttons. The optional minified build variants
+also need separate R8/runtime validation; the standard release deliberately disables
+minification because of existing Java AWT compatibility constraints. Android force
 stop, OS process termination and outages prevent an absolute always-online guarantee.

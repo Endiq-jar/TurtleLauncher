@@ -97,12 +97,14 @@ Checks performed in the sandbox:
   stubs; its static native/JNI method signatures were also checked by JVM reflection.
   SFPEW Kotlin adapter compiled against its renderer interface with a config stub.
 - Changed XML parsed and patch whitespace checked.
-- Full Gradle build/unit tests **not run**: the Gradle distribution download fails in
-  this sandbox's network environment. Host SFPEW compilation reaches its shader generator
-  but fails because GCC 12 lacks `<format>`; Android NDK validation is still required.
+- The local sandbox cannot download the Gradle distribution, and its GCC 12 lacks
+  SFPEW's `<format>`. Full Android validation is therefore performed in GitHub CI.
+- GitHub run `38890705914` at `f890ee1` passed
+  `:TurtleLauncher:testDebugUnitTest :TurtleLauncher:assembleRelease` using NDK 27
+  on 2026-10-16 and uploaded the release APK. This validates Android compilation,
+  not actual renderer output or Android/Discord runtime behavior.
 
-Before release, run `./gradlew :TurtleLauncher:testDebugUnitTest :TurtleLauncher:assembleDebug`
-in an Android SDK/NDK-equipped environment, then test on real devices:
+Before release, require green CI for the current revision and test on real devices:
 
 1. MobileGlues settings persist/reload and reach the native renderer after restart.
 2. SFPEW starts old fixed-function and modern Minecraft; Angelica bypass uses the right instance.
@@ -113,5 +115,5 @@ in an Android SDK/NDK-equipped environment, then test on real devices:
 6. Existing ANGLE users upgrade with a saved renderer override without losing a launch.
 
 Automatic launcher/game Discord presence is documented separately in
-[DISCORD_PRESENCE.md](DISCORD_PRESENCE.md), including the unresolved new-install
-Discord authorization limitation and the targeted checks performed.
+[DISCORD_PRESENCE.md](DISCORD_PRESENCE.md), including official token-free Android
+RPC, build verification, SDK notices and remaining on-device/release checks.

@@ -19,9 +19,8 @@ object DiscordRpcManager {
     private const val DEFAULT_APPLICATION_ID = 1560576927419338863L
 
     private const val MAX_TEXT_LEN = 128
-    private const val MAX_STATE_DETAILS_LEN = 256
+    private const val MAX_STATE_DETAILS_LEN = 128
     private const val MAX_BUTTON_LABEL = 32
-    private const val MAX_BUTTON_URL = 512
     private const val MAX_IMAGE_KEY_LEN = 300
 
     private val VALID_TYPES = setOf(0, 1, 2, 3, 5)
@@ -151,21 +150,21 @@ object DiscordRpcManager {
             AllSettings.discordRpcButton1.getValue() to AllSettings.discordRpcButton1Url.getValue(),
             AllSettings.discordRpcButton2.getValue() to AllSettings.discordRpcButton2Url.getValue(),
         ).forEach { (label, url) ->
-            val l = label.trim()
-            val u = url.trim()
-            if (l.isNotEmpty() && u.isNotEmpty()) buttonPairs.add(l.take(MAX_BUTTON_LABEL) to u.take(MAX_BUTTON_URL))
+            val l = DiscordPresencePayload.text(label, MAX_BUTTON_LABEL, 1)
+            val u = DiscordPresencePayload.buttonUrl(url)
+            if (l.isNotEmpty() && u != null) buttonPairs.add(l to u)
         }
 
         DiscordSocialBridge.updatePresence(
             name = name.take(MAX_TEXT_LEN),
-            details = details.take(MAX_STATE_DETAILS_LEN),
-            state = state.take(MAX_STATE_DETAILS_LEN),
+            details = DiscordPresencePayload.text(details, MAX_STATE_DETAILS_LEN),
+            state = DiscordPresencePayload.text(state, MAX_STATE_DETAILS_LEN),
             activityType = activityType,
             startTimestampMs = startTimestampMs,
             largeImage = AllSettings.discordRpcLargeImage.getValue().trim().take(MAX_IMAGE_KEY_LEN),
-            largeText = AllSettings.discordRpcLargeText.getValue().trim().take(MAX_TEXT_LEN),
+            largeText = DiscordPresencePayload.text(AllSettings.discordRpcLargeText.getValue(), MAX_TEXT_LEN),
             smallImage = AllSettings.discordRpcSmallImage.getValue().trim().take(MAX_IMAGE_KEY_LEN),
-            smallText = AllSettings.discordRpcSmallText.getValue().trim().take(MAX_TEXT_LEN),
+            smallText = DiscordPresencePayload.text(AllSettings.discordRpcSmallText.getValue(), MAX_TEXT_LEN),
             buttonLabels = buttonPairs.map { it.first }.toTypedArray(),
             buttonUrls = buttonPairs.map { it.second }.toTypedArray(),
         )

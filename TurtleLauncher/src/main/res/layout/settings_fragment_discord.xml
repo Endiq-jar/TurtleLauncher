@@ -191,6 +191,13 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
+            <com.endiq.turtlelauncher.ui.view.AnimButton
+                android:id="@+id/discord_sdk_notices_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:text="@string/discord_sdk_notices" />
+
         </androidx.appcompat.widget.LinearLayoutCompat>
 
     </androidx.core.widget.NestedScrollView>

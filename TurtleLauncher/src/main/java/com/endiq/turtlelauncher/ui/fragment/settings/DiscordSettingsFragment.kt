@@ -42,6 +42,19 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
         }
 
         binding.discordRpcCustomizeButton.setOnClickListener { showCustomizationMenu() }
+        binding.discordSdkNoticesButton.setOnClickListener {
+            val notices = requireContext().assets.open("notices/discord/License-Notices.txt")
+                .bufferedReader().use { it.readText() }
+            val dialog = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+                .setTitle(R.string.discord_sdk_notices)
+                .setMessage(getString(R.string.discord_sdk_notice_description) + "\n\n" + notices)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            dialog.findViewById<android.widget.TextView>(android.R.id.message)?.let {
+                it.setTextIsSelectable(true)
+                android.text.util.Linkify.addLinks(it, android.text.util.Linkify.WEB_URLS)
+            }
+        }
     }
 
     override fun onResume() {

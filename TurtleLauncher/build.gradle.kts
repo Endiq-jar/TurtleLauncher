@@ -199,7 +199,9 @@ android {
     }
 
     sourceSets["main"].java.srcDirs(generatedTurtleDir)
-    sourceSets["main"].jniLibs.srcDir(discordSdkDir.map { it.dir("jni") })
+    // AGP 9 rejects Provider instances in the legacy SourceSet API. The explicit
+    // prepareDiscordSdk dependencies below produce this known build-directory path.
+    sourceSets["main"].jniLibs.srcDir(discordSdkDir.get().dir("jni").asFile)
 
     androidComponents {
         onVariants { variant ->

@@ -1,24 +1,17 @@
 package com.endiq.turtlelauncher.feature.discord
 
 import com.endiq.turtlelauncher.setting.AllSettings
+import com.endiq.turtlelauncher.setting.Settings
+import android.app.Activity
+import android.os.Handler
+import android.os.Looper
+import java.lang.ref.WeakReference
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
-/**
- * Discord Rich Presence for the launcher, via the official Discord Social SDK's
- * token-free RPC (`Client::SetApplicationId` + `Client::UpdateRichPresence`, no
- * `Client::Connect()` and no Gateway identify). See:
- * https://docs.discord.com/developers/discord-social-sdk/development-guides/setting-rich-presence#rich-presence-without-authentication
- *
- * This does NOT drive the user's Discord account directly over the Gateway with a
- * stored session token ("self-botting"), which Discord's Terms of Service prohibit.
- * It only reaches the Discord app installed and signed in on the device, through the
- * SDK's native Android RPC channel (Social SDK 1.10+, released August 2026). No
- * Discord credential is read, stored, or transmitted by this class.
- *
- * Presence is always-on while the launcher or Minecraft is in the foreground - see
- * DiscordPresenceService / DiscordPresenceLifecycle, which call start()/stop() as the
- * active presence owner changes and give game sessions priority over launcher browsing.
- * If Discord isn't installed or isn't signed in on the device, updates are silently
- * dropped by the native bridge; nothing here crashes or blocks on that.
+/** Official token-free RPC. Only the broker-elected Activity process runs the SDK.
+ * SDK creation, publishing and shutdown are serialized off the main/UI thread.
  */
 object DiscordRpcManager {
 
@@ -33,8 +26,13 @@ object DiscordRpcManager {
 
     private val VALID_TYPES = setOf(0, 1, 2, 3, 5)
 
-    private val lock = Any()
-    private var initializedApplicationId: Long? = null
+    private val executor = Executors.newSingleThreadExecutor { task ->
+        Thread(task, "Turtle-DiscordOwner").apply { isDaemon = true }
+    }
+    private val main = Handler(Looper.getMainLooper())
+    @Volatile private var activity = WeakReference<Activity>(null)
+    @Volatile private var active = false
+    @Volatile private var initializedApplicationId: Long? = null
     private var currentVersion: String? = null
     private var startedAt = 0L
 
@@ -42,76 +40,86 @@ object DiscordRpcManager {
     private fun applicationId(): Long =
         AllSettings.discordRpcApplicationId.getValue().trim()
             .takeIf { it.isNotEmpty() && it.all(Char::isDigit) }
-            ?.toLongOrNull()
+            ?.toLongOrNull()?.takeIf { it > 0 }
             ?: DEFAULT_APPLICATION_ID
 
-    /** Brings the native bridge up for the currently configured application id. */
-    private fun ensureInitializedLocked(): Boolean {
-        if (!DiscordSocialBridge.available()) return false
-        val wantedId = applicationId()
-        if (initializedApplicationId == wantedId) return true
-        // The application id is fixed for the lifetime of the native client - if it
-        // changed (the user edited the override), restart the bridge under the new id.
+    @JvmStatic fun setActivity(value: Activity) { activity = WeakReference(value) }
+
+    @JvmStatic fun releaseActivity(value: Activity) {
+        if (activity.get() === value) {
+            activity = WeakReference(null)
+            stop()
+        }
+    }
+
+    private fun prepareActivity(): Boolean {
+        val latch = CountDownLatch(1)
+        var ok = false
+        main.post {
+            try {
+                activity.get()?.takeIf { !it.isDestroyed && !it.isFinishing }?.let {
+                    ok = DiscordSocialBridge.prepare(it)
+                }
+            } finally { latch.countDown() }
+        }
+        return latch.await(5, TimeUnit.SECONDS) && ok
+    }
+
+    private fun shutdown() {
         if (initializedApplicationId != null) DiscordSocialBridge.shutdown()
-        val ok = DiscordSocialBridge.init(wantedId)
-        initializedApplicationId = if (ok) wantedId else null
-        return ok
+        initializedApplicationId = null
+        currentVersion = null
+        startedAt = 0L
     }
 
-    /**
-     * Publishes (or refreshes) presence for [versionName]: the running Minecraft version,
-     * or null for "browsing the launcher". Called whenever the launcher or a game session
-     * becomes the active presence owner - see DiscordPresenceService.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun start(versionName: String? = null) {
-        val ready = synchronized(lock) {
-            if (currentVersion != versionName || startedAt == 0L) startedAt = System.currentTimeMillis()
-            currentVersion = versionName
-            ensureInitializedLocked()
+    @JvmStatic @JvmOverloads fun start(versionName: String? = null) {
+        executor.execute {
+            runCatching {
+                Settings.refreshSettings()
+                // Erase unused legacy credentials rather than leaving them in private storage.
+                val legacy = Settings.Manager.getValue("discordRpcToken", "") { it }
+                if (legacy.isNotBlank()) Settings.Manager.put("discordRpcToken", "")
+                    .put("discordRpcEnabled", false).save()
+                val wanted = applicationId()
+                if (initializedApplicationId != wanted) {
+                    shutdown()
+                    if (!prepareActivity() || !DiscordSocialBridge.init(wanted)) return@execute
+                    initializedApplicationId = wanted
+                }
+                if (currentVersion != versionName || startedAt == 0L) startedAt = System.currentTimeMillis()
+                currentVersion = versionName
+                active = true
+                publish()
+            }.onFailure { android.util.Log.w("DiscordPresence", "Could not update presence", it) }
         }
-        if (ready) publish()
     }
 
-    /** Clears the activity. Safe to call when not running. */
-    @JvmStatic
-    fun stop() {
-        val wasInitialized = synchronized(lock) {
-            currentVersion = null
-            startedAt = 0L
-            initializedApplicationId != null
+    /** Completion runs on the main thread after native shutdown has finished. */
+    @JvmStatic @JvmOverloads fun stop(onStopped: (() -> Unit)? = null) {
+        executor.execute {
+            try { active = false; shutdown() }
+            catch (e: Exception) { android.util.Log.w("DiscordPresence", "Could not stop presence", e) }
+            finally { if (onStopped != null) main.post { onStopped() } }
         }
-        if (wasInitialized) DiscordSocialBridge.clear()
     }
 
-    /** True once the native Social SDK bridge has loaded for this device/build. */
-    @JvmStatic
-    fun isConfigured(): Boolean = DiscordSocialBridge.available()
-
-    /** Best-effort: true once the last presence update actually reached the Discord app. */
-    @JvmStatic
-    fun isConnected(): Boolean = synchronized(lock) { initializedApplicationId != null } && DiscordSocialBridge.lastResultOk()
-
-    /** Re-publishes with the current version after the user edits customization. */
-    @JvmStatic
-    fun updatePresence() {
-        val ready = synchronized(lock) { initializedApplicationId != null }
-        if (ready) publish()
-    }
+    /** SDK availability, not a claim that Discord accepted an activity. */
+    @JvmStatic fun isConfigured(): Boolean = DiscordSocialBridge.available()
+    @JvmStatic fun isConnected(): Boolean = active && initializedApplicationId != null && DiscordSocialBridge.lastResultOk()
+    @JvmStatic fun updatePresence() { if (active) start(currentVersion) }
 
     // ── Activity model ──────────────────────────────────────────────────────────────
 
     private fun publish() {
-        val version = synchronized(lock) { currentVersion }
-        val since = synchronized(lock) { startedAt }
+        val version = currentVersion
+        val since = startedAt
 
         val name = renderText(AllSettings.discordRpcName.getValue(), version).ifEmpty { "Turtle Launcher" }
         val details = if (version == null) "Browsing Turtle Launcher" else renderText(AllSettings.discordRpcDetails.getValue(), version)
         val state = renderText(AllSettings.discordRpcState.getValue(), version)
         val activityType = AllSettings.discordRpcType.getValue().trim().toIntOrNull()?.takeIf { it in VALID_TYPES } ?: 0
-        val startTimestampSec = if (AllSettings.discordRpcShowElapsed.getValue()) {
-            (since.takeIf { it > 0 } ?: System.currentTimeMillis()) / 1000
+        val startTimestampMs = if (AllSettings.discordRpcShowElapsed.getValue()) {
+            since.takeIf { it > 0 } ?: System.currentTimeMillis()
         } else {
             null
         }
@@ -131,7 +139,7 @@ object DiscordRpcManager {
             details = details.take(MAX_STATE_DETAILS_LEN),
             state = state.take(MAX_STATE_DETAILS_LEN),
             activityType = activityType,
-            startTimestampSec = startTimestampSec,
+            startTimestampMs = startTimestampMs,
             largeImage = AllSettings.discordRpcLargeImage.getValue().trim().take(MAX_IMAGE_KEY_LEN),
             largeText = AllSettings.discordRpcLargeText.getValue().trim().take(MAX_TEXT_LEN),
             smallImage = AllSettings.discordRpcSmallImage.getValue().trim().take(MAX_IMAGE_KEY_LEN),

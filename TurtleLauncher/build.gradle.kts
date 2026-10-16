@@ -97,7 +97,7 @@ android {
         applicationId = nameId
         externalNativeBuild {
             cmake {
-                arguments += "-DANDROID_STL=c++_static"
+                arguments += "-DANDROID_STL=c++_shared"
                 targets += listOf("SimpleFPEWrapper", "turtlefiledialogs", "lwjgl_nfd", "lwjgl_nfd_portal", "turtlediscordrpc")
             }
         }

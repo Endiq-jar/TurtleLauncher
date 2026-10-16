@@ -17,13 +17,16 @@ internal object DiscordSocialBridge {
 
     @Volatile private var libraryLoaded = false
 
-    init {
-        libraryLoaded = runCatching { System.loadLibrary("turtlediscordrpc") }
-            .onFailure { Log.w(TAG, "Discord Social SDK native bridge unavailable: ${it.message}") }
-            .isSuccess
+    // Called on the main thread, in the actual launcher/game Activity process.
+    fun prepare(activity: android.app.Activity): Boolean {
+        return runCatching {
+            com.discord.socialsdk.DiscordSocialSdkInit.setEngineActivity(activity)
+            if (!libraryLoaded) System.loadLibrary("turtlediscordrpc")
+            libraryLoaded = true
+            true
+        }.onFailure { Log.w(TAG, "Discord SDK initialization unavailable", it) }.getOrDefault(false)
     }
 
-    /** True once the native library backing this bridge has loaded. */
     fun available(): Boolean = libraryLoaded
 
     /** Idempotent - safe to call repeatedly; only the first call for a given process spins up the client. */
@@ -35,7 +38,7 @@ internal object DiscordSocialBridge {
         details: String,
         state: String,
         activityType: Int,
-        startTimestampSec: Long?,
+        startTimestampMs: Long?,
         largeImage: String,
         largeText: String,
         smallImage: String,
@@ -47,7 +50,7 @@ internal object DiscordSocialBridge {
         runCatching {
             nativeUpdatePresence(
                 name, details, state, activityType,
-                startTimestampSec != null, startTimestampSec ?: 0L,
+                startTimestampMs != null, startTimestampMs ?: 0L,
                 largeImage, largeText, smallImage, smallText,
                 buttonLabels, buttonUrls,
             )
@@ -73,7 +76,7 @@ internal object DiscordSocialBridge {
         state: String,
         activityType: Int,
         hasTimestamp: Boolean,
-        startTimestampSec: Long,
+        startTimestampMs: Long,
         largeImage: String,
         largeText: String,
         smallImage: String,

@@ -81,3 +81,27 @@ Quit Launcher enabled, returning from the game, killing either client process, D
 app not installed, Discord signed out mid-session, customization refresh, and unlink
 during play (which no longer affects presence at all, since presence doesn't depend on
 the OAuth link).
+
+## Android integration corrections
+
+The isolated `:presence` service is now a **coordinator only**. The Social SDK's
+Android RPC implementation calls `DiscordSocialSdkInit.getEngineActivity()` when
+binding/unbinding Discord, so a native client cannot live in that Activity-less
+process. The coordinator elects a launcher/game client and sends it commands. The
+selected process initializes the real Activity with `setEngineActivity`, then owns
+the SDK worker. Game selection has priority; the old owner acknowledges native
+shutdown before the new owner starts. A three-second watchdog prevents a hung client
+from blocking all subsequent handoffs. GameService retains the game lease while
+Minecraft is backgrounded or Quit Launcher kills the launcher process.
+
+SDK operations and shutdown joins are serialized on a background executor. Activity
+initialization is dispatched to the main thread; native initialization only queues
+work and never waits for the native worker on the UI thread. The native worker
+periodically refreshes active presence every 30 seconds, ignores obsolete callbacks,
+and is joined when its lease ends. Timestamps use SDK-native milliseconds; UTF-16
+Java strings are converted to standard UTF-8, including supplementary characters.
+
+The native build uses `c++_shared`, as required by the MMKV Prefab dependency. Old
+bundled `libc++_shared.so` copies are removed so AGP packages the NDK 27 runtime used
+by the new C++20 targets, rather than accidentally selecting a stale runtime.
+`DISCORDPP_IMPLEMENTATION` is defined in exactly one bridge translation unit.

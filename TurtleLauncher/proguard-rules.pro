@@ -75,3 +75,6 @@
 }
 
 -keep class com.endiq.turtlelauncher.bridge.NativeFileDialogs { *; }
+
+# Native Discord JNI entrypoints are resolved by their exact class and method names.
+-keep class com.endiq.turtlelauncher.feature.discord.DiscordSocialBridge { *; }

@@ -98,7 +98,7 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += "-DANDROID_STL=c++_static"
-                targets += listOf("SimpleFPEWrapper", "turtlefiledialogs", "lwjgl_nfd", "lwjgl_nfd_portal")
+                targets += listOf("SimpleFPEWrapper", "turtlefiledialogs", "lwjgl_nfd", "lwjgl_nfd_portal", "turtlediscordrpc")
             }
         }
         minSdk = 26

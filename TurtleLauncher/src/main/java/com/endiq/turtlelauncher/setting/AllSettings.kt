@@ -27,14 +27,11 @@ class AllSettings {
         @JvmStatic val discordUserId = StringSettingUnit("discordUserId", "")
         @JvmStatic val discordUsername = StringSettingUnit("discordUsername", "")
         @JvmStatic val discordAvatarHash = StringSettingUnit("discordAvatarHash", "")
-        /** Legacy RPC authentication, retained for existing sessions only; never exposed in settings.
-         * OAuth identify credentials cannot replace this: Android Discord has no public local IPC. */
-        @JvmStatic val discordRpcToken = StringSettingUnit("discordRpcToken", "")
         @JvmStatic val discordRpcName = StringSettingUnit("discordRpcName", "Turtle Launcher")
         @JvmStatic val discordRpcDetails = StringSettingUnit("discordRpcDetails", "Playing {version}")
         @JvmStatic val discordRpcState = StringSettingUnit("discordRpcState", "Launched with Turtle Launcher")
-        @JvmStatic val discordRpcStatus = StringSettingUnit("discordRpcStatus", "online")
         @JvmStatic val discordRpcShowElapsed = BooleanSettingUnit("discordRpcShowElapsed", true)
+        /** Optional override; defaults to Turtle Launcher's own registered application id. */
         @JvmStatic val discordRpcApplicationId = StringSettingUnit("discordRpcApplicationId", "")
         @JvmStatic val discordRpcLargeImage = StringSettingUnit("discordRpcLargeImage", "")
         @JvmStatic val discordRpcLargeText = StringSettingUnit("discordRpcLargeText", "Turtle Launcher")

@@ -1259,8 +1259,8 @@
     <string name="discord_activity_title">Automatic Turtle Launcher presence</string>
     <string name="discord_activity_description">Presence is managed automatically while using Turtle Launcher or playing Minecraft.</string>
     <string name="discord_rpc_customization_title">Rich Presence customization</string>
-    <string name="discord_rpc_customization_description">Customize the activity name, details, state, Discord status, timer, and optional application artwork.</string>
-    <string name="discord_rpc_customization_summary">Status: %1$s • Session timer: %2$s</string>
+    <string name="discord_rpc_customization_description">Customize the activity name, details, state, timer, and optional application artwork.</string>
+    <string name="discord_rpc_customization_summary">Session timer: %1$s</string>
     <string name="discord_rpc_customize">Customize presence</string>
     <string name="discord_rpc_name">Activity name</string>
     <string name="discord_rpc_name_hint">Turtle Launcher</string>
@@ -1268,7 +1268,6 @@
     <string name="discord_rpc_details_hint">Playing {version}</string>
     <string name="discord_rpc_state">State text</string>
     <string name="discord_rpc_state_hint">Launched with Turtle Launcher</string>
-    <string name="discord_rpc_status">Discord status</string>
     <string name="discord_rpc_elapsed">Show elapsed session time</string>
     <string name="discord_rpc_application_id">Discord application ID</string>
     <string name="discord_rpc_application_id_hint">Optional numeric application ID</string>
@@ -1502,6 +1501,6 @@
     <string name="crash_ai_analysis_placeholder">Tap \"Inspect with AI\" for a deeper look at this crash.</string>
     <string name="crash_ai_analysis_loading">Analyzing the log…</string>
     <string name="crash_ai_analysis_unavailable">AI analysis isn\'t available right now. Enable AI crash help with an API key in Settings, or check the Game Logs tab for the raw log.</string>
-    <string name="discord_rpc_automatic">Always managed while the launcher is open or Minecraft is running, using the existing authenticated RPC session. Game activity takes priority over browsing.</string>
-    <string name="discord_rpc_auth_unavailable">Automatic presence is enabled, but no authenticated RPC session is available. Discord on Android has no public token-free RPC endpoint; linking an account only identifies it and cannot publish presence.</string>
+    <string name="discord_rpc_automatic">Always on while the launcher is open or Minecraft is running - no sign-in needed. Game activity takes priority over browsing. Requires the Discord app installed and signed in on this device.</string>
+    <string name="discord_rpc_auth_unavailable">Rich Presence isn\'t available on this build or device. Make sure the Discord app is installed and signed in, then reopen the launcher.</string>
 </resources>

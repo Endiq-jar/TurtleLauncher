@@ -25,3 +25,12 @@ add_library(lwjgl_nfd SHARED nfd_loader.c)
 target_link_libraries(lwjgl_nfd turtlefiledialogs)
 add_library(lwjgl_nfd_portal SHARED nfd_loader.c)
 target_link_libraries(lwjgl_nfd_portal turtlefiledialogs)
+
+# JNI bridge to the Discord Social SDK's token-free Rich Presence RPC. The actual SDK
+# library/headers come from the discord_partner_sdk.aar in libs/ via AGP's prefab
+# integration (buildFeatures.prefab = true in build.gradle.kts) - no manual header or
+# .so wrangling here.
+find_package(discord_partner_sdk REQUIRED CONFIG)
+add_library(turtlediscordrpc SHARED discord/discord_rpc_bridge.cpp)
+target_link_libraries(turtlediscordrpc discord_partner_sdk::discord_partner_sdk log)
+set_property(TARGET turtlediscordrpc PROPERTY CXX_STANDARD 17)

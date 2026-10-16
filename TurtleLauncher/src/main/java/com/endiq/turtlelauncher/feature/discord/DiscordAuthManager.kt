@@ -22,15 +22,12 @@ import java.util.Base64
  * done, same as any other OAuth integration needs its own registered app.
  *
  * This only identifies who's linked (username/avatar/id via the `identify` scope) and
- * stores their access/refresh token for that. It does NOT attempt to push "currently
- * playing" to the linked account's real Discord presence - there is no public API for a
- * third-party Android app to do that for a real user. Discord's actual Rich Presence
- * mechanism is a local IPC socket the official desktop client exposes to games running
- * on the same machine; it has no Android or remote equivalent. The only other way to
- * affect a user's live presence is to drive their account directly over the Gateway
- * (what Discord calls "self-botting" client automation), which Discord's Terms of
- * Service explicitly prohibits and which would mean this app holding and using a real
- * user session - not something to build quietly into a Minecraft launcher.
+ * stores their access/refresh token for that. It never touches Rich Presence: the
+ * launcher's actual "now playing" status is published separately by DiscordRpcManager,
+ * through the Discord Social SDK's token-free RPC (Social SDK 1.10+, Android support
+ * added August 2026) - not through this OAuth login, and not by driving the account
+ * directly over the Gateway with a stored session token (what Discord calls
+ * "self-botting" client automation, which Discord's Terms of Service prohibit).
  */
 object DiscordAuthManager {
     const val CLIENT_ID = "YOUR_DISCORD_APPLICATION_CLIENT_ID"
@@ -122,8 +119,6 @@ object DiscordAuthManager {
     }
 
     fun unlink() {
-        // Signing out also revokes the launcher's saved legacy RPC session locally.
-        AllSettings.discordRpcToken.put("").save()
         AllSettings.discordAccessToken.put("").save()
         AllSettings.discordRefreshToken.put("").save()
         AllSettings.discordUserId.put("").save()

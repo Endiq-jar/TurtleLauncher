@@ -124,7 +124,7 @@ jobs:
             echo "::error title=Gradle build failed::No build output was captured."
             exit 0
           fi
-          ERRORS=$(grep -E "^e: |^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED|AAR metadata|requires libraries and applications|currently compiled against|minimum compile SDK|minCompileSdk" "$LOG" | head -60 || true)
+          ERRORS=$(grep -E "^e:|^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED|AAR metadata|requires libraries and applications|currently compiled against|minimum compile SDK|minCompileSdk" "$LOG" | head -60 || true)
           # assembleRelease also runs lintVitalRelease, whose findings are in its own report
           # rather than in the Gradle output.
           for REPORT in $(find . -name "lint-results*.txt" -o -name "lint-results*.xml" 2>/dev/null | head -3); do
@@ -133,7 +133,9 @@ jobs:
             echo "$LINTS"
             ERRORS=$(printf '%s\n%s' "$ERRORS" "$LINTS")
           done
-          if [ -z "$ERRORS" ]; then ERRORS=$(tail -40 "$LOG"); fi
+          # Kotlin DSL diagnostics use "e: file:///...", and some Gradle failures put
+          # their reason after "What went wrong" without an exception prefix.
+          ERRORS=$(printf '%s\n----- build tail -----\n%s' "$ERRORS" "$(tail -80 "$LOG")")
           echo "----- captured errors -----"
           printf '%s\n' "$ERRORS"
           ESCAPED=$(printf '%s' "$ERRORS" | head -c 20000 | sed -e 's/%/%25/g' -e 's/\r/%0D/g' | awk '{printf "%s%%0A", $0}')

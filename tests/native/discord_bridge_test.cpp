@@ -14,6 +14,20 @@ void queue(PresenceCommand cmd) {
     gCv.notify_one();
 }
 int main() {
+    // JNI modified UTF-8 is not valid SDK UTF-8 for supplementary characters.
+    JNINativeInterface_ jni{};
+    jni.GetStringChars = [](JNIEnv*, jstring value, jboolean*) -> const jchar* {
+        return reinterpret_cast<const jchar*>(reinterpret_cast<std::u16string*>(value)->data());
+    };
+    jni.GetStringLength = [](JNIEnv*, jstring value) -> jsize {
+        return static_cast<jsize>(reinterpret_cast<std::u16string*>(value)->size());
+    };
+    jni.ReleaseStringChars = [](JNIEnv*, jstring, const jchar*) {};
+    JNIEnv_ env{&jni};
+    std::u16string emoji = u"Turtle \U0001F422";
+    assert(JStringToStd(&env, reinterpret_cast<jstring>(&emoji)) == "Turtle \xF0\x9F\x90\xA2");
+    std::u16string unpaired(1, static_cast<char16_t>(0xD800));
+    assert(JStringToStd(&env, reinterpret_cast<jstring>(&unpaired)) == "\xEF\xBF\xBD");
     auto before = std::chrono::steady_clock::now();
     assert(Java_com_endiq_turtlelauncher_feature_discord_DiscordSocialBridge_nativeInit(nullptr, nullptr, 1560576927419338863LL));
     assert(std::chrono::steady_clock::now() - before < std::chrono::milliseconds(150));

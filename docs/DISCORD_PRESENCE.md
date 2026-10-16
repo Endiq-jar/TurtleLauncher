@@ -1,107 +1,91 @@
-# Automatic Discord presence
+# Official token-free Android Discord presence
 
-## Behavior
+Turtle Launcher uses Discord Social SDK **1.10.19337** and public application ID
+**1560576927419338863**. RPC does not use OAuth, a user token, a bot token, or a client
+secret. Discord must be installed and signed in, with activity sharing allowed.
+No account-linking or token-entry screen is needed. The settings button opens Discord.
+Unused credentials from the former Gateway/OAuth implementations are erased locally
+when the presence owner starts; no credentials are migrated into the Social SDK.
 
-- Rich Presence is published through the official **Discord Social SDK** (1.10+,
-  Android RPC support added August 2026) using `Client::SetApplicationId` +
-  `Client::UpdateRichPresence`. There is no `Client::Connect()` call, no OAuth token, and
-  no Discord account credential involved - the SDK talks directly to the Discord app
-  installed and signed in on the device over its native RPC channel. See
-  `src/main/native/discord/discord_rpc_bridge.cpp` and
-  `feature/discord/DiscordSocialBridge.kt`.
-- This replaces the previous implementation, which drove the Discord Gateway directly
-  using a stored user session token ("self-botting" client automation). That transport
-  is removed entirely; `AllSettings.discordRpcToken` no longer exists.
-- The Discord settings screen has no token editor and no RPC on/off switch - presence is
-  always on while the launcher or Minecraft is in the foreground. A `Discord status`
-  picker (online/idle/dnd/invisible) is also removed: the SDK's token-free RPC only
-  publishes an *activity*, not the account's online status.
-- A single bound service in the `:presence` process owns the native SDK client. Visible
-  launcher activities hold one binding; the existing foreground `GameService` holds
-  another for the game session. No new foreground-service notification is added.
-- Launcher browsing publishes "Browsing Turtle Launcher". Minecraft publishes its running
-  version. Game presence takes priority when the launcher is opened during play, and
-  quitting the launcher process does not kill the game's presence lease - the same
-  `DiscordPresenceState` ownership logic as before is unchanged.
-- Customization remains available: name, details, state, activity type, elapsed-timer
-  toggle, large/small image asset keys and hover text, and up to two buttons.
-  `{version}` inserts the running Minecraft version; `{activity}` inserts "Playing
-  Minecraft" or "Browsing Turtle Launcher". `AllSettings.discordRpcApplicationId` can
-  override the application ID the activity is published under (defaults to Turtle
-  Launcher's own registered ID); custom image asset keys must be uploaded to whichever
-  application ID is in effect.
-- If the Discord app isn't installed or isn't signed in, `UpdateRichPresence` calls fail
-  silently (tracked via `DiscordRpcManager.isConnected()`); nothing here crashes, blocks,
-  or retries aggressively.
+## Android lifecycle and process ownership
 
-## What changed and why
+The SDK's Android RPC implementation uses
+`DiscordSocialSdkInit.getEngineActivity()` to bind/unbind Discord. A real Activity
+must therefore exist **in the SDK client's process**. An Activity reference cannot
+be passed to an isolated process over Binder.
 
-The previous transport authenticated directly to the Discord Gateway with a saved user
-session token and issued a Gateway `IDENTIFY`, impersonating the signed-in account to
-publish presence. Driving a real user account over the Gateway this way is what Discord
-calls self-bot automation, and it's against Discord's Terms of Service regardless of
-intent - it risks the linked account, not just the launcher. That code path (the
-WebSocket client, heartbeat loop, and `discordRpcToken` setting) has been deleted rather
-than kept around for "existing sessions."
+- `DiscordPresenceService` in `:presence` is a lightweight coordinator, not an SDK
+  host. Visible LauncherActivity and the existing foreground GameService hold leases.
+- The coordinator elects the game process whenever a game lease exists; otherwise
+  it elects the visible launcher process. Only the elected process runs the SDK.
+- Before starting a new owner, the coordinator asks the old owner to stop and waits
+  for acknowledgment. Process death removes its lease. A three-second watchdog
+  prevents a hung process from blocking all future handoffs.
+- The chosen process calls `DiscordSocialSdkInit.setEngineActivity` with its actual
+  LauncherActivity or MainActivity, then initializes the SDK. Native construction,
+  publishing, callback pumping and shutdown are serialized away from the UI thread.
+- GameService keeps the game lease when Minecraft is backgrounded. Killing only the
+  launcher process with Quit Launcher does not kill the game's SDK client.
+- Ending the game releases its lease. The launcher resumes browsing presence if its
+  lease remains. The launcher has a two-second screen-transition grace period.
+- Releasing the last lease shuts down and joins its SDK worker. Destroyed Activities
+  are not used to initialize new SDK clients.
 
-The Social SDK's Rich-Presence-without-authentication mode is the mechanism Discord
-actually ships for this: no token, no login, nothing to store, and nothing that risks
-the user's account standing.
+The native bridge defines `DISCORDPP_IMPLEMENTATION` in exactly one translation unit,
+uses `Client::SetApplicationId` and `Client::UpdateRichPresence`, and never calls
+`Client::Connect`. Pending updates can queue before SDK construction completes. Active
+presence refreshes at most once per 30 seconds when unchanged, allowing recovery when
+Discord becomes available later. Obsolete update callbacks cannot mark a cleared
+activity connected. `isConnected()` reports only the latest locally accepted update,
+not an independently verified Discord profile state.
+
+## Presence and customization
+
+- Browsing details are “Browsing Turtle Launcher”. Game details include the version.
+- `{version}` inserts the running version and `{activity}` inserts “Playing Minecraft”
+  or “Browsing Turtle Launcher”. Timers use the SDK's millisecond epoch units.
+- Details, state, timer, activity type, app-ID override, artwork and buttons remain
+  configurable. Discord controls the displayed application name; the old name editor
+  and account-wide status controls are not offered as unsupported capabilities.
+- Java UTF-16 strings are converted to standard UTF-8, including emoji and malformed
+  surrogate replacement. Button-array lengths are bounded before JNI indexing.
+- Missing Discord, signed-out accounts and SDK failures do not constitute a successful
+  connection. The launcher logs failures without logging credentials.
 
 ## Build integration
 
-- `discord_partner_sdk.aar` (Discord Social SDK, C++/Android) lives in `libs/` and is
-  picked up by the module's existing `fileTree(dir = "libs", ...)` dependency - no
-  `build.gradle.kts` dependency-block change was needed.
-- Its native library and headers are consumed via AGP's `prefab` integration (already
-  enabled: `buildFeatures.prefab = true`). `src/main/native/CMakeLists.txt` does
-  `find_package(discord_partner_sdk REQUIRED CONFIG)` and links the new
-  `turtlediscordrpc` target against `discord_partner_sdk::discord_partner_sdk`.
-  `turtlediscordrpc` is added to `externalNativeBuild.cmake.targets` in
-  `build.gradle.kts`.
-- The AAR's own manifest (merged in automatically) declares the `<queries>` entry for
-  the `com.discord` package required on Android 11+, plus `INTERNET`; no changes to the
-  launcher's own `AndroidManifest.xml` were needed.
+`libs/discord_partner_sdk.aar` supplies Java classes, its manifest and consumer
+ProGuard rules. `prepareDiscordSdk` stages only this AAR's headers/native binaries
+into the module build directory. CMake imports the matching ABI library; matching JNI
+copies ensure it is packaged even without global Prefab. The exact duplicate SDK
+library is selected once by packaging rules. No unrelated native dependency is imported.
 
-## Validation
+Global Prefab is deliberately disabled: MMKV's Prefab metadata declares a shared
+library with a statically linked STL, which fails Prefab's compatibility checks when
+combined with a consumer native build. MMKV continues to use its normal JNI library.
+The new C++20 targets use NDK **27.2.12479018** and `c++_shared`. Old bundled
+`libc++_shared.so` copies are removed so AGP packages the runtime used by that NDK.
+The Discord bridge class has explicit R8 keeps for its JNI entrypoints.
 
-- `tests/kotlin/DiscordPresenceStateCheck.kt` and the JUnit `DiscordPresenceStateTest`
-  suite cover presence ownership/handoff (`DiscordPresenceState`) and are unaffected by
-  this change - no WebSocket/Gateway stubbing is needed anymore since there's no socket
-  code left to stub.
-- The native bridge and its JNI signatures were checked by hand against
-  `discordpp.h`/`cdiscord.h` (SDK 1.10+) and the SDK's own "Rich Presence Without
-  Authentication" sample. Full on-device validation (an actual Discord app seeing the
-  activity, button clicks, asset resolution, reconnect/teardown timing) still needs a
-  real device/emulator with Gradle and the Android NDK available, which this sandbox
-  does not have.
+## Verification
 
-Device checks still required: launcher/game handoff, opening the launcher during play,
-Quit Launcher enabled, returning from the game, killing either client process, Discord
-app not installed, Discord signed out mid-session, customization refresh, and unlink
-during play (which no longer affects presence at all, since presence doesn't depend on
-the OAuth link).
+- The native bridge compiles against the **real headers from the bundled AAR**.
+  Every referenced Discord C symbol is exported by the supplied x86_64 SDK library;
+  no unresolved `discordpp::` wrapper definitions remain in the compiled object.
+- `tests/native/run-discord.sh` compiles the production bridge against a deliberately
+  small **test SDK double**, with AddressSanitizer/UBSan. It tests pre-initialization
+  command queuing, nonblocking initialization, stale callback rejection, millisecond
+  timestamps, emoji/unpaired-surrogate conversion, shutdown/join and reacquisition.
+  This does **not** execute the real SDK or simulate Android Binder.
+- `tests/kotlin/DiscordPresenceStateCheck.kt` and the JUnit state tests cover game-first
+  owner election and launcher/game lease removal.
+- Kotlin client, coordinator, lifecycle, manager and JNI facade compile against Android
+  API 35 and the actual SDK Java classes with minimal launcher/settings stubs.
+- Existing native file-dialog sanitizer checks are rerun as a regression check.
 
-## Android integration corrections
-
-The isolated `:presence` service is now a **coordinator only**. The Social SDK's
-Android RPC implementation calls `DiscordSocialSdkInit.getEngineActivity()` when
-binding/unbinding Discord, so a native client cannot live in that Activity-less
-process. The coordinator elects a launcher/game client and sends it commands. The
-selected process initializes the real Activity with `setEngineActivity`, then owns
-the SDK worker. Game selection has priority; the old owner acknowledges native
-shutdown before the new owner starts. A three-second watchdog prevents a hung client
-from blocking all subsequent handoffs. GameService retains the game lease while
-Minecraft is backgrounded or Quit Launcher kills the launcher process.
-
-SDK operations and shutdown joins are serialized on a background executor. Activity
-initialization is dispatched to the main thread; native initialization only queues
-work and never waits for the native worker on the UI thread. The native worker
-periodically refreshes active presence every 30 seconds, ignores obsolete callbacks,
-and is joined when its lease ends. Timestamps use SDK-native milliseconds; UTF-16
-Java strings are converted to standard UTF-8, including supplementary characters.
-
-The native build uses `c++_shared`, as required by the MMKV Prefab dependency. Old
-bundled `libc++_shared.so` copies are removed so AGP packages the NDK 27 runtime used
-by the new C++20 targets, rather than accidentally selecting a stale runtime.
-`DISCORDPP_IMPLEMENTATION` is defined in exactly one bridge translation unit.
+The GitHub release build is the full Android compilation gate. Its result must be
+checked separately; targeted checks are not a substitute for a successful APK build.
+Device testing is still required: launcher/game handoff, launcher open during play,
+Quit Launcher, process death, rotation, absent/signed-out Discord, network reconnect,
+activity sharing settings, artwork/buttons and release-R8 JNI loading. Android force
+stop, OS process termination and outages prevent an absolute always-online guarantee.

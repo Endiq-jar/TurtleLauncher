@@ -85,6 +85,12 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 
+      - name: Native bridge regression tests
+        working-directory: ${{ steps.locate.outputs.dir }}
+        run: |
+          tests/native/run.sh
+          tests/native/run-discord.sh
+
       - name: Build release APK
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
@@ -111,7 +117,7 @@ jobs:
             echo "::warning::./gradlew is not usable - building with the provisioned Gradle instead."
             GRADLE_CMD=gradle
           fi
-          $GRADLE_CMD :TurtleLauncher:assembleRelease --no-daemon --stacktrace 2>&1 \
+          $GRADLE_CMD :TurtleLauncher:testDebugUnitTest :TurtleLauncher:assembleRelease --no-daemon --stacktrace 2>&1 \
             | tee /tmp/gradle-build.log
 
       # The raw job log is a separate download and can be unreachable from a restricted
@@ -133,9 +139,10 @@ jobs:
             echo "$LINTS"
             ERRORS=$(printf '%s\n%s' "$ERRORS" "$LINTS")
           done
-          # Kotlin DSL diagnostics use "e: file:///...", and some Gradle failures put
-          # their reason after "What went wrong" without an exception prefix.
-          ERRORS=$(printf '%s\n----- build tail -----\n%s' "$ERRORS" "$(tail -80 "$LOG")")
+          # Preserve the actual Gradle failure reason, not just a tail of stack frames.
+          CONTEXT=$(sed -n '/^FAILURE:/,/^\* Exception is:/p' "$LOG" | head -100)
+          ERRORS=$(printf '%s\n%s' "$CONTEXT" "$ERRORS")
+          if [ -z "$ERRORS" ]; then ERRORS=$(tail -40 "$LOG"); fi
           echo "----- captured errors -----"
           printf '%s\n' "$ERRORS"
           ESCAPED=$(printf '%s' "$ERRORS" | head -c 20000 | sed -e 's/%/%25/g' -e 's/\r/%0D/g' | awk '{printf "%s%%0A", $0}')

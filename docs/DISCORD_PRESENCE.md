@@ -88,7 +88,7 @@ Both the bundled AAR and its `discordpp.h` match that manifest exactly:
 ## Verification
 
 - The native bridge compiles against the **real headers from the bundled AAR**.
-  Every referenced Discord C symbol is exported by the supplied x86_64 SDK library;
+  Every referenced Discord C symbol is exported by all four supplied ABI SDK libraries;
   no unresolved `discordpp::` wrapper definitions remain in the compiled object.
 - `tests/native/run-discord.sh` compiles the production bridge against a deliberately
   small **test SDK double**, with AddressSanitizer/UBSan. It tests pre-initialization
@@ -96,7 +96,9 @@ Both the bundled AAR and its `discordpp.h` match that manifest exactly:
   timestamps, emoji/unpaired-surrogate conversion, shutdown/join and reacquisition.
   This does **not** execute the real SDK or simulate Android Binder.
 - `tests/kotlin/DiscordPresenceStateCheck.kt` and the JUnit state tests cover game-first
-  owner election and launcher/game lease removal.
+  owner election and launcher/game lease removal. Session-clock tests cover refresh,
+  browsing/game transitions and lease reset. Native SDK/Activity reinitialization
+  preserves the logical session clock rather than restarting the elapsed timer.
 - Kotlin client, coordinator, lifecycle, manager and JNI facade compile against Android
   API 35 and the actual SDK Java classes with minimal launcher/settings stubs.
 - Existing native file-dialog sanitizer checks are rerun as a regression check.
@@ -106,10 +108,10 @@ Both the bundled AAR and its `discordpp.h` match that manifest exactly:
 - `tests/check_apk.py` checks the generated universal APK for all four native CPU ABIs,
   the SDK/bridge/shared STL, both renderers, dialog libraries and Java-8 guest bootstrap.
 
-Full GitHub CI (run `38890705914`, commit `f890ee1`) passed both
+Full GitHub CI (run `38892266519`, commit `6f88153`) passed both
 `:TurtleLauncher:testDebugUnitTest` and `:TurtleLauncher:assembleRelease` on
-2026-10-16 and uploaded the release APK. Subsequent changes still require their own
-successful CI run, including the new packaging check.
+2026-10-16, passed APK packaging verification and uploaded the APK/unit-test reports.
+Subsequent changes still require their own successful CI run.
 
 The GitHub release build is the full Android compilation gate. Its result must be
 checked separately; targeted checks are not a substitute for a successful APK build.

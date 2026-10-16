@@ -33,8 +33,7 @@ object DiscordRpcManager {
     @Volatile private var active = false
     private var sdkActivity = WeakReference<Activity>(null)
     @Volatile private var initializedApplicationId: Long? = null
-    private var currentVersion: String? = null
-    private var startedAt = 0L
+    private val session = DiscordPresenceSession()
     private var owner: Any? = null // actor-thread only; stale lease shutdowns cannot stop a new owner
 
     /** Resolves the configured application id, falling back to the launcher's own. */
@@ -49,7 +48,14 @@ object DiscordRpcManager {
     @JvmStatic fun releaseActivity(value: Activity) {
         if (activity.get() === value) {
             activity = WeakReference(null)
-            stop()
+            executor.execute {
+                // Losing/recreating an Activity is not the end of the GameService lease.
+                // A new Activity may already have arrived before this actor command runs.
+                if (activity.get() == null) {
+                    active = false
+                    shutdown(resetSession = false)
+                }
+            }
         }
     }
 
@@ -67,12 +73,11 @@ object DiscordRpcManager {
         return latch.await(5, TimeUnit.SECONDS) && ok
     }
 
-    private fun shutdown() {
+    private fun shutdown(resetSession: Boolean = true) {
         if (initializedApplicationId != null) DiscordSocialBridge.shutdown()
         initializedApplicationId = null
         sdkActivity = WeakReference(null)
-        currentVersion = null
-        startedAt = 0L
+        if (resetSession) session.reset()
     }
 
     @JvmStatic @JvmOverloads fun start(versionName: String? = null, lease: Any? = null) {
@@ -90,12 +95,11 @@ object DiscordRpcManager {
                 }
                 val wanted = applicationId()
                 if (initializedApplicationId != wanted || sdkActivity.get() !== activity.get()) {
-                    shutdown()
+                    shutdown(resetSession = false)
                     if (!prepareActivity() || !DiscordSocialBridge.init(wanted)) return@execute
                     initializedApplicationId = wanted
                 }
-                if (currentVersion != versionName || startedAt == 0L) startedAt = System.currentTimeMillis()
-                currentVersion = versionName
+                session.start(versionName, System.currentTimeMillis())
                 active = true
                 publish()
             }.onFailure { android.util.Log.w("DiscordPresence", "Could not update presence", it) }
@@ -132,8 +136,8 @@ object DiscordRpcManager {
     // ── Activity model ──────────────────────────────────────────────────────────────
 
     private fun publish() {
-        val version = currentVersion
-        val since = startedAt
+        val version = session.version
+        val since = session.startedAt
 
         val name = renderText(AllSettings.discordRpcName.getValue(), version).ifEmpty { "Turtle Launcher" }
         val details = if (version == null) "Browsing Turtle Launcher" else renderText(AllSettings.discordRpcDetails.getValue(), version)

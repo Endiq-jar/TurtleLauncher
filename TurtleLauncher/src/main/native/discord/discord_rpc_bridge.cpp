@@ -111,7 +111,7 @@ void ApplyCommand(const PresenceCommand& cmd) {
 
     discordpp::Activity activity;
     activity.SetType(static_cast<discordpp::ActivityTypes>(cmd.activityType));
-    if (!cmd.name.empty()) activity.SetName(cmd.name);
+    // Discord derives the activity name from the registered application, not this payload.
     if (!cmd.details.empty()) activity.SetDetails(cmd.details);
     if (!cmd.state.empty()) activity.SetState(cmd.state);
 

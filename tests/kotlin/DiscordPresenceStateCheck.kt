@@ -6,10 +6,13 @@ fun main() {
     check(!state.active && state.version == null)
     state.update("launcher", null)
     check(state.active && state.version == null)
+    check(state.owner == "launcher")
     state.update("game", "1.21.1")
     check(state.version == "1.21.1")
+    check(state.owner == "game")
     state.update("launcher", null) // opening settings must not replace the running game
     check(state.version == "1.21.1")
+    check(state.owner == "game")
     state.remove("launcher") // Quit Launcher must not stop Minecraft's presence
     check(state.active && state.version == "1.21.1")
     state.update("launcher", null)

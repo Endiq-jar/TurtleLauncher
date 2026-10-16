@@ -61,6 +61,21 @@ configurations {
     }
 }
 
+// Stage only Discord's headers/native binaries. Enabling global Prefab also imports
+// MMKV's statically-linked-STL package, which cannot participate in this CMake graph.
+val discordSdkDir = layout.buildDirectory.dir("discord-social-sdk")
+val prepareDiscordSdk by tasks.registering(Sync::class) {
+    val sdk = file("libs/discord_partner_sdk.aar")
+    from(zipTree(sdk)) { include("prefab/**") }
+    from(zipTree(sdk)) {
+        include("prefab/modules/discord_partner_sdk/libs/*/*.so")
+        eachFile { path = path.substringAfter("/libs/android.") }
+        into("jni")
+        includeEmptyDirs = false
+    }
+    into(discordSdkDir)
+}
+
 android {
     namespace = namespaceId
     compileSdk = 37
@@ -97,7 +112,8 @@ android {
         applicationId = nameId
         externalNativeBuild {
             cmake {
-                arguments += "-DANDROID_STL=c++_shared"
+                arguments += listOf("-DANDROID_STL=c++_shared",
+                    "-DTURTLE_DISCORD_SDK_DIR=${discordSdkDir.get().asFile.absolutePath}")
                 targets += listOf("SimpleFPEWrapper", "turtlefiledialogs", "lwjgl_nfd", "lwjgl_nfd_portal", "turtlediscordrpc")
             }
         }
@@ -183,6 +199,7 @@ android {
     }
 
     sourceSets["main"].java.srcDirs(generatedTurtleDir)
+    sourceSets["main"].jniLibs.srcDir(discordSdkDir.map { it.dir("jni") })
 
     androidComponents {
         onVariants { variant ->
@@ -250,12 +267,12 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            pickFirsts += listOf("**/libbytehook.so")
+            pickFirsts += listOf("**/libbytehook.so", "**/libdiscord_partner_sdk.so")
         }
     }
 
     buildFeatures {
-        prefab = true
+        prefab = false
         buildConfig = true
         viewBinding = true
         resValues = true
@@ -422,4 +439,10 @@ dependencies {
 tasks.named("preBuild") { dependsOn(":jre_lwjgl3glfw:fileDialogBridgeJar") }
 tasks.withType<MergeSourceSetFolders>().configureEach {
     if (name.endsWith("Assets")) dependsOn(":jre_lwjgl3glfw:fileDialogBridgeJar")
+}
+
+// CMake configuration can execute independently of preBuild (including per-ABI tasks).
+tasks.configureEach {
+    if (name == "preBuild" || name.startsWith("configureCMake") || name.startsWith("buildCMake")
+        || name.startsWith("merge") && name.endsWith("JniLibFolders")) dependsOn(prepareDiscordSdk)
 }

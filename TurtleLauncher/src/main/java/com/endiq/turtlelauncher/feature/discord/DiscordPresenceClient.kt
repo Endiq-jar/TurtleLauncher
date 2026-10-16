@@ -27,7 +27,7 @@ class DiscordPresenceClient(context: Context, private var version: String? = nul
         }.onFailure { Logging.w("DiscordPresence", "Could not bind presence coordinator") }
     }
 
-    fun refresh(version: String? = this.version) {
+    @JvmOverloads fun refresh(version: String? = this.version) {
         if (closing) return
         this.version = version
         if (!bound) connect() else send(DiscordPresenceService.UPDATE)

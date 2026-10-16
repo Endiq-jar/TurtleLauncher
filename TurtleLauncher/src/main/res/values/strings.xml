@@ -1503,4 +1503,8 @@
     <string name="crash_ai_analysis_unavailable">AI analysis isn\'t available right now. Enable AI crash help with an API key in Settings, or check the Game Logs tab for the raw log.</string>
     <string name="discord_rpc_automatic">Always on while the launcher is open or Minecraft is running - no sign-in needed. Game activity takes priority over browsing. Requires the Discord app installed and signed in on this device.</string>
     <string name="discord_rpc_auth_unavailable">Rich Presence isn\'t available on this build or device. Make sure the Discord app is installed and signed in, then reopen the launcher.</string>
+    <string name="discord_native_title">Uses your Discord app</string>
+    <string name="discord_native_description">No account linking or token is needed. Keep Discord installed and signed in. The activity name is managed by your Discord application.</string>
+    <string name="discord_open_app">Open Discord</string>
+    <string name="discord_open_failed">Could not open Discord. Open the Discord app manually.</string>
 </resources>

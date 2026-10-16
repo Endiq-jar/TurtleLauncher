@@ -31,6 +31,7 @@ object DiscordPresenceLifecycle : Application.ActivityLifecycleCallbacks {
     override fun onActivityStarted(activity: Activity) {
         if (activity is MainActivity) {
             DiscordRpcManager.setActivity(activity)
+            net.endiq.launcher.services.GameService.refreshDiscordPresence()
             return // the foreground GameService owns this process's game lease
         }
         if (activity !is LauncherActivity) return

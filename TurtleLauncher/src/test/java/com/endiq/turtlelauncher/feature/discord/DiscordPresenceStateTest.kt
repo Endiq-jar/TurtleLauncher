@@ -11,9 +11,11 @@ class DiscordPresenceStateTest {
         state.update("game", "1.21.1")
         state.update("launcher", null)
         assertEquals("1.21.1", state.version)
+        assertEquals("game", state.owner)
         state.remove("launcher")
         assertTrue(state.active)
         assertEquals("1.21.1", state.version)
+        assertEquals("game", state.owner)
     }
 
     @Test fun gameDeathReturnsToBrowsingAndLastClientClearsPresence() {
@@ -24,6 +26,7 @@ class DiscordPresenceStateTest {
         state.remove("game") // normal detach followed by a death callback is harmless
         assertTrue(state.active)
         assertNull(state.version)
+        assertEquals("launcher", state.owner)
         state.remove("launcher")
         assertFalse(state.active)
     }

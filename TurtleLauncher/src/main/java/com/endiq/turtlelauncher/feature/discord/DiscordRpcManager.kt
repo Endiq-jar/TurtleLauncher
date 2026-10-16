@@ -32,6 +32,7 @@ object DiscordRpcManager {
     private val main = Handler(Looper.getMainLooper())
     @Volatile private var activity = WeakReference<Activity>(null)
     @Volatile private var active = false
+    private var sdkActivity = WeakReference<Activity>(null)
     @Volatile private var initializedApplicationId: Long? = null
     private var currentVersion: String? = null
     private var startedAt = 0L
@@ -59,6 +60,7 @@ object DiscordRpcManager {
             try {
                 activity.get()?.takeIf { !it.isDestroyed && !it.isFinishing }?.let {
                     ok = DiscordSocialBridge.prepare(it)
+                    if (ok) sdkActivity = WeakReference(it)
                 }
             } finally { latch.countDown() }
         }
@@ -68,6 +70,7 @@ object DiscordRpcManager {
     private fun shutdown() {
         if (initializedApplicationId != null) DiscordSocialBridge.shutdown()
         initializedApplicationId = null
+        sdkActivity = WeakReference(null)
         currentVersion = null
         startedAt = 0L
     }
@@ -77,11 +80,15 @@ object DiscordRpcManager {
             runCatching {
                 Settings.refreshSettings()
                 // Erase unused legacy credentials rather than leaving them in private storage.
-                val legacy = Settings.Manager.getValue("discordRpcToken", "") { it }
-                if (legacy.isNotBlank()) Settings.Manager.put("discordRpcToken", "")
-                    .put("discordRpcEnabled", false).save()
+                val legacyKeys = listOf("discordRpcToken", "discordAccessToken", "discordRefreshToken",
+                    "discordUserId", "discordUsername", "discordAvatarHash")
+                if (legacyKeys.any { Settings.Manager.getValue(it, "") { value -> value }.isNotBlank() }) {
+                    val erase = Settings.Manager.put("discordRpcEnabled", false)
+                    legacyKeys.forEach { erase.put(it, "") }
+                    erase.save()
+                }
                 val wanted = applicationId()
-                if (initializedApplicationId != wanted) {
+                if (initializedApplicationId != wanted || sdkActivity.get() !== activity.get()) {
                     shutdown()
                     if (!prepareActivity() || !DiscordSocialBridge.init(wanted)) return@execute
                     initializedApplicationId = wanted

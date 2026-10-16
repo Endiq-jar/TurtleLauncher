@@ -22,11 +22,6 @@ class AllSettings {
         @JvmStatic val musicPlaylistJson = StringSettingUnit("musicPlaylistJson", "[]")
 
         // ── Discord ────────────────────────────────────────────────────────────
-        @JvmStatic val discordAccessToken = StringSettingUnit("discordAccessToken", "")
-        @JvmStatic val discordRefreshToken = StringSettingUnit("discordRefreshToken", "")
-        @JvmStatic val discordUserId = StringSettingUnit("discordUserId", "")
-        @JvmStatic val discordUsername = StringSettingUnit("discordUsername", "")
-        @JvmStatic val discordAvatarHash = StringSettingUnit("discordAvatarHash", "")
         @JvmStatic val discordRpcName = StringSettingUnit("discordRpcName", "Turtle Launcher")
         @JvmStatic val discordRpcDetails = StringSettingUnit("discordRpcDetails", "Playing {version}")
         @JvmStatic val discordRpcState = StringSettingUnit("discordRpcState", "Launched with Turtle Launcher")

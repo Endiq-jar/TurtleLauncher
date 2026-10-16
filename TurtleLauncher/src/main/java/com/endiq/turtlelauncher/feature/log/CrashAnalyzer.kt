@@ -46,6 +46,7 @@ object CrashAnalyzer {
         /** Flips Settings → Video → Performance → "Native object pooling" off, i.e.
          *  AllSettings.nativeObjectPooling → LIBGL_RECYCLEFBO=0 on next launch. */
         DISABLE_FBO_RECYCLING
+
     }
 
     data class RepairAction(
@@ -69,7 +70,8 @@ object CrashAnalyzer {
     private class Rule(
         val title: String,
         val matches: (text: String) -> Boolean,
-        val diagnosis: (text: String) -> Diagnosis,
+        val diagnosis: (text: String) -> Diagnosis
+
     )
 
     private fun fixed(
@@ -159,20 +161,13 @@ object CrashAnalyzer {
                 matches = { has(it, "No context is current", "GL.createCapabilities") && has(it, "RenderSystem", "initRenderer", "createCapabilities") },
                 diagnosis = fixed(
                     "The renderer didn't create an OpenGL context",
-                    "Minecraft asked LWJGL for GL capabilities before any GL context was current, so the selected " +
-                        "renderer failed to create one on this GPU/driver. The window and GL info are empty in the report, " +
-                        "which means it failed before Minecraft drew anything. On PowerVR/Imagination GPUs this is the " +
-                        "signature of the vendor GLES driver refusing to hand out a context at all.",
+                    "Minecraft asked LWJGL for GL capabilities before any GL context was current. The selected renderer could not create a context on this GPU/driver.",
                     listOf(
-                        "Pick MobileGlues as the renderer (Settings → Video → Renderer) if you are not already on it - " +
-                            "it is the renderer MC 26.3 is verified to start with on PowerVR hardware.",
-                        "Reset the version's renderer override below to fall back to the launcher default.",
-                        "If you are on LTW, note it has failed to create a context on PowerVR devices - switch to " +
-                            "MobileGlues instead, which is the combination most PowerVR devices need."
+                        "Try MobileGlues or Zink in Settings → Video → Renderer, depending on device support.",
+                        "Reset the version-specific renderer override to use the launcher default.",
+                        "If LTW fails on PowerVR, try another renderer and include the new log when reporting the issue."
                     ),
-                    repairActions = listOf(
-                        RepairAction(RepairActionType.RESET_RENDERER_OVERRIDE, "Reset renderer override")
-                    )
+                    repairActions = listOf(RepairAction(RepairActionType.RESET_RENDERER_OVERRIDE, "Reset renderer override"))
                 )
             ),
             // 2b. Krypton Wrapper's native GL4ES backend (libng_gl4es.so) SIGSEGV - seen in an
@@ -376,7 +371,7 @@ object CrashAnalyzer {
                         "code. This is most common on devices with PowerVR GPUs, where certain OpenGL code paths are " +
                         "known to crash the driver.",
                     listOf(
-                        "Switch renderer: try MobileGlues, or Vulkan-Zink instead of OpenGL ES (or vice-versa), in Settings → Video.",
+                        "Switch renderer: try Vulkan-Zink instead of OpenGL ES (or vice-versa) in Settings → Video.",
                         "Enable the Auto Graphics Optimizer so the launcher picks a renderer/driver combo known to work on your GPU.",
                         "Lower resolution scale, which reduces load on the driver and can avoid some driver crash conditions.",
                         "Update TurtleLauncher — PowerVR-specific renderer fixes are an active area of work."
@@ -667,10 +662,7 @@ object CrashAnalyzer {
                             "If it still crashes, share the log: the 'TurtleSDL3:' and 'SdlAndroidJniPrep' lines " +
                                 "now record exactly which SDL3 file was pinned and what was removed - that's " +
                                 "what's needed to finish this fix on the affected device.",
-                            "Also try Settings → Video → Renderer: on MC 26.3-snapshot4+, Amethyst-Android's own " +
-                                "notes flag MobileGlues and Krypton Wrapper as crashing 'due to changes in how " +
-                                "SDL creates EGL window'. MobileGlues is the combination to try first on " +
-                                "PowerVR; otherwise Zink or LTW are the alternatives.",
+                            "Try a different renderer in Settings → Video. Compatibility varies across GPUs and Minecraft versions; ANGLE is no longer supported.",
                             "Worst case, play an MC version at or below 26.2 (pre-SDL3, GLFW-based LWJGL), which " +
                                 "this crash cannot affect."
                         ),
@@ -855,6 +847,7 @@ object CrashAnalyzer {
                 if (seen.add(diagnosis.title)) {
                     results.add(diagnosis)
                     recordRuleFired(rule.title)
+
                 }
             }
         }

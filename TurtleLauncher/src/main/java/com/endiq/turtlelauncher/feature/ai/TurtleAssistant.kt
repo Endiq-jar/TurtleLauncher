@@ -870,6 +870,11 @@ object TurtleAssistant {
     }.getOrDefault("unknown")
 
     /**
+     * Whether the forced-ANGLE hook applies to this device right now, and which ANGLE copy it would
+     * use - so the renderer answer can state it instead of describing the feature in the abstract.
+     */
+
+    /**
      * Renderer id the launcher would actually launch with right now - the same resolution
      * [currentRendererName] does, without needing [Renderers.getCurrentRenderer] (which
      * throws until setCurrentRenderer has run).
@@ -1005,7 +1010,7 @@ object TurtleAssistant {
             label = "Best renderer?",
             keywords = listOf(
                 "renderer", "renderers", "mobileglues", "mobile glues", "gl4es", "zink",
-                "virgl", "ltw", "freedreno", "vgpu", "vulkan", "opengl",
+                "virgl", "ltw", "freedreno", "vgpu", "angle", "vulkan", "opengl",
                 "graphics backend", "driver", "turnip", "which renderer", "best renderer",
                 "shader", "shaders pack", "iris", "optifine"
             ),
@@ -1015,22 +1020,19 @@ object TurtleAssistant {
                     Tools.checkVulkanSupport(context.packageManager)
                 }.getOrDefault(false)
                 buildString {
-                    append("You're currently on: $current\n\n")
+                    append("You're currently on: $current\n")
                     append("How to change it: Settings → Video → Renderer. The Graphics Backend switch " +
                         "above it is a shortcut - on = OpenGL family, off = Vulkan (Zink).\n\n")
                     append("Rough guide:\n")
-                    append("• MobileGlues - this launcher's default, and the renderer MC 26.3 is verified to " +
-                        "start with on PowerVR hardware. A real GL implementation on top of your own GLES " +
-                        "3.x, self-contained, and the GL-family option that renders shader packs.\n")
+                    append("• MobileGlues - this launcher's default. A real GL implementation on top of " +
+                        "your own GLES 3.x, self-contained, and the GL-family option that renders shader packs.\n")
                     append("• Zink - Minecraft's GL translated to Vulkan. Best on Adreno/Mali with a working " +
                         "Vulkan driver" + (if (hasVulkan) " (your device does report Vulkan support)." else " - your device doesn't report Vulkan support, so skip it.") + "\n")
                     append("• LTW / Holy GL4ES - GL→GLES translators, the safe fallback when the above glitch. " +
                         "Holy GL4ES is documented up to MC 1.21.4 only.\n")
                     append("• Freedreno (+ Turnip driver) - Adreno-specific.\n")
-                    append("• VirGL / VGPU / NW - niche, badged experimental.\n\n")
-                    append("One real caveat: Amethyst-Android's release notes list MobileGlues and Krypton " +
-                        "Wrapper as crashing on Minecraft 26.3-snapshot4 and above because of how SDL now " +
-                        "creates its EGL window. Zink or LTW are the alternatives on those versions.")
+                    append("• VirGL / VGPU / NW / SFPEW - niche, badged experimental.\n\n")
+                    append("ANGLE support has been removed. Renderer compatibility depends on your GPU and Minecraft version.")
                 }
             },
             followUps = listOf("Shaders not working", "Why did my game crash?", "Status")

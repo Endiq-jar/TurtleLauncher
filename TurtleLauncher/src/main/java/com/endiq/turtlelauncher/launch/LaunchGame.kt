@@ -94,6 +94,15 @@ class LaunchGame {
                 }
             }.onFailure { e -> Logging.e("LaunchGame", "Renderer/MC-version compatibility check failed", e) }
 
+            runCatching {
+                val rendererUniqueId = version.getRenderer()
+                val isLtw = rendererUniqueId == com.endiq.turtlelauncher.renderer.renderers.LTWRenderer().getUniqueIdentifier()
+                val isPowerVr = File("/vendor/lib64/libsrv_um.so").exists() || File("/vendor/lib/libsrv_um.so").exists()
+                if (isLtw && isPowerVr) {
+                    Toast.makeText(context, "LTW may fail on PowerVR GPUs. Try MobileGlues or Zink if no GL context is created.", Toast.LENGTH_LONG).show()
+                }
+            }.onFailure { e -> Logging.e("LaunchGame", "PowerVR/LTW check failed", e) }
+
             val networkAvailable = NetworkUtils.isNetworkAvailable(context)
 
             fun launch(setOfflineAccount: Boolean = false) {
@@ -365,10 +374,9 @@ class LaunchGame {
 
                 androidx.tracing.Trace.beginSection("LaunchGame.launchWithUtils")
                 try {
-                    com.endiq.turtlelauncher.feature.discord.DiscordRpcManager.start(minecraftVersion.getVersionName())
                     JREUtils.launchWithUtils(activity, runtime, minecraftVersion, launchArgs, customArgs)
                 } finally {
-                    com.endiq.turtlelauncher.feature.discord.DiscordRpcManager.stop()
+                    GameService.endDiscordPresence()
                     androidx.tracing.Trace.endSection()
                 }
             } finally {

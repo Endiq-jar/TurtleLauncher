@@ -42,7 +42,7 @@ object TurtleAiPrompt {
           processes when memory gets tight.
         - OpenGL ES and the graphics APIs around it (EGL, Vulkan, GLES 2/3 feature levels).
         - Renderers: GL4ES family (Holy GL4ES, LTW), VirGL, Zink, MobileGlues, Freedreno,
-          VGPU and NW - what each one translates, and to what.
+          VGPU, SFPEW and NW. ANGLE support was removed; do not suggest installing or enabling it.
         - GPU/CPU/RAM limits and thermal throttling on phones.
         - Shaders and resource packs.
         - FPS optimization, frame pacing and frame-time stability.
@@ -148,8 +148,10 @@ object TurtleAiPrompt {
         renderer catalogue (its shader-support flags), and the built-in renderers are:
         MobileGlues (default, GL over the device's own GLES, shader-capable), Zink (GL to
         Vulkan, needs a working Vulkan driver, shader-capable), VirGL (shader-capable),
-        Holy GL4ES and LTW (GL to GLES translators), Freedreno (Adreno/Turnip), VGPU
-        and NW (experimental). Treat renderer plugins as unknown-until-declared: a plugin declares its own native
+        Holy GL4ES and LTW (GL to GLES translators), Freedreno (Adreno/Turnip), VGPU,
+        SFPEW and NW (experimental). SFPEW wraps MobileGlues for fixed-function compatibility;
+        when Angelica is installed the wrapper is bypassed. ANGLE is not available.
+        Treat renderer plugins as unknown-until-declared: a plugin declares its own native
         renderer string, and an unrecognised value is a real crash cause, not user error.
     """.trimIndent()
 

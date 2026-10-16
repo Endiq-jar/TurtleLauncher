@@ -288,6 +288,7 @@ public final class JREUtils {
         envMap.putAll(currentRenderer.getRendererEnv().getValue());
 
         String eglName = currentRenderer.getRendererEGL();
+
         if (eglName != null) envMap.put("POJAVEXEC_EGL", eglName);
 
         envMap.put("POJAV_RENDERER", currentRenderer.getNativeRendererId());
@@ -397,6 +398,10 @@ public final class JREUtils {
             }
 
             if (Renderers.INSTANCE.isCurrentRendererValid()) {
+                RendererInterface renderer = Renderers.INSTANCE.getCurrentRenderer();
+                if (renderer instanceof com.endiq.turtlelauncher.renderer.renderers.SFPEWRenderer) {
+                    ((com.endiq.turtlelauncher.renderer.renderers.SFPEWRenderer) renderer).prepareForGame(gameVersion.getGameDir());
+                }
                 setRendererEnv(envMap, gameVersion.getVersionName());
             }
 

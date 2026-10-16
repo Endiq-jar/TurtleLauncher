@@ -128,6 +128,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        com.endiq.turtlelauncher.bridge.NativeFileDialogs.install(this);
         minecraftVersion = getIntent().getParcelableExtra(INTENT_VERSION);
         if (minecraftVersion == null) throw new RuntimeException("The game version is not selected!");
 
@@ -139,6 +140,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         }
 
         Intent gameServiceIntent = new Intent(this, GameService.class);
+        gameServiceIntent.putExtra("discordVersion", minecraftVersion.getVersionName());
         // Start the service a bit early
         ContextCompat.startForegroundService(this, gameServiceIntent);
         initLayout();
@@ -491,6 +493,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
     @Override
     protected void onDestroy() {
+        com.endiq.turtlelauncher.bridge.NativeFileDialogs.release(this);
         super.onDestroy();
         com.endiq.turtlelauncher.feature.inputstats.SessionStatsTracker.stop();
         com.endiq.turtlelauncher.feature.inputstats.InputStatsTracker.reset();
@@ -534,6 +537,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (com.endiq.turtlelauncher.bridge.NativeFileDialogs.onResult(this, requestCode, resultCode, data)) return;
 
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             try {

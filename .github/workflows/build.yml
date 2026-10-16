@@ -85,6 +85,13 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x "${{ steps.locate.outputs.dir }}/gradlew"
 
+      - name: Native bridge regression tests
+        working-directory: ${{ steps.locate.outputs.dir }}
+        run: |
+          python3 tests/check_resources.py
+          tests/native/run.sh
+          tests/native/run-discord.sh
+
       - name: Build release APK
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
@@ -111,8 +118,20 @@ jobs:
             echo "::warning::./gradlew is not usable - building with the provisioned Gradle instead."
             GRADLE_CMD=gradle
           fi
-          $GRADLE_CMD :TurtleLauncher:assembleRelease --no-daemon --stacktrace 2>&1 \
+          $GRADLE_CMD :TurtleLauncher:testDebugUnitTest :TurtleLauncher:assembleRelease --no-daemon --stacktrace 2>&1 \
             | tee /tmp/gradle-build.log
+
+      - name: Verify release APK packaging
+        working-directory: ${{ steps.locate.outputs.dir }}
+        run: python3 tests/check_apk.py
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TurtleLauncher-unit-test-reports
+          path: "**/build/test-results/testDebugUnitTest/*.xml"
+          if-no-files-found: warn
 
       # The raw job log is a separate download and can be unreachable from a restricted
       # network, so the errors are repeated as annotations on the run itself.
@@ -124,7 +143,7 @@ jobs:
             echo "::error title=Gradle build failed::No build output was captured."
             exit 0
           fi
-          ERRORS=$(grep -E "^e: |^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED|AAR metadata|requires libraries and applications|currently compiled against|minimum compile SDK|minCompileSdk" "$LOG" | head -60 || true)
+          ERRORS=$(grep -E "^e:|^w: .*error|error:|FAILURE:|What went wrong|Caused by:|Execution failed for task|> Task .*FAILED|AAR metadata|requires libraries and applications|currently compiled against|minimum compile SDK|minCompileSdk" "$LOG" | head -60 || true)
           # assembleRelease also runs lintVitalRelease, whose findings are in its own report
           # rather than in the Gradle output.
           for REPORT in $(find . -name "lint-results*.txt" -o -name "lint-results*.xml" 2>/dev/null | head -3); do
@@ -133,6 +152,9 @@ jobs:
             echo "$LINTS"
             ERRORS=$(printf '%s\n%s' "$ERRORS" "$LINTS")
           done
+          # Preserve the actual Gradle failure reason, not just a tail of stack frames.
+          CONTEXT=$(sed -n '/^FAILURE:/,/^\* Exception is:/p' "$LOG" | head -100)
+          ERRORS=$(printf '%s\n%s' "$CONTEXT" "$ERRORS")
           if [ -z "$ERRORS" ]; then ERRORS=$(tail -40 "$LOG"); fi
           echo "----- captured errors -----"
           printf '%s\n' "$ERRORS"

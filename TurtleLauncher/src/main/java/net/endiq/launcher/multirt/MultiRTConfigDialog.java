@@ -43,6 +43,8 @@ public class MultiRTConfigDialog {
                 .setTitle(R.string.multirt_config_title)
                 .setView(mDialogView)
                 .setPositiveButton(R.string.multirt_import, (dialog, which) -> installJvmLauncher.launch(null))
+                .setNegativeButton(R.string.java_download_manual, (dialog, which) ->
+                    com.endiq.turtlelauncher.ui.dialog.ManualJavaDownloadDialog.show(activity))
                 .setNeutralButton(R.string.multirt_delete_runtime, null)
                 .create();
 

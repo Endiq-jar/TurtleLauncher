@@ -14,13 +14,16 @@ class ModCompatibilityAdvisorTest {
     val temporaryFolder = TemporaryFolder()
 
     @Test
-    fun sodiumGetsTranslationLayerCaveatOnlyForKnownGl4esRenderers() {
+    fun sodiumGetsTranslationLayerCaveatOnlyForKnownGl4esAndSfpewRenderers() {
         val sodium = mod("sodium", "0.6.0")
         val mods = listOf(sodium)
         val folder = temporaryFolder.newFolder("sodium-mods")
 
         val gl4es = ModCompatibilityAdvisor.inspect(mods, folder, environment("GL4ES"))
         assertTrue(gl4es.any { it.key == "sodium-translation-layer" })
+
+        val sfpew = ModCompatibilityAdvisor.inspect(mods, folder, environment("SFPEW"))
+        assertTrue(sfpew.any { it.key == "sodium-translation-layer" })
 
         val zink = ModCompatibilityAdvisor.inspect(mods, folder, environment("ZINK"))
         assertFalse(zink.any { it.key == "sodium-translation-layer" })
@@ -109,7 +112,7 @@ class ModCompatibilityAdvisorTest {
             rendererId = rendererId,
             rendererName = rendererId,
             rendererSupportsShaderPacks = shaderSupport,
-            rendererUsesAndroidOpenGlTranslationLayer = rendererId in setOf("GL4ES")
+            rendererUsesAndroidOpenGlTranslationLayer = rendererId in setOf("GL4ES", "SFPEW")
         )
 
     private fun mod(id: String, version: String) =

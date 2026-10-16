@@ -117,6 +117,9 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         val context = requireActivity()
         binding.subSettingsBackButton.setOnClickListener { com.endiq.turtlelauncher.utils.ZHTools.onBackPressed(requireActivity()) }
 
+        binding.mobilegluesSettings.setOnClickListener {
+            com.endiq.turtlelauncher.renderer.mobileglues.MobileGluesSettings.show(context)
+        }
         // ── Renderer & Driver ─────────────────────────────────────────────────
         val compatibleRenderers = Renderers.getCompatibleRenderers(context)
         val renderers = compatibleRenderers.first

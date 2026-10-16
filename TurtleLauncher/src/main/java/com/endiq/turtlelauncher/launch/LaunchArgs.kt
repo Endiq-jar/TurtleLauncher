@@ -68,11 +68,10 @@ class LaunchArgs(
                 argsList.add("-Dorg.lwjgl.sdl.libname=${pinnedSdl3.absolutePath}")
             }
 
-            argsList.add("-Dturtlelauncher.realMainClass=${versionInfo.mainClass}")
-            argsList.add("com.endiq.turtlelauncher.launch.SdlMainReadyBootstrap")
-        } else {
-            argsList.add(versionInfo.mainClass)
+            argsList.add("-Dturtlelauncher.sdlBootstrap=true")
         }
+        argsList.add("-Dturtlelauncher.realMainClass=${versionInfo.mainClass}")
+        argsList.add("com.endiq.turtlelauncher.bridge.GameFileDialogs")
         argsList.addAll(getMinecraftClientArgs())
 
         return argsList

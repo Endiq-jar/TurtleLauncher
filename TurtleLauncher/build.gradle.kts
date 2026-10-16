@@ -61,6 +61,21 @@ configurations {
     }
 }
 
+// Stage only Discord's headers/native binaries. Enabling global Prefab also imports
+// MMKV's statically-linked-STL package, which cannot participate in this CMake graph.
+val discordSdkDir = layout.buildDirectory.dir("discord-social-sdk")
+val prepareDiscordSdk by tasks.registering(Sync::class) {
+    val sdk = file("libs/discord_partner_sdk.aar")
+    from(zipTree(sdk)) { include("prefab/**") }
+    from(zipTree(sdk)) {
+        include("prefab/modules/discord_partner_sdk/libs/*/*.so")
+        eachFile { path = path.substringAfter("/libs/android.") }
+        into("jni")
+        includeEmptyDirs = false
+    }
+    into(discordSdkDir)
+}
+
 android {
     namespace = namespaceId
     compileSdk = 37
@@ -95,6 +110,13 @@ android {
 
     defaultConfig {
         applicationId = nameId
+        externalNativeBuild {
+            cmake {
+                arguments += listOf("-DANDROID_STL=c++_shared",
+                    "-DTURTLE_DISCORD_SDK_DIR=${discordSdkDir.get().asFile.absolutePath}")
+                targets += listOf("SimpleFPEWrapper", "turtlefiledialogs", "lwjgl_nfd", "lwjgl_nfd_portal", "turtlediscordrpc")
+            }
+        }
         minSdk = 26
         targetSdk = 34
         versionCode = launcherVersionCode
@@ -177,6 +199,9 @@ android {
     }
 
     sourceSets["main"].java.srcDirs(generatedTurtleDir)
+    // AGP 9 rejects Provider instances in the legacy SourceSet API. The explicit
+    // prepareDiscordSdk dependencies below produce this known build-directory path.
+    sourceSets["main"].jniLibs.srcDir(discordSdkDir.get().dir("jni").asFile)
 
     androidComponents {
         onVariants { variant ->
@@ -227,13 +252,13 @@ android {
         }
     }
 
-    // ndkVersion = "25.2.9519653"
-
-    // externalNativeBuild {
-    //     ndkBuild {
-    //         path = file("src/main/jni/Android.mk")
-    //     }
-    // }
+    ndkVersion = "27.2.12479018"
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/native/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -244,12 +269,12 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            pickFirsts += listOf("**/libbytehook.so")
+            pickFirsts += listOf("**/libbytehook.so", "**/libdiscord_partner_sdk.so")
         }
     }
 
     buildFeatures {
-        prefab = true
+        prefab = false
         buildConfig = true
         viewBinding = true
         resValues = true
@@ -410,4 +435,16 @@ dependencies {
     implementation("com.moandjiezana.toml:toml4j:0.7.2") {
         exclude(group = "com.google.code.gson", module = "gson")
     }
+}
+
+// The game-side bootstrap is source, not a stale prebuilt asset.
+tasks.named("preBuild") { dependsOn(":jre_lwjgl3glfw:fileDialogBridgeJar") }
+tasks.withType<MergeSourceSetFolders>().configureEach {
+    if (name.endsWith("Assets")) dependsOn(":jre_lwjgl3glfw:fileDialogBridgeJar")
+}
+
+// CMake configuration can execute independently of preBuild (including per-ABI tasks).
+tasks.configureEach {
+    if (name == "preBuild" || name.startsWith("configureCMake") || name.startsWith("buildCMake")
+        || name.startsWith("merge") && name.endsWith("JniLibFolders")) dependsOn(prepareDiscordSdk)
 }

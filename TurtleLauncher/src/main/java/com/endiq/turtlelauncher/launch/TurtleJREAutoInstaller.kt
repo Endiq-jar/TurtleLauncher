@@ -79,6 +79,7 @@ object TurtleJREAutoInstaller {
      * @param requiredJava Java major version required by this Minecraft version
      * @return             Installed runtime name (e.g. "Internal-25"), or null on total failure
      */
+    @Synchronized
     fun ensureJavaInstalled(context: Context, requiredJava: Int): String? {
         val target = pickBestJre(requiredJava)
         if (target == null) {
@@ -108,6 +109,16 @@ object TurtleJREAutoInstaller {
             Logging.i("TurtleJREAutoInstaller", "Falling back to: $fallback")
             fallback
         }
+    }
+
+    /** Explicit user action: exact version only, errors propagate; never report a fallback as success. */
+    @JvmStatic
+    @Synchronized
+    fun downloadJava(context: Context, major: Int): String {
+        val target = requireNotNull(INTERNAL_JRES.firstOrNull { it.major == major })
+        downloadAndInstall(target)
+        MultiRTUtils.writeLastUpdateTime(target.name, System.currentTimeMillis() / 1000L)
+        return target.name
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
@@ -155,9 +166,18 @@ object TurtleJREAutoInstaller {
             R.string.downloading_java_runtime_uni, 0, 0, 0)
 
         try {
+            val signatures = net.endiq.launcher.utils.SignatureCheckUtil.decodeSignatureBundle(
+                DownloadUtils.downloadString(baseUrl + "version"))
+            val verifier = net.endiq.launcher.utils.SignatureCheckUtil.create(
+                com.endiq.turtlelauncher.context.ContextExecutor.getApplication().assets)
+            fun verify(file: File, key: String) {
+                val signature = signatures[key] ?: error("Missing runtime signature: $key")
+                check(FileInputStream(file).use { verifier.verify(it, signature) }) { "Runtime signature check failed: $key" }
+            }
             // 1) Universal (class library) package
             Logging.i("TurtleJREAutoInstaller", "↓ universal.tar.xz")
             DownloadUtils.downloadFile(baseUrl + "universal.tar.xz", univFile)
+            verify(univFile, "universal.tar.xz")
 
             ProgressKeeper.submitProgress(
                 ProgressLayout.UNPACK_RUNTIME, 40,
@@ -166,6 +186,7 @@ object TurtleJREAutoInstaller {
             // 2) Platform-specific (JVM binaries) package
             Logging.i("TurtleJREAutoInstaller", "↓ bin-$arch.tar.xz")
             DownloadUtils.downloadFile(baseUrl + "bin-$arch.tar.xz", platFile)
+            verify(platFile, "bin-$arch.tar.xz")
 
             ProgressKeeper.submitProgress(
                 ProgressLayout.UNPACK_RUNTIME, 80,

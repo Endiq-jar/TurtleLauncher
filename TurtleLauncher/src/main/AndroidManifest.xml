@@ -167,6 +167,10 @@
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Tracks progress of local background tasks (downloads, asset extraction, version installs) and keeps the process alive while they run. Not data sync with a remote server."/>
         </service>
+        <service
+            android:name="com.endiq.turtlelauncher.feature.discord.DiscordPresenceService"
+            android:exported="false"
+            android:process=":presence" />
         <service android:name="net.endiq.launcher.services.GameService" android:process=":game"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"

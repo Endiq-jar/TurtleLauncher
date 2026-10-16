@@ -9,6 +9,9 @@
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android)
 ![Last Commit](https://img.shields.io/github/last-commit/Endiq-jar/TurtleLauncher?style=for-the-badge)
 
+![Static Badge](https://img.shields.io/badge/TurtleOfficials-EXPLORE-grey?style=for-the-badge&labelColor=green&link=https%3A%2F%2Fgithub.com%2FEndiq-jar)
+
+
 <H1 ALIGN= "CENTER">A modern, high-performance Android launcher for Minecraft: Java Edition.</H1>
 
 Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher built for Android by **Endiq**. Based on the open-source **Turtle Launcher** project, it combines a modern Material 3 interface with powerful customization, performance optimizations, and extensive modding support.
@@ -60,11 +63,16 @@ Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher b
 * Java Manager
 * Microsoft, Offline, Battly & Ely.by accounts
 * Download Manager
+* Tap content for descriptions, galleries, versions and changelogs
+* Manual Java 8 / 17 / 21 / 25 downloads with package-signature checks
+* MobileGlues settings and SFPEW / MobileGlues renderer
+* In-game LWJGL tinyfd / NFD file-manager integration
 * Live launch & crash logs
 * Customizable Discord Rich Presence with version templates, status, timer, and artwork
 * Friends / LAN play (Terracotta over EasyTier) — host or join straight from the home screen
 * Chooseable screen transitions — slide, bounce, fade, or zoom, applied app-wide
 * Backup, import & export
+
 
 ### 🔓 Shizuku Support (optional)
 
@@ -202,3 +210,5 @@ If you enjoy Turtle Launcher:
 * 📢 Share the project
 
 Every contribution helps make Turtle Launcher better.
+
+Implementation notes, upstream attribution and device-test checklist: [ported features](docs/UPSTREAM_PORTS.md).

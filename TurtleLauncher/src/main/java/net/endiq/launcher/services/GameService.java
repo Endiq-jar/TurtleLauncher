@@ -27,6 +27,7 @@ import net.endiq.launcher.utils.NotificationUtils;
 public class GameService extends Service {
     private final Messenger mMessenger = new Messenger(new IncomingHandler());
     private static boolean isActive;
+    private static volatile com.endiq.turtlelauncher.feature.discord.DiscordPresenceClient discordPresence;
 
     public static boolean isActive() {
         return isActive;
@@ -47,6 +48,14 @@ public class GameService extends Service {
             stopSelf();
             Process.killProcess(Process.myPid());
             return START_NOT_STICKY;
+        }
+        if (discordPresence == null) {
+            String version = intent != null ? intent.getStringExtra("discordVersion") : null;
+            if (version == null || version.trim().isEmpty()) version = "Minecraft";
+            discordPresence = new com.endiq.turtlelauncher.feature.discord.DiscordPresenceClient(this, version);
+            discordPresence.connect();
+        } else if (intent != null && intent.hasExtra("discordVersion")) {
+            discordPresence.refresh(intent.getStringExtra("discordVersion"));
         }
         Intent killIntent = new Intent(getApplicationContext(), GameService.class);
         killIntent.putExtra("kill", true);
@@ -76,6 +85,24 @@ public class GameService extends Service {
             startForeground(NotificationUtils.NOTIFICATION_ID_GAME_SERVICE, notification);
         }
         return START_NOT_STICKY; // non-sticky so android wont try restarting the game after the user uses the "Quit" button
+    }
+
+    public static void refreshDiscordPresence() {
+        if (discordPresence != null) discordPresence.refresh();
+    }
+
+    public static void endDiscordPresence() {
+        final com.endiq.turtlelauncher.feature.discord.DiscordPresenceClient ending = discordPresence;
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (discordPresence == ending) discordPresence = null;
+            if (ending != null) ending.close();
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        endDiscordPresence();
+        super.onDestroy();
     }
 
     @Override

@@ -11,10 +11,6 @@ class MobileGluesRenderer : RendererInterface {
 
     override fun getRendererId(): String = ID
 
-    // MobileGlues presents itself as a normal EGL/GLESv2 implementation to the native
-    // dispatch layer even though it may translate through ANGLE/Vulkan internally
-    // (enableAngle is its own internal setting, dlopen'd by itself if used) - it isn't one
-    // of the Mesa gallium/vulkan_zink-specific strings, so "opengles" is correct here too.
     override fun getNativeRendererId(): String = "opengles"
 
     override fun getUniqueIdentifier(): String = "4b4b8e4b-083d-429c-97e1-5e8239b6dc17"
@@ -22,8 +18,7 @@ class MobileGluesRenderer : RendererInterface {
     override fun getRendererName(): String = "MobileGlues"
 
     override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
-        val dirPath = File(PathManager.DIR_FILE, "mobileglues").apply { mkdirs() }.absolutePath
-        mapOf("MG_DIR_PATH" to dirPath)
+        mapOf("MG_DIR_PATH" to com.endiq.turtlelauncher.renderer.mobileglues.MobileGluesSettings.prepareDirectory())
     }
 
     override fun getDlopenLibrary(): Lazy<List<String>> = lazy { emptyList() }

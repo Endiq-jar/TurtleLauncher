@@ -90,6 +90,7 @@ public class TurtleApplication extends Application {
 		}
 
 		com.endiq.turtlelauncher.feature.shizuku.ShizukuManager.INSTANCE.init(this);
+        com.endiq.turtlelauncher.feature.discord.DiscordPresenceLifecycle.register(this);
 
 		androidx.startup.AppInitializer.getInstance(this)
 			.initializeComponent(com.endiq.turtlelauncher.startup.TurtleStartupInitializer.class);

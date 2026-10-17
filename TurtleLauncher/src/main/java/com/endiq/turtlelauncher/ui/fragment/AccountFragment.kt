@@ -399,7 +399,11 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
     }
 
     private fun otherLogin(index: Int) {
-        val server = mOtherServerList[index]
+        otherLogin(mOtherServerList[index])
+    }
+
+    private fun otherLogin(server: Server) {
+        if (!isAdded) return
         OtherLoginDialog(requireActivity(), server,
             object : OtherLoginHelper.OnLoginListener {
                 override fun onLoading() {
@@ -506,6 +510,10 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
     }
 
     private fun addOtherServerDirect(rawUrl: String, type: Int) {
+        // Set by performMainTask() on success so ended{} can jump straight into the
+        // login form for the server that was just added, instead of silently adding
+        // a tab and leaving the user to discover and tap it themselves - see note below.
+        var addedServer: Server? = null
         Task.runTask {
             val serverUrl =
                 if (type == 0) AccountUtils.tryGetFullServerUrl(rawUrl) else rawUrl
@@ -529,9 +537,13 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                     mOtherServerConfig?.server?.apply addServer@{
                         forEach {
                             // Make sure servers are not duplicated.
-                            if (it.baseUrl == server.baseUrl) return@addServer
+                            if (it.baseUrl == server.baseUrl) {
+                                addedServer = it
+                                return@addServer
+                            }
                         }
                         add(server)
+                        addedServer = server
                     }
                     Tools.write(
                         mOtherServerConfigFile.absolutePath,
@@ -546,6 +558,12 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
         }.ended(TaskExecutors.getAndroidUI()) {
             refreshOtherServer()
             runCatching { mProgressDialog.dismiss() }
+            // The task only adds the server config and dismisses the progress dialog -
+            // without this, the "tasks are being executed" overlay just disappears and
+            // nothing else happens, leaving the user with no visible way to finish adding
+            // the account (they'd have to notice and tap the new tab themselves). Jump
+            // straight into the email/password form for the server just added.
+            addedServer?.let { if (isAdded) otherLogin(it) }
         }.onThrowable(TaskExecutors.getAndroidUI()) { e ->
             // performMainTask() throwing (e.g. malformed/non-JSON response from an
             // incompatible server) skips onEnded() entirely in Task.execute(), so without
@@ -573,6 +591,8 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
     }
 
     private fun addOtherServer(editText: EditText, type: Int) {
+        // See addOtherServerDirect() above for why this is captured and used in ended{}.
+        var addedServer: Server? = null
         Task.runTask {
             val editString = editText.text.toString()
             val serverUrl =
@@ -597,9 +617,13 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
                     mOtherServerConfig?.server?.apply addServer@{
                         forEach {
                             // Make sure servers are not duplicated.
-                            if (it.baseUrl == server.baseUrl) return@addServer
+                            if (it.baseUrl == server.baseUrl) {
+                                addedServer = it
+                                return@addServer
+                            }
                         }
                         add(server)
+                        addedServer = server
                     }
                     Tools.write(
                         mOtherServerConfigFile.absolutePath,
@@ -614,6 +638,9 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
         }.ended(TaskExecutors.getAndroidUI()) {
             refreshOtherServer()
             runCatching { mProgressDialog.dismiss() }
+            // Jump straight into the login form for the server just added - see
+            // addOtherServerDirect() above for why this is needed.
+            addedServer?.let { if (isAdded) otherLogin(it) }
         }.onThrowable(TaskExecutors.getAndroidUI()) { e ->
             // Same fix as addOtherServerDirect() above: an uncaught throw in
             // performMainTask() (malformed JSON/URL from the target server) skips

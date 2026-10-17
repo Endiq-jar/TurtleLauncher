@@ -49,8 +49,11 @@ object DarkModeManager {
 
     /**
      * Add or remove the dark GUI pack from the current options.txt `resourcePacks`
-     * value. When enabling, the pack is inserted before "vanilla" so vanilla stays the
-     * base; every other enabled pack keeps its existing order.
+     * value. `resourcePacks` is ordered lowest-to-highest priority - later entries
+     * override earlier ones - so when enabling, the pack is inserted right *after*
+     * "vanilla" (not before it) so it actually overrides vanilla's GUI textures
+     * instead of being silently overridden by them. Every other enabled pack keeps
+     * its existing relative order.
      */
     private fun applyToOptions(enabled: Boolean) {
         val raw = MCOptions.get("resourcePacks") ?: "[]"
@@ -59,7 +62,7 @@ object DarkModeManager {
         if (enabled) {
             if (PACK_ID in list) return
             val vanillaIndex = list.indexOf("vanilla")
-            if (vanillaIndex >= 0) list.add(vanillaIndex, PACK_ID) else list.add(PACK_ID)
+            if (vanillaIndex >= 0) list.add(vanillaIndex + 1, PACK_ID) else list.add(PACK_ID)
         } else {
             if (PACK_ID !in list) return
             list.removeAll { it == PACK_ID }

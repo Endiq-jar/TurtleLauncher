@@ -1,23 +1,79 @@
+<p align="center">
+  <img
+    src="https://capsule-render.vercel.app/api?type=waving&color=0:050D08,25:0B2615,50:14532D,75:16A34A,100:4ADE80&height=250&section=header&text=TurtleLauncher&fontSize=58&fontColor=FFFFFF&fontAlign=50&fontAlignY=36&animation=fadeIn&desc=MINECRAFT%20JAVA%20EDITION%20%E2%80%A2%20ANDROID&descSize=16&descAlign=50&descAlignY=56"
+    width="100%"
+    alt="TurtleLauncher — Minecraft Java Edition for Android"
+  />
+</p>
 
-# Turtle Launcher
-![Downloads](https://img.shields.io/github/downloads/Endiq-jar/TurtleLauncher/total?style=for-the-badge&logo=github)
-![Release](https://img.shields.io/github/v/release/Endiq-jar/TurtleLauncher?style=for-the-badge)
-![Stars](https://img.shields.io/github/stars/Endiq-jar/TurtleLauncher?style=for-the-badge)
-![Forks](https://img.shields.io/github/forks/Endiq-jar/TurtleLauncher?style=for-the-badge)
+<h1 align="center">🐢 TurtleLauncher</h1>
 
-![License](https://img.shields.io/github/license/Endiq-jar/TurtleLauncher?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android)
-![Last Commit](https://img.shields.io/github/last-commit/Endiq-jar/TurtleLauncher?style=for-the-badge)
+<p align="center">
+  <strong>Your Minecraft. Your Device. Your Freedom.</strong>
+  <br />
+  A modern, customizable Minecraft: Java Edition launcher for Android.
+  <br />
+  <sub>Built for mobile gaming, modding, and performance.</sub>
+</p>
 
-![Static Badge](https://img.shields.io/badge/TurtleOfficials-EXPLORE-grey?style=for-the-badge&labelColor=green&link=[https%3A%2F%2Fgithub.com%2FEndiq-jar](https://github.com/Endiq-jar))
+<p align="center">
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/releases">
+    <img src="https://img.shields.io/badge/⬇_DOWNLOAD-LATEST_RELEASE-16A34A?style=for-the-badge&logo=android&logoColor=white" alt="Download TurtleLauncher" />
+  </a>
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/issues/new/choose">
+    <img src="https://img.shields.io/badge/REPORT-A_BUG-202820?style=for-the-badge&logo=github&logoColor=4ADE80" alt="Report a bug" />
+  </a>
+</p>
 
+<p align="center">
+  <img src="https://img.shields.io/github/downloads/Endiq-jar/TurtleLauncher/total?style=flat-square&logo=github&label=Downloads&color=16A34A" alt="Total downloads" />
+  <img src="https://img.shields.io/github/v/release/Endiq-jar/TurtleLauncher?style=flat-square&logo=github&label=Release&color=22C55E" alt="Latest release" />
+  <img src="https://img.shields.io/github/stars/Endiq-jar/TurtleLauncher?style=flat-square&logo=github&label=Stars&color=4ADE80" alt="GitHub stars" />
+  <img src="https://img.shields.io/github/forks/Endiq-jar/TurtleLauncher?style=flat-square&logo=git&label=Forks&color=15803D" alt="GitHub forks" />
+  <br />
+  <img src="https://img.shields.io/github/license/Endiq-jar/TurtleLauncher?style=flat-square&label=License&color=16A34A" alt="License" />
+  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android platform" />
+  <img src="https://img.shields.io/github/last-commit/Endiq-jar/TurtleLauncher?style=flat-square&logo=github&label=Last%20commit&color=166534" alt="Last commit" />
+</p>
 
-<H1 ALIGN= "CENTER">A modern, high-performance Android launcher for Minecraft: Java Edition.</H1>
+<p align="center">
+  <a href="https://github.com/Endiq-jar">
+    <img src="https://img.shields.io/badge/Developer-Endiq-166534?style=for-the-badge&logo=github&logoColor=white" alt="Developer: Endiq" />
+  </a>
+  <a href="https://github.com/Endiq-jar/TurtleLauncher">
+    <img src="https://img.shields.io/badge/OPEN_SOURCE-22C55E?style=for-the-badge&logo=github&logoColor=white" alt="Open source repository" />
+  </a>
+</p>
 
-Turtle Launcher is a fast, beautiful, and feature-rich Minecraft Java launcher built for Android by **Endiq**. Based on the open-source **Turtle Launcher** project, it combines a modern Material 3 interface with powerful customization, performance optimizations, and extensive modding support.
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=rect&color=0:14532D,50:22C55E,100:86EFAC&height=3&section=header" width="70%" alt="" />
+</p>
 
-![Minecraft](1.jpg)
 ---
+
+<h2 align="center">🌿 About TurtleLauncher</h2>
+
+<p align="center">
+  TurtleLauncher is an Android launcher for Minecraft: Java Edition,
+  developed by <strong>Endiq</strong>.
+  <br />
+  Designed to bring flexible instance management, customization,
+  and modded Minecraft to mobile devices.
+</p>
+
+<p align="center">
+  <img src="1.jpg" width="92%" alt="TurtleLauncher interface and Minecraft launcher preview" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/releases">Releases</a>
+  ·
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/issues">Issues</a>
+  ·
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/network/members">Contribute</a>
+  ·
+  <a href="https://github.com/Endiq-jar">More projects by Endiq</a>
+</p>
 
 ## ✨ Features
 
@@ -209,6 +265,69 @@ If you enjoy Turtle Launcher:
 * 🤝 Contribute code
 * 📢 Share the project
 
+
 Every contribution helps make Turtle Launcher better.
 
 Implementation notes, upstream attribution and device-test checklist: [ported features](docs/UPSTREAM_PORTS.md).
+
+<p align="center">
+  <img
+    src="https://capsule-render.vercel.app/api?type=rect&color=0:14532D,50:22C55E,100:86EFAC&height=3&section=footer"
+    width="80%"
+    alt=""
+  />
+</p>
+
+<h2 align="center">🐢 Thanks for visiting TurtleLauncher!</h2>
+
+<p align="center">
+  <strong>One launcher. Endless possibilities.</strong>
+  <br />
+  Bringing Minecraft: Java Edition to Android, one update at a time.
+</p>
+
+<p align="center">
+  <a href="https://github.com/Endiq-jar/TurtleLauncher">
+    <img src="https://img.shields.io/badge/EXPLORE-REPOSITORY-166534?style=for-the-badge&logo=github&logoColor=white" alt="Explore repository" />
+  </a>
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/releases">
+    <img src="https://img.shields.io/badge/GET-LATEST_RELEASE-22C55E?style=for-the-badge&logo=android&logoColor=white" alt="Get latest release" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/issues">
+    <img src="https://img.shields.io/badge/REPORT_ISSUES-14532D?style=flat-square&logo=github" alt="Report issues" />
+  </a>
+  ·
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/network/members">
+    <img src="https://img.shields.io/badge/CONTRIBUTE-15803D?style=flat-square&logo=git" alt="Contribute" />
+  </a>
+  ·
+  <a href="https://github.com/Endiq-jar">
+    <img src="https://img.shields.io/badge/MORE_PROJECTS-166534?style=flat-square&logo=github" alt="More projects" />
+  </a>
+</p>
+
+<p align="center">
+  <sub>
+    Developed with 💚 by <a href="https://github.com/Endiq-jar">Endiq</a>
+    and the community.
+  </sub>
+  <br />
+  <sub>Open source • Android • Minecraft Java Edition</sub>
+</p>
+
+<p align="center">
+  <a href="#turtlelauncher">
+    <img src="https://img.shields.io/badge/⬆_BACK_TO_TOP-GET_BACK_UP-14532D?style=for-the-badge&logoColor=white" alt="Back to top" />
+  </a>
+</p>
+
+<p align="center">
+  <img
+    src="https://capsule-render.vercel.app/api?type=waving&color=0:86EFAC,35:22C55E,70:14532D,100:050D08&height=140&section=footer"
+    width="100%"
+    alt=""
+  />
+</p>

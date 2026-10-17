@@ -41,11 +41,19 @@ class LaunchArgs(
         argsList.add("-Djava.library.path=$nativeLibraryPath")
         argsList.add("-Djna.boot.library.path=$nativeLibraryPath")
 
+        // The bridge jar (jre_lwjgl3glfw -> lwjgl-glfw-classes.jar) carries an
+        // Android-patched org.lwjgl.system.Library/LibFFI that knows how to load
+        // natives on Android. The ABI override pulls in the real, unmodified
+        // Mojang/LWJGL desktop jar for symbols the bridge doesn't have (e.g. new
+        // lwjgl-sdl classes). It must come AFTER the bridge jar: if it's first,
+        // the JVM resolves org.lwjgl.system.Library from the stock desktop class
+        // instead of the patched one, and native loading crashes on Android
+        // (NoClassDefFoundError: Library / GLFW.<clinit> failure).
         val lwjglAbiOverrideClasspath = Tools.getLwjglAbiOverrideClasspath(versionInfo)
-        val lwjglClasspathPrefix = if (lwjglAbiOverrideClasspath.isNotEmpty()) "$lwjglAbiOverrideClasspath:" else ""
+        val lwjglClasspathSuffix = if (lwjglAbiOverrideClasspath.isNotEmpty()) ":$lwjglAbiOverrideClasspath" else ""
 
         argsList.add("-cp")
-        argsList.add("$lwjglClasspathPrefix${Tools.getLWJGL3ClassPath()}:$launchClassPath")
+        argsList.add("${Tools.getLWJGL3ClassPath()}$lwjglClasspathSuffix:$launchClassPath")
 
         val lwjglNativeOverride = Tools.getLwjglNativeLibraryOverride(versionInfo)
         if (lwjglNativeOverride != null) {

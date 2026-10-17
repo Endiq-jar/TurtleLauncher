@@ -1,5 +1,6 @@
 package com.endiq.turtlelauncher.bridge;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 /** Java-8-compatible guest entry point, independent of GLFW and LWJGL ABI versions. */
@@ -25,6 +26,7 @@ public final class GameFileDialogs {
         } catch (UnsatisfiedLinkError error) {
             System.err.println("TurtleFileDialogs: native bridge unavailable: " + error);
         }
+        preloadLwjglCoreLibrary();
         String target = Boolean.getBoolean("turtlelauncher.sdlBootstrap")
             ? "com.endiq.turtlelauncher.launch.SdlMainReadyBootstrap"
             : System.getProperty("turtlelauncher.realMainClass");
@@ -34,5 +36,38 @@ public final class GameFileDialogs {
         } catch (InvocationTargetException error) {
             throw error.getCause();
         }
+    }
+
+    /**
+     * org.lwjgl.system.Library/LibFFI - the classes LWJGL bundles in lwjgl-glfw-classes.jar
+     * alongside our patched GLFW - are stock, unmodified LWJGL: no Android or pojavexec
+     * awareness at all. They locate their core native lib (named by -Dorg.lwjgl.libname -
+     * "lwjgl", or the "lwjgl-legacy" override used for non-SDL Minecraft versions) the first
+     * time GLFW/LibFFI is touched, which happens deep inside MinecraftClient's constructor,
+     * through Fabric's Knot classloader. On-device that lookup can come back empty
+     * (UnsatisfiedLinkError: Failed to locate library), which then poisons
+     * org.lwjgl.system.Library's class-init state for the rest of the run
+     * (NoClassDefFoundError on every later touch, crashing the game before a window ever opens).
+     * Loading the exact file by its absolute path here instead - before Knot exists, as one of
+     * the very first things this process does - sidesteps whatever that later lookup gets wrong,
+     * since System.load(path) never has to search for anything.
+     */
+    private static void preloadLwjglCoreLibrary() {
+        String libName = System.getProperty("org.lwjgl.libname", "lwjgl");
+        String fileName = "lib" + libName + ".so";
+        String libraryPath = System.getProperty("java.library.path", "");
+        for (String dir : libraryPath.split(File.pathSeparator)) {
+            if (dir.isEmpty()) continue;
+            File candidate = new File(dir, fileName);
+            if (!candidate.isFile()) continue;
+            try {
+                System.load(candidate.getAbsolutePath());
+                return;
+            } catch (UnsatisfiedLinkError error) {
+                System.err.println("TurtleLauncher: failed to preload " + candidate + ": " + error);
+            }
+        }
+        System.err.println("TurtleLauncher: " + fileName + " not found on java.library.path (" + libraryPath
+            + "); LWJGL/GLFW init will likely crash. Reinstall the app if this persists.");
     }
 }

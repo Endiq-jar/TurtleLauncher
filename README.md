@@ -65,6 +65,61 @@
   <img src="1.jpg" width="92%" alt="TurtleLauncher interface and Minecraft launcher preview" />
 </p>
 
+
+<h2 align="center">🌿 The TurtleLauncher Experience</h2>
+
+<p align="center">
+  <em>Powerful features. Mobile-first design. Your Minecraft, your way.</em>
+</p>
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <h3>🎮</h3>
+      <strong>Instance Manager</strong>
+      <br />
+      <sub>Organize and manage your Minecraft installations.</sub>
+    </td>
+    <td align="center" width="33%">
+      <h3>🧩</h3>
+      <strong>Modding Support</strong>
+      <br />
+      <sub>Manage supported mod loaders and custom content.</sub>
+    </td>
+    <td align="center" width="33%">
+      <h3>⚡</h3>
+      <strong>Performance</strong>
+      <br />
+      <sub>Configure runtime and memory settings for your device.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <h3>🎨</h3>
+      <strong>Customization</strong>
+      <br />
+      <sub>Personalize your launcher experience.</sub>
+    </td>
+    <td align="center">
+      <h3>☕</h3>
+      <strong>Java Management</strong>
+      <br />
+      <sub>Manage compatible Java runtimes.</sub>
+    </td>
+    <td align="center">
+      <h3>📱</h3>
+      <strong>Android First</strong>
+      <br />
+      <sub>Built around the needs of mobile Minecraft players.</sub>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <sub>Feature availability depends on the current project version.</sub>
+</p>
+
+
 <p align="center">
   <a href="https://github.com/Endiq-jar/TurtleLauncher/releases">Releases</a>
   ·
@@ -255,20 +310,31 @@ Minecraft is a trademark of Mojang Studios.
 
 ---
 
-## ⭐ Support
+<h2 align="center">💚 Help Grow TurtleLauncher</h2>
 
-If you enjoy Turtle Launcher:
+<p align="center">
+  Every bug report, suggestion, contribution, and star helps the project grow.
+</p>
 
-* ⭐ Star the repository
-* 🐞 Report bugs
-* 💡 Suggest features
-* 🤝 Contribute code
-* 📢 Share the project
+<p align="center">
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/stargazers">
+    <img src="https://img.shields.io/badge/⭐_STAR-HELP_US_GROW-166534?style=for-the-badge" alt="Star the project" />
+  </a>
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/issues">
+    <img src="https://img.shields.io/badge/💡_IDEAS-SHARE_YOUR_IDEA-22C55E?style=for-the-badge" alt="Share an idea" />
+  </a>
+</p>
 
+- 🐛 **Found a bug?** Open an issue with the steps to reproduce it.
+- 💡 **Have an idea?** Suggest improvements and useful features.
+- 🔧 **Want to contribute?** Fork the repository and submit a pull request.
+- ⭐ **Enjoying the project?** Star the repository to support development.
 
-Every contribution helps make Turtle Launcher better.
-
-Implementation notes, upstream attribution and device-test checklist: [ported features](docs/UPSTREAM_PORTS.md).
+<p align="center">
+  <a href="https://github.com/Endiq-jar/TurtleLauncher/issues">
+    <strong>Visit Issues & Discussions →</strong>
+  </a>
+</p>
 
 <p align="center">
   <img

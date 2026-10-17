@@ -16,6 +16,13 @@ import android.media.MediaMuxer
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
+import android.opengl.EGL14
+import android.opengl.EGLConfig
+import android.opengl.EGLContext
+import android.opengl.EGLDisplay
+import android.opengl.EGLSurface
+import android.opengl.GLES20
+import android.opengl.GLUtils
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -39,6 +46,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -54,6 +64,45 @@ object ScreenRecorder {
 
     /** Request code for the MediaProjection consent activity, handled in onActivityResult(). */
     const val REQUEST_CODE_AUDIO_CAPTURE = 8422
+
+    // Not exposed on EGL14; value is stable across the NDK/platform (see EGL/eglext.h).
+    private const val EGL_RECORDABLE_ANDROID = 0x3142
+
+    private const val QUAD_VERTEX_SHADER = """
+        attribute vec4 aPosition;
+        attribute vec2 aTexCoord;
+        varying vec2 vTexCoord;
+        void main() {
+            gl_Position = aPosition;
+            vTexCoord = aTexCoord;
+        }
+    """
+
+    private const val QUAD_FRAGMENT_SHADER = """
+        precision mediump float;
+        varying vec2 vTexCoord;
+        uniform sampler2D uTexture;
+        void main() {
+            gl_FragColor = texture2D(uTexture, vTexCoord);
+        }
+    """
+
+    private const val QUAD_STRIDE_BYTES = 4 * 4 // x, y, u, v per vertex, 4 bytes per float
+
+    /** Full-screen triangle strip (x, y, u, v). v=0 samples the bitmap's first (top) row, so
+     *  top-left/top-right carry v=0 and the capture isn't flipped vertically. */
+    private val quadVertices: FloatBuffer = run {
+        val coords = floatArrayOf(
+            -1f,  1f, 0f, 0f, // top-left
+             1f,  1f, 1f, 0f, // top-right
+            -1f, -1f, 0f, 1f, // bottom-left
+             1f, -1f, 1f, 1f  // bottom-right
+        )
+        ByteBuffer.allocateDirect(coords.size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().apply {
+            put(coords)
+            position(0)
+        }
+    }
 
     private val nameFormat = SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS", Locale.US)
 
@@ -83,6 +132,20 @@ object ScreenRecorder {
     private var targetSurfaceView: SurfaceView? = null
     private var targetTextureView: TextureView? = null
     private var maxDurationMs = 0L
+
+    // GL frame submission state - lazily initialized on captureThread in drawFrame(), torn down
+    // in releaseQuietly(). Drawing the captured bitmap via GLES into the encoder's input surface
+    // (instead of Surface.lockCanvas()/Canvas.drawBitmap) is required for the RGB->YUV conversion
+    // the hardware encoder performs to use the correct color matrix - on several GPUs, the
+    // software canvas path left the buffer's colorspace untagged, which showed up as a blue tint
+    // on foliage and blocky artifacts at high-contrast edges (e.g. the sky/terrain horizon) in the
+    // saved recording only, never in the live on-screen render.
+    private var eglDisplay: EGLDisplay = EGL14.EGL_NO_DISPLAY
+    private var eglContext: EGLContext = EGL14.EGL_NO_CONTEXT
+    private var eglSurface: EGLSurface = EGL14.EGL_NO_SURFACE
+    private var glProgram = 0
+    private var glTextureId = 0
+    private var glInitialized = false
 
     // Audio capture state - all null/unused whenever recording video-only.
     private var mediaProjection: MediaProjection? = null
@@ -606,11 +669,41 @@ object ScreenRecorder {
     private fun drawFrame(bitmap: Bitmap): Boolean {
         val surface = inputSurface ?: return false
         return try {
-            val canvas = surface.lockCanvas(null)
-            try {
-                canvas.drawBitmap(bitmap, 0f, 0f, null)
-            } finally {
-                surface.unlockCanvasAndPost(canvas)
+            if (!glInitialized && !initGl(surface)) {
+                throw RuntimeException("GL recorder context could not be initialized")
+            }
+            if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
+                throw RuntimeException("eglMakeCurrent failed: 0x${Integer.toHexString(EGL14.eglGetError())}")
+            }
+
+            GLES20.glViewport(0, 0, bitmap.width, bitmap.height)
+            GLES20.glClearColor(0f, 0f, 0f, 1f)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            GLES20.glUseProgram(glProgram)
+
+            val positionHandle = GLES20.glGetAttribLocation(glProgram, "aPosition")
+            val texCoordHandle = GLES20.glGetAttribLocation(glProgram, "aTexCoord")
+            val textureHandle = GLES20.glGetUniformLocation(glProgram, "uTexture")
+
+            quadVertices.position(0)
+            GLES20.glEnableVertexAttribArray(positionHandle)
+            GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, QUAD_STRIDE_BYTES, quadVertices)
+            quadVertices.position(2)
+            GLES20.glEnableVertexAttribArray(texCoordHandle)
+            GLES20.glVertexAttribPointer(texCoordHandle, 2, GLES20.GL_FLOAT, false, QUAD_STRIDE_BYTES, quadVertices)
+
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, glTextureId)
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+            GLES20.glUniform1i(textureHandle, 0)
+
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+
+            GLES20.glDisableVertexAttribArray(positionHandle)
+            GLES20.glDisableVertexAttribArray(texCoordHandle)
+
+            if (!EGL14.eglSwapBuffers(eglDisplay, eglSurface)) {
+                throw RuntimeException("eglSwapBuffers failed: 0x${Integer.toHexString(EGL14.eglGetError())}")
             }
             // PixelCopy delivers this callback asynchronously, outside captureLoop's try/catch.
             // Keep codec/driver failures from escaping the HandlerThread and killing the process.
@@ -620,6 +713,126 @@ object ScreenRecorder {
             Logging.e(TAG, "Failed to submit a frame to the video encoder; stopping safely", t)
             stop(null)
             false
+        }
+    }
+
+    /** Always called on captureThread (the only thread that ever draws a frame), so a single EGL
+     *  context made current there on first use, and reused for every later frame, is safe. */
+    private fun initGl(surface: Surface): Boolean {
+        return try {
+            val display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
+            if (display == EGL14.EGL_NO_DISPLAY) throw RuntimeException("eglGetDisplay failed")
+            val version = IntArray(2)
+            if (!EGL14.eglInitialize(display, version, 0, version, 1)) {
+                throw RuntimeException("eglInitialize failed")
+            }
+
+            val configAttribs = intArrayOf(
+                EGL14.EGL_RED_SIZE, 8,
+                EGL14.EGL_GREEN_SIZE, 8,
+                EGL14.EGL_BLUE_SIZE, 8,
+                EGL14.EGL_ALPHA_SIZE, 8,
+                EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+                EGL_RECORDABLE_ANDROID, 1,
+                EGL14.EGL_NONE
+            )
+            val configs = arrayOfNulls<EGLConfig>(1)
+            val numConfigs = IntArray(1)
+            if (!EGL14.eglChooseConfig(display, configAttribs, 0, configs, 0, 1, numConfigs, 0) ||
+                numConfigs[0] <= 0
+            ) {
+                throw RuntimeException("eglChooseConfig found no matching recordable config")
+            }
+            val config = configs[0] ?: throw RuntimeException("eglChooseConfig returned a null config")
+
+            val contextAttribs = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
+            val context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, contextAttribs, 0)
+            if (context == EGL14.EGL_NO_CONTEXT) throw RuntimeException("eglCreateContext failed")
+
+            val windowSurface = EGL14.eglCreateWindowSurface(display, config, surface, intArrayOf(EGL14.EGL_NONE), 0)
+            if (windowSurface == EGL14.EGL_NO_SURFACE) throw RuntimeException("eglCreateWindowSurface failed")
+
+            if (!EGL14.eglMakeCurrent(display, windowSurface, windowSurface, context)) {
+                throw RuntimeException("initial eglMakeCurrent failed")
+            }
+
+            val program = buildGlProgram()
+            val textures = IntArray(1)
+            GLES20.glGenTextures(1, textures, 0)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0])
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+
+            eglDisplay = display
+            eglContext = context
+            eglSurface = windowSurface
+            glProgram = program
+            glTextureId = textures[0]
+            glInitialized = true
+            true
+        } catch (t: Throwable) {
+            Logging.e(TAG, "GL recorder init failed", t)
+            releaseGl()
+            false
+        }
+    }
+
+    private fun buildGlProgram(): Int {
+        val vertexShader = compileGlShader(GLES20.GL_VERTEX_SHADER, QUAD_VERTEX_SHADER)
+        val fragmentShader = compileGlShader(GLES20.GL_FRAGMENT_SHADER, QUAD_FRAGMENT_SHADER)
+        val program = GLES20.glCreateProgram()
+        if (program == 0) throw RuntimeException("glCreateProgram failed")
+        GLES20.glAttachShader(program, vertexShader)
+        GLES20.glAttachShader(program, fragmentShader)
+        GLES20.glLinkProgram(program)
+        val linkStatus = IntArray(1)
+        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0)
+        GLES20.glDeleteShader(vertexShader)
+        GLES20.glDeleteShader(fragmentShader)
+        if (linkStatus[0] == 0) {
+            val log = GLES20.glGetProgramInfoLog(program)
+            GLES20.glDeleteProgram(program)
+            throw RuntimeException("GL program link failed: $log")
+        }
+        return program
+    }
+
+    private fun compileGlShader(type: Int, source: String): Int {
+        val shader = GLES20.glCreateShader(type)
+        if (shader == 0) throw RuntimeException("glCreateShader failed")
+        GLES20.glShaderSource(shader, source)
+        GLES20.glCompileShader(shader)
+        val compileStatus = IntArray(1)
+        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0)
+        if (compileStatus[0] == 0) {
+            val log = GLES20.glGetShaderInfoLog(shader)
+            GLES20.glDeleteShader(shader)
+            throw RuntimeException("GL shader compile failed: $log")
+        }
+        return shader
+    }
+
+    private fun releaseGl() {
+        try {
+            if (eglDisplay != EGL14.EGL_NO_DISPLAY) {
+                if (glTextureId != 0) GLES20.glDeleteTextures(1, intArrayOf(glTextureId), 0)
+                if (glProgram != 0) GLES20.glDeleteProgram(glProgram)
+                EGL14.eglMakeCurrent(eglDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
+                if (eglSurface != EGL14.EGL_NO_SURFACE) EGL14.eglDestroySurface(eglDisplay, eglSurface)
+                if (eglContext != EGL14.EGL_NO_CONTEXT) EGL14.eglDestroyContext(eglDisplay, eglContext)
+                EGL14.eglTerminate(eglDisplay)
+            }
+        } catch (t: Throwable) {
+            Logging.e(TAG, "releaseGl() failed", t)
+        } finally {
+            eglDisplay = EGL14.EGL_NO_DISPLAY
+            eglContext = EGL14.EGL_NO_CONTEXT
+            eglSurface = EGL14.EGL_NO_SURFACE
+            glProgram = 0
+            glTextureId = 0
+            glInitialized = false
         }
     }
 
@@ -888,6 +1101,7 @@ object ScreenRecorder {
         try { audioRecord?.release() } catch (t: Throwable) { Logging.e(TAG, "audioRecord.release() failed", t) }
         try { if (muxerStarted) muxer?.stop() } catch (t: Throwable) { Logging.e(TAG, "muxer.stop() failed", t) }
         try { muxer?.release() } catch (t: Throwable) { Logging.e(TAG, "muxer.release() failed", t) }
+        try { releaseGl() } catch (t: Throwable) { Logging.e(TAG, "releaseGl() failed", t) }
         try { inputSurface?.release() } catch (t: Throwable) { Logging.e(TAG, "inputSurface.release() failed", t) }
         try { mediaProjection?.stop() } catch (t: Throwable) { Logging.e(TAG, "mediaProjection.stop() failed", t) }
         audioServiceContext?.let {

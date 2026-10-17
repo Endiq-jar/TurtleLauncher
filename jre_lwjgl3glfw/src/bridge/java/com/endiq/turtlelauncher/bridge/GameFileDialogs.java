@@ -9,6 +9,14 @@ public final class GameFileDialogs {
     private GameFileDialogs() { }
 
     public static void main(String[] args) throws Throwable {
+        // Three crashes in a row have shown only org.lwjgl.system.Library's generic
+        // "Failed to locate library: X" - which it throws for ANY UnsatisfiedLinkError its
+        // internal loadLibrary()/loadSystemFromLibraryPath() attempts hit, discarding the real
+        // cause. Flip on LWJGL's own loader diagnostics (which print the exact paths it tried
+        // and the exact underlying exception) before Library is ever touched, so the next log
+        // says what's actually happening instead of us guessing again.
+        System.setProperty("org.lwjgl.util.Debug", "true");
+        System.setProperty("org.lwjgl.util.DebugLoader", "true");
         try {
             // Load pojavexec here - under this process's plain system classloader, before Knot
             // exists - for EVERY launch, not just SDL ones. Its JNI_OnLoad installs the LWJGL
@@ -56,12 +64,16 @@ public final class GameFileDialogs {
         String libName = System.getProperty("org.lwjgl.libname", "lwjgl");
         String fileName = "lib" + libName + ".so";
         String libraryPath = System.getProperty("java.library.path", "");
+        System.err.println("TurtleLauncher: looking for " + fileName + " on java.library.path=" + libraryPath);
         for (String dir : libraryPath.split(File.pathSeparator)) {
             if (dir.isEmpty()) continue;
             File candidate = new File(dir, fileName);
-            if (!candidate.isFile()) continue;
+            boolean exists = candidate.isFile();
+            System.err.println("TurtleLauncher:   " + candidate + " exists=" + exists);
+            if (!exists) continue;
             try {
                 System.load(candidate.getAbsolutePath());
+                System.err.println("TurtleLauncher: preloaded " + candidate + " successfully");
                 return;
             } catch (UnsatisfiedLinkError error) {
                 System.err.println("TurtleLauncher: failed to preload " + candidate + ": " + error);

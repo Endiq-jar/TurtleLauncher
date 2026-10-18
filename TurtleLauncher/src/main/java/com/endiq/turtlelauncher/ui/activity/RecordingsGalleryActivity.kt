@@ -62,7 +62,8 @@ class RecordingsGalleryActivity : BaseActivity() {
             runCatching { RecordingsRepository.listRecordings(context) }
                 .onFailure { e -> Logging.e(TAG, "Failed to list recordings", e) }
                 .getOrDefault(emptyList())
-        }.ended(TaskExecutors.getAndroidUI()) { items: List<RecordingItem> ->
+        }.ended(TaskExecutors.getAndroidUI()) { listed ->
+            val items = listed ?: emptyList()
             adapter.replaceAll(items)
             emptyView.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
             recyclerView.visibility = if (items.isEmpty()) View.GONE else View.VISIBLE
@@ -119,8 +120,8 @@ class RecordingsGalleryActivity : BaseActivity() {
     private fun deleteRecording(item: RecordingItem) {
         Task.runTask {
             RecordingsRepository.delete(item)
-        }.ended(TaskExecutors.getAndroidUI()) { deleted: Boolean ->
-            if (deleted) {
+        }.ended(TaskExecutors.getAndroidUI()) { deleted ->
+            if (deleted == true) {
                 adapter.removeItem(item)
                 emptyView.visibility = if (adapter.itemCount == 0) View.VISIBLE else View.GONE
                 recyclerView.visibility = if (adapter.itemCount == 0) View.GONE else View.VISIBLE

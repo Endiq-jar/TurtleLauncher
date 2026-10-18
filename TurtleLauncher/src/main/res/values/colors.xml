@@ -6,8 +6,10 @@
     <!-- ── Canonical palette ───────────────────────────────────────── -->
     <color name="palette_primary">#C7E8B0</color>
     <color name="palette_secondary">#9CCF93</color>
+    <!-- Pastel-green default tint for every launcher icon (docs/ICONS.md). -->
+    <color name="icon_tint">@color/palette_secondary</color>
     <!-- Pastel-green tint of the file-type icon family (docs/ICONS.md). -->
-    <color name="file_icon_tint">@color/palette_primary</color>
+    <color name="file_icon_tint">@color/palette_secondary</color>
 
     <!-- ── Main Background ─────────────────────────────────────────── -->
     <color name="background_app">#0D0D0D</color>

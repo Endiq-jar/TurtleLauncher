@@ -26,6 +26,13 @@ Apple-derived art. Four custom marks stay untouched because no library has
 them: `ic_launcher_background`, `ic_launcher_monochrome` (adaptive icon),
 `ic_neoforge`, `ic_optifine`.
 
+**Tint:** every icon's default `android:tint` is `@color/icon_tint`
+(`palette_secondary`, pastel green #9CCF93) - the off-white default made the
+new set look unchanged at small sizes. Semantic tints survive (favourite
+pink, `?attr/colorControlNormal` brand/control marks, layout-level
+`accent_primary` overrides), and Tabler's native 2dp stroke is kept so the
+glyphs stay legible at 16-20dp.
+
 **Why not literally all ~7,000 library icons?** 6,238 Tabler + 751 Flowbite
 files would add minutes to every aapt run and megabytes to the APK for icons
 nobody ever sees (release resource-shrinking would strip them back out).
@@ -40,8 +47,9 @@ for one stroke weight, one 24dp grid, and perfect scaling at all densities.
 ## File-type icons (pastel green)
 
 The file browser uses its own 16-icon family (`ic_filetype_*`), tinted
-`@color/file_icon_tint` (Turtle's pastel-green `palette_primary`, #C7E8B0)
-instead of the off-white theme tint, so file rows read as one soft-green set:
+`@color/file_icon_tint` (Turtle's pastel-green `palette_secondary`, #9CCF93)
+and rendered large (28dp) on the mint-glass `background_icon_chip` disc, so
+file rows read as one unmistakably green set:
 folder, file, jar, zip, JSON, code, text, image, audio, video, data
 (dat/nbt/mca), config, APK, PDF, font and 3D. The metaphors follow the
 popular filled-line file sets (Octicons/Bootstrap-style file, code, zip,

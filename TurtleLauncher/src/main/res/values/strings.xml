@@ -747,8 +747,6 @@
     <string name="setting_category_recording">Recording</string>
     <string name="settings_row_recording_title">Recording</string>
     <string name="settings_row_recording_desc">In-game screen recording and video settings</string>
-    <string name="setting_show_record_button_title">Show Record Button</string>
-    <string name="setting_show_record_button_desc">Adds a one-tap record toggle to the in-game HUD</string>
     <string name="setting_recording_frame_rate_title">Frame Rate</string>
     <string name="setting_recording_frame_rate_desc">Higher is smoother, larger file size</string>
     <string name="setting_recording_bitrate_title">Video Bitrate</string>
@@ -757,8 +755,6 @@
     <string name="setting_recording_resolution_desc">Recording resolution relative to the game surface - lower reduces file size and encoding load</string>
     <string name="setting_recording_max_duration_title">Max Duration</string>
     <string name="setting_recording_max_duration_desc">Auto-stops after this long. 0 = unlimited</string>
-    <string name="setting_recording_show_timer_title">Show Timer While Recording</string>
-    <string name="setting_recording_show_timer_desc">Displays elapsed recording time next to the record button</string>
     <string name="setting_recording_capture_audio_title">Capture Audio</string>
     <string name="setting_recording_capture_audio_desc">Records in-game sound.Your microphone is never used</string>
     <string name="settings_row_recordings_gallery_title">Recordings Gallery</string>

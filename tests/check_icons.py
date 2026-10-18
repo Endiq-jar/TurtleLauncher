@@ -88,7 +88,7 @@ assert len(filetypes) >= 16, f"only {len(filetypes)} file-type icons"
 for path in filetypes:
     assert 'android:tint="@color/file_icon_tint"' in path.read_text(),         f"{path.name}: file-type icons must use the pastel-green tint"
 colors = (main / "res/values/colors.xml").read_text()
-assert 'name="file_icon_tint">@color/palette_primary' in colors, "pastel-green tint missing"
+assert 'name="file_icon_tint">@color/palette_secondary' in colors, "pastel-green tint missing"
 
 resolver = (main / "java/com/endiq/turtlelauncher/ui/subassembly/filelist/FileTypeIcons.kt").read_text()
 for needle in ("ic_filetype_jar", "ic_filetype_zip", "ic_filetype_json", "ic_filetype_data"):
@@ -98,6 +98,20 @@ assert "FileTypeIcons.iconResFor" in creator and "fileIconRes" in creator
 adapter = (main / "java/com/endiq/turtlelauncher/ui/subassembly/filelist/FileRecyclerAdapter.java").read_text()
 assert "fileIconRes" in adapter and "setImageResource(fileItemBean.fileIconRes)" in adapter
 assert "filetype_zip" in icon and "Style.POP" in icon, "per-filetype animation styles missing"
+
+# --- Whole set pastel green, not off-white -----------------------------------
+for path in sorted(drawable.glob("ic_*.xml")):
+    assert 'android:tint="@color/black_or_white"' not in path.read_text(), \
+        f"{path.name}: still generic off-white"
+assert 'name="icon_tint">@color/palette_secondary' in colors, "icon_tint missing"
+assert 'android:tint="@color/icon_tint"' in (drawable / "ic_search.xml").read_text()
+
+# --- Floating record button removed from the in-game HUD ---------------------
+hud = (main / "res/layout/view_game_info_hud.xml").read_text()
+assert "record_button" not in hud and "record_timer" not in hud
+wrapper = (main / "java/com/endiq/turtlelauncher/ui/subassembly/view/GameMenuViewWrapper.kt").read_text()
+assert "showRecordButton" not in wrapper
+assert "showRecordButtonHud" not in (main / "java/com/endiq/turtlelauncher/setting/AllSettings.kt").read_text()
 
 print(f"{converted} converted icons on the 24dp grid, {animated} animated icon views, "
       "hover/press/click wiring and NoBlocklist removal passed")

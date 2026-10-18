@@ -196,7 +196,7 @@ def convert(svg_text: str, kind: str) -> str:
         else:
             out.append('    <path\n        android:fillColor="@android:color/transparent"\n'
                        '        android:strokeColor="#FF000000"\n'
-                       '        android:strokeWidth="1.8"\n'
+                       '        android:strokeWidth="2"\n'
                        '        android:strokeLineCap="round"\n'
                        '        android:strokeLineJoin="round"\n'
                        f'        android:pathData="{d}" />')
@@ -219,8 +219,14 @@ def existing_tint(path: Path) -> str:
     if path.is_file():
         m = re.search(r'android:tint="([^"]+)"', path.read_text())
         if m:
-            return m.group(1)
-    return "@color/black_or_white"
+            tint = m.group(1)
+            # The generic off-white default becomes the pastel-green icon
+            # tint so the whole set reads as one (docs/ICONS.md). Semantic
+            # tints (favourite pink, ?attr control colour) are preserved.
+            if tint == "@color/black_or_white":
+                return "@color/icon_tint"
+            return tint
+    return "@color/icon_tint"
 
 
 def render(target: str, kind: str, name: str, paths_xml: str, tint: str) -> str:

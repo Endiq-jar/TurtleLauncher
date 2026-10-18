@@ -81,11 +81,11 @@
                     app:layout_constraintTop_toTopOf="parent">
                     <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/imageView"
-                        android:layout_width="@dimen/_16sdp"
-                        android:layout_height="@dimen/_16sdp"
+                        android:layout_width="@dimen/_20sdp"
+                        android:layout_height="@dimen/_20sdp"
                         android:layout_centerVertical="true"
                         android:contentDescription="@string/file_external_storage"
-                        android:src="@drawable/ic_folder" />
+                        android:src="@drawable/ic_filetype_folder" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -111,11 +111,11 @@
                     app:layout_constraintTop_toTopOf="parent">
                     <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/imageView1"
-                        android:layout_width="@dimen/_16sdp"
-                        android:layout_height="@dimen/_16sdp"
+                        android:layout_width="@dimen/_20sdp"
+                        android:layout_height="@dimen/_20sdp"
                         android:layout_centerVertical="true"
                         android:contentDescription="@string/file_software_private"
-                        android:src="@drawable/ic_folder" />
+                        android:src="@drawable/ic_filetype_folder" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

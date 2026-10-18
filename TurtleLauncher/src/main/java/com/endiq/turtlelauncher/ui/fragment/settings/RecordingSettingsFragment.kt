@@ -41,9 +41,7 @@ class RecordingSettingsFragment : AbstractSettingsFragment(R.layout.settings_fra
             startActivity(Intent(context, RecordingsGalleryActivity::class.java))
         }
 
-        SwitchSettingsWrapper(context, AllSettings.showRecordButtonHud, binding.showRecordButtonHudLayout, binding.showRecordButtonHud)
         SwitchSettingsWrapper(context, AllSettings.recordingCaptureAudio, binding.recordingCaptureAudioLayout, binding.recordingCaptureAudio)
-        SwitchSettingsWrapper(context, AllSettings.recordingShowTimer, binding.recordingShowTimerLayout, binding.recordingShowTimer)
 
         SeekBarSettingsWrapper(
             context, AllSettings.recordingFrameRate,

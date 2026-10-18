@@ -351,9 +351,16 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
     @Override
     public void onResume() {
         super.onResume();
+        if (binding != null) binding.textureView.setRenderingPaused(false);
         final int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         final View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptions);
+    }
+
+    @Override
+    protected void onPause() {
+        if (binding != null) binding.textureView.setRenderingPaused(true);
+        super.onPause();
     }
 
     @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})

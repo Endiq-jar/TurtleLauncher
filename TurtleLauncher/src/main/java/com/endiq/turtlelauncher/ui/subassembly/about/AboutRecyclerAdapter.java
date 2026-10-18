@@ -38,6 +38,12 @@ public class AboutRecyclerAdapter extends RecyclerView.Adapter<AboutRecyclerAdap
         return 0;
     }
 
+    @Override
+    public void onViewRecycled(@NonNull InnerHolder holder) {
+        com.bumptech.glide.Glide.with(holder.binding.imageView).clear(holder.binding.imageView);
+        super.onViewRecycled(holder);
+    }
+
     public static class InnerHolder extends RecyclerView.ViewHolder {
         private final ItemAboutViewBinding binding;
 
@@ -47,7 +53,33 @@ public class AboutRecyclerAdapter extends RecyclerView.Adapter<AboutRecyclerAdap
         }
 
         public void setData(AboutItemBean data) {
+            // Recycled rows must restore both actions and visibility, not retain the last row.
+            com.bumptech.glide.Glide.with(binding.imageView).clear(binding.imageView);
             binding.imageView.setImageDrawable(data.getIcon());
+            if (data.getImageResource() != 0) {
+                // Decode to the thumbnail's bounds, not 1024px multiplied by screen density.
+                com.bumptech.glide.Glide.with(binding.imageView).load(data.getImageResource())
+                        .placeholder(data.getIcon()).fitCenter().into(binding.imageView);
+            }
+            binding.imageView.setContentDescription(data.getTitle());
+            binding.imageView.setOnClickListener(v -> {
+                android.widget.ImageView preview = new android.widget.ImageView(v.getContext());
+                android.graphics.drawable.Drawable.ConstantState state = data.getIcon().getConstantState();
+                preview.setImageDrawable(state != null ? state.newDrawable(v.getResources()).mutate() : data.getIcon());
+                preview.setAdjustViewBounds(true);
+                preview.setContentDescription(data.getTitle());
+                int padding = (int) (24 * v.getResources().getDisplayMetrics().density);
+                preview.setPadding(padding, padding, padding, padding);
+                if (data.getImageResource() != 0) {
+                    com.bumptech.glide.Glide.with(preview).load(data.getImageResource())
+                            .override(1024, 1024).fitCenter().into(preview);
+                }
+                androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(v.getContext())
+                        .setTitle(data.getTitle()).setView(preview)
+                        .setPositiveButton(android.R.string.ok, null).create();
+                dialog.setOnDismissListener(ignored -> com.bumptech.glide.Glide.with(preview).clear(preview));
+                dialog.show();
+            });
             binding.titleView.setText(data.getTitle());
             binding.descView.setText(data.getDesc());
 
@@ -55,6 +87,7 @@ public class AboutRecyclerAdapter extends RecyclerView.Adapter<AboutRecyclerAdap
                 AboutItemBean.AboutItemButtonBean buttonBean = data.getButtonBean();
                 String buttonName = buttonBean.getName();
 
+                binding.buttonView.setVisibility(View.VISIBLE);
                 binding.buttonView.setText(buttonName);
 
                 binding.buttonView.setOnClickListener(v -> {
@@ -63,6 +96,7 @@ public class AboutRecyclerAdapter extends RecyclerView.Adapter<AboutRecyclerAdap
                 });
             } else {
                 binding.buttonView.setVisibility(View.GONE);
+                binding.buttonView.setOnClickListener(null);
             }
         }
     }

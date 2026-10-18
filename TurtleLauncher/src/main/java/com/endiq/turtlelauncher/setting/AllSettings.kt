@@ -251,12 +251,12 @@ class AllSettings {
         @JvmStatic val gcStatistics              = BooleanSettingUnit("gcStatistics", false)
 
         // ── TurtleLauncher FPS Boost ──────────────────────────────────────────
-        /** Remove Minecraft's 300-FPS cap; adds -XX:+DisableExplicitGC */
-        @JvmStatic val unlimitedFps             = BooleanSettingUnit("unlimitedFps", true)
+        /** Explicit maxFps=260 / V-Sync-off override, with rollback; adds -XX:+DisableExplicitGC. */
+        @JvmStatic val unlimitedFps             = BooleanSettingUnit("unlimitedFps", false)
         /** Low-latency rendering: JVM string/compile optimizations */
-        @JvmStatic val lowLatencyRendering      = BooleanSettingUnit("lowLatencyRendering", true)
-        /** LWJGL frame-pacing hints for smoother mobile GPU frame delivery */
-        @JvmStatic val framePacing              = BooleanSettingUnit("framePacing", true)
+        @JvmStatic val lowLatencyRendering      = BooleanSettingUnit("lowLatencyRendering", false)
+        /** Opt-in heap pre-touch to reduce first-access page faults; not a swap-chain pacer. */
+        @JvmStatic val framePacing              = BooleanSettingUnit("framePacing", false)
         /** Drop frames when overloaded instead of queuing (reduces input lag) */
         @JvmStatic val frameSkipping            = BooleanSettingUnit("frameSkipping", false)
         /** Short GC pause target to avoid mid-frame GC stops */
@@ -268,8 +268,10 @@ class AllSettings {
         @JvmStatic val autoCheckPluginUpdates   = BooleanSettingUnit("autoCheckPluginUpdates", true)
         /** Timestamp (ms) of the last renderer/driver plugin update check, used for the 5-minute cooldown. */
         @JvmStatic val lastPluginUpdateCheck    = LongSettingUnit("lastPluginUpdateCheck", 0L)
-        /** TurtleLauncher Fast Boot: Minecraft version id Auto Settings Optimizer last ran picks for; skips re-running when unchanged. */
+        /** Last version evaluated by the auto optimizer; thermal checks are never skipped. */
         @JvmStatic val lastOptimizedVersion     = StringSettingUnit("lastOptimizedVersion", "")
+        @JvmStatic val lastAutoGraphics = StringSettingUnit("lastAutoGraphics", "")
+        @JvmStatic val lastAutoPerformanceProfile = StringSettingUnit("lastAutoPerformanceProfile", "")
         @JvmStatic val lastAutoRamAllocation    = IntSettingUnit("lastAutoRamAllocation", -1)
 
         // ── TurtleLauncher In-Game HUD Modules ───────────────────────────────────

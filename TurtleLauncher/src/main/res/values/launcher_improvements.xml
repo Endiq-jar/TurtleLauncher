@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="built_in_backgrounds">Built-in backgrounds</string>
+    <string-array name="built_in_background_names">
+        <item>Turtle Coast</item>
+        <item>Amethyst Night</item>
+        <item>Ember Peaks</item>
+        <item>Original error artwork</item>
+    </string-array>
+    <string name="hud_ping_tap_to_set">Ping: tap to set server</string>
+    <string name="hud_ping_target">Server latency</string>
+    <string name="hud_ping_target_hint">play.example.net:25565 or [IPv6]:25565</string>
+    <string name="hud_ping_target_description">Enter a server for TCP connection latency (not in-game protocol ping). Probes run every 5 seconds only while this HUD is visible. Leave blank to stop probing.</string>
+    <string name="hud_ping_target_invalid">Enter a hostname or bracketed IPv6 address and a port from 1 to 65535.</string>
+    <string name="about_current_developer">TurtleLauncher developer</string>
+    <string name="about_original_contributor">Original contributor</string>
+    <string name="about_logo_gallery">Launcher artwork</string>
+    <string name="about_logo_gallery_description">A short light sweep plays once when this page opens. Animations respect reduced motion and stop when you leave.</string>
+    <string name="about_developer_portrait">Developer artwork — tap to view</string>
+    <string name="artwork_ic_turtle_full">Turtle logo</string>
+    <string name="artwork_ic_minecraft">Minecraft grass block</string>
+    <string name="artwork_ic_command_block">Command block</string>
+    <string name="artwork_ic_old_cobblestone">Classic cobblestone block</string>
+    <string name="artwork_ic_old_grass_block">Classic grass block</string>
+</resources>

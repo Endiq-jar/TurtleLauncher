@@ -85,6 +85,14 @@ class AboutInfoPageFragment() : Fragment(R.layout.fragment_about_info_page) {
         mAboutData.add(
             AboutItemBean(
                 resources.getDrawable(R.drawable.ic_turtle_full, requireContext().theme),
+                "Endiq",
+                getString(R.string.about_current_developer),
+                AboutItemButtonBean(requireActivity(), getString(R.string.about_access_link), "https://github.com/Endiq-jar")
+            )
+        )
+        mAboutData.add(
+            AboutItemBean(
+                resources.getDrawable(R.drawable.ic_turtle_full, requireContext().theme),
                 "Turtle Launcher",
                 getString(R.string.about_TurtleLauncher_desc),
                 AboutItemButtonBean(requireActivity(), "Github", UrlManager.URL_HOME)
@@ -92,14 +100,15 @@ class AboutInfoPageFragment() : Fragment(R.layout.fragment_about_info_page) {
         )
         mAboutData.add(
             AboutItemBean(
-                resources.getDrawable(R.drawable.image_about_developer, requireContext().theme),
+                resources.getDrawable(R.drawable.ic_help, requireContext().theme),
                 "Zenkairux",
-                "Developer",
+                getString(R.string.about_original_contributor),
                 AboutItemButtonBean(
                     requireActivity(),
                     getString(R.string.about_access_link),
                     UrlManager.URL_HOME
-                )
+                ),
+                R.drawable.image_about_developer
             )
         )
         // SDL3 backend (Minecraft 26.3+) credits. License texts ship in res/raw

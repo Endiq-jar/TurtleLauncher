@@ -150,6 +150,22 @@ class CustomBackgroundFragment : FragmentWithAnim(R.layout.fragment_custom_backg
                 }
             })
 
+            builtInBackgroundButton.setOnClickListener {
+                val keys = BackgroundManager.builtInBackgrounds.keys.toList()
+                val labels = resources.getStringArray(R.array.built_in_background_names)
+                val selected = keys.indexOf(backgroundMap[backgroundType])
+                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.built_in_backgrounds)
+                    .setSingleChoiceItems(labels, selected) { dialog, index ->
+                        backgroundMap[backgroundType] = keys[index]
+                        BackgroundManager.saveProperties(backgroundMap)
+                        refreshBackground()
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+            }
+
             actionBar.apply {
                 pasteButton.setOnClickListener { _: View? ->
                     backgroundMap[backgroundType] = NULL
@@ -226,17 +242,11 @@ class CustomBackgroundFragment : FragmentWithAnim(R.layout.fragment_custom_backg
     }
 
     private fun refreshBackgroundPreview() {
-        binding.preview.let {
-            BackgroundManager.getBackgroundImage(backgroundType)?.apply {
-                Glide.with(requireActivity())
-                    .load(this)
-                    .fitCenter()
-                    .into(DrawableImageViewTarget(it))
-                return
-            }
-
-            it.setImageDrawable(null)
-        }
+        val model = BackgroundManager.getBackgroundModel(backgroundType)
+        Glide.with(binding.preview).clear(binding.preview)
+        if (model != null) {
+            Glide.with(binding.preview).load(model).fitCenter().into(binding.preview)
+        } else binding.preview.setImageDrawable(null)
     }
 
     private fun initViews() {

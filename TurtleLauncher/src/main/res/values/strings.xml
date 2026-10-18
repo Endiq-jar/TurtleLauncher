@@ -803,15 +803,15 @@
     <string name="setting_jni_optimization_desc">GL4ES-family renderers only (Holy GL4ES). No effect on LTW, MobileGlues, Zink, VirGL, VGPU, or Freedreno.</string>
     <string name="setting_category_fps_boost">FPS Boost (Game Performance)</string>
     <string name="setting_fps_unlimited_title">Unlimited FPS Mode</string>
-    <string name="setting_fps_unlimited_desc">Removes Minecraft\'s 300-FPS cap and disables explicit GC pauses. May increase heat and battery drain.</string>
+    <string name="setting_fps_unlimited_desc">Sets Minecraft maxFps to 260 and disables V-Sync while enabled. Previous values are backed up and restored when disabled. Hot or battery-saving devices are not uncapped. May increase heat and battery drain.</string>
     <string name="setting_fps_low_latency_title">Low Latency Rendering</string>
-    <string name="setting_fps_low_latency_desc">Enables JVM string and compilation optimizations that reduce per-frame allocation overhead for smoother rendering.</string>
+    <string name="setting_fps_low_latency_desc">Enables JVM string deduplication and disables shared perfdata files. String deduplication trades CPU work for memory savings; this does not enable front-buffer rendering.</string>
     <string name="setting_fps_frame_pacing_title">Frame Pacing</string>
-    <string name="setting_fps_frame_pacing_desc">Activates LWJGL frame pacing hints for more evenly spaced frame delivery on mobile GPUs.</string>
+    <string name="setting_fps_frame_pacing_desc">Pre-touches eligible Java heaps to reduce first-access page faults. This is a memory optimization, not a renderer frame limiter; it can increase launch time and memory commitment.</string>
     <string name="setting_fps_frame_skipping_title">Frame Skipping</string>
     <string name="setting_fps_frame_skipping_desc">Allows the renderer to drop frames when overloaded instead of queuing them. Reduces input lag on low-end devices.</string>
     <string name="setting_fps_adaptive_title">Adaptive Frame Timing</string>
-    <string name="setting_fps_adaptive_desc">Uses G1GC with short max-pause targets (10ms) to prevent garbage collection from stalling mid-frame.</string>
+    <string name="setting_fps_adaptive_desc">Uses a balanced 50ms G1GC pause target instead of 100ms. This is a soft garbage-collection target, not a frame-time guarantee.</string>
     <string name="setting_fps_auto_memory_cleanup_title">Auto Memory Cleanup</string>
     <string name="setting_fps_auto_memory_cleanup_desc">Periodically runs a G1 garbage collection during idle stretches to release memory back to the system, instead of holding onto peak usage all session.</string>
     <!-- Auto Graphics Optimizer -->

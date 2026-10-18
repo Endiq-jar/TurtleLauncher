@@ -159,6 +159,10 @@ public final class Tools {
 
     public static String getLWJGL3ClassPath() {
         StringBuilder libStr = new StringBuilder();
+        // Only the three wait methods are patched; the original compatibility jar stays
+        // intact. Classpath order must be explicit, not File.listFiles() dependent.
+        File idleOverlay = new File(PathManager.DIR_GAME_HOME, "lwjgl-performance/turtle-performance.jar");
+        if (idleOverlay.isFile()) libStr.append(idleOverlay.getAbsolutePath()).append(":");
         File lwjgl3Folder = new File(PathManager.DIR_GAME_HOME, "lwjgl3");
         File[] lwjgl3Files = lwjgl3Folder.listFiles();
         if (lwjgl3Files != null) {

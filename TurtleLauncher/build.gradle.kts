@@ -448,3 +448,22 @@ tasks.configureEach {
     if (name == "preBuild" || name.startsWith("configureCMake") || name.startsWith("buildCMake")
         || name.startsWith("merge") && name.endsWith("JniLibFolders")) dependsOn(prepareDiscordSdk)
 }
+
+// Build an additive guest-class overlay. Never rebuild/replace the compatibility fat jar.
+// Python 3 is also used by the repository's resource/APK checks; no third-party modules.
+val performanceAssets = layout.buildDirectory.dir("generated/performanceAssets")
+val prepareGlfwIdleOverlay by tasks.registering(Exec::class) {
+    val sourceJar = file("src/main/assets/components/lwjgl3/lwjgl-glfw-classes.jar")
+    val patcher = rootProject.file("tools/patch_glfw_idle.py")
+    inputs.files(sourceJar, patcher)
+    outputs.dir(performanceAssets)
+    commandLine(
+        System.getenv("PYTHON") ?: "python3", patcher.absolutePath, sourceJar.absolutePath,
+        performanceAssets.get().dir("components/lwjgl-performance").asFile.absolutePath
+    )
+}
+android.sourceSets["main"].assets.srcDir(performanceAssets.get().asFile)
+tasks.named("preBuild") { dependsOn(prepareGlfwIdleOverlay) }
+tasks.withType<MergeSourceSetFolders>().configureEach {
+    if (name.endsWith("Assets")) dependsOn(prepareGlfwIdleOverlay)
+}

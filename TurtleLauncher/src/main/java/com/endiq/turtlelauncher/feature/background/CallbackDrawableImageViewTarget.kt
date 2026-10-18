@@ -12,11 +12,15 @@ class CallbackDrawableImageViewTarget(
     private val callback: Callback?
 ) : DrawableImageViewTarget(imageView) {
     override fun setResource(resource: Drawable?) {
-        imageView.post {
-            super.setResource(resource)
-            val isLoaded = resource != null
-            callback?.callback(isLoaded)
-        }
+        // ImageViewTarget callbacks already run on the main thread. Posting again can
+        // apply an old background after a newer request has cleared/replaced this one.
+        super.setResource(resource)
+        callback?.callback(resource != null)
+    }
+
+    override fun onLoadFailed(errorDrawable: Drawable?) {
+        super.onLoadFailed(errorDrawable)
+        callback?.callback(false)
     }
 
     fun interface Callback {

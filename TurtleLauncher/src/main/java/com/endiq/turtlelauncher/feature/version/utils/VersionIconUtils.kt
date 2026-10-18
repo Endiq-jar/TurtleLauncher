@@ -18,6 +18,8 @@ class VersionIconUtils(
     private val iconFile = VersionsManager.getVersionIconFile(version)
 
     fun start(imageView: ImageView): Boolean {
+        com.endiq.turtlelauncher.utils.anim.AnimatedLogo.clear(imageView)
+        Glide.with(imageView).clear(imageView)
         val context = imageView.context
 
         var isIconSet = false
@@ -46,7 +48,7 @@ class VersionIconUtils(
             }
         }
 
-        if (!isIconSet) imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_minecraft))
+        if (!isIconSet) com.endiq.turtlelauncher.utils.anim.AnimatedLogo.bind(imageView, R.drawable.ic_minecraft)
 
         return isCustomIcon
     }

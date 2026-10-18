@@ -181,9 +181,11 @@ class LaunchGame {
                 AutoSettingsOptimizer.apply(activity, version.id ?: "")
             }
 
-            if (!Renderers.isCurrentRendererValid()) {
-                Renderers.setCurrentRenderer(activity, AllSettings.renderer.getValue())
-            }
+            // MainActivity resolved these before auto-tuning ran. Resolve them again from
+            // the instance (which falls back to global settings), otherwise recommendations
+            // only change the Settings UI and this launch still uses the previous backend.
+            Renderers.setCurrentRenderer(activity, minecraftVersion.getRenderer())
+            com.endiq.turtlelauncher.plugins.driver.DriverPluginManager.setDriverByName(minecraftVersion.getDriver())
 
                 var account = AccountsManager.currentAccount
                 if (account == null) {
@@ -215,7 +217,7 @@ class LaunchGame {
             val actualJavaVersion = runCatching { MultiRTUtils.read(javaRuntime).javaVersion }
                 .getOrDefault(requiredJava)
                 .let { if (it <= 0) requiredJava else it }
-            val customArgs = mergeJvmArgs(baseArgs, buildFpsBoostArgs(actualJavaVersion))
+            val customArgs = mergeJvmArgs(baseArgs, buildFpsBoostArgs(actualJavaVersion, baseArgs))
 
             printLauncherInfo(
                 minecraftVersion,
@@ -384,36 +386,18 @@ class LaunchGame {
             }
         }
 
-        /**
-         * "Unlimited FPS" used to only toggle a JVM flag, so Minecraft's own frame cap and V-Sync
-         * stayed whatever options.txt said (often 60/120 FPS with V-Sync on). When the toggle is on,
-         * raise maxFps to Minecraft's "Unlimited" value (260) and turn V-Sync off before launch.
-         * Only keys that already exist or are missing are touched; the rest of the file is kept.
-         */
+        /** Apply explicit uncapping reversibly; a hot/battery-saving phone must not be uncapped. */
         private fun applyUncappedFpsOptions(gameDir: File) {
-            if (!AllSettings.unlimitedFps.getValue()) return
-            val optionsFile = File(gameDir, "options.txt")
-            if (!optionsFile.isFile) return
-            val overrides = linkedMapOf("maxFps" to "260", "enableVsync" to "false")
+            val context = com.endiq.turtlelauncher.context.ContextExecutor.getApplication()
+            val uncapped = PerformancePolicy.allowUncapped(
+                AllSettings.unlimitedFps.getValue(),
+                com.endiq.turtlelauncher.utils.platform.ThermalManager.getCurrentThermalStatus(context),
+                com.endiq.turtlelauncher.utils.platform.BatterySaverManager.isPowerSaveMode(context)
+            )
             try {
-                val original = optionsFile.readLines()
-                val seen = mutableSetOf<String>()
-                val updated = original.map { line ->
-                    val key = line.substringBefore(':')
-                    val value = overrides[key]
-                    if (value != null) {
-                        seen += key
-                        "$key:$value"
-                    } else {
-                        line
-                    }
-                }.toMutableList()
-                overrides.forEach { (key, value) ->
-                    if (key !in seen) updated += "$key:$value"
-                }
-                if (updated != original) optionsFile.writeText(updated.joinToString("\n"))
+                GameFpsOptions.apply(gameDir, uncapped)
             } catch (e: IOException) {
-                Logging.w("LaunchGame", "Could not apply the FPS options to options.txt", e)
+                Logging.w("LaunchGame", "Could not apply/restore FPS options; leaving the game configuration available", e)
             }
         }
 
@@ -421,12 +405,12 @@ class LaunchGame {
          * Builds extra JVM args from TurtleLauncher's FPS Boost toggles.
          * Appended to the per-version custom args string before launch.
          */
-        private fun buildFpsBoostArgs(javaMajorVersion: Int): String {
+        private fun buildFpsBoostArgs(javaMajorVersion: Int, userArgs: String): String {
+            val usingG1 = JvmArguments.usesG1(userArgs)
             val args = mutableListOf<String>()
 
-            args += "-XX:+UseG1GC"
-            args += if (AllSettings.adaptiveFrameTiming.getValue()) "-XX:MaxGCPauseMillis=10"
-                else "-XX:MaxGCPauseMillis=50"
+            if (usingG1) args += "-XX:+UseG1GC"
+            args += "-XX:MaxGCPauseMillis=${PerformancePolicy.gcPauseTargetMs(AllSettings.adaptiveFrameTiming.getValue())}"
 
             if (AllSettings.unlimitedFps.getValue()) {
                 // Prevents mod/library System.gc() calls from forcing full GC pauses.
@@ -434,7 +418,7 @@ class LaunchGame {
             }
 
             if (AllSettings.lowLatencyRendering.getValue()) {
-                args += "-XX:+UseStringDeduplication"
+                if (usingG1) args += "-XX:+UseStringDeduplication"
                 // Skips attaching the JVM's perfdata file to shared memory - removes a real
                 // source of I/O-related micro-jitter, safe on every Java version this
                 // launcher supports.
@@ -451,11 +435,14 @@ class LaunchGame {
             }
 
             if (AllSettings.autoMemoryCleanup.getValue()) {
-                if (javaMajorVersion >= 12) {
+                if (usingG1 && javaMajorVersion >= 12) {
                     args += "-XX:+UnlockExperimentalVMOptions"
                     args += "-XX:G1PeriodicGCInterval=300000"
+                    // A zero threshold (the VM default) triggers periodic GC even while
+                    // the game is busy. Keep the opt-in cleanup for low-load periods.
+                    args += "-XX:G1PeriodicGCSystemLoadThreshold=1"
                 } else {
-                    Logging.w("LaunchGame", "autoMemoryCleanup wants G1PeriodicGCInterval, which needs Java 12+ " +
+                    Logging.w("LaunchGame", "autoMemoryCleanup wants G1PeriodicGCInterval, which needs G1 and Java 12+ " +
                         "(this instance is resolved to Java $javaMajorVersion) - skipping it rather than passing an " +
                         "invalid VM option that would prevent the JVM from starting")
                 }
@@ -472,28 +459,8 @@ class LaunchGame {
             totalMb > 0 && heapMb * 100L <= totalMb * 35L
         }.getOrDefault(false)
 
-        private fun xxKey(arg: String): String = when {
-            arg.startsWith("-XX:+") || arg.startsWith("-XX:-") -> arg.substring(5)
-            else -> arg.substringAfter("-XX:").substringBefore('=')
-        }
-
-        /** Joins user args and launcher-generated args. A repeated -XX option keeps the
-         *  position of its first occurrence but takes the value of its last, which is what
-         *  the JVM would have resolved anyway, so the same flag is never passed twice. */
-        private fun mergeJvmArgs(base: String, boost: String): String {
-            val out = ArrayList<String>()
-            (base.trim().split(Regex("\\s+")) + boost.trim().split(Regex("\\s+")))
-                .filter { it.isNotBlank() }
-                .forEach { arg ->
-                    if (arg.startsWith("-XX:")) {
-                        val key = xxKey(arg)
-                        val idx = out.indexOfFirst { it.startsWith("-XX:") && xxKey(it) == key }
-                        if (idx >= 0) { out[idx] = arg; return@forEach }
-                    }
-                    out.add(arg)
-                }
-            return out.joinToString(" ")
-        }
+        /** User GC/VM settings take precedence over performance defaults. */
+        private fun mergeJvmArgs(base: String, boost: String): String = JvmArguments.merge(base, boost)
 
         private fun checkMemory(activity: AppCompatActivity) {
             var freeDeviceMemory = Tools.getFreeDeviceMemory(activity)

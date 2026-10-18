@@ -59,17 +59,17 @@ object BackgroundManager {
         backgroundView: ImageView,
         callback: CallbackDrawableImageViewTarget.Callback? = null
     ) {
+        Glide.with(backgroundView).clear(backgroundView)
         backgroundView.setImageDrawable(
             ContextCompat.getDrawable(context, R.color.background_app)
         )
 
-        val backgroundImage = getBackgroundImage(backgroundType) ?: run {
+        val backgroundImage = getBackgroundModel(backgroundType) ?: run {
             callback?.callback(false)
             return
         }
 
-        Glide.with(context).load(backgroundImage)
-            .override(backgroundView.width, backgroundView.height)
+        Glide.with(backgroundView).load(backgroundImage)
             .centerCrop()
             .into(CallbackDrawableImageViewTarget(backgroundView, callback))
     }
@@ -78,24 +78,36 @@ object BackgroundManager {
     fun clearBackgroundImage(
         backgroundView: ImageView
     ) {
+        Glide.with(backgroundView).clear(backgroundView)
         backgroundView.background = null
         backgroundView.setImageDrawable(null)
     }
 
+    /** Stable keys, not translated labels or spinner indices, are persisted. */
+    val builtInBackgrounds: Map<String, Int> = linkedMapOf(
+        "builtin:turtle_coast" to R.drawable.image_background_turtle_coast,
+        "builtin:amethyst_night" to R.drawable.image_background_amethyst_night,
+        "builtin:ember_peaks" to R.drawable.image_background_ember_peaks,
+        "builtin:error_art" to R.drawable.image_error_background
+    )
+
     @JvmStatic
-    fun hasBackgroundImage(backgroundType: BackgroundType): Boolean {
-        val pngName = properties[backgroundType.name] as String?
-        return pngName != null && pngName != NULL
+    fun getBackgroundModel(backgroundType: BackgroundType): Any? {
+        val selection = properties.getProperty(backgroundType.name) ?: return null
+        return builtInBackgrounds[selection] ?: getBackgroundImage(backgroundType)
     }
 
+    @JvmStatic
+    fun hasBackgroundImage(backgroundType: BackgroundType): Boolean =
+        getBackgroundModel(backgroundType) != null
+
+    /** Imported files remain supported exactly as before, alongside built-in choices. */
     fun getBackgroundImage(backgroundType: BackgroundType): File? {
-        if (!hasBackgroundImage(backgroundType)) return null
-
-        val pngName = properties[backgroundType.name] as String
-
-        val backgroundImage = File(PathManager.DIR_BACKGROUND, pngName)
-        if (!backgroundImage.exists() || !isImage(backgroundImage)) return null
-        return backgroundImage
+        val name = properties.getProperty(backgroundType.name) ?: return null
+        if (name == NULL || name.startsWith("builtin:")) return null
+        val image = File(PathManager.DIR_BACKGROUND, name)
+        if (image.parentFile?.canonicalFile != PathManager.DIR_BACKGROUND.canonicalFile) return null
+        return image.takeIf { it.isFile && isImage(it) }
     }
 
     private fun saveProperties(properties: Properties) {
@@ -104,10 +116,9 @@ object BackgroundManager {
         }
 
         runCatching {
-            properties.store(
-                FileWriter(FILE_BACKGROUND_PROPERTIES),
-                "${InfoDistributor.APP_NAME} Background Properties File"
-            )
+            FileWriter(FILE_BACKGROUND_PROPERTIES).use { writer ->
+                properties.store(writer, "${InfoDistributor.APP_NAME} Background Properties File")
+            }
         }.getOrElse { e -> Logging.e("saveProperties", Tools.printToString(e)) }
     }
 

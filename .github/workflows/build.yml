@@ -89,6 +89,8 @@ jobs:
         working-directory: ${{ steps.locate.outputs.dir }}
         run: |
           python3 tests/check_resources.py
+          python3 tests/check_launcher_art.py
+          python3 tests/check_glfw_overlay.py
           tests/native/run.sh
           tests/native/run-discord.sh
 

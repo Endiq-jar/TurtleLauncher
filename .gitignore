@@ -20,3 +20,6 @@ lint-results*.xml
 .idea/
 .DS_Store
 *.hprof
+
+# Local Python verification caches
+__pycache__/

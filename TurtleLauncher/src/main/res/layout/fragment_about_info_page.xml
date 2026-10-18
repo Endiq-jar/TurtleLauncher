@@ -31,7 +31,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.LogoImageView
                     android:id="@+id/title"
                     android:layout_width="0dp"
                     android:layout_height="@dimen/_28sdp"
@@ -127,6 +127,75 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <LinearLayout
+                android:id="@+id/artwork_gallery"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_12sdp"
+                android:layout_marginTop="@dimen/_12sdp"
+                android:padding="@dimen/_12sdp"
+                android:orientation="vertical"
+                android:background="@drawable/background_card"
+                app:layout_constraintTop_toBottomOf="@id/constraintLayout3"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_logo_gallery"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_logo_gallery_description" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+                    <com.endiq.turtlelauncher.ui.view.LogoImageView
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@string/artwork_ic_turtle_full"
+                        android:src="@drawable/ic_turtle_full" />
+                    <com.endiq.turtlelauncher.ui.view.LogoImageView
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@string/artwork_ic_minecraft"
+                        android:src="@drawable/ic_minecraft" />
+                    <com.endiq.turtlelauncher.ui.view.LogoImageView
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@string/artwork_ic_command_block"
+                        android:src="@drawable/ic_command_block" />
+                    <com.endiq.turtlelauncher.ui.view.LogoImageView
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@string/artwork_ic_old_cobblestone"
+                        android:src="@drawable/ic_old_cobblestone" />
+                    <com.endiq.turtlelauncher.ui.view.LogoImageView
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@string/artwork_ic_old_grass_block"
+                        android:src="@drawable/ic_old_grass_block" />
+                </LinearLayout>
+            </LinearLayout>
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout4"
                 android:layout_width="0dp"
@@ -137,7 +206,7 @@
                 android:padding="@dimen/_2sdp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/constraintLayout3">
+                app:layout_constraintTop_toBottomOf="@id/artwork_gallery">
 
                 <TextView
                     android:id="@+id/about_title"

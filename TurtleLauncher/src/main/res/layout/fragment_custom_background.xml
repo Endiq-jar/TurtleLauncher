@@ -115,6 +115,17 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
 
+            <com.endiq.turtlelauncher.ui.view.AnimButton
+                android:id="@+id/built_in_background_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_12sdp"
+                android:layout_marginTop="@dimen/_8sdp"
+                android:text="@string/built_in_backgrounds"
+                app:layout_constraintTop_toBottomOf="@id/preview"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
             <ImageView
                 android:id="@+id/preview"
                 android:layout_width="0dp"

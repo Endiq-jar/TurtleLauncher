@@ -33,8 +33,10 @@ object AssetPrefetcher {
         executor.execute {
             Trace.beginSection("AssetPrefetcher.prefetch")
             try {
+                if (com.endiq.turtlelauncher.task.TaskExecutors.isGameSessionActive) return@execute
                 val versions = VersionsManager.getVersions()
-                versions.forEach { version ->
+                for (version in versions) {
+                    if (com.endiq.turtlelauncher.task.TaskExecutors.isGameSessionActive) break
                     runCatching {
                         // Touch the icon file so it's already in the page cache by the time
                         // an ImageView/Glide requests it (decoding still happens on demand,

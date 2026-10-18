@@ -37,4 +37,9 @@ for path in paths:
             bootstrap = jar.read("com/endiq/turtlelauncher/bridge/GameFileDialogs.class")
             assert bootstrap[:4] == b"\xca\xfe\xba\xbe", "Invalid guest class"
             assert struct.unpack_from(">H", bootstrap, 6)[0] <= 52, "Guest bootstrap requires Java newer than 8"
+        overlay = "assets/components/lwjgl-performance/turtle-performance.jar"
+        with zipfile.ZipFile(io.BytesIO(apk.read(overlay))) as jar:
+            glfw = jar.read("org/lwjgl/glfw/GLFW.class")
+            assert struct.unpack_from(">H", glfw, 6)[0] <= 52, "Idle overlay needs Java newer than 8"
+            assert apk.read("assets/components/lwjgl-performance/version").decode().strip() == hashlib.sha256(glfw).hexdigest()
     print(f"APK packaging passed: {path.name}; all four ABIs, SDK/shared STL, renderers, dialogs, Java-8 bootstrap")

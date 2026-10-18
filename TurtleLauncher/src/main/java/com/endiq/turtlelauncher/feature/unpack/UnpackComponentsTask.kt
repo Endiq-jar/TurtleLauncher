@@ -69,6 +69,11 @@ class UnpackComponentsTask(val context: Context, val component: Components) : Ab
 
     private fun requestEmptyParentDir(file: File) {
         val parent = file.parentFile ?: return
+        if (component == Components.LWJGL_PERFORMANCE) {
+            // Additive overlay updates do not need to wipe anything in the target directory.
+            parent.mkdirs()
+            return
+        }
         parent.apply {
             if (exists() and isDirectory) {
                 FileUtils.deleteDirectory(this)

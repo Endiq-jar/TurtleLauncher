@@ -7,15 +7,24 @@ import androidx.annotation.NonNull;
 
 public class AboutItemBean {
     private final Drawable icon;
+    private final int imageResource;
     private final String title, desc;
     private final AboutItemButtonBean buttonBean;
 
     public AboutItemBean(@NonNull Drawable icon, @NonNull String title, @NonNull String desc, AboutItemButtonBean buttonBean) {
+        this(icon, title, desc, buttonBean, 0);
+    }
+
+    public AboutItemBean(@NonNull Drawable icon, @NonNull String title, @NonNull String desc,
+                         AboutItemButtonBean buttonBean, int imageResource) {
+        this.imageResource = imageResource;
         this.icon = icon;
         this.title = title;
         this.desc = desc;
         this.buttonBean = buttonBean;
     }
+
+    public int getImageResource() { return imageResource; }
 
     public Drawable getIcon() {
         return icon;

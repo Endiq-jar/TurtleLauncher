@@ -465,12 +465,14 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     public void onResume() {
         super.onResume();
+        if (mGameMenuWrapper != null) mGameMenuWrapper.onResume();
         if (AllStaticSettings.enableGyro) mGyroControl.enable();
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 1);
     }
 
     @Override
     protected void onPause() {
+        if (mGameMenuWrapper != null) mGameMenuWrapper.onPause();
         mGyroControl.disable();
         if (CallbackBridge.isGrabbing()){
             sendKeyPress(LwjglGlfwKeycode.GLFW_KEY_ESCAPE);
@@ -493,6 +495,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
     @Override
     protected void onDestroy() {
+        if (mGameMenuWrapper != null) mGameMenuWrapper.dispose();
         com.endiq.turtlelauncher.bridge.NativeFileDialogs.release(this);
         super.onDestroy();
         com.endiq.turtlelauncher.feature.inputstats.SessionStatsTracker.stop();

@@ -11,7 +11,6 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.inputstats.InputStatsTracker
 import com.endiq.turtlelauncher.feature.inputstats.SessionStatsTracker
 import com.endiq.turtlelauncher.setting.AllSettings
-import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.utils.NewbieGuideUtils
 import com.endiq.turtlelauncher.utils.file.FileTools.Companion.formatFileSize
 import com.endiq.turtlelauncher.utils.platform.MemoryUtils
@@ -25,8 +24,12 @@ import org.lwjgl.glfw.CallbackBridge
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.Timer
-import java.util.TimerTask
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.app.ActivityManager
+import android.content.Context
+import com.endiq.turtlelauncher.feature.turtle.HudRefreshPolicy
 
 class GameMenuViewWrapper(
     private val activity: Activity,
@@ -38,7 +41,10 @@ class GameMenuViewWrapper(
         private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     }
 
-    private var timer: Timer? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var refreshTask: Runnable? = null
+    private var paused = false
+    private var disposed = false
     private val memoryText: String = AllSettings.gameMenuMemoryText.getValue()
 
     private var showMemory: Boolean = false
@@ -63,7 +69,7 @@ class GameMenuViewWrapper(
     init {
         refreshState()
         thinkForButtonVisibility()
-        if (showInfo) thinkForHudVisibility()
+        if (showInfo && !paused && !disposed) thinkForHudVisibility()
     }
 
     private fun getButtonWindow(): IFxScopeControl {
@@ -121,7 +127,7 @@ class GameMenuViewWrapper(
     fun refreshSettingsState() {
         refreshState()
         thinkForButtonVisibility()
-        if (showInfo) thinkForHudVisibility()
+        if (showInfo && !paused && !disposed) thinkForHudVisibility()
     }
 
     private fun thinkForButtonVisibility() {
@@ -212,46 +218,61 @@ class GameMenuViewWrapper(
         val heldColor = android.graphics.Color.parseColor("#9CCF93") // Status: Success, when held
         val idleColor = android.graphics.Color.parseColor("#33F2F5F0") // faint white when idle
 
+        val keyStates = mutableMapOf<TextView, Boolean>()
         fun setKeyColor(key: TextView, held: Boolean) {
-            key.setBackgroundColor(if (held) heldColor else idleColor)
+            if (keyStates.put(key, held) != held) {
+                key.setBackgroundColor(if (held) heldColor else idleColor)
+            }
         }
+        val memoryInfo = ActivityManager.MemoryInfo()
+        val activityManager = activity.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        var lastSlowUpdate = -1L
+        var lastBatteryUpdate = -1L
+        var batteryPercent = -1
 
         fun updateInfoText() {
-            if (showMemory) {
+            val now = SystemClock.uptimeMillis()
+            val updateSlow = lastSlowUpdate < 0 || now - lastSlowUpdate >= 1000L
+            if (updateSlow) lastSlowUpdate = now
+            if (updateSlow && (showMemory || showRamGraph)) activityManager.getMemoryInfo(memoryInfo)
+            if (showSystemResources && (lastBatteryUpdate < 0 || now - lastBatteryUpdate >= 30_000L)) {
+                lastBatteryUpdate = now
+                batteryPercent = getBatteryPercent()
+            }
+            if (showMemory && updateSlow) {
                 val nativeSuffix = if (showNativeMemory) {
                     val nativeMb = MemoryUtils.getNativeHeapAllocated() / (1024 * 1024)
                     " (N: ${nativeMb}M)"
                 } else ""
-                val memoryString = "${this@GameMenuViewWrapper.memoryText} ${getUsedDeviceMemory()}/${getTotalDeviceMemory()}$nativeSuffix".let { string ->
+                val memoryString = "${this@GameMenuViewWrapper.memoryText} ${formatFileSize(memoryInfo.totalMem - memoryInfo.availMem)}/${formatFileSize(memoryInfo.totalMem)}$nativeSuffix".let { string ->
                     if (string.length > 40) return@let string.take(40)
                     string
                 }
-                TaskExecutors.runInUIThread { memoryText.text = memoryString }
+                memoryText.text = memoryString
             }
-            if (showFPS) {
+            if (showFPS && updateSlow) {
                 val fpsString = "FPS: ${CallbackBridge.getCurrentFps()}"
-                TaskExecutors.runInUIThread { fpsText.text = fpsString }
+                fpsText.text = fpsString
             }
-            if (showCps) {
+            if (showCps && updateSlow) {
                 val cpsString = "CPS: ${InputStatsTracker.getCps()}"
-                TaskExecutors.runInUIThread { cpsText.text = cpsString }
+                cpsText.text = cpsString
             }
-            if (showSystemResources) {
-                val batteryPercent = getBatteryPercent()
+            if (showSystemResources && updateSlow) {
                 val batteryString = if (batteryPercent >= 0) "Battery: $batteryPercent%" else "Battery: --"
-                TaskExecutors.runInUIThread { systemResourcesText.text = batteryString }
+                systemResourcesText.text = batteryString
             }
-            if (showTime) {
+            if (showTime && updateSlow) {
                 val timeString = timeFormat.format(Date())
-                TaskExecutors.runInUIThread { timeText.text = timeString }
+                timeText.text = timeString
             }
-            if (showStopwatch) {
+            if (showStopwatch && updateSlow) {
                 val stopwatchString = "Session: ${SessionStatsTracker.formatDuration(SessionStatsTracker.getSessionElapsedMs())}"
-                TaskExecutors.runInUIThread { stopwatchText.text = stopwatchString }
+                stopwatchText.text = stopwatchString
             }
-            if (showPlaytime) {
+            if (showPlaytime && updateSlow) {
                 val playtimeString = "Playtime: ${SessionStatsTracker.formatDuration(SessionStatsTracker.getTotalPlaytimeMs())}"
-                TaskExecutors.runInUIThread { playtimeText.text = playtimeString }
+                playtimeText.text = playtimeString
             }
             if (showKeystrokes) {
                 val wHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_W.toInt())
@@ -259,7 +280,7 @@ class GameMenuViewWrapper(
                 val sHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_S.toInt())
                 val dHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_D.toInt())
                 val spaceHeld = InputStatsTracker.isKeyHeld(LwjglGlfwKeycode.GLFW_KEY_SPACE.toInt())
-                TaskExecutors.runInUIThread {
+                run {
                     setKeyColor(keyW, wHeld)
                     setKeyColor(keyA, aHeld)
                     setKeyColor(keyS, sHeld)
@@ -270,25 +291,30 @@ class GameMenuViewWrapper(
             if (showMousestrokes) {
                 val leftHeld = InputStatsTracker.isLeftMouseHeld()
                 val rightHeld = InputStatsTracker.isRightMouseHeld()
-                TaskExecutors.runInUIThread {
+                run {
                     setKeyColor(mouseLeft, leftHeld)
                     setKeyColor(mouseRight, rightHeld)
                 }
             }
-            if (showPing) {
+            if (showPing && updateSlow) {
                 val ms = com.endiq.turtlelauncher.feature.turtle.PingTracker.getPingMs()
-                val pingString = if (ms >= 0) "Ping: $ms ms" else "Ping: -- ms"
-                TaskExecutors.runInUIThread { pingText.text = pingString }
+                val pingString = when {
+                    com.endiq.turtlelauncher.feature.turtle.PingTracker.getTargetAddress().isEmpty() ->
+                        activity.getString(R.string.hud_ping_tap_to_set)
+                    ms >= 0 -> "Ping: $ms ms"
+                    else -> "Ping: -- ms"
+                }
+                pingText.text = pingString
             }
-            if (showRamGraph) {
-                val usedMb = MemoryUtils.getUsedDeviceMemory(activity) / (1024 * 1024)
-                val totalMb = MemoryUtils.getTotalDeviceMemory(activity) / (1024 * 1024)
-                TaskExecutors.runInUIThread { ramGraphView.pushSample(usedMb, totalMb) }
+            if (showRamGraph && updateSlow) {
+                val usedMb = (memoryInfo.totalMem - memoryInfo.availMem) / (1024 * 1024)
+                val totalMb = memoryInfo.totalMem / (1024 * 1024)
+                ramGraphView.pushSample(usedMb, totalMb)
             }
-            if (showRecordButton) {
+            if (showRecordButton && updateSlow) {
                 val recording = com.endiq.turtlelauncher.feature.turtle.ScreenRecorder.isRecording()
-                TaskExecutors.runInUIThread {
-                    recordButton.visibility = if (recording) View.VISIBLE else View.GONE
+                run {
+                    recordButton.visibility = View.VISIBLE
                     recordButton.text = if (recording) "⏹" else "⏺"
                     if (recording && AllSettings.recordingShowTimer.getValue()) {
                         val elapsed = com.endiq.turtlelauncher.feature.turtle.ScreenRecorder.getElapsedSeconds()
@@ -329,26 +355,74 @@ class GameMenuViewWrapper(
 
             if (showPing) {
                 com.endiq.turtlelauncher.feature.turtle.PingTracker.start()
+            } else {
+                com.endiq.turtlelauncher.feature.turtle.PingTracker.stop()
             }
+            pingText.contentDescription = activity.getString(R.string.hud_ping_target)
+            pingText.setOnClickListener { showPingTargetDialog() }
 
             val needsTimer = showMemory || showFPS || showCps || showKeystrokes || showMousestrokes ||
                 showStopwatch || showPlaytime || showSystemResources || showTime || showPing || showRamGraph ||
                 showRecordButton
             if (needsTimer) {
-                timer = Timer().apply {
-                    schedule(object : TimerTask() {
-                        override fun run() {
-                            updateInfoText()
-                        }
-                    }, 0, AllSettings.gameMenuInfoRefreshRate.getValue().toLong())
-                }
+                val interval = HudRefreshPolicy.intervalMs(
+                    AllSettings.gameMenuInfoRefreshRate.getValue().toLong(),
+                    showKeystrokes || showMousestrokes
+                )
+                refreshTask = object : Runnable {
+                    override fun run() {
+                        if (paused || disposed || !view.isAttachedToWindow) return
+                        updateInfoText()
+                        handler.postDelayed(this, interval)
+                    }
+                }.also { handler.postDelayed(it, interval) }
             }
         }
     }
 
-    private fun getUsedDeviceMemory(): String = formatFileSize(MemoryUtils.getUsedDeviceMemory(activity))
+    /** Lifecycle-owned polling: no HUD work or ping sockets while the game is hidden. */
+    fun onResume() {
+        if (disposed) return
+        paused = false
+        if (showInfo) thinkForHudVisibility()
+    }
 
-    private fun getTotalDeviceMemory(): String = formatFileSize(MemoryUtils.getTotalDeviceMemory(activity))
+    fun onPause() {
+        paused = true
+        cancelInfoTimer()
+    }
+
+    fun dispose() {
+        disposed = true
+        onPause()
+        hudScopeFx?.cancel()
+        buttonScopeFx?.cancel()
+        hudScopeFx = null
+        buttonScopeFx = null
+    }
+
+    private fun showPingTargetDialog() {
+        val input = android.widget.EditText(activity).apply {
+            setSingleLine(true)
+            hint = activity.getString(R.string.hud_ping_target_hint)
+            setText(com.endiq.turtlelauncher.feature.turtle.PingTracker.getTargetAddress())
+        }
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(activity)
+            .setTitle(R.string.hud_ping_target)
+            .setMessage(R.string.hud_ping_target_description)
+            .setView(input)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                if (com.endiq.turtlelauncher.feature.turtle.PingTracker.setTarget(input.text.toString())) {
+                    dialog.dismiss()
+                } else input.error = activity.getString(R.string.hud_ping_target_invalid)
+            }
+        }
+        dialog.show()
+    }
 
     /** Reads the current battery intent synchronously (sticky intent, no receiver actually registered). */
     private fun getBatteryPercent(): Int {
@@ -363,8 +437,9 @@ class GameMenuViewWrapper(
     }
 
     private fun cancelInfoTimer() {
-        timer?.cancel()
-        timer = null
+        refreshTask?.let { handler.removeCallbacks(it) }
+        refreshTask = null
+        com.endiq.turtlelauncher.feature.turtle.PingTracker.stop()
     }
 
     private fun getCurrentGravity(): FxGravity {

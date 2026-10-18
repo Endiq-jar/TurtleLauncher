@@ -25,11 +25,7 @@ object AutoSettingsOptimizer {
      */
     fun apply(context: Context, mcVersionId: String = "") {
         applyGraphics(context, mcVersionId)
-        if (AllSettings.fastBoot.getValue() && mcVersionId.isNotEmpty() &&
-            AllSettings.lastOptimizedVersion.getValue() == mcVersionId) {
-            Logging.i(TAG, "Fast Boot: skipping performance-tier re-tune (already applied for $mcVersionId)")
-            return
-        }
+        // Fast Boot must not cache a cold launch's thermal decision for all later sessions.
         applyPerformanceTier(context)
         if (mcVersionId.isNotEmpty()) {
             AllSettings.lastOptimizedVersion.put(mcVersionId).save()
@@ -100,9 +96,24 @@ object AutoSettingsOptimizer {
             }
         }
 
+        val previous = AllSettings.lastAutoGraphics.getValue().split('|')
+        val currentRenderer = AllSettings.renderer.getValue()
+        val currentDriver = AllSettings.driver.getValue()
+        val mayChangeRenderer = PerformancePolicy.mayAutoTune(
+            currentRenderer, previous.getOrNull(0)?.takeIf { it.isNotBlank() }, AllSettings.renderer.defaultValue
+        )
+        val mayChangeDriver = PerformancePolicy.mayAutoTune(
+            currentDriver, previous.getOrNull(1)?.takeIf { it.isNotBlank() }, AllSettings.driver.defaultValue
+        )
+        if (!mayChangeRenderer || !mayChangeDriver) {
+            Logging.i(TAG, "Keeping manually selected renderer/driver instead of overwriting it with auto recommendations")
+            return
+        }
         Logging.i(TAG, "Auto-selected renderer=$rendererUuid driver=$driver")
-        AllSettings.renderer.put(rendererUuid).save()
-        AllSettings.driver.put(driver).save()
+        if (currentRenderer != rendererUuid) AllSettings.renderer.put(rendererUuid).save()
+        if (currentDriver != driver) AllSettings.driver.put(driver).save()
+        val snapshot = "$rendererUuid|$driver"
+        if (AllSettings.lastAutoGraphics.getValue() != snapshot) AllSettings.lastAutoGraphics.put(snapshot).save()
     }
 
     private fun applyPerformanceTier(context: Context) {
@@ -134,44 +145,29 @@ object AutoSettingsOptimizer {
             Logging.i(TAG, "Capping FPS-boost profile regardless of RAM tier (thermal severe=$severelyThrottled, batterySaver=$powerSaving)")
         }
 
-        when {
-            severelyThrottled -> {
-                Logging.i(TAG, "Severe thermal throttling: forcing conservative profile, RAM=${appliedRam}MB")
-                AllSettings.resolutionRatio.put(70).save()
-                AllSettings.frameSkipping.put(true).save()
-                AllSettings.unlimitedFps.put(false).save()
-                AllSettings.lowLatencyRendering.put(false).save()
-                AllSettings.framePacing.put(false).save()
-                AllSettings.adaptiveFrameTiming.put(true).save()
-            }
-            totalRamMb < LOW_TIER_RAM_MB -> {
-                Logging.i(TAG, "Low-tier device (${totalRamMb}MB RAM): 80% resolution, frame skipping on, RAM=${appliedRam}MB")
-                AllSettings.resolutionRatio.put(80).save()
-                AllSettings.frameSkipping.put(true).save()
-                AllSettings.unlimitedFps.put(false).save()
-                AllSettings.lowLatencyRendering.put(false).save()
-                AllSettings.framePacing.put(false).save()
-                AllSettings.adaptiveFrameTiming.put(false).save()
-            }
-            totalRamMb < HIGH_TIER_RAM_MB || throttled -> {
-                Logging.i(TAG, "Mid-tier profile (${totalRamMb}MB RAM, capped=$throttled): full resolution, adaptive frame timing on, RAM=${appliedRam}MB")
-                AllSettings.resolutionRatio.put(100).save()
-                AllSettings.frameSkipping.put(false).save()
-                AllSettings.unlimitedFps.put(false).save()
-                AllSettings.lowLatencyRendering.put(false).save()
-                AllSettings.framePacing.put(false).save()
-                AllSettings.adaptiveFrameTiming.put(true).save()
-            }
-            else -> {
-                Logging.i(TAG, "High-tier device (${totalRamMb}MB RAM): full FPS Boost, RAM=${appliedRam}MB")
-                AllSettings.resolutionRatio.put(100).save()
-                AllSettings.frameSkipping.put(false).save()
-                AllSettings.unlimitedFps.put(true).save()
-                AllSettings.lowLatencyRendering.put(true).save()
-                AllSettings.framePacing.put(true).save()
-                AllSettings.adaptiveFrameTiming.put(true).save()
+        val previous = AllSettings.lastAutoPerformanceProfile.getValue().split(';')
+            .mapNotNull { entry ->
+                if ('=' !in entry) null else entry.substringBefore('=') to entry.substringAfter('=')
+            }.toMap().toMutableMap()
+        fun <T> tune(setting: com.endiq.turtlelauncher.setting.unit.AbstractSettingUnit<T>, value: T) {
+            val current = setting.getValue().toString()
+            if (PerformancePolicy.mayAutoTune(current, previous[setting.key], setting.defaultValue.toString())) {
+                if (current != value.toString()) setting.put(value).save()
+                previous[setting.key] = value.toString()
             }
         }
+        tune(AllSettings.resolutionRatio, PerformancePolicy.resolutionPercent(totalRamMb.toLong(), severelyThrottled))
+        // Never equate a large RAM capacity with permission to uncap the GPU or pre-touch
+        // a large heap. These features remain available as explicit user choices.
+        tune(AllSettings.unlimitedFps, false)
+        tune(AllSettings.lowLatencyRendering, false)
+        tune(AllSettings.framePacing, false)
+        tune(AllSettings.adaptiveFrameTiming, true)
+        val snapshot = previous.entries.sortedBy { it.key }.joinToString(";") { "${it.key}=${it.value}" }
+        if (AllSettings.lastAutoPerformanceProfile.getValue() != snapshot) {
+            AllSettings.lastAutoPerformanceProfile.put(snapshot).save()
+        }
+        Logging.i(TAG, "Sustainable auto profile: RAM=${appliedRam}MB, thermal capped=$throttled; manual overrides preserved")
     }
 
     private fun presetAdjustedRam(context: Context, baseline: Int): Int {
@@ -191,18 +187,21 @@ object AutoSettingsOptimizer {
     internal fun detectGpu(): String {
         queryGlRenderer()?.let { return it }
         return try {
-            val display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
-            EGL14.eglInitialize(display, null, 0, null, 0)
-            val vendor = EGL14.eglQueryString(display, EGL14.EGL_VENDOR) ?: ""
+            // queryGlRenderer owns a balanced EGL probe. Do not initialize another
+            // display here and leak its reference on the fallback path.
             val renderer = System.getProperty("ro.hardware.egl") ?: ""
-            val gpuFromBuild = Build.HARDWARE
-            "$vendor $renderer $gpuFromBuild"
+            "$renderer ${Build.HARDWARE}"
         } catch (e: Exception) {
             Build.HARDWARE
         }
     }
 
     private fun queryGlRenderer(): String? {
+        val previousDisplay = EGL14.eglGetCurrentDisplay()
+        val previousContext = EGL14.eglGetCurrentContext()
+        val previousRead = EGL14.eglGetCurrentSurface(EGL14.EGL_READ)
+        val previousDraw = EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW)
+        var initialized = false
         var display = EGL14.EGL_NO_DISPLAY
         var context = EGL14.EGL_NO_CONTEXT
         var surface = EGL14.EGL_NO_SURFACE
@@ -210,7 +209,10 @@ object AutoSettingsOptimizer {
             display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
             if (display == EGL14.EGL_NO_DISPLAY) return null
             val version = IntArray(2)
-            if (!EGL14.eglInitialize(display, version, 0, version, 1)) return null
+            if (display != previousDisplay) {
+                if (!EGL14.eglInitialize(display, version, 0, version, 1)) return null
+                initialized = true
+            }
 
             val configAttribs = intArrayOf(
                 EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
@@ -244,6 +246,10 @@ object AutoSettingsOptimizer {
                 EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
                 if (surface != EGL14.EGL_NO_SURFACE) EGL14.eglDestroySurface(display, surface)
                 if (context != EGL14.EGL_NO_CONTEXT) EGL14.eglDestroyContext(display, context)
+                if (previousDisplay != EGL14.EGL_NO_DISPLAY) {
+                    EGL14.eglMakeCurrent(previousDisplay, previousDraw, previousRead, previousContext)
+                }
+                if (initialized) EGL14.eglTerminate(display)
             }
         }
     }

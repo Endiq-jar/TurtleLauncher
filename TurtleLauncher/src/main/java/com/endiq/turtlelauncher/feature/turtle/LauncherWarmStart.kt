@@ -48,6 +48,7 @@ object LauncherWarmStart {
     fun warmStart(context: Context) {
         // Fast Boot game-file preload is gated by fastBoot and runs independently of the
         // smartWarmStart page-cache warming below.
+        if (TaskExecutors.isGameSessionActive) return
         warmGameFiles(context)
 
         if (!AllSettings.smartWarmStart.getValue()) return
@@ -56,9 +57,11 @@ object LauncherWarmStart {
         executor.execute {
             Trace.beginSection("LauncherWarmStart.warmStart")
             try {
+                if (TaskExecutors.isGameSessionActive) return@execute
                 warmRendererLibraries()
+                if (TaskExecutors.isGameSessionActive) return@execute
                 VersionsManager.getCurrentVersion()?.let { warmJavaRuntime(it) }
-                warmAuthentication(context)
+                if (!TaskExecutors.isGameSessionActive) warmAuthentication(context)
             } finally {
                 Trace.endSection()
                 alreadyRunning.set(false)
@@ -113,6 +116,7 @@ object LauncherWarmStart {
             val libNames = mutableListOf(renderer.getRendererLibrary())
             runCatching { libNames.addAll(renderer.getDlopenLibrary().value) }
             libNames.forEach { libName ->
+                if (TaskExecutors.isGameSessionActive) return
                 if (libName.isNotBlank() && !libName.startsWith("/")) {
                     warmReadFile(File(PathManager.DIR_NATIVE_LIB, libName))
                 }
@@ -148,7 +152,7 @@ object LauncherWarmStart {
     }
 
     private fun findFileByName(root: File, targetName: String, maxDepth: Int): File? {
-        if (maxDepth < 0) return null
+        if (maxDepth < 0 || TaskExecutors.isGameSessionActive) return null
         val children = root.listFiles() ?: return null
         for (child in children) {
             if (child.isFile && child.name == targetName) return child
@@ -166,7 +170,9 @@ object LauncherWarmStart {
         runCatching {
             file.inputStream().use { input ->
                 val buffer = ByteArray(WARM_READ_CHUNK)
-                while (input.read(buffer) >= 0) { /* reading pages it into the OS cache */ }
+                while (!TaskExecutors.isGameSessionActive && input.read(buffer) >= 0) {
+                    // Stop paging large runtime/renderer libraries into RAM once Play wins.
+                }
             }
         }
     }

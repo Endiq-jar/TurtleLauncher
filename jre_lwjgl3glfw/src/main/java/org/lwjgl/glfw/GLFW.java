@@ -1241,22 +1241,25 @@ public class GLFW
         }
     }
 
-    public static void glfwWaitEvents() {}
+    private static volatile Thread _turtleEventWaiter;
 
-    public static void glfwWaitEventsTimeout(double timeout) {
-        // Boardwalk: this isn't how you do a frame limiter, but oh well
-        // System.out.println("Frame limiter");
-    /*
-        try {
-            Thread.sleep((long)(timeout * 1000));
-        } catch (InterruptedException ie) {
-        }
-    */
-        // System.out.println("Out of the frame limiter");
-
+    public static void glfwWaitEvents() {
+        _turtleEventWaiter = Thread.currentThread();
+        // The legacy native input queue has no wake primitive. A bounded wait avoids
+        // spinning while still polling native touch/key events within 8ms.
+        java.util.concurrent.locks.LockSupport.parkNanos(8_000_000L);
+        glfwPollEvents();
     }
 
-    public static void glfwPostEmptyEvent() {}
+    public static void glfwWaitEventsTimeout(double timeout) {
+        _turtleEventWaiter = Thread.currentThread();
+        java.util.concurrent.locks.LockSupport.parkNanos((long) (Math.min(timeout, .008) * 1_000_000_000.0));
+        glfwPollEvents();
+    }
+
+    public static void glfwPostEmptyEvent() {
+        java.util.concurrent.locks.LockSupport.unpark(_turtleEventWaiter);
+    }
 
     public static int glfwGetInputMode(@NativeType("GLFWwindow *") long window, int mode) {
         return internalGetWindow(window).inputModes.get(mode);

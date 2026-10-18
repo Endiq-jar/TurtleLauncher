@@ -29,7 +29,7 @@ object CustomDns : Dns {
         val serverIp = SERVERS[serverKey]
         if (serverIp == null) {
             // "default" (or an unrecognised value) → let the system resolver handle it.
-            return Dns.SYSTEM.lookup(hostname)
+            return systemLookup(hostname)
         }
 
         cache[hostname]?.let { entry ->
@@ -40,10 +40,26 @@ object CustomDns : Dns {
             .onFailure { e -> Logging.w("CustomDns", "Query for $hostname via $serverKey ($serverIp) failed, falling back to system DNS", e) }
             .getOrNull()
             ?.takeIf { it.isNotEmpty() }
-            ?: return Dns.SYSTEM.lookup(hostname)
+            ?: return systemLookup(hostname)
 
         cache[hostname] = CacheEntry(resolved, System.currentTimeMillis() + CACHE_TTL_MS)
         return resolved
+    }
+
+    /** Resolve via the system resolver, wrapping any SecurityException/RuntimeException
+     *  that Android can throw when the network is unavailable into the UnknownHostException
+     *  OkHttp expects (so we don't crash callers that only catch IOException). */
+    private fun systemLookup(hostname: String): List<InetAddress> {
+        return try {
+            Dns.SYSTEM.lookup(hostname)
+        } catch (e: Exception) {
+            Logging.w("CustomDns", "System DNS lookup for $hostname failed", e)
+            // OkHttp's Dns contract: throw UnknownHostException on failure. If the system
+            // already threw that, rethrow; otherwise wrap so downstream `catch (IOException)`
+            // handlers (and our runCatching blocks) see a consistent, network-type exception.
+            if (e is java.net.UnknownHostException) throw e
+            throw java.net.UnknownHostException("Unable to resolve host \"$hostname\": ${e.message}").apply { initCause(e) }
+        }
     }
 
     /** Sends one A-record query for [hostname] to [serverIp]:53 and returns every address found. */

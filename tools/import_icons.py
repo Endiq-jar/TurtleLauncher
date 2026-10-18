@@ -38,6 +38,14 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 DRAWABLE = REPO / "TurtleLauncher/src/main/res/drawable"
 
+# Reuse the path normalizer so that compact upstream SVGs (which Android's
+# native PathParser refuses — e.g. `00-` arc flags or `.123.456` back-to-back
+# decimals producing "a needs to be followed by a multiple of 7 floats") are
+# always written out as fully tokenized, Android-safe pathData. See
+# tools/fix_paths.py for details and the crash this prevents.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fix_paths import normalize_path  # noqa: E402
+
 # target resource name -> (source set, upstream icon name)
 # Sets: tabler (outline), tabler-filled, flowbite (outline, found by name
 # anywhere under src/outline), flowbite-solid, simple (brand logo, filled).
@@ -185,7 +193,10 @@ def convert(svg_text: str, kind: str) -> str:
     out = []
     for attrs_raw in PATH_RE.findall(svg_text):
         attrs = dict(ATTR_RE.findall(attrs_raw))
-        d = " ".join(attrs.get("d", "").split())
+        # Collapse whitespace, then tokenize to guarantee Android-safe
+        # number/flag separation (avoids `Resources$NotFoundException`
+        # crashes from compact upstream SVGs like Simple Icons' discord).
+        d = normalize_path(" ".join(attrs.get("d", "").split()))
         if not d:
             continue
         even_odd = attrs.get("fill-rule") == "evenodd" or attrs.get("clip-rule") == "evenodd"

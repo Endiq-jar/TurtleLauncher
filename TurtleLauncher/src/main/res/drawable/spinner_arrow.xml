@@ -4,13 +4,13 @@
     android:viewportWidth="128"
     android:viewportHeight="128">
   <path
-      android:pathData="M17,87.5L64,40.5"
+      android:pathData="M 17 87.5 L 64 40.5"
       android:strokeWidth="12"
       android:fillColor="#00000000"
       android:strokeColor="@color/turtle_icon_color"
       android:strokeLineCap="square"/>
   <path
-      android:pathData="M64,40.5L111,87.5"
+      android:pathData="M 64 40.5 L 111 87.5"
       android:strokeWidth="12"
       android:fillColor="#00000000"
       android:strokeColor="@color/turtle_icon_color"

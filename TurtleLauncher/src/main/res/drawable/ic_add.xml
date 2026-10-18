@@ -11,12 +11,12 @@
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M12 5l0 14" />
+        android:pathData="M 12 5 l 0 14" />
     <path
         android:fillColor="@android:color/transparent"
         android:strokeColor="#FF000000"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M5 12l14 0" />
+        android:pathData="M 5 12 l 14 0" />
 </vector>

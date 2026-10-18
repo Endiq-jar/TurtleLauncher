@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="animated_logo_request" type="id" />
+    <item name="animated_logo_target" type="id" />
 </resources>

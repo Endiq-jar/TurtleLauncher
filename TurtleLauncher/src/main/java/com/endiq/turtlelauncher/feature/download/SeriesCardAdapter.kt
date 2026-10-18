@@ -1,5 +1,6 @@
 package com.endiq.turtlelauncher.feature.download
 
+import android.graphics.drawable.LayerDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.download.utils.SeriesBannerResolver
 import com.endiq.turtlelauncher.feature.download.utils.VersionSeriesCodenames
+import com.endiq.turtlelauncher.utils.anim.AnimatedLogo
 
 
 /**
@@ -44,7 +46,17 @@ class SeriesCardAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = cards[position]
 
-        holder.banner.setImageDrawable(SeriesBannerResolver.resolve(holder.itemView.context, card))
+        val art = SeriesBannerResolver.resolveArt(holder.itemView.context, card)
+        holder.banner.setImageDrawable(art.drawable)
+        // The watermarked series icon (grass block on release series, classic
+        // cobblestone/grass on the Beta/Alpha cards) animates only while the
+        // card is hovered, pressed or focused - see AnimatedLogo.
+        val layers = art.drawable as? LayerDrawable
+        if (layers != null && art.iconLayerIndex >= 0 && AnimatedLogo.isAnimatedLogo(card.iconRes)) {
+            AnimatedLogo.bindWatermark(holder.banner, layers, art.iconLayerIndex, card.iconRes)
+        } else {
+            AnimatedLogo.clear(holder.banner)
+        }
         holder.label.text = card.label
 
         val codename = VersionSeriesCodenames.of(card.label)
@@ -56,6 +68,11 @@ class SeriesCardAdapter(
         )
         holder.latestBadge.visibility = if (card.isLatest) View.VISIBLE else View.GONE
         holder.itemView.setOnClickListener { onCardClick(card) }
+    }
+
+    override fun onViewRecycled(holder: ViewHolder) {
+        AnimatedLogo.clear(holder.banner)
+        super.onViewRecycled(holder)
     }
 
     override fun getItemCount(): Int = cards.size

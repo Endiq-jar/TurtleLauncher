@@ -107,6 +107,41 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true" />
                 </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/no_blocklist_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/no_blocklist_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/no_blocklist"
+                        android:text="@string/setting_no_blocklist_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/no_blocklist_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/no_blocklist_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/no_blocklist"
+                        android:text="@string/setting_no_blocklist_desc" />
+
+                    <Switch
+                        android:id="@+id/no_blocklist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
     
                 <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
                     android:id="@+id/versionCustomInfo_layout"

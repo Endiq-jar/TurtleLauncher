@@ -941,6 +941,8 @@
     <string name="setting_dns_server_desc">Use a specific public DNS resolver for the launcher\'s network requests, instead of the device\'s default</string>
     <string name="setting_max_download_threads_title">Max Download Threads</string>
     <string name="setting_max_download_threads_desc">Maximum number of concurrent downloads when downloading multiple files simultaneously, but too many threads will cause launcher lag. 64 threads are sufficient!</string>
+    <string name="setting_no_blocklist_title">NoBlocklist</string>
+    <string name="setting_no_blocklist_desc">Bypass Mojang\'s blocked-servers list using the NoBlocklist agent (by MojoLauncher), so blocklisted multiplayer servers stay joinable. Turn off only if a version fails to start.</string>
     <string name="setting_version_isolation_title">Version Isolation</string>
     <string name="setting_version_isolation_desc">Enable version isolation for the game version\nWhen disabled, the game path will be .minecraft/\nWhen enabled, the game path will change to .minecraft/versions/&lt;version name&gt;/</string>
     <string name="setting_version_custom_info_title">Custom Info</string>

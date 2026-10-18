@@ -13,6 +13,9 @@ class FileItemBean(
     @JvmField val size: Long?
 ) : Comparable<FileItemBean?> {
     @JvmField var image: Drawable? = null
+    /** When non-zero, an R.drawable animated logo to show via AnimatedLogo
+     *  (static poster until the row is hovered/pressed) instead of [image]. */
+    @JvmField var animatedIconRes: Int = 0
     @JvmField var file: File? = null
     @JvmField var isHighlighted: Boolean = false
     @JvmField var isCanCheck: Boolean = true

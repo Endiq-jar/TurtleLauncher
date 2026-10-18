@@ -452,6 +452,13 @@ class AllSettings {
         // calls), independent of the download-source (BMCLAPI) mirror above.
         @JvmStatic val dnsServer                = StringSettingUnit("dnsServer", "cloudflare")
 
+        /** NoBlocklist (MojoLauncher) javaagent: stops the game client from fetching
+         *  Mojang's blocked-servers list, so servers Mojang blocklisted (mostly
+         *  EULA-flagged ones) stay joinable. Passed as -javaagent in LaunchArgs.
+         *  Supported by upstream on 1.9.3 through 26.x; the agent prints
+         *  "[NoBlocklist] ..." to the game log when it patches java.net.URL. */
+        @JvmStatic val noBlocklistEnabled       = BooleanSettingUnit("noBlocklistEnabled", true)
+
         // ── Terracotta (Friends/LAN) ──────────────────────────────────────────
         @JvmStatic val enableTerracottaNodes    = BooleanSettingUnit("enableTerracottaNodes", false)
         @JvmStatic val terracottaNodes          = StringSettingUnit("terracottaNodes", "")

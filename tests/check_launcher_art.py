@@ -44,6 +44,17 @@ for path in (root / "res/drawable-nodpi").glob("image_background_*.webp"):
     assert not any(kind == b"ANIM" for kind, _ in chunks(path)), "Wallpapers must remain static"
     assert f"R.drawable.{path.stem}" in manager, f"Unwired background {path.stem}"
     assert path.stat().st_size < 100_000
+# Logos must only animate on interaction (hover / press / focus / click), never on
+# their own when a screen appears - idle screens must stay free.
+assert "ACTION_HOVER_ENTER" in binding, "hover-to-animate wiring missing"
+assert "ACTION_DOWN" in binding, "press-to-animate wiring missing"
+assert "OnGlobalFocusChangeListener" in binding, "focus-to-animate wiring missing"
+assert "playIfVisible" not in binding, "logos must not auto-play when merely visible"
+logo_view = (root / "java/com/endiq/turtlelauncher/ui/view/LogoImageView.kt").read_text()
+assert "AnimatedLogo.playOnce" in logo_view, "standalone logos must animate on click"
+file_bean = (root / "java/com/endiq/turtlelauncher/ui/subassembly/filelist/FileItemBean.kt").read_text()
+assert "animatedIconRes" in file_bean, "version-list rows must carry their animated logo"
+
 strings = ET.parse(root / "res/values/launcher_improvements.xml").getroot()
 assert len(strings.find("string-array[@name='built_in_background_names']")) == 4
 assert (root / "res/drawable/image_error_background.webp").is_file()

@@ -2,7 +2,6 @@ package com.endiq.turtlelauncher.ui.subassembly.versionlist;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
@@ -116,23 +115,25 @@ public class VersionListView extends LinearLayout {
         this.fileRecyclerViewCreator.setFilterString(filterString);
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     private List<FileItemBean> showVersions(VersionType versionType) {
         switch (versionType) {
             case SNAPSHOT:
-                return getVersion(context.getDrawable(R.drawable.ic_command_block), getVersionPair(snapshotList));
+                return getVersion(R.drawable.ic_command_block, getVersionPair(snapshotList));
             case BETA:
-                return getVersion(context.getDrawable(R.drawable.ic_old_cobblestone), getVersionPair(betaList));
+                return getVersion(R.drawable.ic_old_cobblestone, getVersionPair(betaList));
             case ALPHA:
-                return getVersion(context.getDrawable(R.drawable.ic_old_grass_block), getVersionPair(alphaList));
+                return getVersion(R.drawable.ic_old_grass_block, getVersionPair(alphaList));
             case RELEASE:
             default:
-                return getVersion(context.getDrawable(R.drawable.ic_minecraft), getVersionPair(releaseList));
+                return getVersion(R.drawable.ic_minecraft, getVersionPair(releaseList));
         }
     }
 
-    private List<FileItemBean> getVersion(Drawable icon, Pair<String, Date>[] namesPair) {
-        List<FileItemBean> itemBeans = FileRecyclerViewCreator.loadItemBean(icon, namesPair);
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private List<FileItemBean> getVersion(int iconRes, Pair<String, Date>[] namesPair) {
+        // The drawable is the static poster/fallback; rows animate the logo
+        // (hover/press/focus) through AnimatedLogo - see FileItemBean.animatedIconRes.
+        List<FileItemBean> itemBeans = FileRecyclerViewCreator.loadItemBean(context.getDrawable(iconRes), iconRes, namesPair);
         TaskExecutors.runInUIThread(() -> fileRecyclerViewCreator.loadData(itemBeans));
         return itemBeans;
     }

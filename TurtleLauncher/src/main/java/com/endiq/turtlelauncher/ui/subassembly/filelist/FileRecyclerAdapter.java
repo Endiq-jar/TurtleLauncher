@@ -19,6 +19,7 @@ import com.endiq.turtlelauncher.databinding.ItemFileListViewBinding;
 import com.endiq.turtlelauncher.feature.turtle.heatmap.PerfEstimate;
 import com.endiq.turtlelauncher.feature.turtle.heatmap.PerfTier;
 import com.endiq.turtlelauncher.ui.dialog.TipDialog;
+import com.endiq.turtlelauncher.utils.anim.AnimatedLogo;
 import com.endiq.turtlelauncher.utils.file.FileTools;
 import com.endiq.turtlelauncher.utils.image.ImageUtils;
 import com.endiq.turtlelauncher.utils.stringutils.StringUtils;
@@ -46,6 +47,13 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
     @Override
     public void onBindViewHolder(@NonNull InnerHolder holder, int position) {
         holder.setData(mData.get(position), position);
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull InnerHolder holder) {
+        // Stop any hover/press logo animation before the row is pooled.
+        AnimatedLogo.clear(holder.binding.image);
+        super.onViewRecycled(holder);
     }
 
     @Override
@@ -264,11 +272,16 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
             }
 
             if (file != null && file.isFile() && ImageUtils.isImage(file)) {
+                AnimatedLogo.clear(binding.image);
                 Glide.with(context).load(file)
                         .override(binding.image.getWidth(), binding.image.getHeight())
                         .centerCrop()
                         .into(new DrawableImageViewTarget(binding.image));
+            } else if (fileItemBean.animatedIconRes != 0) {
+                // Version-era logos: static poster until the row is hovered/pressed/focused.
+                AnimatedLogo.bind(binding.image, fileItemBean.animatedIconRes);
             } else {
+                AnimatedLogo.clear(binding.image);
                 binding.image.setImageDrawable(fileItemBean.image);
             }
         }

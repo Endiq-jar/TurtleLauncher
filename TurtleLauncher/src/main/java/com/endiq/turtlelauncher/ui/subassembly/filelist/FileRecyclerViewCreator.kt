@@ -157,9 +157,17 @@ class FileRecyclerViewCreator(
 
         @JvmStatic
         fun loadItemBean(drawable: Drawable, namesPair: Array<Pair<String, Date>>): List<FileItemBean> {
+            return loadItemBean(drawable, 0, namesPair)
+        }
+
+        /** [animatedIconRes] rows render through AnimatedLogo (hover/click to animate). */
+        @JvmStatic
+        fun loadItemBean(drawable: Drawable, animatedIconRes: Int, namesPair: Array<Pair<String, Date>>): List<FileItemBean> {
             val itemBeans: MutableList<FileItemBean> = ArrayList()
             for (pair in namesPair) {
-                itemBeans.add(FileItemBean(pair.first, pair.second, drawable))
+                val bean = FileItemBean(pair.first, pair.second, drawable)
+                bean.animatedIconRes = animatedIconRes
+                itemBeans.add(bean)
             }
             return itemBeans
         }

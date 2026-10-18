@@ -47,6 +47,13 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
             binding.versionIsolation
         )
 
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.noBlocklistEnabled,
+            binding.noBlocklistLayout,
+            binding.noBlocklist
+        )
+
         EditTextSettingsWrapper(
             AllSettings.versionCustomInfo,
             binding.versionCustomInfoLayout,

@@ -60,7 +60,7 @@
   <a href="#-installation">Installation</a>
   <br />
   <a href="#-built-with">Technology</a> ·
-  <a href="#-roadmap">Roadmap</a> ·
+  <a href="#%EF%B8%8F-roadmap">Roadmap</a> ·
   <a href="#-faq">FAQ</a> ·
   <a href="#-contributing">Contributing</a>
 </p>

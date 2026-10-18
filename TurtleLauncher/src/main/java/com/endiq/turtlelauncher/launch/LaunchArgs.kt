@@ -88,20 +88,6 @@ class LaunchArgs(
     private fun getJavaArgs(): List<String> {
         val argsList: MutableList<String> = ArrayList()
 
-        // NoBlocklist (MojoLauncher): a tiny javaagent that retransmits
-        // java.net.URL so requests to sessionserver.mojang.com/blockedservers
-        // fail - the client then never learns Mojang's blocked-server list and
-        // blocklisted servers stay joinable. It catches its own failures and
-        // removes itself after the one transform, so a broken agent degrades
-        // to vanilla behaviour instead of breaking the launch.
-        if (com.endiq.turtlelauncher.setting.AllSettings.noBlocklistEnabled.getValue()) {
-            if (LibPath.NO_BLOCKLIST.isFile) {
-                argsList.add("-javaagent:${LibPath.NO_BLOCKLIST.absolutePath}")
-            } else {
-                Logging.e("LaunchArgs", "NoBlocklist agent missing at ${LibPath.NO_BLOCKLIST.absolutePath} - launching without it")
-            }
-        }
-
         if (AccountUtils.isOtherLoginAccount(account)) {
             val baseUrl = account.otherBaseUrl ?: ""
             if (baseUrl.contains("auth.mc-user.com") || baseUrl.contains("nide8auth")) {

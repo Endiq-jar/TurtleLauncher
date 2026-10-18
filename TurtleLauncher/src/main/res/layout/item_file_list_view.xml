@@ -9,7 +9,7 @@
     app:ripple_for_constraint="true"
     tools:ignore="ContentDescription,HardcodedText">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/image"
         android:layout_width="@dimen/_18sdp"
         android:layout_height="@dimen/_18sdp"

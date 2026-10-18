@@ -93,7 +93,7 @@
 
                 </LinearLayout>
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/turtle_client_check"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
@@ -117,7 +117,7 @@
                 android:paddingHorizontal="@dimen/_8sdp"
                 android:paddingVertical="@dimen/_12sdp">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/fps_boost_icon"
                     android:layout_width="@dimen/_36sdp"
                     android:layout_height="@dimen/_36sdp"
@@ -151,7 +151,7 @@
 
                 </LinearLayout>
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/fps_boost_check"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"

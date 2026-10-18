@@ -1,10 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- Source: Tabler Icons (MIT) icons/outline/chevron-right.svg - converted by tools/import_icons.py; see docs/ICONS.md -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
+    android:tint="@color/black_or_white"
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:fillColor="@android:color/white"
-        android:pathData="M8.59,16.59L13.17,12L8.59,7.41L10,6l6,6-6,6-1.41,-1.41z"/>
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M9 6l6 6l-6 6" />
 </vector>

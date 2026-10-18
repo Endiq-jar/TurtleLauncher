@@ -16,7 +16,7 @@
         android:paddingHorizontal="@dimen/space_l"
         android:paddingVertical="@dimen/space_m">
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/sub_settings_back_button"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -26,7 +26,7 @@
             android:tint="@color/turtle_text_secondary"
             android:contentDescription="@string/generic_return"/>
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginStart="@dimen/space_s"
@@ -146,7 +146,7 @@
                         android:layout_toStartOf="@id/renderer_manager_button"
                         android:text="@string/generic_default" />
 
-                    <ImageButton
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
                         android:id="@+id/renderer_manager_button"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -156,7 +156,7 @@
                         android:src="@drawable/ic_setting_video"
                         android:background="?android:attr/selectableItemBackgroundBorderless"/>
     
-                    <ImageButton
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
                         android:id="@+id/renderer_download"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -195,7 +195,7 @@
                         android:layout_toStartOf="@id/renderer_local_import_manage"
                         android:text="@string/setting_renderer_local_import_desc" />
     
-                    <ImageButton
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
                         android:id="@+id/renderer_local_import_manage"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -234,7 +234,7 @@
                         android:layout_toStartOf="@id/driver_download"
                         android:text="@string/generic_default" />
     
-                    <ImageButton
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
                         android:id="@+id/driver_download"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -494,7 +494,7 @@
                         android:layout_toStartOf="@+id/alternate_surface_warning"
                         android:text="@string/setting_use_surface_view_desc" />
     
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/alternate_surface_warning"
                         android:layout_width="@dimen/_24sdp"
                         android:layout_height="@dimen/_24sdp"

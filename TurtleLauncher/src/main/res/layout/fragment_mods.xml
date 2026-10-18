@@ -151,7 +151,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/software_private"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent">
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/imageView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -180,7 +180,7 @@
                     app:layout_constraintBottom_toTopOf="@id/multi_select_files"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent">
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/imageView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

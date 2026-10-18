@@ -1,12 +1,15 @@
+<!-- Source: Tabler Icons (MIT) icons/outline/message-circle.svg - converted by tools/import_icons.py; see docs/ICONS.md -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="300dp"
-    android:height="300dp"
+    android:width="24dp"
+    android:height="24dp"
     android:tint="@color/black_or_white"
-    android:viewportWidth="512"
-    android:viewportHeight="512">
-
+    android:viewportWidth="24"
+    android:viewportHeight="24">
     <path
-        android:fillColor="#000000"
-        android:pathData="M256,64C132.29,64 32,150.42 32,256c0,45.63 18.7,87.42 50,120.35V464l83.6,-45.28C197.06,442.1 226,448 256,448c123.71,0 224,-86.42 224,-192S379.71,64 256,64zM160,288c-17.67,0 -32,-14.33 -32,-32s14.33,-32 32,-32s32,14.33 32,32S177.67,288 160,288zM256,288c-17.67,0 -32,-14.33 -32,-32s14.33,-32 32,-32s32,14.33 32,32S273.67,288 256,288zM352,288c-17.67,0 -32,-14.33 -32,-32s14.33,-32 32,-32s32,14.33 32,32S369.67,288 352,288z" />
-
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1" />
 </vector>

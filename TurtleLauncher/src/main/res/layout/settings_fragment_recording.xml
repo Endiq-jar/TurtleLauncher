@@ -16,7 +16,7 @@
         android:paddingHorizontal="@dimen/space_l"
         android:paddingVertical="@dimen/space_m">
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/sub_settings_back_button"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -26,7 +26,7 @@
             android:tint="@color/turtle_text_secondary"
             android:contentDescription="@string/generic_return"/>
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginStart="@dimen/space_s"
@@ -93,7 +93,7 @@
                         android:layout_toStartOf="@+id/openRecordingsGallery_chevron"
                         android:text="@string/settings_row_recordings_gallery_desc" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/openRecordingsGallery_chevron"
                         android:layout_width="20dp"
                         android:layout_height="20dp"

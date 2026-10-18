@@ -51,7 +51,7 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/operate"
         android:layout_width="@dimen/_28sdp"
         android:layout_height="@dimen/_28sdp"

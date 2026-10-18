@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/back_button"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -41,7 +41,7 @@
             android:ellipsize="middle"
             android:textColor="@color/turtle_text_primary"/>
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/log_viewer_copy_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
@@ -52,7 +52,7 @@
             android:tint="@color/accent_primary"
             android:contentDescription="@string/share_logs_copy_clipboard"/>
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/log_viewer_share_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
@@ -63,7 +63,7 @@
             android:tint="@color/accent_primary"
             android:contentDescription="@string/share_logs_share_log"/>
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/log_viewer_upload_button"
             android:layout_width="32dp"
             android:layout_height="32dp"

@@ -1,13 +1,22 @@
+<!-- Source: Tabler Icons (MIT) icons/outline/copy.svg - converted by tools/import_icons.py; see docs/ICONS.md -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="30dp"
-    android:height="30dp"
+    android:width="24dp"
+    android:height="24dp"
     android:tint="@color/black_or_white"
-    android:viewportWidth="30"
-    android:viewportHeight="30">
-  <path
-      android:fillColor="#000000"
-      android:pathData="M11,24c-2.206,0 -4,-1.794 -4,-4V7H6C4.895,7 4,7.895 4,9v16c0,1.105 0.895,2 2,2h13c1.105,0 2,-0.895 2,-2v-1H11z"/>
-  <path
-      android:fillColor="#000000"
-      android:pathData="M25.707,7.793l-5.5,-5.5C20.019,2.105 19.765,2 19.5,2H11C9.895,2 9,2.895 9,4v16c0,1.105 0.895,2 2,2h13c1.105,0 2,-0.895 2,-2V8.5C26,8.235 25.895,7.981 25.707,7.793zM20,9c-0.552,0 -1,-0.448 -1,-1V3.904L24.096,9H20z"/>
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" />
 </vector>

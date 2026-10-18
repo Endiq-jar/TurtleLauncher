@@ -35,9 +35,6 @@ import com.endiq.turtlelauncher.task.TaskExecutors
  * listeners installed here are non-consuming and are removed again on detach/clear.
  */
 object AnimatedLogo {
-    /** How far up the hierarchy to look for the clickable row/card that owns a logo. */
-    private const val MAX_PARENT_HOPS = 5
-
     private fun rawResourceFor(resource: Int): Int = when (resource) {
         R.drawable.ic_minecraft -> R.raw.ic_minecraft
         R.drawable.ic_turtle_full -> R.raw.ic_turtle_full_animated
@@ -54,6 +51,7 @@ object AnimatedLogo {
 
     @JvmStatic
     fun bind(view: ImageView, resource: Int) {
+        AnimatedIcon.clear(view) // a view is either a WebP logo or a vector icon
         clear(view)
         val static = ContextCompat.getDrawable(view.context, resource)
         view.setImageDrawable(static)
@@ -114,14 +112,14 @@ object AnimatedLogo {
         private val view: ImageView,
         private val static: Drawable?,
         private val show: (Drawable?) -> Unit
-    ) : View.OnAttachStateChangeListener, DefaultLifecycleObserver {
+    ) : View.OnAttachStateChangeListener, DefaultLifecycleObserver, InteractionListener {
 
         private var owner: LifecycleOwner? = null
         private var animated: AnimatedImageDrawable? = null
 
         /** View whose hover/press/focus drives playback (row/card, or the logo itself). */
         private var target: View? = null
-        private var wiring: TargetWiring? = null
+        private var wiring: InteractionWiring? = null
         private var focusObserver: ViewTreeObserver? = null
 
         private var hovered = false
@@ -133,8 +131,8 @@ object AnimatedLogo {
         private var showingAnimated = false
         private var closed = false
 
-        /** Fed by [TargetWiring], the shared hover/touch listeners of the target row. */
-        fun onHover(event: MotionEvent) {
+        /** Fed by [InteractionWiring], the shared hover/touch listeners of the target row. */
+        override fun onHover(event: MotionEvent) {
             when (event.actionMasked) {
                 // HOVER_MOVE also (re)arms hover after a pause/resume missed the ENTER.
                 MotionEvent.ACTION_HOVER_ENTER, MotionEvent.ACTION_HOVER_MOVE ->
@@ -144,7 +142,7 @@ object AnimatedLogo {
             }
         }
 
-        fun onTouch(event: MotionEvent) {
+        override fun onTouch(event: MotionEvent) {
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> { pressed = true; update() }
                 MotionEvent.ACTION_UP -> { pressed = false; finishAfterTap() }
@@ -233,31 +231,16 @@ object AnimatedLogo {
 
         // -- interaction target wiring --------------------------------------
 
-        private fun resolveTarget(): View {
-            var current: View? = view
-            repeat(MAX_PARENT_HOPS) {
-                val candidate = current ?: return view
-                if (candidate.isClickable || candidate.isFocusable) return candidate
-                current = candidate.parent as? View
-            }
-            return view
-        }
+        private fun resolveTarget(): View = InteractionWiring.resolveTarget(view)
 
-        private fun isWithin(child: View, ancestor: View?): Boolean {
-            if (ancestor == null) return false
-            var current: View? = child
-            repeat(MAX_PARENT_HOPS + 1) {
-                if (current === ancestor) return true
-                current = current?.parent as? View
-            }
-            return false
-        }
+        private fun isWithin(child: View, ancestor: View?): Boolean =
+            InteractionWiring.isWithin(child, ancestor)
 
         private fun installTargetListeners() {
             removeTargetListeners()
             val resolved = resolveTarget()
             target = resolved
-            wiring = TargetWiring.of(resolved).also { it.attach(this) }
+            wiring = InteractionWiring.of(resolved).also { it.attach(this) }
             // Seed from the live state in case the pointer/focus is already here.
             hovered = resolved.isHovered
             focused = resolved.isFocused || view.isFocused
@@ -314,45 +297,4 @@ object AnimatedLogo {
         }
     }
 
-    /**
-     * One shared pair of hover/touch listeners per interaction target, fanning out to
-     * every logo bound inside it (a mod row can carry two animated icons). Listeners
-     * never consume events, and the last detach restores the target exactly - nothing
-     * else in the launcher installs hover/touch listeners on rows or logos.
-     */
-    private class TargetWiring(private val target: View) {
-        private val requests = mutableSetOf<Request>()
-
-        private val hoverListener = View.OnHoverListener { _, event ->
-            requests.toList().forEach { it.onHover(event) }
-            false
-        }
-        private val touchListener = View.OnTouchListener { _, event ->
-            requests.toList().forEach { it.onTouch(event) }
-            false
-        }
-
-        fun attach(request: Request) {
-            if (requests.isEmpty()) {
-                target.setOnHoverListener(hoverListener)
-                target.setOnTouchListener(touchListener)
-            }
-            requests.add(request)
-        }
-
-        fun detach(request: Request) {
-            requests.remove(request)
-            if (requests.isEmpty()) {
-                target.setOnHoverListener(null)
-                target.setOnTouchListener(null)
-                target.setTag(R.id.animated_logo_target, null)
-            }
-        }
-
-        companion object {
-            fun of(target: View): TargetWiring =
-                target.getTag(R.id.animated_logo_target) as? TargetWiring
-                    ?: TargetWiring(target).also { target.setTag(R.id.animated_logo_target, it) }
-        }
-    }
 }

@@ -11,7 +11,7 @@
     android:foreground="?attr/selectableItemBackground"
     android:padding="@dimen/_12sdp">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/renderer_icon"
         android:layout_width="@dimen/_28sdp"
         android:layout_height="@dimen/_28sdp"

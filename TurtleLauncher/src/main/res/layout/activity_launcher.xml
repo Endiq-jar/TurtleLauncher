@@ -157,7 +157,7 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.38"/>
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/hair"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -9,7 +9,7 @@
     android:padding="@dimen/_8sdp"
     app:ripple_for_constraint="true">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/download_imageview"
         android:layout_width="@dimen/_28sdp"
         android:layout_height="@dimen/_28sdp"
@@ -21,7 +21,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/download_link"
         android:layout_width="@dimen/_20sdp"
         android:layout_height="@dimen/_20sdp"

@@ -92,7 +92,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageButton
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
                 android:id="@+id/back_to_top"
                 android:layout_width="@dimen/_40sdp"
                 android:layout_height="@dimen/_40sdp"
@@ -240,7 +240,7 @@
                     android:visibility="gone"
                     tools:ignore="HardcodedText" />
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/launch_link"
                     android:layout_width="@dimen/_24sdp"
                     android:layout_height="@dimen/_24sdp"

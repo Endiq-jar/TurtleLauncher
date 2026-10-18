@@ -37,7 +37,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:ripple_for_relative="true">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/install_icon"
                     android:layout_width="@dimen/_24sdp"
                     android:layout_height="@dimen/_24sdp"
@@ -99,7 +99,7 @@
 
                 </com.angcyo.tablayout.DslTabLayout>
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/favorites_actions"
                     android:layout_width="@dimen/_24sdp"
                     android:layout_height="@dimen/_24sdp"

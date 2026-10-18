@@ -23,7 +23,7 @@
             android:text="@string/pixel_editor_title"
             android:textStyle="bold" />
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:id="@+id/pixelEditor_close"
             android:layout_width="@dimen/_28sdp"
             android:layout_height="@dimen/_28sdp"

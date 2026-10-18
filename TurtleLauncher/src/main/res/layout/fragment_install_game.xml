@@ -22,7 +22,7 @@
         android:paddingVertical="@dimen/_12sdp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:id="@+id/back"
             android:layout_width="@dimen/_28sdp"
             android:layout_height="@dimen/_28sdp"
@@ -90,7 +90,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/optifine_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -145,7 +145,7 @@
                         app:layout_constraintEnd_toStartOf="@id/optifine_delete"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/optifine_delete"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -170,7 +170,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/forge_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -223,7 +223,7 @@
                         app:layout_constraintEnd_toStartOf="@id/forge_delete"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/forge_delete"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -256,7 +256,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/cleanroom_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -310,7 +310,7 @@
                         app:layout_constraintEnd_toStartOf="@id/cleanroom_delete"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/cleanroom_delete"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -343,7 +343,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/modpack_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -383,7 +383,7 @@
 
                     </LinearLayout>
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/modpack_open"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -409,7 +409,7 @@
                 android:paddingVertical="@dimen/_12sdp"
                 app:ripple_for_constraint="true">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/neoforge_icon"
                     android:layout_width="@dimen/_36sdp"
                     android:layout_height="@dimen/_36sdp"
@@ -464,7 +464,7 @@
                     app:layout_constraintEnd_toStartOf="@id/neoforge_delete"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/neoforge_delete"
                     android:layout_width="@dimen/_32sdp"
                     android:layout_height="@dimen/_32sdp"
@@ -496,7 +496,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/fabric_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -550,7 +550,7 @@
                         app:layout_constraintEnd_toStartOf="@id/fabric_delete"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/fabric_delete"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -575,7 +575,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/fabric_api_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -629,7 +629,7 @@
                         app:layout_constraintEnd_toStartOf="@id/fabric_api_delete"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/fabric_api_delete"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -663,7 +663,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/quilt_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -716,7 +716,7 @@
                         app:layout_constraintEnd_toStartOf="@id/quilt_delete"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/quilt_delete"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"
@@ -741,7 +741,7 @@
                     android:paddingVertical="@dimen/_12sdp"
                     app:ripple_for_constraint="true">
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/quilt_api_icon"
                         android:layout_width="@dimen/_36sdp"
                         android:layout_height="@dimen/_36sdp"
@@ -794,7 +794,7 @@
                         app:layout_constraintEnd_toStartOf="@id/quilt_api_delete"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/quilt_api_delete"
                         android:layout_width="@dimen/_32sdp"
                         android:layout_height="@dimen/_32sdp"

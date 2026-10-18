@@ -17,7 +17,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:layout_width="@dimen/_20sdp"
             android:layout_height="@dimen/_20sdp"
             android:layout_marginStart="@dimen/_4sdp"
@@ -45,7 +45,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:layout_width="@dimen/_20sdp"
             android:layout_height="@dimen/_20sdp"
             android:layout_marginStart="@dimen/_4sdp"
@@ -75,7 +75,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:layout_width="@dimen/_20sdp"
             android:layout_height="@dimen/_20sdp"
             android:layout_marginStart="@dimen/_4sdp"

@@ -62,7 +62,7 @@
                 android:gravity="center_vertical"
                 android:padding="@dimen/space_m">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:layout_width="@dimen/_24sdp"
                     android:layout_height="@dimen/_24sdp"
                     android:src="@drawable/ic_music_note"
@@ -153,7 +153,7 @@
                 android:gravity="center_vertical"
                 android:padding="@dimen/space_m">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:layout_width="@dimen/_36sdp"
                     android:layout_height="@dimen/_36sdp"
                     android:background="@drawable/background_grid_card"
@@ -206,7 +206,7 @@
                 android:gravity="center_vertical"
                 android:padding="@dimen/space_m">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
                     android:src="@drawable/ic_speaker"

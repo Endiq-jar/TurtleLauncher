@@ -77,7 +77,7 @@
             app:layout_constraintTop_toTopOf="@+id/recycler_view"
             tools:ignore="HardcodedText" />
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/back_to_top"
             android:layout_width="@dimen/_40sdp"
             android:layout_height="@dimen/_40sdp"
@@ -145,7 +145,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/search_title" />
 
-            <ImageButton
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
                 android:id="@+id/search_view"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"

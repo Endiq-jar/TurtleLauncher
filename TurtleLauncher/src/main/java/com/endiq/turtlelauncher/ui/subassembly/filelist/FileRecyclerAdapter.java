@@ -19,6 +19,7 @@ import com.endiq.turtlelauncher.databinding.ItemFileListViewBinding;
 import com.endiq.turtlelauncher.feature.turtle.heatmap.PerfEstimate;
 import com.endiq.turtlelauncher.feature.turtle.heatmap.PerfTier;
 import com.endiq.turtlelauncher.ui.dialog.TipDialog;
+import com.endiq.turtlelauncher.utils.anim.AnimatedIcon;
 import com.endiq.turtlelauncher.utils.anim.AnimatedLogo;
 import com.endiq.turtlelauncher.utils.file.FileTools;
 import com.endiq.turtlelauncher.utils.image.ImageUtils;
@@ -51,8 +52,9 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
 
     @Override
     public void onViewRecycled(@NonNull InnerHolder holder) {
-        // Stop any hover/press logo animation before the row is pooled.
+        // Stop any hover/press logo/icon animation before the row is pooled.
         AnimatedLogo.clear(holder.binding.image);
+        AnimatedIcon.clear(holder.binding.image);
         super.onViewRecycled(holder);
     }
 
@@ -273,6 +275,7 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
 
             if (file != null && file.isFile() && ImageUtils.isImage(file)) {
                 AnimatedLogo.clear(binding.image);
+                AnimatedIcon.clear(binding.image);
                 Glide.with(context).load(file)
                         .override(binding.image.getWidth(), binding.image.getHeight())
                         .centerCrop()

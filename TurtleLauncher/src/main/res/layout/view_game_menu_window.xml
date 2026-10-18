@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/background_game_menu">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/settings_button"
         android:layout_width="@dimen/_28sdp"
         android:layout_height="@dimen/_28sdp"

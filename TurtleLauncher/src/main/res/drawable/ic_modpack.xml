@@ -1,12 +1,43 @@
+<!-- Source: Tabler Icons (MIT) icons/outline/package.svg - converted by tools/import_icons.py; see docs/ICONS.md -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
+    android:tint="@color/icon_tint"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <!-- Top -->
-    <path android:fillColor="#DFF2CE" android:pathData="M12,2 L20,6.5 L12,11 L4,6.5 Z" />
-    <!-- Left face -->
-    <path android:fillColor="#9CCF93" android:pathData="M4,6.5 L12,11 L12,21 L4,16.5 Z" />
-    <!-- Right face -->
-    <path android:fillColor="#7BAF6E" android:pathData="M20,6.5 L12,11 L12,21 L20,16.5 Z" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12 12l8 -4.5" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12 12l0 9" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12 12l-8 -4.5" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M16 5.25l-8 4.5" />
 </vector>

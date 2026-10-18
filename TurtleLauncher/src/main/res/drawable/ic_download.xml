@@ -1,12 +1,15 @@
+<!-- Source: Flowbite Icons (MIT) src/outline/**/arrow-down-to-bracket.svg - converted by tools/import_icons.py; see docs/ICONS.md -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:tint="@color/black_or_white"
+    android:tint="@color/icon_tint"
     android:viewportWidth="24"
     android:viewportHeight="24">
-
     <path
-        android:fillColor="#000000"
-        android:pathData="M5,20h14v-2H5V20zM19,9h-4V3H9v6H5l7,7L19,9z" />
-
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M4 15v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2m-8 1V4m0 12-4-4m4 4 4-4" />
 </vector>

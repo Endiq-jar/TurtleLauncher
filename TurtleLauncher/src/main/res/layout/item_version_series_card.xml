@@ -122,7 +122,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="ContentDescription" />
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/series_chevron"
         android:layout_width="@dimen/_12sdp"
         android:layout_height="@dimen/_12sdp"

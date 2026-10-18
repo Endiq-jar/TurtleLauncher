@@ -8,7 +8,7 @@
     android:orientation="vertical"
     tools:ignore="UseCompoundDrawables">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:layout_width="@dimen/_128sdp"
         android:layout_height="@dimen/_128sdp"
         android:adjustViewBounds="true"

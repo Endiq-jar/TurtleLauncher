@@ -67,7 +67,7 @@
             tools:text="128.4 MB  Oct 18, 2026  12:00"/>
     </LinearLayout>
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/recording_share"
         android:layout_width="24dp"
         android:layout_height="24dp"
@@ -77,7 +77,7 @@
         android:tint="@color/turtle_text_secondary"
         android:contentDescription="@string/generic_share"/>
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/recording_delete"
         android:layout_width="24dp"
         android:layout_height="24dp"

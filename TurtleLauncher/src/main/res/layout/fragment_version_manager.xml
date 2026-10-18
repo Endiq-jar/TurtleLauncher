@@ -41,7 +41,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/mods_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -62,7 +62,7 @@
                 app:layout_constraintStart_toEndOf="@+id/mods_icon"
                 app:layout_constraintTop_toBottomOf="@+id/title_textview" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/game_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -84,7 +84,7 @@
                 app:layout_constraintStart_toEndOf="@+id/game_icon"
                 app:layout_constraintTop_toBottomOf="@+id/shortcuts_mods" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/resource_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -106,7 +106,7 @@
                 app:layout_constraintStart_toEndOf="@+id/resource_icon"
                 app:layout_constraintTop_toBottomOf="@+id/game_path" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/world_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -128,7 +128,7 @@
                 app:layout_constraintStart_toEndOf="@+id/world_icon"
                 app:layout_constraintTop_toBottomOf="@+id/resource_path" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/shader_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -152,7 +152,7 @@
                 app:layout_constraintStart_toEndOf="@+id/shader_icon"
                 app:layout_constraintTop_toBottomOf="@+id/world_path" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/screenshot_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -176,7 +176,7 @@
                 app:layout_constraintStart_toEndOf="@+id/screenshot_icon"
                 app:layout_constraintTop_toBottomOf="@+id/shader_path" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/logs_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -198,7 +198,7 @@
                 app:layout_constraintStart_toEndOf="@+id/logs_icon"
                 app:layout_constraintTop_toBottomOf="@+id/screenshot_path" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/crash_report_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -254,7 +254,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/version_settings_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -276,7 +276,7 @@
                 app:layout_constraintStart_toEndOf="@+id/version_settings_icon"
                 app:layout_constraintTop_toBottomOf="@+id/title_manage_textview" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/rename_version_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -298,7 +298,7 @@
                 app:layout_constraintStart_toEndOf="@+id/rename_version_icon"
                 app:layout_constraintTop_toBottomOf="@+id/version_settings" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/copy_version_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
@@ -322,7 +322,7 @@
                 app:layout_constraintStart_toEndOf="@+id/copy_version_icon"
                 app:layout_constraintTop_toBottomOf="@+id/version_rename" />
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/delete_version_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"

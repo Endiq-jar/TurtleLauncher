@@ -19,7 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/back_button"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -29,7 +29,7 @@
             android:tint="@color/turtle_text_secondary"
             android:contentDescription="@string/generic_return"/>
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginStart="@dimen/space_s"
@@ -60,7 +60,7 @@
                 android:textColor="@color/turtle_text_secondary"/>
         </LinearLayout>
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/chat_mic_button"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -70,7 +70,7 @@
             android:tint="@color/turtle_text_secondary"
             android:contentDescription="@string/ai_voice_start"/>
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/clear_button"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -140,7 +140,7 @@
             android:textColor="@color/turtle_text_primary"
             android:textSize="13sp"/>
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/voice_stop"
             android:layout_width="32dp"
             android:layout_height="32dp"
@@ -179,7 +179,7 @@
             android:imeOptions="actionSend"
             android:importantForAutofill="no"/>
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/chat_send_button"
             android:layout_width="44dp"
             android:layout_height="44dp"

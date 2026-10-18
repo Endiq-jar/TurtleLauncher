@@ -10,7 +10,7 @@
     app:ripple_for_constraint="true"
     tools:ignore="ContentDescription">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/icon"
         android:layout_width="@dimen/_38sdp"
         android:layout_height="@dimen/_38sdp"
@@ -68,7 +68,7 @@
 
         <!-- Wardrobe button: opens WardrobeDialog (live preview + Change Skin / Change
              Cape), replacing the separate skin_button/cape_button that used to be here. -->
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/wardrobe_button"
             android:layout_width="@dimen/_28sdp"
             android:layout_height="@dimen/_28sdp"
@@ -79,7 +79,7 @@
             android:tint="@color/turtle_success"
             android:contentDescription="@string/account_wardrobe" />
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/refresh"
             android:layout_width="@dimen/_28sdp"
             android:layout_height="@dimen/_28sdp"
@@ -88,7 +88,7 @@
             android:scaleType="centerInside"
             android:src="@drawable/ic_refresh" />
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/delete"
             android:layout_width="@dimen/_28sdp"
             android:layout_height="@dimen/_28sdp"

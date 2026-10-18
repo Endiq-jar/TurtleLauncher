@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/_8sdp">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/mod_image"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/_8sdp">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/modpack_image"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/_8sdp">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/resource_pack_image"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
@@ -117,7 +117,7 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/_8sdp">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/shader_pack_image"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
@@ -143,7 +143,7 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/_8sdp">
 
-                <ImageView
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/world_image"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"

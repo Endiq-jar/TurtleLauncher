@@ -343,12 +343,10 @@ class AllSettings {
         @JvmStatic val highContrastMode         = BooleanSettingUnit("highContrastMode", false)
         @JvmStatic val fontFamily               = StringSettingUnit("fontFamily", "default")
 
-        @JvmStatic val showRecordButtonHud      = BooleanSettingUnit("showRecordButtonHud", true)
         @JvmStatic val recordingFrameRate       = IntSettingUnit("recordingFrameRate", 30)
         @JvmStatic val recordingBitrateMbps     = IntSettingUnit("recordingBitrateMbps", 8)
         @JvmStatic val recordingResolutionScale = IntSettingUnit("recordingResolutionScale", 100)
         @JvmStatic val recordingMaxDurationMin  = IntSettingUnit("recordingMaxDurationMin", 0) // 0 = unlimited
-        @JvmStatic val recordingShowTimer       = BooleanSettingUnit("recordingShowTimer", true)
         @JvmStatic val recordingCaptureAudio    = BooleanSettingUnit("recordingCaptureAudio", true)
         @JvmStatic val customBackgroundPath     = StringSettingUnit("customBackgroundPath", "")
         @JvmStatic val customBackgroundIsVideo  = BooleanSettingUnit("customBackgroundIsVideo", false)

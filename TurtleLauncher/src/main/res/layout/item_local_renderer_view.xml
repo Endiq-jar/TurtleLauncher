@@ -45,7 +45,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/delete"/>
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/delete"
         android:layout_width="@dimen/_24sdp"
         android:layout_height="@dimen/_24sdp"

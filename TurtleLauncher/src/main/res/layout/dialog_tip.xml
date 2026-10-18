@@ -15,7 +15,7 @@
         android:orientation="horizontal"
         tools:ignore="UseCompoundDrawables">
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:id="@+id/warning_icon"
             android:layout_width="@dimen/_20sdp"
             android:layout_height="@dimen/_20sdp"

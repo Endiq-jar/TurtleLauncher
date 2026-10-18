@@ -9,7 +9,7 @@
     android:minWidth="@dimen/dialog_min_width"
     tools:ignore="ContentDescription">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/close_button"
         android:layout_width="@dimen/_18sdp"
         android:layout_height="@dimen/_18sdp"
@@ -87,7 +87,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/copy_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -115,7 +115,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/edit_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -142,7 +142,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/rename_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -171,7 +171,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/share_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -210,7 +210,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/move_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -237,7 +237,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/delete_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -264,7 +264,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/more_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -293,7 +293,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/zip_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"
@@ -321,7 +321,7 @@
             android:layout_height="@dimen/_48sdp"
             android:background="?android:attr/selectableItemBackground">
 
-            <ImageView
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                 android:id="@+id/extract_image"
                 android:layout_width="@dimen/_24sdp"
                 android:layout_height="@dimen/_24sdp"

@@ -1,8 +1,6 @@
 package com.endiq.turtlelauncher.ui.subassembly.modlist
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +12,7 @@ import com.endiq.turtlelauncher.feature.download.enums.DependencyType
 import com.endiq.turtlelauncher.feature.download.enums.ModLoader
 import com.endiq.turtlelauncher.feature.version.utils.VersionIconUtils
 import com.endiq.turtlelauncher.feature.version.VersionsManager
+import com.endiq.turtlelauncher.utils.anim.AnimatedLogo
 
 class ModListAdapter(
     private val fragment: ModListFragment,
@@ -28,6 +27,12 @@ class ModListAdapter(
 
     override fun onBindViewHolder(holder: InnerHolder, position: Int) {
         holder.setData(mData?.getOrNull(position) ?: return)
+    }
+
+    override fun onViewRecycled(holder: InnerHolder) {
+        // Stop any hover/press logo animation before the row is pooled.
+        holder.clearAnimatedLogos()
+        super.onViewRecycled(holder)
     }
 
     override fun getItemCount(): Int {
@@ -58,8 +63,15 @@ class ModListAdapter(
             }
             binding.apply {
                 modVersionId.text = item.title
-                val modLoaderInfo = getModLoaderInfo(mContext, item.modloader)
-                modloaderIcon.setImageDrawable(modLoaderInfo.first)
+                val modLoaderInfo = getModLoaderInfo(item.modloader)
+                // The vanilla grass block is an animated logo: poster until the
+                // row is hovered/pressed/focused. Loader icons stay static.
+                if (AnimatedLogo.isAnimatedLogo(modLoaderInfo.first)) {
+                    AnimatedLogo.bind(modloaderIcon, modLoaderInfo.first)
+                } else {
+                    AnimatedLogo.clear(modloaderIcon)
+                    modloaderIcon.setImageDrawable(ContextCompat.getDrawable(mContext, modLoaderInfo.first))
+                }
                 modLoaderInfo.second?.let { name ->
                     modloaderName.visibility = View.VISIBLE
                     modloaderName.text = name
@@ -91,19 +103,22 @@ class ModListAdapter(
             }
         }
 
+        fun clearAnimatedLogos() {
+            AnimatedLogo.clear(binding.modloaderIcon)
+            AnimatedLogo.clear(binding.currentVersionIcon)
+        }
+
         /**
-         * @return icon and name of the mod loader, or the vanilla grass block and an empty string
+         * @return icon resource and name of the mod loader, or the vanilla grass block and an empty string
          */
-        private fun getModLoaderInfo(context: Context, modLoader: ModLoader?): Pair<Drawable?, String?> {
-            val loaderInfo: Pair<Int, String?> = when (modLoader) {
+        private fun getModLoaderInfo(modLoader: ModLoader?): Pair<Int, String?> {
+            return when (modLoader) {
                 ModLoader.FORGE -> Pair(R.drawable.ic_anvil, ModLoader.FORGE.loaderName)
                 ModLoader.NEOFORGE -> Pair(R.drawable.ic_neoforge, ModLoader.NEOFORGE.loaderName)
                 ModLoader.FABRIC -> Pair(R.drawable.ic_fabric, ModLoader.FABRIC.loaderName)
                 ModLoader.QUILT -> Pair(R.drawable.ic_quilt, ModLoader.QUILT.loaderName)
                 else -> Pair(R.drawable.ic_minecraft, null)
             }
-
-            return Pair(ContextCompat.getDrawable(context, loaderInfo.first), loaderInfo.second)
         }
     }
 }

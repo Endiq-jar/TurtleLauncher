@@ -54,7 +54,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/multirt_view_removebtn"
             android:layout_width="@dimen/_28sdp"
             android:layout_height="match_parent"

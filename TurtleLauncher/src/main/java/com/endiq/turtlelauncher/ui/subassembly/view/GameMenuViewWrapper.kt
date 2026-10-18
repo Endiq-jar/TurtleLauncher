@@ -60,7 +60,6 @@ class GameMenuViewWrapper(
     private var showRamGraph: Boolean = false
     private var showPing: Boolean = false
     private var showScreenshotButton: Boolean = false
-    private var showRecordButton: Boolean = false
     private var buttonVisible: Boolean = false
 
     private var buttonScopeFx: IFxScopeControl? = null
@@ -147,7 +146,7 @@ class GameMenuViewWrapper(
     private fun thinkForHudVisibility() {
         val shouldShow = showMemory || showFPS || showCps || showKeystrokes || showMousestrokes ||
             showStopwatch || showPlaytime || showSystemResources || showTime ||
-            showRamGraph || showPing || showScreenshotButton || showRecordButton
+            showRamGraph || showPing || showScreenshotButton
 
         if (shouldShow) {
             if (hudScopeFx != null) {
@@ -179,7 +178,6 @@ class GameMenuViewWrapper(
         showRamGraph = AllSettings.showRamGraphHud.getValue()
         showPing = AllSettings.showPingHud.getValue()
         showScreenshotButton = AllSettings.showScreenshotButtonHud.getValue()
-        showRecordButton = AllSettings.showRecordButtonHud.getValue()
     }
 
     private fun updateInfoText() {
@@ -201,8 +199,6 @@ class GameMenuViewWrapper(
         val pingText: TextView = view.findViewById(R.id.ping_text)
         val ramGraphView: com.endiq.turtlelauncher.feature.turtle.RamGraphView = view.findViewById(R.id.ram_graph_view)
         val screenshotButton: TextView = view.findViewById(R.id.screenshot_button)
-        val recordButton: TextView = view.findViewById(R.id.record_button)
-        val recordTimerText: TextView = view.findViewById(R.id.record_timer_text)
 
         val keystrokesBlock: View = view.findViewById(R.id.keystrokes_block)
         val keyW: TextView = view.findViewById(R.id.key_w)
@@ -311,20 +307,6 @@ class GameMenuViewWrapper(
                 val totalMb = memoryInfo.totalMem / (1024 * 1024)
                 ramGraphView.pushSample(usedMb, totalMb)
             }
-            if (showRecordButton && updateSlow) {
-                val recording = com.endiq.turtlelauncher.feature.turtle.ScreenRecorder.isRecording()
-                run {
-                    recordButton.visibility = View.VISIBLE
-                    recordButton.text = if (recording) "⏹" else "⏺"
-                    if (recording && AllSettings.recordingShowTimer.getValue()) {
-                        val elapsed = com.endiq.turtlelauncher.feature.turtle.ScreenRecorder.getElapsedSeconds()
-                        recordTimerText.text = String.format(Locale.US, "%02d:%02d", elapsed / 60, elapsed % 60)
-                        recordTimerText.visibility = View.VISIBLE
-                    } else {
-                        recordTimerText.visibility = View.GONE
-                    }
-                }
-            }
         }
 
         updateInfoText()
@@ -345,14 +327,6 @@ class GameMenuViewWrapper(
             screenshotButton.setOnClickListener {
                 com.endiq.turtlelauncher.feature.turtle.ScreenshotHelper.takeScreenshot(activity)
             }
-            if (!showRecordButton) {
-                recordButton.visibility = View.GONE
-                recordTimerText.visibility = View.GONE
-            }
-            recordButton.setOnClickListener {
-                com.endiq.turtlelauncher.feature.turtle.ScreenRecorder.toggle(activity)
-            }
-
             if (showPing) {
                 com.endiq.turtlelauncher.feature.turtle.PingTracker.start()
             } else {
@@ -362,8 +336,7 @@ class GameMenuViewWrapper(
             pingText.setOnClickListener { showPingTargetDialog() }
 
             val needsTimer = showMemory || showFPS || showCps || showKeystrokes || showMousestrokes ||
-                showStopwatch || showPlaytime || showSystemResources || showTime || showPing || showRamGraph ||
-                showRecordButton
+                showStopwatch || showPlaytime || showSystemResources || showTime || showPing || showRamGraph
             if (needsTimer) {
                 val interval = HudRefreshPolicy.intervalMs(
                     AllSettings.gameMenuInfoRefreshRate.getValue().toLong(),

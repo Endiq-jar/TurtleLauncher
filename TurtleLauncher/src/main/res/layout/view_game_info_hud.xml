@@ -246,34 +246,6 @@
         android:visibility="gone"
         tools:ignore="HardcodedText" />
 
-    <TextView
-        android:id="@+id/record_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_4sdp"
-        android:background="@drawable/background_game_menu"
-        android:gravity="center"
-        android:padding="@dimen/_4sdp"
-        android:text="⏺"
-        android:textColor="@color/turtle_error"
-        android:visibility="gone"
-        tools:ignore="HardcodedText" />
 
-    <!-- Elapsed-time readout, shown only while actively recording -->
-    <TextView
-        android:id="@+id/record_timer_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_2sdp"
-        android:background="@drawable/background_game_menu"
-        android:gravity="center"
-        android:paddingHorizontal="@dimen/_6sdp"
-        android:paddingVertical="@dimen/_2sdp"
-        android:text="00:00"
-        android:textColor="@color/turtle_error"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:visibility="gone"
-        tools:ignore="HardcodedText" />
 
 </LinearLayout>

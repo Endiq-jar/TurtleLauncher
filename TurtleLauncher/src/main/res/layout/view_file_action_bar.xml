@@ -7,7 +7,7 @@
     android:gravity="center_horizontal"
     android:orientation="horizontal">
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/refresh_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -17,7 +17,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_refresh" />
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/search_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -27,7 +27,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_search" />
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/paste_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_paste" />
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/add_file_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_add_new" />
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/create_folder_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -57,7 +57,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_add" />
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/return_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

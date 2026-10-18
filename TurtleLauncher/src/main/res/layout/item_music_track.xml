@@ -9,7 +9,7 @@
     android:padding="@dimen/space_m"
     tools:ignore="ContentDescription">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/track_icon"
         android:layout_width="@dimen/_32sdp"
         android:layout_height="@dimen/_32sdp"
@@ -67,7 +67,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/track_delete"
         android:layout_width="@dimen/_28sdp"
         android:layout_height="@dimen/_28sdp"

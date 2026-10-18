@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/version_icon"
         android:layout_width="@dimen/_36sdp"
         android:layout_height="@dimen/_36sdp"
@@ -64,7 +64,7 @@
 
     </LinearLayout>
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/favorite"
         android:layout_width="@dimen/_28sdp"
         android:layout_height="@dimen/_28sdp"
@@ -78,7 +78,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
-    <ImageButton
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
         android:id="@+id/operate"
         android:layout_width="@dimen/_28sdp"
         android:layout_height="@dimen/_28sdp"

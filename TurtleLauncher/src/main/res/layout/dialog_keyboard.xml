@@ -988,7 +988,7 @@
 
     </RelativeLayout>
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/close"
         android:layout_width="@dimen/_18sdp"
         android:layout_height="@dimen/_18sdp"

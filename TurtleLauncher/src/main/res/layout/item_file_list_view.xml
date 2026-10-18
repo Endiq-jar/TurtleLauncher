@@ -9,13 +9,15 @@
     app:ripple_for_constraint="true"
     tools:ignore="ContentDescription,HardcodedText">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/image"
-        android:layout_width="@dimen/_18sdp"
-        android:layout_height="@dimen/_18sdp"
-        android:layout_marginStart="@dimen/_12sdp"
+        android:layout_width="@dimen/_28sdp"
+        android:layout_height="@dimen/_28sdp"
+        android:layout_marginStart="@dimen/_8sdp"
+        android:background="@drawable/background_icon_chip"
+        android:padding="@dimen/_4sdp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_file"
+        android:src="@drawable/ic_filetype_file"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

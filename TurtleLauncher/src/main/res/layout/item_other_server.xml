@@ -5,7 +5,7 @@
     android:paddingHorizontal="@dimen/_8sdp"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

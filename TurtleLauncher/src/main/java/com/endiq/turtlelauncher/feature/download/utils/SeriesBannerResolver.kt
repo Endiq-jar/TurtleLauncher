@@ -29,16 +29,22 @@ object SeriesBannerResolver {
         0xFF8E4162.toInt(), 0xFF457B9D.toInt()
     )
 
-    fun resolve(context: Context, card: SeriesCardAdapter.CardEntry): Drawable {
+    /** Banner art plus where the series-icon watermark sits inside it (-1: no watermark). */
+    class BannerArt(val drawable: Drawable, val iconLayerIndex: Int)
+
+    fun resolve(context: Context, card: SeriesCardAdapter.CardEntry): Drawable =
+        resolveArt(context, card).drawable
+
+    fun resolveArt(context: Context, card: SeriesCardAdapter.CardEntry): BannerArt {
         val slug = card.label.lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_')
         val resId = context.resources.getIdentifier("banner_$slug", "drawable", context.packageName)
         if (resId != 0) {
-            ContextCompat.getDrawable(context, resId)?.let { return it }
+            ContextCompat.getDrawable(context, resId)?.let { return BannerArt(it, -1) }
         }
-        return fallbackDrawable(context, card)
+        return fallbackArt(context, card)
     }
 
-    private fun fallbackDrawable(context: Context, card: SeriesCardAdapter.CardEntry): Drawable {
+    private fun fallbackArt(context: Context, card: SeriesCardAdapter.CardEntry): BannerArt {
         val base = PALETTE[Math.floorMod(card.label.hashCode(), PALETTE.size)]
         val density = context.resources.displayMetrics.density
 
@@ -61,20 +67,22 @@ object SeriesBannerResolver {
             icon.alpha = 40
             layers.add(icon)
         }
-        if (layers.size == 1) return gradient
+        if (layers.size == 1) return BannerArt(gradient, -1)
 
         val layered = LayerDrawable(layers.toTypedArray())
         var index = 1
+        var iconLayerIndex = -1
         if (skyline != null) {
             layered.setLayerGravity(index, Gravity.BOTTOM)
             layered.setLayerHeight(index, (56 * density).toInt())
             index++
         }
         if (icon != null) {
+            iconLayerIndex = index
             val insetPx = (28 * density).toInt()
             layered.setLayerInset(index, insetPx, insetPx, insetPx, insetPx)
         }
-        return layered
+        return BannerArt(layered, iconLayerIndex)
     }
 
     private fun darken(color: Int, factor: Float): Int {

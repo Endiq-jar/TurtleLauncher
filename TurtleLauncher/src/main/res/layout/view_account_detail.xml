@@ -8,7 +8,7 @@
     android:background="@drawable/background_grid_card"
     android:padding="@dimen/space_l">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/detail_icon"
         android:layout_width="@dimen/_72sdp"
         android:layout_height="@dimen/_72sdp"
@@ -84,7 +84,7 @@
         app:layout_constraintTop_toBottomOf="@id/uuid_label"
         tools:text="e3c8f3e1-c0d3-48f8-a8b1-e3d9c6f4b2a7" />
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/copy_uuid"
         android:layout_width="@dimen/_20sdp"
         android:layout_height="@dimen/_20sdp"

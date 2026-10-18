@@ -1,12 +1,15 @@
+<!-- Source: Tabler Icons (MIT) icons/outline/check.svg - converted by tools/import_icons.py; see docs/ICONS.md -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:tint="@color/black_or_white"
+    android:tint="@color/icon_tint"
     android:viewportWidth="24"
     android:viewportHeight="24">
-
     <path
-        android:fillColor="#000000"
-        android:pathData="M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41,-1.41z" />
-
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M5 12l5 5l10 -10" />
 </vector>

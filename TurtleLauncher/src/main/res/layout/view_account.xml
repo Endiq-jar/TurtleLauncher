@@ -7,7 +7,7 @@
     android:background="@drawable/background_grid_card"
     android:padding="@dimen/space_m">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/user_icon"
         android:layout_width="@dimen/_44sdp"
         android:layout_height="@dimen/_44sdp"

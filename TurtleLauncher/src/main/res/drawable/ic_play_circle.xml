@@ -1,15 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- Source: Tabler Icons (MIT) icons/outline/circle-play.svg - converted by tools/import_icons.py; see docs/ICONS.md -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
+    android:tint="@color/icon_tint"
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:fillColor="#00000000"
+        android:fillColor="@android:color/transparent"
         android:strokeColor="#FF000000"
-        android:strokeWidth="1.6"
-        android:pathData="M12,2a10,10 0,1 0,0.001 0z"/>
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M9 9.003a1 1 0 0 1 1.517 -.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997a1 1 0 0 1 -1.517 -.86v-5.993" />
     <path
-        android:fillColor="#FF000000"
-        android:pathData="M10,8.5v7l6,-3.5z"/>
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
 </vector>

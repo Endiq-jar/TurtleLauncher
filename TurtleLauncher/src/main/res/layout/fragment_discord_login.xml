@@ -18,7 +18,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:id="@+id/return_button"
             android:layout_width="@dimen/_18sdp"
             android:layout_height="@dimen/_18sdp"

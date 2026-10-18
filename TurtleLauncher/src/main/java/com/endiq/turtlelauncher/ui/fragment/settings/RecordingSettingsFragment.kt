@@ -10,9 +10,11 @@ import com.endiq.anim.animations.Animations
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.SettingsFragmentRecordingBinding
 import com.endiq.turtlelauncher.setting.AllSettings
+import com.endiq.turtlelauncher.ui.activity.RecordingsGalleryActivity
 import com.endiq.turtlelauncher.ui.fragment.settings.wrapper.SeekBarSettingsWrapper
 import com.endiq.turtlelauncher.ui.fragment.settings.wrapper.SwitchSettingsWrapper
 import com.endiq.turtlelauncher.utils.ZHTools
+import android.content.Intent
 
 
 class RecordingSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment_recording, SettingCategory.RECORDING) {
@@ -34,6 +36,10 @@ class RecordingSettingsFragment : AbstractSettingsFragment(R.layout.settings_fra
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val context = requireContext()
         binding.subSettingsBackButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
+
+        binding.openRecordingsGalleryLayout.setOnClickListener {
+            startActivity(Intent(context, RecordingsGalleryActivity::class.java))
+        }
 
         SwitchSettingsWrapper(context, AllSettings.showRecordButtonHud, binding.showRecordButtonHudLayout, binding.showRecordButtonHud)
         SwitchSettingsWrapper(context, AllSettings.recordingCaptureAudio, binding.recordingCaptureAudioLayout, binding.recordingCaptureAudio)

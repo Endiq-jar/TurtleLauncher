@@ -761,6 +761,20 @@
     <string name="setting_recording_show_timer_desc">Displays elapsed recording time next to the record button</string>
     <string name="setting_recording_capture_audio_title">Capture Audio</string>
     <string name="setting_recording_capture_audio_desc">Records in-game sound.Your microphone is never used</string>
+    <string name="settings_row_recordings_gallery_title">Recordings Gallery</string>
+    <string name="settings_row_recordings_gallery_desc">Browse, play, share, or delete your saved recordings</string>
+    <string name="recordings_gallery_title">Recordings</string>
+    <string name="recordings_gallery_empty">No recordings yet - start one from the in-game menu</string>
+    <string name="recordings_gallery_item_meta">%1$s \u2022 %2$s</string>
+    <string name="recordings_gallery_play_failed">Couldn\'t open this recording</string>
+    <string name="recordings_gallery_share_failed">Couldn\'t share this recording</string>
+    <string name="recordings_gallery_delete_failed">Couldn\'t delete this recording</string>
+    <string name="recordings_gallery_delete_confirm">Delete %1$s? This can\'t be undone.</string>
+    <string name="recordings_gallery_cancel">Cancel</string>
+    <plurals name="recordings_gallery_count">
+        <item quantity="one">%d recording</item>
+        <item quantity="other">%d recordings</item>
+    </plurals>
 
     <!-- Phone Settings: CPU -->
     <string name="setting_category_phone_cpu">CPU</string>

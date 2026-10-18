@@ -63,6 +63,48 @@
                 android:paddingHorizontal="@dimen/_2sdp"
                 android:paddingVertical="@dimen/_12sdp">
 
+                <!-- Open the recordings gallery -->
+                <RelativeLayout
+                    android:id="@+id/openRecordingsGallery_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/openRecordingsGallery_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/openRecordingsGallery_chevron"
+                        android:text="@string/settings_row_recordings_gallery_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/openRecordingsGallery_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/openRecordingsGallery_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/openRecordingsGallery_chevron"
+                        android:text="@string/settings_row_recordings_gallery_desc" />
+
+                    <ImageView
+                        android:id="@+id/openRecordingsGallery_chevron"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_chevron_down"
+                        android:rotation="-90"
+                        android:tint="@color/turtle_text_secondary"
+                        tools:ignore="ContentDescription" />
+                </RelativeLayout>
+
                 <!-- Show record button on HUD -->
                 <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
                     android:id="@+id/showRecordButtonHud_layout"

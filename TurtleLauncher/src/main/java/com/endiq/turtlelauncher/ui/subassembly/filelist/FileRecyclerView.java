@@ -151,8 +151,9 @@ public class FileRecyclerView extends LinearLayout {
                 if (!path.equals(lockPath)) {
                     FileItemBean itemBean = new FileItemBean(
                             "..",
-                            context.getResources().getDrawable(R.drawable.ic_folder, context.getTheme())
+                            context.getResources().getDrawable(R.drawable.ic_filetype_folder, context.getTheme())
                     );
+                    itemBean.fileIconRes = R.drawable.ic_filetype_folder;
                     itemBean.isCanCheck = false;
                     itemBeans.add(0, itemBean);
                 }

@@ -55,6 +55,22 @@ object AnimatedIcon {
     fun styleFor(entryName: String): Style {
         val n = entryName.lowercase()
         return when {
+            // File-type family (ic_filetype_*): each type moves its own way.
+            "filetype_folder" in n -> Style.BOUNCE_Y
+            "filetype_jar" in n -> Style.DROP
+            "filetype_zip" in n -> Style.POP
+            "filetype_json" in n -> Style.SCAN
+            "filetype_code" in n -> Style.FLIP_X
+            "filetype_text" in n -> Style.SWING
+            "filetype_image" in n -> Style.BLINK
+            "filetype_audio" in n -> Style.WOBBLE
+            "filetype_video" in n -> Style.PULSE
+            "filetype_data" in n -> Style.FLIP_Y
+            "filetype_config" in n -> Style.GEAR
+            "filetype_apk" in n -> Style.TADA
+            "filetype_pdf" in n -> Style.SLIDE_X
+            "filetype_font" in n -> Style.WIGGLE
+            "filetype_3d" in n -> Style.SPIN
             "refresh" in n || "reset" in n || "spinner" in n -> Style.SPIN
             "favorite" in n || "heart" in n -> Style.HEARTBEAT
             "download" in n || "extract" in n || "chevron_down" in n -> Style.DROP

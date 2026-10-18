@@ -16,6 +16,10 @@ class FileItemBean(
     /** When non-zero, an R.drawable animated logo to show via AnimatedLogo
      *  (static poster until the row is hovered/pressed) instead of [image]. */
     @JvmField var animatedIconRes: Int = 0
+    /** When non-zero, an R.drawable vector icon to show via setImageResource
+     *  (so AnimatedIconView binds its hover/press/click style) instead of [image].
+     *  Used by the pastel-green file-type family - see FileTypeIcons. */
+    @JvmField var fileIconRes: Int = 0
     @JvmField var file: File? = null
     @JvmField var isHighlighted: Boolean = false
     @JvmField var isCanCheck: Boolean = true

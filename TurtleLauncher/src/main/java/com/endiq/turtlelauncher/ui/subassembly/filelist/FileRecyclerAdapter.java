@@ -283,8 +283,14 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
             } else if (fileItemBean.animatedIconRes != 0) {
                 // Version-era logos: static poster until the row is hovered/pressed/focused.
                 AnimatedLogo.bind(binding.image, fileItemBean.animatedIconRes);
+            } else if (fileItemBean.fileIconRes != 0) {
+                // Pastel-green file-type icons; setImageResource lets the
+                // AnimatedIconView bind this type's hover/press/click style.
+                AnimatedLogo.clear(binding.image);
+                binding.image.setImageResource(fileItemBean.fileIconRes);
             } else {
                 AnimatedLogo.clear(binding.image);
+                AnimatedIcon.clear(binding.image);
                 binding.image.setImageDrawable(fileItemBean.image);
             }
         }

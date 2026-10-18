@@ -37,6 +37,24 @@ grew from 89 icons / 67,586 B to 92 icons / 115,189 B of XML. In the packaged
 APK this is compiled binary XML inside a zip (roughly +15 KB), in exchange
 for one stroke weight, one 24dp grid, and perfect scaling at all densities.
 
+## File-type icons (pastel green)
+
+The file browser uses its own 16-icon family (`ic_filetype_*`), tinted
+`@color/file_icon_tint` (Turtle's pastel-green `palette_primary`, #C7E8B0)
+instead of the off-white theme tint, so file rows read as one soft-green set:
+folder, file, jar, zip, JSON, code, text, image, audio, video, data
+(dat/nbt/mca), config, APK, PDF, font and 3D. The metaphors follow the
+popular filled-line file sets (Octicons/Bootstrap-style file, code, zip,
+media, image, pdf, music...); the glyphs are the equivalent MIT Tabler and
+Flowbite icons, chosen for Minecraft's actual file zoo (`.jar` mods,
+`.mrpack`, `pack.mcmeta`, shader sources, `level.dat`, region files).
+
+`FileTypeIcons.iconResFor(file)` resolves by extension (disabled mods keep
+their jar identity, compound `.tar.gz` counts as zip). Rows set them via
+`setImageResource`, so every type also gets its own animation from
+`AnimatedIcon.styleFor`: folders bounce, zips pop, JSON scans, audio
+wobbles, images blink, 3D files spin like a turntable, APKs tada...
+
 ## Animation
 
 Every icon and logo animates **only on interaction** - see

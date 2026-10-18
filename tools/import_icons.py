@@ -127,6 +127,26 @@ MAPPING = {
     "ic_view_handle": ("tabler", "grip-vertical"),
     "ic_warning": ("tabler", "alert-triangle"),
     "ic_zip": ("tabler", "file-zip"),
+    # File-type family for the file browser (pastel-green tint below).
+    # Metaphors follow the popular filled-line file sets (file, code, zip,
+    # media, text, image, pdf, music...); glyphs are the MIT Tabler/Flowbite
+    # equivalents already used by the rest of the launcher.
+    "ic_filetype_folder": ("tabler", "folder"),
+    "ic_filetype_file": ("tabler", "file"),
+    "ic_filetype_jar": ("tabler", "archive"),
+    "ic_filetype_zip": ("tabler", "file-zip"),
+    "ic_filetype_json": ("tabler", "file-code-2"),
+    "ic_filetype_code": ("tabler", "file-code"),
+    "ic_filetype_text": ("tabler", "file-text"),
+    "ic_filetype_image": ("flowbite", "file-image"),
+    "ic_filetype_audio": ("tabler", "file-music"),
+    "ic_filetype_video": ("flowbite", "file-video"),
+    "ic_filetype_data": ("tabler", "file-database"),
+    "ic_filetype_config": ("tabler", "file-settings"),
+    "ic_filetype_apk": ("tabler", "brand-android"),
+    "ic_filetype_pdf": ("tabler", "file-type-pdf"),
+    "ic_filetype_font": ("tabler", "file-typography"),
+    "ic_filetype_3d": ("tabler", "file-3d"),
     # New brand logos (Simple Icons, CC0).
     "ic_github": ("simple", "github"),
     "ic_curseforge": ("simple", "curseforge"),
@@ -189,6 +209,11 @@ TINT_OVERRIDES = {
     "ic_favorite_border": "@color/favorite_color",
 }
 
+def tint_for(target: str, dest: Path) -> str:
+    if target.startswith("ic_filetype_"):
+        return "@color/file_icon_tint"
+    return TINT_OVERRIDES.get(target) or existing_tint(dest)
+
 
 def existing_tint(path: Path) -> str:
     if path.is_file():
@@ -233,7 +258,7 @@ def main(argv=None):
     for target, (kind, name) in sorted(MAPPING.items()):
         svg = find_source(kind, name, roots).read_text()
         dest = DRAWABLE / f"{target}.xml"
-        xml = render(target, kind, name, convert(svg, kind), TINT_OVERRIDES.get(target) or existing_tint(dest))
+        xml = render(target, kind, name, convert(svg, kind), tint_for(target, dest))
         dest.write_text(xml)
         total_bytes += len(xml)
     print(f"Wrote {len(MAPPING)} icons ({total_bytes} bytes total, "

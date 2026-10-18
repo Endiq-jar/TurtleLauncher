@@ -2,7 +2,6 @@ package com.endiq.turtlelauncher.ui.subassembly.filelist
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -111,7 +110,6 @@ class FileRecyclerViewCreator(
             val itemBeans: MutableList<FileItemBean> = ArrayList()
             val files = path.listFiles()
             if (files != null) {
-                val resources = context.resources
                 for (file in files) {
                     if (!showFileOrFolder(file, showFile, showFolder)) continue
 
@@ -124,7 +122,9 @@ class FileRecyclerViewCreator(
                             continue
                         }
                     }
-                    itemBean.image = getIcon(context, file, fileIcon, resources)
+                    val iconRes = iconResFor(file, fileIcon)
+                    itemBean.fileIconRes = iconRes
+                    itemBean.image = ContextCompat.getDrawable(context, iconRes)
                     itemBeans.add(itemBean)
                 }
             }
@@ -137,22 +137,16 @@ class FileRecyclerViewCreator(
             return !file.isFile || showFile
         }
 
-        private fun getIcon(context: Context, file: File, fileIcon: FileIcon, resources: Resources): Drawable? {
-            return if (file.isFile) {
-                when (fileIcon) {
-                    FileIcon.MOD -> if (file.name.endsWith(ModUtils.JAR_FILE_SUFFIX)) {
-                        ContextCompat.getDrawable(context, R.drawable.ic_java)
-                    } else if (file.name.endsWith(ModUtils.DISABLE_JAR_FILE_SUFFIX)) {
-                        ContextCompat.getDrawable(context, R.drawable.ic_disabled)
-                    } else {
-                        getFileIcon(file, resources)
-                    }
-
-                    FileIcon.FILE -> ContextCompat.getDrawable(context, R.drawable.ic_file)
-                }
-            } else {
-                ContextCompat.getDrawable(context, R.drawable.ic_folder)
+        /** Icon resource for one browser row: mod jars get the pastel jar
+         *  (disabled ones the ban sign), everything else goes through the
+         *  extension-based pastel-green file-type family (FileTypeIcons). */
+        private fun iconResFor(file: File, fileIcon: FileIcon): Int {
+            if (file.isDirectory) return R.drawable.ic_filetype_folder
+            if (fileIcon == FileIcon.MOD) {
+                if (file.name.endsWith(ModUtils.DISABLE_JAR_FILE_SUFFIX)) return R.drawable.ic_disabled
+                if (file.name.endsWith(ModUtils.JAR_FILE_SUFFIX)) return R.drawable.ic_filetype_jar
             }
+            return FileTypeIcons.iconResFor(file)
         }
 
         @JvmStatic
@@ -170,15 +164,6 @@ class FileRecyclerViewCreator(
                 itemBeans.add(bean)
             }
             return itemBeans
-        }
-
-        @SuppressLint("UseCompatLoadingForDrawables")
-        private fun getFileIcon(file: File, resources: Resources): Drawable {
-            return if (file.isDirectory) {
-                resources.getDrawable(R.drawable.ic_folder, resources.newTheme())
-            } else {
-                resources.getDrawable(R.drawable.ic_file, resources.newTheme())
-            }
         }
     }
 }

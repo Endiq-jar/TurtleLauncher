@@ -82,5 +82,22 @@ for layout in (main / "res/layout").glob("*.xml"):
 assert animated >= 250, f"only {animated} animated icon views in layouts"
 assert plain == 0, f"{plain} icon views were not upgraded (run tools/apply_animated_icons.py)"
 
+# --- File-type family (pastel green) -----------------------------------------
+filetypes = sorted(drawable.glob("ic_filetype_*.xml"))
+assert len(filetypes) >= 16, f"only {len(filetypes)} file-type icons"
+for path in filetypes:
+    assert 'android:tint="@color/file_icon_tint"' in path.read_text(),         f"{path.name}: file-type icons must use the pastel-green tint"
+colors = (main / "res/values/colors.xml").read_text()
+assert 'name="file_icon_tint">@color/palette_primary' in colors, "pastel-green tint missing"
+
+resolver = (main / "java/com/endiq/turtlelauncher/ui/subassembly/filelist/FileTypeIcons.kt").read_text()
+for needle in ("ic_filetype_jar", "ic_filetype_zip", "ic_filetype_json", "ic_filetype_data"):
+    assert needle in resolver, f"resolver missing {needle}"
+creator = (main / "java/com/endiq/turtlelauncher/ui/subassembly/filelist/FileRecyclerViewCreator.kt").read_text()
+assert "FileTypeIcons.iconResFor" in creator and "fileIconRes" in creator
+adapter = (main / "java/com/endiq/turtlelauncher/ui/subassembly/filelist/FileRecyclerAdapter.java").read_text()
+assert "fileIconRes" in adapter and "setImageResource(fileItemBean.fileIconRes)" in adapter
+assert "filetype_zip" in icon and "Style.POP" in icon, "per-filetype animation styles missing"
+
 print(f"{converted} converted icons on the 24dp grid, {animated} animated icon views, "
       "hover/press/click wiring and NoBlocklist removal passed")

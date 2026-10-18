@@ -13,7 +13,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import java.io.IOException
 import java.util.Objects
 import java.util.UUID
 
@@ -29,7 +28,6 @@ object OtherLoginApi {
         this.baseUrl = url
     }
 
-    @Throws(IOException::class)
     fun login(context: Context, userName: String?, password: String?, listener: Listener) {
         if (Objects.isNull(baseUrl)) {
             listener.onFailed(context.getString(R.string.other_login_baseurl_not_set))
@@ -50,7 +48,6 @@ object OtherLoginApi {
         callLogin(data, "/authserver/authenticate", listener)
     }
 
-    @Throws(IOException::class)
     fun refresh(context: Context, account: MinecraftAccount, select: Boolean, listener: Listener) {
         if (Objects.isNull(baseUrl)) {
             listener.onFailed(context.getString(R.string.other_login_baseurl_not_set))
@@ -72,46 +69,61 @@ object OtherLoginApi {
     }
 
     private fun callLogin(data: String, url: String, listener: Listener) {
-        val body = data.toRequestBody("application/json".toMediaTypeOrNull())
-        val call = client.newCall(createRequestBuilder(baseUrl + url, body).build())
+        // Build the request *and* execute it inside a single runCatching so that DNS/network
+        // failures (UnknownHostException, ConnectException, SocketTimeoutException, …) never
+        // escape up to the worker thread as uncaught exceptions — they're delivered to the
+        // listener's onFailed() instead, which is what the UI already expects.
+        runCatching {
+            val body = data.toRequestBody("application/json".toMediaTypeOrNull())
+            val call = client.newCall(createRequestBuilder(baseUrl + url, body).build())
+            call.execute().use { response ->
+                val res = response.body?.string()
+                if (response.code == 200) {
+                    val result = Gson().fromJson(res, AuthResult::class.java)
+                    listener.onSuccess(result)
+                } else {
+                    var errorMessage: String = res ?: "null"
+                    runCatching parseMessage@{
+                        if (errorMessage == "null") return@parseMessage
 
-        call.execute().use { response ->
-            val res = response.body?.string()
-            if (response.code == 200) {
-                val result = Gson().fromJson(res, AuthResult::class.java)
-                listener.onSuccess(result)
-            } else {
-                var errorMessage: String = res ?: "null"
-                runCatching parseMessage@{
-                    if (errorMessage == "null") return@parseMessage
+                        val jsonObject = JSONObject(errorMessage)
+                        errorMessage = if (jsonObject.has("errorMessage")) {
+                            jsonObject.getString("errorMessage")
+                        } else if (jsonObject.has("message")) {
+                            jsonObject.getString("message")
+                        } else {
+                            Logging.e("Other Login", "The error message returned by the server could not be retrieved.")
+                            return@parseMessage
+                        }
 
-                    val jsonObject = JSONObject(errorMessage)
-                    errorMessage = if (jsonObject.has("errorMessage")) {
-                        jsonObject.getString("errorMessage")
-                    } else if (jsonObject.has("message")) {
-                        jsonObject.getString("message")
-                    } else {
-                        Logging.e("Other Login", "The error message returned by the server could not be retrieved.")
-                        return@parseMessage
-                    }
-
-                    if (errorMessage.contains("\\u"))
-                        errorMessage = StringUtilsKt.decodeUnicode(errorMessage.replace("\\\\u", "\\u"))
-                }.onFailure { e -> Logging.e("Other Login", Tools.printToString(e)) }
-                listener.onFailed("(${response.code}) $errorMessage")
+                        if (errorMessage.contains("\\u"))
+                            errorMessage = StringUtilsKt.decodeUnicode(errorMessage.replace("\\\\u", "\\u"))
+                    }.onFailure { e -> Logging.e("Other Login", Tools.printToString(e)) }
+                    listener.onFailed("(${response.code}) $errorMessage")
+                }
             }
+        }.onFailure { e ->
+            Logging.e("Other Login", "Login request to $baseUrl$url failed", e)
+            listener.onFailed(e.message ?: e.toString())
         }
     }
 
     fun getServeInfo(context: Context, url: String): String? {
-        val call = client.newCall(createRequestBuilder(url).get().build())
-        runCatching {
+        // Entire body wrapped in runCatching — not just call.execute() — so that any problem
+        // building the request, resolving DNS, connecting, or reading the body is contained.
+        // The onFailure action itself is also guarded: if Tools.showError() throws (e.g. the
+        // Activity is being destroyed when the worker thread finishes), the exception must
+        // not propagate out to the ThreadPoolExecutor as an uncaught throwable.
+        return runCatching {
+            val call = client.newCall(createRequestBuilder(url).get().build())
             call.execute().use { response ->
-                val res = response.body?.string()
-                if (response.code == 200) return res
+                if (response.code == 200) response.body?.string() else null
             }
-        }.onFailure { e -> Tools.showError(context, e) }
-        return null
+        }.onFailure { e ->
+            Logging.w("OtherLoginApi", "Failed to fetch server info from $url", e)
+            runCatching { Tools.showError(context, e) }
+                .onFailure { inner -> Logging.e("OtherLoginApi", "showError itself failed", inner) }
+        }.getOrNull()
     }
 
     interface Listener {

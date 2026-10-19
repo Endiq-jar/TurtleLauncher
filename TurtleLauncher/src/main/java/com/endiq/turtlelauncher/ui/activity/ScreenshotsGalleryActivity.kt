@@ -70,9 +70,10 @@ class ScreenshotsGalleryActivity : BaseActivity() {
             runCatching { ScreenshotsRepository.listScreenshots(context) }
                 .onFailure { e -> Logging.e(TAG, "Failed to list screenshots", e) }
                 .getOrDefault(emptyList())
-        }.ended(TaskExecutors.getAndroidUI()) { items: List<ScreenshotItem> ->
-            adapter.replaceAll(items)
-            updateEmptyState(items.isEmpty(), items.size)
+        }.ended(TaskExecutors.getAndroidUI()) { items: List<ScreenshotItem>? ->
+            val screenshots = items ?: emptyList()
+            adapter.replaceAll(screenshots)
+            updateEmptyState(screenshots.isEmpty(), screenshots.size)
         }.onThrowable {
             Logging.e(TAG, "Screenshots list task threw")
         }.execute()
@@ -149,8 +150,8 @@ class ScreenshotsGalleryActivity : BaseActivity() {
     private fun deleteScreenshot(item: ScreenshotItem) {
         Task.runTask {
             ScreenshotsRepository.delete(item)
-        }.ended(TaskExecutors.getAndroidUI()) { deleted: Boolean ->
-            if (deleted) {
+        }.ended(TaskExecutors.getAndroidUI()) { deleted: Boolean? ->
+            if (deleted == true) {
                 adapter.removeItem(item)
                 updateEmptyState(adapter.itemCount == 0, adapter.itemCount)
             } else {

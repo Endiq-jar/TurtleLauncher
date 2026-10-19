@@ -37,6 +37,10 @@ class HudSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment_
         val context = requireContext()
         binding.subSettingsBackButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
 
+        binding.openScreenshotsGalleryLayout.setOnClickListener {
+            startActivity(android.content.Intent(context, com.endiq.turtlelauncher.ui.activity.ScreenshotsGalleryActivity::class.java))
+        }
+
         SwitchSettingsWrapper(
             context,
             AllSettings.gameMenuShowMemory,

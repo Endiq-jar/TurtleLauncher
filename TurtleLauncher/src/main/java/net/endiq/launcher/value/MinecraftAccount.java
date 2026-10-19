@@ -27,6 +27,10 @@ public class MinecraftAccount {
     public String profileId = "00000000-0000-0000-0000-000000000000"; // profile UUID, for obtaining skin
     public String username = "Steve";
     public String msaRefreshToken = "0";
+    // Wall-clock time (System.currentTimeMillis()) of the last successful Microsoft profile
+    // fetch for this account. Lets LauncherWarmStart skip a redundant full OAuth chain on every
+    // launcher start when the profile was already refreshed recently. 0 = never cached.
+    public long lastMicrosoftProfileRefreshMs = 0L;
     // Local/offline and Other Login accounts never receive a real xuid - default
     // it like every other token field so launch-time map puts (which require
     // non-null values) can't NPE on it. Microsoft login overwrites it anyway.

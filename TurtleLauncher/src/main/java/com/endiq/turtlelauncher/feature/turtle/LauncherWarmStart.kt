@@ -27,6 +27,11 @@ import java.util.concurrent.atomic.AtomicInteger
 object LauncherWarmStart {
     private const val TAG = "LauncherWarmStart"
     private const val WARM_READ_CHUNK = 64 * 1024
+    // How long a cached Microsoft profile (username/UUID/skin, refreshed by
+    // MicrosoftBackgroundLogin) is trusted before warmAuthentication bothers re-fetching it.
+    // preLaunch() always re-validates for real before actually starting the game, so this only
+    // controls how often the launcher does a *silent background* refresh on open/foreground.
+    private const val MICROSOFT_PROFILE_CACHE_TTL_MS = 10 * 60 * 1000L
 
     private val threadNumber = AtomicInteger(0)
     private val backgroundThreadFactory = ThreadFactory { runnable ->
@@ -60,7 +65,10 @@ object LauncherWarmStart {
                 if (TaskExecutors.isGameSessionActive) return@execute
                 warmRendererLibraries()
                 if (TaskExecutors.isGameSessionActive) return@execute
-                VersionsManager.getCurrentVersion()?.let { warmJavaRuntime(it) }
+                val currentVersion = VersionsManager.getCurrentVersion()
+                currentVersion?.let { warmJavaRuntime(it) }
+                if (TaskExecutors.isGameSessionActive) return@execute
+                currentVersion?.let { warmMods(it) }
                 if (!TaskExecutors.isGameSessionActive) warmAuthentication(context)
             } finally {
                 Trace.endSection()
@@ -124,6 +132,27 @@ object LauncherWarmStart {
         }.onFailure { e -> Logging.i(TAG, "Renderer warm skipped: ${e.message}") }
     }
 
+    /**
+     * Page-cache-warms every mod jar in the currently selected version's mods folder, so that
+     * when the JVM actually starts and the mod loader (Fabric/Forge/NeoForge/Quilt) reads each
+     * jar off disk for discovery/classloading, it's already sitting in the OS page cache instead
+     * of requiring a cold read. This doesn't run the mod loader itself - true mod initialization
+     * only happens once the game JVM is up - but for anything I/O-bound in that step (which is
+     * most of it on a cold app launch), this removes the disk latency ahead of time.
+     */
+    private fun warmMods(version: com.endiq.turtlelauncher.feature.version.Version) {
+        runCatching {
+            val modsDir = File(version.getGameDir(), "mods")
+            if (!modsDir.isDirectory) return
+            val modJars = modsDir.listFiles { f -> f.isFile && f.extension.equals("jar", ignoreCase = true) } ?: return
+            for (jar in modJars) {
+                if (TaskExecutors.isGameSessionActive) return
+                warmReadFile(jar)
+            }
+            Logging.i(TAG, "Warmed ${modJars.size} mod jar(s) for ${version.getVersionName()}")
+        }.onFailure { e -> Logging.i(TAG, "Mods warm skipped: ${e.message}") }
+    }
+
     private fun warmJavaRuntime(version: com.endiq.turtlelauncher.feature.version.Version) {
         runCatching {
             val javaDir = version.getJavaDir()
@@ -142,6 +171,11 @@ object LauncherWarmStart {
         runCatching {
             val account = AccountsManager.currentAccount ?: return
             if (!AccountUtils.isMicrosoftAccount(account)) return
+            val cacheAgeMs = System.currentTimeMillis() - account.lastMicrosoftProfileRefreshMs
+            if (account.lastMicrosoftProfileRefreshMs > 0 && cacheAgeMs < MICROSOFT_PROFILE_CACHE_TTL_MS) {
+                Logging.i(TAG, "Auth warm skipped: cached Microsoft profile is only ${cacheAgeMs / 1000}s old")
+                return
+            }
             AccountUtils.microsoftLogin(
                 context,
                 account,

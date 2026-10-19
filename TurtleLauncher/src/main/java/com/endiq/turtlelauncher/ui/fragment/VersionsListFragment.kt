@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.angcyo.tablayout.DslTabLayout
 import com.endiq.anim.AnimPlayer
@@ -25,6 +27,7 @@ import com.endiq.turtlelauncher.feature.customprofilepath.ProfilePathManager
 import com.endiq.turtlelauncher.feature.version.Version
 import com.endiq.turtlelauncher.feature.version.VersionsManager
 import com.endiq.turtlelauncher.feature.version.favorites.FavoritesVersionUtils
+import com.endiq.turtlelauncher.feature.version.pin.PinnedVersionUtils
 import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.ui.dialog.EditTextDialog
 import com.endiq.turtlelauncher.ui.dialog.FavoritesVersionDialog
@@ -55,6 +58,42 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
         isFocusable = true
         isOutsideTouchable = true
     }
+
+    // Drag-to-reorder for pinned versions. Only rows within the adapter's pinned prefix
+    // (versionsAdapter.getPinnedCount()) may move, and only past each other - see onMove().
+    // Dragging is handle-initiated only (isLongPressDragEnabled = false): the row itself already
+    // has a tap-to-select click listener, so a long-press-anywhere drag would fight with that.
+    private val versionReorderCallback = object : ItemTouchHelper.SimpleCallback(
+        ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+    ) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            val adapter = versionsAdapter ?: return false
+            val from = viewHolder.bindingAdapterPosition
+            val to = target.bindingAdapterPosition
+            if (from == RecyclerView.NO_POSITION || to == RecyclerView.NO_POSITION) return false
+            val pinnedCount = adapter.getPinnedCount()
+            if (from >= pinnedCount || to >= pinnedCount) return false
+            adapter.moveItem(from, to)
+            return true
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            // Swipe-to-dismiss isn't offered - dragFlags-only callback, swipeFlags is 0 above.
+        }
+
+        override fun isLongPressDragEnabled(): Boolean = false
+
+        override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+            super.clearView(recyclerView, viewHolder)
+            versionsAdapter?.persistPinnedOrder()
+        }
+    }
+
+    private val versionItemTouchHelper = ItemTouchHelper(versionReorderCallback)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -122,7 +161,17 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
                     }
                     return FavoritesVersionUtils.getFavoritesStructure().values.any { it.contains(versionName) }
                 }
+
+                override fun onPinChanged() {
+                    refreshFavoritesFolderTab(favoritesFolderTab.currentItemIndex)
+                }
+
+                override fun onStartDrag(viewHolder: RecyclerView.ViewHolder) {
+                    versionItemTouchHelper.startDrag(viewHolder)
+                }
             })
+
+            versionItemTouchHelper.attachToRecyclerView(versions)
 
             versions.apply {
                 layoutAnimation = TurtleTransitions.listLayoutAnimationController(view.context)
@@ -203,7 +252,7 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
                 }
             }
 
-            val currentIndex = it.refreshVersions(getVersions())
+            val currentIndex = it.refreshVersions(PinnedVersionUtils.applyPinnedOrder(getVersions()))
             if (currentIndex >= 0) binding.versions.scrollToPosition(currentIndex)
             binding.versions.scheduleLayoutAnimation()
         }

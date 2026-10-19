@@ -277,8 +277,9 @@ object VersionsManager {
         // If the current version is the one being renamed, apply the new name to it as well.
         if (version.getVersionName() == currentVersionName) saveCurrentVersion(name)
 
-        // Try to refresh the version names inside the favorite groups.
+        // Try to refresh the version names inside the favorite groups and the pin order.
         FavoritesVersionUtils.renameVersion(version.getVersionName(), name)
+        com.endiq.turtlelauncher.feature.version.pin.PinnedVersionUtils.renameVersion(version.getVersionName(), name)
 
         val versionFolder = version.getVersionPath()
         val renameFolder = File(ProfilePathHome.getVersionsHome(), name)

@@ -107,6 +107,7 @@ public class MicrosoftBackgroundLogin {
                 acc.msaRefreshToken = msRefreshToken;
                 acc.accountType = AccountType.MICROSOFT.getType();
                 acc.updateMicrosoftSkin();
+                acc.lastMicrosoftProfileRefreshMs = System.currentTimeMillis();
             }
             acc.save();
             Logging.i("Account", "Saved the account : " + acc.username);

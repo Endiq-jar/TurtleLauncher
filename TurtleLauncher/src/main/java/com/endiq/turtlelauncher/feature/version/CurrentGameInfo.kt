@@ -7,17 +7,21 @@ import net.endiq.launcher.Tools
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Current game state info (supports migrating old configs).
  * @property version name of the currently selected version
  * @property favoritesMap favorite groups map <group name, contained versions>
+ * @property pinnedVersions version names pinned to the top of the list, in display order
  */
 data class CurrentGameInfo(
     @SerializedName("version")
     var version: String = "",
     @SerializedName("favoritesInfo")
-    val favoritesMap: MutableMap<String, MutableSet<String>> = ConcurrentHashMap()
+    val favoritesMap: MutableMap<String, MutableSet<String>> = ConcurrentHashMap(),
+    @SerializedName("pinnedVersions")
+    var pinnedVersions: MutableList<String> = CopyOnWriteArrayList()
 ) {
     /**
      * Atomically save the current state to disk.
@@ -61,6 +65,13 @@ data class CurrentGameInfo(
         private fun loadFromJsonFile(infoFile: File): CurrentGameInfo {
             return Tools.GLOBAL_GSON.fromJson(infoFile.readText(), CurrentGameInfo::class.java)
                 .also { info -> checkNotNull(info) { "Deserialization returned null" } }
+                // Gson bypasses the constructor on deserialization, so a config saved before
+                // pinnedVersions existed leaves it null instead of falling back to the default
+                // empty list declared above - reassign a real list before anything touches it.
+                .apply {
+                    @Suppress("SENSELESS_COMPARISON")
+                    if (pinnedVersions == null) pinnedVersions = CopyOnWriteArrayList()
+                }
         }
 
         private fun migrateLegacyConfig(infoFile: File): CurrentGameInfo {

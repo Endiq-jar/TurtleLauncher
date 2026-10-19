@@ -19,6 +19,7 @@ import com.endiq.turtlelauncher.databinding.ItemVersionBinding
 import com.endiq.turtlelauncher.databinding.ViewVersionManagerBinding
 import com.endiq.turtlelauncher.feature.customprofilepath.ProfilePathManager
 import com.endiq.turtlelauncher.feature.version.Version
+import com.endiq.turtlelauncher.feature.version.pin.PinnedVersionUtils
 import com.endiq.turtlelauncher.feature.version.utils.VersionIconUtils
 import com.endiq.turtlelauncher.feature.version.VersionsManager
 import com.endiq.turtlelauncher.task.Task
@@ -39,6 +40,10 @@ class VersionAdapter(
     // List of every RadioButton, recording the version path each one represents.
     private val radioButtonList: MutableList<RadioButton> = mutableListOf()
     private var currentVersion: String? = null
+    // How many items at the head of `versions` are pinned (and therefore drag-reorderable) -
+    // recomputed whenever the list is refreshed, since refreshVersions() is always handed an
+    // already pin-sorted list (see PinnedVersionUtils.applyPinnedOrder in the owning fragment).
+    private var pinnedCount: Int = 0
     private var managerPopupWindow: PopupWindow = PopupWindow().apply {
         isFocusable = true
         isOutsideTouchable = true
@@ -52,6 +57,7 @@ class VersionAdapter(
             forEach { radioButton -> radioButton.isChecked = false }
             clear()
         }
+        pinnedCount = versions.takeWhile { PinnedVersionUtils.isPinned(it.getVersionName()) }.size
         currentVersion = VersionsManager.getCurrentVersion()?.getVersionPath()?.absolutePath
         // Find the index of the current version.
         val currentIndex = versions.indexOfFirst { it.getVersionPath().absolutePath == currentVersion }
@@ -62,6 +68,22 @@ class VersionAdapter(
 
     fun closePopupWindow() {
         managerPopupWindow.dismiss()
+    }
+
+    /** How many items at the top of the list are pinned - the only region drag-reorder may move within. */
+    fun getPinnedCount(): Int = pinnedCount
+
+    /** Called by the drag-to-reorder ItemTouchHelper while a drag is in progress. */
+    fun moveItem(fromPosition: Int, toPosition: Int) {
+        if (fromPosition !in versions.indices || toPosition !in versions.indices) return
+        val moved = versions.removeAt(fromPosition)
+        versions.add(toPosition, moved)
+        notifyItemMoved(fromPosition, toPosition)
+    }
+
+    /** Called once a drag ends, to persist the new pinned order. */
+    fun persistPinnedOrder() {
+        PinnedVersionUtils.reorderPinned(versions.take(pinnedCount).map { it.getVersionName() })
     }
 
     private fun setCurrentVersion(context: Context, version: Version) {
@@ -242,6 +264,12 @@ class VersionAdapter(
                     }
                 }
 
+                dragHandle.visibility = if (PinnedVersionUtils.isPinned(version.getVersionName())) View.VISIBLE else View.GONE
+                dragHandle.setOnTouchListener { _, event ->
+                    if (event.actionMasked == android.view.MotionEvent.ACTION_DOWN) listener.onStartDrag(this)
+                    false
+                }
+
                 favorite.setOnClickListener { _ ->
                     listener.showFavoritesDialog(version.getVersionName())
                 }
@@ -288,12 +316,21 @@ class VersionAdapter(
             val context = parentFragment.requireActivity()
 
             val viewBinding = ViewVersionManagerBinding.inflate(LayoutInflater.from(context)).apply {
+                pinVersion.setText(
+                    if (PinnedVersionUtils.isPinned(version.getVersionName())) R.string.version_manager_unpin
+                    else R.string.version_manager_pin_to_top
+                )
+
                 val onClickListener = View.OnClickListener { v ->
                     when (v) {
                         gotoView -> swapPath(version.getVersionPath().absolutePath)
                         gamePath -> swapPath(version.getGameDir().absolutePath)
                         rename -> VersionsManager.openRenameDialog(context, version)
                         copy -> VersionsManager.openCopyDialog(context, version)
+                        pinVersion -> {
+                            PinnedVersionUtils.togglePin(version.getVersionName())
+                            listener.onPinChanged()
+                        }
                         exportModpack -> exportModpack(context, version)
                         exportMrpack -> exportMrpack(context, version)
                         depGraph -> showDepGraph(context, version)
@@ -306,6 +343,7 @@ class VersionAdapter(
                 gamePath.setOnClickListener(onClickListener)
                 rename.setOnClickListener(onClickListener)
                 copy.setOnClickListener(onClickListener)
+                pinVersion.setOnClickListener(onClickListener)
                 exportModpack.setOnClickListener(onClickListener)
                 exportMrpack.setOnClickListener(onClickListener)
                 depGraph.setOnClickListener(onClickListener)
@@ -350,5 +388,14 @@ class VersionAdapter(
          * Check whether the current version is favorited.
          */
         fun isVersionFavorited(versionName: String): Boolean
+
+        /**
+         * A version was pinned or unpinned from the popup menu - refresh the list so the
+         * pin order and drag handle take effect immediately.
+         */
+        fun onPinChanged()
+
+        /** The drag handle was pressed - start an ItemTouchHelper drag for this row. */
+        fun onStartDrag(viewHolder: RecyclerView.ViewHolder)
     }
 }

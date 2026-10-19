@@ -9,11 +9,25 @@
     android:background="@drawable/background_item"
     app:ripple_for_constraint="true">
 
+    <ImageView
+        android:id="@+id/drag_handle"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_20sdp"
+        android:layout_marginStart="@dimen/_4sdp"
+        android:src="@drawable/ic_drag_handle"
+        android:tint="@color/turtle_text_secondary"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:visibility="visible"
+        tools:ignore="ContentDescription" />
+
     <RadioButton
         android:id="@+id/radio_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/drag_handle"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 

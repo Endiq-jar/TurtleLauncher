@@ -325,6 +325,8 @@
     <string name="version_manager_shortcuts_logs_path">Log Folder</string>
     <string name="version_manager_shortcuts_crash_report_path">Crash Report Folder</string>
     <string name="version_manager_rename">Rename Version</string>
+    <string name="version_manager_pin_to_top">Pin to Top</string>
+    <string name="version_manager_unpin">Unpin</string>
     <string name="version_manager_copy">Copy Version</string>
     <string name="version_manager_export_modpack">Export Modpack (ZIP)</string>
     <string name="version_manager_export_mrpack">Export as .mrpack (Modrinth)</string>
@@ -770,6 +772,17 @@
     <plurals name="recordings_gallery_count">
         <item quantity="one">%d recording</item>
         <item quantity="other">%d recordings</item>
+    </plurals>
+    <string name="settings_row_screenshots_gallery_title">Screenshots Gallery</string>
+    <string name="settings_row_screenshots_gallery_desc">Browse, view, share, or delete your saved screenshots</string>
+    <string name="screenshots_gallery_title">Screenshots</string>
+    <string name="screenshots_gallery_empty">No screenshots yet - take one from the in-game menu</string>
+    <string name="screenshots_gallery_open_failed">Couldn\'t open this screenshot</string>
+    <string name="screenshots_gallery_share_failed">Couldn\'t share this screenshot</string>
+    <string name="screenshots_gallery_delete_failed">Couldn\'t delete this screenshot</string>
+    <plurals name="screenshots_gallery_count">
+        <item quantity="one">%d screenshot</item>
+        <item quantity="other">%d screenshots</item>
     </plurals>
 
     <!-- Phone Settings: CPU -->

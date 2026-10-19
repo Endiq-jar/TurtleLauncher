@@ -54,6 +54,33 @@
         android:layout_marginTop="@dimen/_8sdp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:layout_marginStart="@dimen/_4sdp"
+            android:src="@drawable/ic_pin" />
+
+        <com.endiq.turtlelauncher.ui.view.AnimTextView
+            android:id="@+id/pinVersion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:background="@drawable/background_item"
+            android:gravity="center_horizontal"
+            android:paddingVertical="@dimen/_12sdp"
+            android:paddingHorizontal="@dimen/_20sdp"
+            android:text="@string/version_manager_pin_to_top"
+            app:ripple_for_text="true"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_8sdp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
         
         <com.endiq.turtlelauncher.ui.view.AnimatedIconView
             android:layout_width="@dimen/_20sdp"

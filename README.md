@@ -259,6 +259,7 @@ TurtleLauncher uses technologies and projects from the Android, Java, and Minecr
 | Kotlin and Java | Application and runtime integration |
 | Jetpack Compose | UI framework |
 | Material Design 3 | UI components and styling |
+| MIUIX | UI components and styling |
 | AndroidX | Android application libraries |
 | Coroutines and Flow | Asynchronous work and reactive data |
 | Coil | Image loading |

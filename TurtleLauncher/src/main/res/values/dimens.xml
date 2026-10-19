@@ -7,6 +7,9 @@
     <dimen name="padding_extra_large">@dimen/_20sdp</dimen>
     <dimen name="padding_heavy">@dimen/_25sdp</dimen>
     <dimen name="dialog_min_width">@dimen/_280sdp</dimen>
+    <!-- Referenced by PixelEditorDialog and dialog_control_button_setting; same 4dp step as
+         padding_small, kept as an alias so the scale above stays the single source of truth. -->
+    <dimen name="padding_medium">@dimen/padding_small</dimen>
 
     <!-- Miuix Design System Corner Radii & Elevations -->
     <dimen name="radius_card">16dp</dimen>
@@ -16,4 +19,16 @@
     <dimen name="elevation_card">0dp</dimen>
     <dimen name="elevation_dialog">12dp</dimen>
     <dimen name="stroke_subtle">1dp</dimen>
+
+    <!-- Corner radii still referenced by the list-item / edit-box / glass-card selectors. -->
+    <dimen name="radius_chip">8dp</dimen>
+    <dimen name="radius_item">12dp</dimen>
+    <dimen name="radius_panel">20dp</dimen>
+
+    <!-- 4dp baseline spacing scale, referenced by the gallery and settings layouts. -->
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_s">8dp</dimen>
+    <dimen name="space_m">12dp</dimen>
+    <dimen name="space_l">16dp</dimen>
+    <dimen name="space_xl">24dp</dimen>
 </resources>

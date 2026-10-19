@@ -35,6 +35,26 @@ class ListSettingsWrapper(
     val itemValues: Array<String>
 ) : AbstractSettingsWrapper(parentView) {
 
+    /**
+     * Resource-id convenience constructor: every settings fragment builds its picker from a
+     * `<string-array>` pair (`R.array.all_font_family` / `R.array.all_font_family_value`, ...),
+     * so this is the form all 17 call sites use. Dropping it makes them pass two Ints where the
+     * primary constructor wants `Array<String>`.
+     */
+    constructor(
+        context: Context,
+        unit: StringSettingUnit,
+        parentView: View,
+        titleView: TextView,
+        valueView: TextView,
+        itemsId: Int,
+        itemValuesId: Int
+    ) : this(
+        context, unit, parentView, titleView, valueView,
+        context.resources.getStringArray(itemsId),
+        context.resources.getStringArray(itemValuesId)
+    )
+
     private var listener: OnItemChangedListener? = null
 
     init {

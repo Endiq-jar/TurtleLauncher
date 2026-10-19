@@ -3,6 +3,7 @@ package com.endiq.turtlelauncher.ui.dialog
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
@@ -116,6 +117,38 @@ abstract class FullScreenDialog(context: Context) : Dialog(context, R.style.Full
                 .setDuration(durationMs)
                 .setInterpolator(MiuixSpring.folmeInterpolator(0.9f, 0.3f, durationMs))
                 .start()
+        }
+    }
+
+    /**
+     * Sizes the dialog to its content, capping it at the screen height minus [dpValue] dp and
+     * handing the overflow to [scrollView]. Every subclass calls this once its content view is
+     * inflated (`ControlInfoDialog`, `EditControlInfoDialog`, `EditTextDialog`, `SkinCapeDialog`,
+     * `TipDialog`, `WardrobeDialog`), so it is part of this base class' contract - the Miuix
+     * surface restyle above must not drop it.
+     *
+     * Adapted from FCL [FCLAlertDialog.java](https://github.com/FCL-Team/FoldCraftLauncher/blob/e7d82af/FCLLibrary/src/main/java/com/tungsten/fcllibrary/component/dialog/FCLAlertDialog.java#L62-L77)
+     */
+    protected fun checkHeight(root: View, content: View, scrollView: View, dpValue: Int = 50) {
+        root.post {
+            val wm = requireNotNull(window?.windowManager) { "WindowManager is null" }
+            val point = Point()
+            wm.defaultDisplay.getSize(point)
+            val maxHeight = (point.y - dpValue * context.resources.displayMetrics.density + 0.5f).toInt()
+
+            val isRootHeightLessThanMax = root.measuredHeight < maxHeight
+            val layoutParams = scrollView.layoutParams
+
+            if (isRootHeightLessThanMax) {
+                layoutParams.height = content.measuredHeight
+                scrollView.layoutParams = layoutParams
+                window?.setLayout(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT
+                )
+            } else {
+                window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, maxHeight)
+            }
         }
     }
 }

@@ -140,19 +140,19 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <SeekBar
+            <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                 android:id="@+id/pixelEditor_redSeekbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_24sdp"
                 android:max="255" />
 
-            <SeekBar
+            <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                 android:id="@+id/pixelEditor_greenSeekbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_24sdp"
                 android:max="255" />
 
-            <SeekBar
+            <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                 android:id="@+id/pixelEditor_blueSeekbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_24sdp"

@@ -192,7 +192,7 @@
                     android:text="@string/setting_dark_mode_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/dark_mode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -273,7 +273,7 @@
                     android:text="@string/setting_game_menu_show_memory_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/open_memory_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -301,7 +301,7 @@
                     android:text="@string/setting_game_menu_show_fps_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/open_fps_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -342,7 +342,7 @@
                     android:text="@string/setting_hud_cps_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_cps_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -370,7 +370,7 @@
                     android:text="@string/setting_hud_keystrokes_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_keystrokes_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -398,7 +398,7 @@
                     android:text="@string/setting_hud_mousestrokes_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_mousestrokes_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -426,7 +426,7 @@
                     android:text="@string/setting_hud_stopwatch_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_stopwatch_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -454,7 +454,7 @@
                     android:text="@string/setting_hud_playtime_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_playtime_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -482,7 +482,7 @@
                     android:text="@string/setting_hud_system_resources_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_system_resources_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -510,7 +510,7 @@
                     android:text="@string/setting_hud_time_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_time_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -538,7 +538,7 @@
                     android:text="@string/setting_hud_ram_graph_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_ram_graph_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -566,7 +566,7 @@
                     android:text="@string/setting_hud_ping_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_ping_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -594,7 +594,7 @@
                     android:text="@string/setting_hud_screenshot_button_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/show_screenshot_button_hud"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -647,7 +647,7 @@
                         android:textSize="@dimen/_16sdp"
                         tools:ignore="HardcodedText" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/resolution_scaler"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -727,7 +727,7 @@
                     android:text="@string/setting_disable_gestures_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/disableGestures"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -755,7 +755,7 @@
                     android:text="@string/setting_disable_swap_hand_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/disableDoubleTap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -785,7 +785,7 @@
                     android:text="@string/setting_control_switcher_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/controlSwitcher"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -818,7 +818,7 @@
                     android:text="@string/setting_emotes_enabled_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/emotes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -880,7 +880,7 @@
                         android:textSize="@dimen/_16sdp"
                         tools:ignore="HardcodedText" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/timeLongPressTrigger"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -948,7 +948,7 @@
                         android:textSize="@dimen/_16sdp"
                         tools:ignore="HardcodedText" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/mouse_speed"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1056,7 +1056,7 @@
                     android:text="@string/setting_enable_gyro_title"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/enableGyro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -1100,7 +1100,7 @@
                             android:textSize="@dimen/_16sdp"
                             tools:ignore="HardcodedText" />
 
-                        <SeekBar
+                        <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                             android:id="@+id/gyro_sensitivity"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -1158,7 +1158,7 @@
                         android:text="@string/setting_gyro_invert_x_axis"
                         android:textColor="@color/turtle_primary_text" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/gyroInvertX"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -1186,7 +1186,7 @@
                         android:text="@string/setting_gyro_invert_y_axis"
                         android:textColor="@color/turtle_primary_text" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/gyroInvertY"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -1267,7 +1267,7 @@
                         android:textSize="@dimen/_16sdp"
                         tools:ignore="HardcodedText" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/hotbar_width"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1334,7 +1334,7 @@
                         android:textSize="@dimen/_16sdp"
                         tools:ignore="HardcodedText" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/hotbar_height"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"

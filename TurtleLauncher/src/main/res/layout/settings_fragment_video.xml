@@ -57,7 +57,7 @@
             android:orientation="vertical"
             android:paddingVertical="@dimen/_12sdp">
     
-            <Button
+            <com.endiq.turtlelauncher.ui.view.AnimButton
                 android:id="@+id/mobileglues_settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -110,7 +110,7 @@
                         android:textSize="@dimen/_11ssp"
                         android:textColor="@color/turtle_text_secondary" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/graphics_backend_switch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -273,7 +273,7 @@
                         android:layout_toStartOf="@+id/ignoreNotch"
                         android:text="@string/setting_ignore_notch_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/ignoreNotch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -310,7 +310,7 @@
                         android:layout_toStartOf="@+id/ignoreNotchLauncher"
                         android:text="@string/setting_launcher_ignore_notch_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/ignoreNotchLauncher"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -347,7 +347,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_resolution_scaler_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/resolutionRatio"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -390,7 +390,7 @@
                     android:layout_marginBottom="@dimen/_8sdp"
                     android:orientation="horizontal">
     
-                    <Button
+                    <com.endiq.turtlelauncher.ui.view.AnimButton
                         android:id="@+id/resolutionPreset100"
                         style="@style/TurtleButtonOutline"
                         android:layout_width="0dp"
@@ -400,7 +400,7 @@
                         android:text="1x"
                         android:textAllCaps="false" />
     
-                    <Button
+                    <com.endiq.turtlelauncher.ui.view.AnimButton
                         android:id="@+id/resolutionPreset75"
                         style="@style/TurtleButtonOutline"
                         android:layout_width="0dp"
@@ -410,7 +410,7 @@
                         android:text="0.75x"
                         android:textAllCaps="false" />
     
-                    <Button
+                    <com.endiq.turtlelauncher.ui.view.AnimButton
                         android:id="@+id/resolutionPreset50"
                         style="@style/TurtleButtonOutline"
                         android:layout_width="0dp"
@@ -420,7 +420,7 @@
                         android:text="0.5x"
                         android:textAllCaps="false" />
     
-                    <Button
+                    <com.endiq.turtlelauncher.ui.view.AnimButton
                         android:id="@+id/resolutionAutoDetectButton"
                         style="@style/TurtleButtonOutline"
                         android:layout_width="0dp"
@@ -458,7 +458,7 @@
                         android:layout_toStartOf="@+id/sustainedPerformance"
                         android:text="@string/setting_limit_overheating_throttling" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/sustainedPerformance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -507,7 +507,7 @@
                         android:src="@drawable/ic_warning"
                         android:tint="@color/turtle_warning" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/alternate_surface"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -543,7 +543,7 @@
                         android:layout_toStartOf="@+id/force_vsync"
                         android:text="@string/setting_limit_overheating_throttling" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/force_vsync"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -579,7 +579,7 @@
                         android:layout_toStartOf="@+id/vsync_in_zink"
                         android:text="@string/setting_vsync_in_zink_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/vsync_in_zink"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -615,7 +615,7 @@
                         android:layout_toStartOf="@+id/adaptive_vsync"
                         android:text="@string/setting_adaptive_vsync_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/adaptive_vsync"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -651,7 +651,7 @@
                         android:layout_toStartOf="@+id/low_latency_front_buffer"
                         android:text="@string/setting_low_latency_rendering_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/low_latency_front_buffer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -687,7 +687,7 @@
                         android:layout_toStartOf="@+id/zinkPreferSystemDriver"
                         android:text="@string/setting_vulkan_driver_system_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/zinkPreferSystemDriver"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -745,7 +745,7 @@
                         android:layout_toStartOf="@+id/autoSettingsOptimizer"
                         android:text="@string/setting_auto_settings_optimizer_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/autoSettingsOptimizer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

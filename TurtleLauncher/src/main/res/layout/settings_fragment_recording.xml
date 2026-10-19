@@ -134,7 +134,7 @@
                         android:layout_toStartOf="@+id/recordingCaptureAudio"
                         android:text="@string/setting_recording_capture_audio_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/recordingCaptureAudio"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -171,7 +171,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_recording_frame_rate_desc" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/recordingFrameRate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -221,7 +221,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_recording_bitrate_desc" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/recordingBitrateMbps"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -271,7 +271,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_recording_resolution_desc" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/recordingResolutionScale"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -321,7 +321,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_recording_max_duration_desc" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/recordingMaxDurationMin"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

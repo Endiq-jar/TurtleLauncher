@@ -92,7 +92,7 @@
                         android:layout_toStartOf="@+id/highContrastMode"
                         android:text="@string/setting_high_contrast_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/highContrastMode"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -128,7 +128,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_font_scale_desc" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/fontScale"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

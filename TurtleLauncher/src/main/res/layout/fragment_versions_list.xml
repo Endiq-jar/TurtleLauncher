@@ -74,8 +74,8 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/favorites_actions"
-                    app:tab_deselect_color="@color/black_or_white"
-                    app:tab_select_color="@color/black_or_white"
+                    app:tab_deselect_color="@color/miuix_on_surface_variant_summary"
+                    app:tab_select_color="@color/miuix_primary"
                     app:tab_indicator_enable_flow="true"
                     app:tab_indicator_drawable="@drawable/selector_bar_horizontal"
                     app:tab_indicator_y_offset="@dimen/_4sdp">
@@ -153,7 +153,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/title_view" />
 
-            <ProgressBar
+            <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
                 android:id="@+id/refresh_versions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

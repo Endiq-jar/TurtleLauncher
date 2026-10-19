@@ -48,7 +48,7 @@ class ContentDetailsDialog : DialogFragment() {
     private fun load() {
         task?.cancel(true)
         body.removeAllViews()
-        body.addView(ProgressBar(requireContext()))
+        body.addView(com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar(requireContext()))
         val id = URLEncoder.encode(requireArguments().getString("id")!!, "UTF-8")
         val page = requireArguments().getString("page")!!
         task = TaskExecutors.getDefault().submit {

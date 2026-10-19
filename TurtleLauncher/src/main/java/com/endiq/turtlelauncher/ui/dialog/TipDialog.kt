@@ -13,6 +13,8 @@ import android.widget.TextView
 import androidx.annotation.CheckResult
 import com.endiq.turtlelauncher.databinding.DialogTipBinding
 import com.endiq.turtlelauncher.ui.dialog.DraggableDialog.DialogInitializationListener
+import com.endiq.turtlelauncher.ui.miuix.MiuixTheme
+import com.endiq.turtlelauncher.ui.view.AnimButton
 
 
 
@@ -78,10 +80,11 @@ class TipDialog private constructor(
             cancelButton.visibility = if (showCancel) View.VISIBLE else View.GONE
             confirmButton.visibility = if (showConfirm) View.VISIBLE else View.GONE
 
-            // In warning mode the title gets a red warning icon.
+            // In warning mode the title gets a red warning icon and Miuix danger button.
             if (warning) {
                 warningIcon.visibility = View.VISIBLE
-                warningIcon.drawable.setTint(Color.RED)
+                warningIcon.drawable?.setTint(MiuixTheme.colors(context).error)
+                confirmButton.applyMiuixStyle(AnimButton.MiuixButtonStyle.DANGER)
             }
         }
     }

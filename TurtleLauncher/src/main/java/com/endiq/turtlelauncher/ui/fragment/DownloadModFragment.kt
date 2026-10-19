@@ -339,7 +339,7 @@ class DownloadModFragment : ModListFragment() {
     }
 
     private fun createProgressView(context: Context): ProgressBar {
-        return ProgressBar(context).apply {
+        return com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar(context).apply {
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 gravity = Gravity.CENTER_HORIZONTAL
             }

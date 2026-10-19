@@ -154,7 +154,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 
-                <ProgressBar
+                <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
                     android:id="@+id/emotes_progress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

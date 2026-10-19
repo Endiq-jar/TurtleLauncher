@@ -38,7 +38,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ProgressBar
+    <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
         android:id="@+id/setup_progress"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="56dp"
@@ -76,7 +76,7 @@
         app:layout_constraintStart_toStartOf="parent"/>
 
     <!-- Setup Launcher button -->
-    <Button
+    <com.endiq.turtlelauncher.ui.view.AnimButton
         android:id="@+id/start_button"
         android:layout_width="0dp"
         android:layout_height="48dp"

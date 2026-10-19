@@ -103,7 +103,7 @@
             android:textColor="@color/turtle_text_primary"
             tools:ignore="LabelFor"/>
 
-        <CheckBox
+        <com.endiq.turtlelauncher.ui.view.AnimCheckBox
             android:id="@+id/log_errors_only_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -99,7 +99,7 @@
                         android:layout_toStartOf="@+id/physical_mouse_mode"
                         android:text="@string/setting_physical_mouse_mode_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/physical_mouse_mode"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -134,7 +134,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_mouse_capture_sensitivity_desc" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/mouse_capture_sensitivity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -183,7 +183,7 @@
                         android:layout_toStartOf="@+id/hide_mouse"
                         android:text="@string/setting_hide_mouse_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/hide_mouse"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -218,7 +218,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_mouse_scale_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/mousescale"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -267,7 +267,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_mouse_speed_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/mousespeed"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -313,7 +313,7 @@
                         android:layout_toStartOf="@+id/mouse_start"
                         android:text="@string/setting_mouse_start_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/mouse_start"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -394,7 +394,7 @@
                         android:layout_toStartOf="@+id/disableGestures"
                         android:text="@string/setting_disable_gestures_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/disableGestures"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -429,7 +429,7 @@
                         android:layout_toStartOf="@+id/disableDoubleTap"
                         android:text="@string/setting_disable_swap_hand_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/disableDoubleTap"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -464,7 +464,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_longpress_trigger_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/timeLongPressTrigger"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

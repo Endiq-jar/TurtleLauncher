@@ -86,7 +86,7 @@
 
     </LinearLayout>
 
-    <CheckBox
+    <com.endiq.turtlelauncher.ui.view.AnimCheckBox
         android:id="@+id/check"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <Switch
+    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
         android:id="@+id/mod_toggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

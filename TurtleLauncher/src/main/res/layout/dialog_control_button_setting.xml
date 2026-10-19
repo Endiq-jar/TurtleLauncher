@@ -87,7 +87,7 @@
             app:layout_constraintStart_toEndOf="@id/editSize_editTextX"
             app:layout_constraintTop_toTopOf="@+id/editSize_editTextX" />
 
-        <SeekBar
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
             android:id="@+id/editSize_seekbarX"
             android:layout_width="0dp"
             android:layout_height="@dimen/_36sdp"
@@ -95,7 +95,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editSize_editTextX" />
 
-        <SeekBar
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
             android:id="@+id/editSize_seekbarY"
             android:layout_width="0dp"
             android:layout_height="@dimen/_36sdp"
@@ -276,7 +276,7 @@
             app:layout_constraintTop_toBottomOf="@+id/editOrientation_textView" />
 
         <!-- TOGGLE SECTION -->
-        <Switch
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
             android:id="@+id/checkboxToggle"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_36sdp"
@@ -286,7 +286,7 @@
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
         <!-- MOUSE PASS THROUGH SECTION -->
-        <Switch
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
             android:id="@+id/checkboxPassThrough"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_36sdp"
@@ -296,7 +296,7 @@
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
         <!-- SWIPEABLE BUTTON SECTION -->
-        <Switch
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
             android:id="@+id/checkboxSwipeable"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_36sdp"
@@ -306,7 +306,7 @@
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
         <!-- FORWARD LOCK SECTION -->
-        <Switch
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
             android:id="@+id/checkboxForwardLock"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_36sdp"
@@ -315,7 +315,7 @@
             app:layout_constraintTop_toBottomOf="@id/checkboxSwipeable"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
             android:id="@+id/checkboxAbsoluteFingerTracking"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_36sdp"
@@ -403,7 +403,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/editStrokeColor_textView" />
 
-        <SeekBar
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
             android:id="@+id/editStrokeWidth_seekbar"
             android:layout_width="0dp"
             android:layout_height="@dimen/_36sdp"
@@ -449,7 +449,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/editStrokeWidth_seekbar" />
 
-        <SeekBar
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
             android:id="@+id/editCornerRadius_seekbar"
             android:layout_width="0dp"
             android:layout_height="@dimen/_36sdp"
@@ -477,7 +477,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editCornerRadius_seekbar" />
 
-        <SeekBar
+        <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
             android:id="@+id/editButtonOpacity_seekbar"
             android:layout_width="0dp"
             android:layout_height="@dimen/_36sdp"
@@ -504,14 +504,14 @@
             app:layout_constraintTop_toBottomOf="@+id/editButtonOpacity_seekbar"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <CheckBox
+        <com.endiq.turtlelauncher.ui.view.AnimCheckBox
             android:id="@+id/visibility_game_checkbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/controls_in_game"
             app:layout_constraintTop_toBottomOf="@+id/visibility_textview" />
 
-        <CheckBox
+        <com.endiq.turtlelauncher.ui.view.AnimCheckBox
             android:id="@+id/visibility_menu_checkbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

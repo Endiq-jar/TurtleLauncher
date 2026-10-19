@@ -63,7 +63,7 @@
                 android:textColor="@android:color/white"
                 android:textSize="12sp" />
 
-            <Button
+            <com.endiq.turtlelauncher.ui.view.AnimButton
                 android:id="@+id/config_editor_save"
                 style="@style/TurtleButton"
                 android:layout_width="match_parent"

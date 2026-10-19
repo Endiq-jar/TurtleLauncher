@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <ProgressBar
+    <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
         android:id="@+id/loading_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

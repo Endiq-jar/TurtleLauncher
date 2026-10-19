@@ -168,7 +168,7 @@
                     android:text="@string/controls_settings_button_snapping"
                     android:textColor="@color/turtle_primary_text" />
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/snapping"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -206,7 +206,7 @@
                         android:textSize="@dimen/_16sdp"
                         tools:ignore="HardcodedText" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/snapping_distance"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"

@@ -105,7 +105,7 @@
                         android:layout_toStartOf="@+id/unlimitedFps"
                         android:text="@string/setting_fps_unlimited_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/unlimitedFps"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -141,7 +141,7 @@
                         android:layout_toStartOf="@+id/lowLatencyRendering"
                         android:text="@string/setting_fps_low_latency_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/lowLatencyRendering"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -177,7 +177,7 @@
                         android:layout_toStartOf="@+id/framePacing"
                         android:text="@string/setting_fps_frame_pacing_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/framePacing"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -213,7 +213,7 @@
                         android:layout_toStartOf="@+id/frameSkipping"
                         android:text="@string/setting_fps_frame_skipping_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/frameSkipping"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -249,7 +249,7 @@
                         android:layout_toStartOf="@+id/adaptiveFrameTiming"
                         android:text="@string/setting_fps_adaptive_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/adaptiveFrameTiming"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -285,7 +285,7 @@
                         android:layout_toStartOf="@+id/autoMemoryCleanup"
                         android:text="@string/setting_fps_auto_memory_cleanup_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/autoMemoryCleanup"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -320,7 +320,7 @@
                         android:layout_toStartOf="@+id/rendererShaderCache"
                         android:text="@string/setting_renderer_shader_cache_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/rendererShaderCache"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -355,7 +355,7 @@
                         android:layout_toStartOf="@+id/rendererDebugLogging"
                         android:text="@string/setting_renderer_debug_logging_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/rendererDebugLogging"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

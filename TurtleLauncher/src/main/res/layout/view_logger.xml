@@ -71,7 +71,7 @@
         app:layout_constraintEnd_toStartOf="@+id/cancel"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
+    <com.endiq.turtlelauncher.ui.view.AnimEditText
         android:id="@+id/log_filter"
         android:layout_width="0dp"
         android:layout_height="@dimen/_28sdp"

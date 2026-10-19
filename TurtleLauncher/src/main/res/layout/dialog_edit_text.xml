@@ -62,7 +62,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     tools:ignore="LabelFor" />
 
-                <CheckBox
+                <com.endiq.turtlelauncher.ui.view.AnimCheckBox
                     android:id="@+id/check_box"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginEnd="@dimen/_2sdp"
+                    android:layout_marginEnd="@dimen/_4sdp"
                     android:text="@android:string/cancel" />
 
                 <com.endiq.turtlelauncher.ui.view.AnimButton
@@ -95,7 +95,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="@dimen/_2sdp"
+                    android:layout_marginStart="@dimen/_4sdp"
                     android:text="@string/generic_confirm" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>

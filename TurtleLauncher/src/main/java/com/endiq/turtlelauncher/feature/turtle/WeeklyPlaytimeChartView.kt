@@ -5,8 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import androidx.core.content.ContextCompat
-import com.endiq.turtlelauncher.R
+import com.endiq.turtlelauncher.ui.miuix.MiuixTheme
 import java.util.Locale
 
 class WeeklyPlaytimeChartView @JvmOverloads constructor(
@@ -18,24 +17,28 @@ class WeeklyPlaytimeChartView @JvmOverloads constructor(
     private val dayLabels = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     private var hoursPerDay = FloatArray(7)
 
+    private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = MiuixTheme.colors(context).sliderBackground
+        style = Paint.Style.FILL
+    }
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.accent_primary)
+        color = MiuixTheme.colors(context).primary
         style = Paint.Style.FILL
     }
     private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.turtle_text_secondary)
+        color = MiuixTheme.colors(context).onSurfaceVariantSummary
         textAlign = Paint.Align.CENTER
-        textSize = resources.displayMetrics.scaledDensity * 10f
+        textSize = resources.displayMetrics.scaledDensity * 10.5f
     }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.turtle_text_secondary)
+        color = MiuixTheme.colors(context).onSurfaceVariantSummary
         textAlign = Paint.Align.CENTER
-        textSize = resources.displayMetrics.scaledDensity * 10f
+        textSize = resources.displayMetrics.scaledDensity * 10.5f
     }
 
-    private val barWidthPx = resources.displayMetrics.density * 4f
+    private val barWidthPx = resources.displayMetrics.density * 6f
     private val barMaxHeightPx = resources.displayMetrics.density * 46f
-    private val barMinHeightPx = resources.displayMetrics.density * 2f
+    private val barMinHeightPx = resources.displayMetrics.density * 4f
 
     /** [hours] must have exactly 7 entries, oldest (Monday) first. */
     fun setData(hours: FloatArray) {
@@ -47,21 +50,36 @@ class WeeklyPlaytimeChartView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (width == 0 || height == 0) return
 
+        val colors = MiuixTheme.colors(context)
+        trackPaint.color = colors.sliderBackground
+        barPaint.color = colors.primary
+        valuePaint.color = colors.onSurfaceVariantSummary
+        labelPaint.color = colors.onSurfaceVariantSummary
+
         val columnWidth = width / 7f
         val maxHours = (hoursPerDay.maxOrNull() ?: 0f).coerceAtLeast(0.1f)
         val labelY = height - labelPaint.fontMetrics.bottom
         val barBottom = labelY + labelPaint.fontMetrics.top - (resources.displayMetrics.density * 6f)
         val valueBaseline = valuePaint.textSize
+        val radius = barWidthPx / 2f
 
         for (i in 0 until 7) {
             val cx = columnWidth * i + columnWidth / 2f
             val barHeight = (barMaxHeightPx * (hoursPerDay[i] / maxHours)).coerceAtLeast(barMinHeightPx)
 
+            // Draw Miuix capsule track behind each bar
+            canvas.drawRoundRect(
+                cx - barWidthPx / 2f, barBottom - barMaxHeightPx,
+                cx + barWidthPx / 2f, barBottom,
+                radius, radius,
+                trackPaint
+            )
+
             canvas.drawText(String.format(Locale.US, "%.1f", hoursPerDay[i]), cx, valueBaseline, valuePaint)
             canvas.drawRoundRect(
                 cx - barWidthPx / 2f, barBottom - barHeight,
                 cx + barWidthPx / 2f, barBottom,
-                barWidthPx / 2f, barWidthPx / 2f,
+                radius, radius,
                 barPaint
             )
             canvas.drawText(dayLabels[i], cx, labelY, labelPaint)

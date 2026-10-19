@@ -100,7 +100,7 @@
                         android:layout_toStartOf="@+id/dump_shaders"
                         android:text="@string/setting_shader_dump_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/dump_shaders"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -135,7 +135,7 @@
                         android:layout_toStartOf="@+id/bigCoreAffinity"
                         android:text="@string/setting_force_big_core_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/bigCoreAffinity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -170,7 +170,7 @@
                         android:layout_toStartOf="@+id/fastBoot"
                         android:text="@string/setting_fast_boot_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/fastBoot"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -205,7 +205,7 @@
                         android:layout_toStartOf="@+id/modConflictDetection"
                         android:text="@string/setting_mod_conflict_detection_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/modConflictDetection"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -275,7 +275,7 @@
                         android:layout_toStartOf="@+id/backgroundServiceOptimization"
                         android:text="@string/setting_background_service_optimization_summary" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/backgroundServiceOptimization"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -329,7 +329,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_touch_controller_vibrate_duration_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/tcVibrateDuration"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -396,7 +396,7 @@
                         android:layout_marginEnd="@dimen/_8sdp"
                         android:layout_toStartOf="@+id/autoCheckPluginUpdates"
                         android:text="@string/setting_plugin_update_auto_desc" />
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/autoCheckPluginUpdates"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -563,7 +563,7 @@
                         android:layout_toStartOf="@+id/aiCrashHelp"
                         android:text="@string/setting_ai_crash_help_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/aiCrashHelp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -616,7 +616,7 @@
                         android:layout_toStartOf="@+id/aiSkinFilter"
                         android:text="@string/setting_ai_skin_filter_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/aiSkinFilter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -671,7 +671,7 @@
                         android:layout_toStartOf="@+id/aiBrain"
                         android:text="@string/setting_ai_brain_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/aiBrain"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -745,7 +745,7 @@
                         android:layout_toStartOf="@+id/aiWebSearch"
                         android:text="@string/setting_ai_web_search_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/aiWebSearch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -865,7 +865,7 @@
                         android:layout_below="@+id/offlineModeFallback_title"
                         android:layout_toStartOf="@+id/offlineModeFallback"
                         android:text="@string/setting_offline_mode_fallback_desc" />
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/offlineModeFallback"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -893,7 +893,7 @@
                         android:layout_below="@+id/anrDetectorEnabled_title"
                         android:layout_toStartOf="@+id/anrDetectorEnabled"
                         android:text="@string/setting_anr_detector_desc" />
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/anrDetectorEnabled"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

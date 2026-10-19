@@ -1,174 +1,163 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowAnimationStyle">@style/NoAnimations</item>
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="android:windowFullscreen">false</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:statusBarColor">@color/bg_deep</item>
-        <item name="android:navigationBarColor">@color/bg_deep</item>
-        <item name="android:windowBackground">@color/bg_deep</item>
-        <item name="android:scrollbarThumbHorizontal">@color/accent_primary</item>
-        <item name="android:scrollbarThumbVertical">@color/accent_primary</item>
-        <item name="android:textSize">@dimen/_12ssp</item>
-        <item name="android:textColor">@color/turtle_text_primary</item>
-        <item name="android:fontFamily">@font/proxima_nova_extrabold</item>
-        <item name="fontFamily">@font/proxima_nova_extrabold</item>
-        <item name="colorPrimary">@color/accent_primary</item>
-        <item name="colorPrimaryDark">@color/bg_deep</item>
-        <item name="colorAccent">@color/turtle_accent_glow</item>
-        <item name="colorSurface">@color/turtle_bg_surface</item>
-        <item name="colorOnSurface">@color/turtle_text_primary</item>
-        <item name="colorSurfaceVariant">@color/turtle_bg_elevated</item>
-        <item name="colorOutline">@color/turtle_border_default</item>
-        <item name="colorError">@color/turtle_error</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <!-- MD3 shape system: rounder, smoother corners app-wide -->
-        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Turtle.Small</item>
-        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Turtle.Medium</item>
-        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Turtle.Large</item>
-        <item name="android:switchStyle">@style/Widget.Turtle.Switch</item>
-        <item name="android:seekBarStyle">@style/Widget.Turtle.SeekBar</item>
-    </style>
 
-    <style name="Widget.Turtle.Switch" parent="android:Widget.Material.CompoundButton.Switch">
-        <item name="android:track">@drawable/switch_track_selector</item>
-        <item name="android:thumb">@drawable/switch_thumb_transparent</item>
-        <item name="android:switchMinWidth">48dp</item>
-    </style>
-
-    <style name="Widget.Turtle.SeekBar" parent="android:Widget.Material.SeekBar">
-        <item name="android:thumb">@drawable/seekbar_thumb</item>
-        <item name="android:progressTint">@color/accent_primary</item>
-        <item name="android:progressBackgroundTint">@color/turtle_border_default</item>
-    </style>
-
-    <style name="ThemeOverlay.Turtle.HighContrast" parent="">
-        <item name="colorOutline">@color/turtle_hc_border</item>
-        <item name="android:textColorSecondary">@color/turtle_hc_text_secondary</item>
-        <item name="colorSurfaceVariant">@color/turtle_hc_surface</item>
-    </style>
-
-    <style name="ThemeOverlay.Turtle.Font.Sans" parent="">
-        <item name="android:fontFamily">sans-serif</item>
-        <item name="fontFamily">sans-serif</item>
-    </style>
-    <style name="ThemeOverlay.Turtle.Font.Condensed" parent="">
-        <item name="android:fontFamily">sans-serif-condensed</item>
-        <item name="fontFamily">sans-serif-condensed</item>
-    </style>
-    <style name="ThemeOverlay.Turtle.Font.Serif" parent="">
-        <item name="android:fontFamily">serif</item>
-        <item name="fontFamily">serif</item>
-    </style>
-    <style name="ThemeOverlay.Turtle.Font.Monospace" parent="">
-        <item name="android:fontFamily">monospace</item>
-        <item name="fontFamily">monospace</item>
-    </style>
-
-    <!-- MD3 shape tokens — smooth, generously rounded edges -->
-    <style name="ShapeAppearance.Turtle.Small" parent="ShapeAppearance.Material3.Corner.Small">
-        <item name="cornerSize">12dp</item>
-    </style>
-    <style name="ShapeAppearance.Turtle.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
-        <item name="cornerSize">20dp</item>
-    </style>
-    <style name="ShapeAppearance.Turtle.Large" parent="ShapeAppearance.Material3.Corner.Large">
-        <item name="cornerSize">28dp</item>
-    </style>
-    <style name="ShapeAppearance.Turtle.SeriesCard" parent="ShapeAppearance.Material3.Corner.Large">
-        <item name="cornerSize">@dimen/radius_panel</item>
-    </style>
-
-    <style name="CustomDialogStyle" parent="Theme.Material3.DayNight.Dialog">
-        <item name="android:windowBackground">@drawable/bg_dialog</item>
-        <item name="android:windowAnimationStyle">@style/DialogAnimation</item>
-        <item name="colorPrimary">@color/accent_primary</item>
-        <item name="colorSurface">@color/turtle_bg_surface</item>
-        <item name="colorOnSurface">@color/turtle_text_primary</item>
-        <item name="android:scrollbarThumbVertical">@color/accent_primary</item>
-        <item name="android:textColor">@color/turtle_text_primary</item>
-    </style>
-
-    <style name="CustomAlertDialogTheme" parent="Theme.Material3.DayNight.Dialog.Alert">
-        <item name="android:windowBackground">@drawable/bg_dialog</item>
-        <item name="android:windowAnimationStyle">@style/DialogAnimation</item>
-        <item name="colorPrimary">@color/accent_primary</item>
-        <item name="colorSurface">@color/turtle_bg_surface</item>
-        <item name="android:textColor">@color/turtle_text_primary</item>
-    </style>
-
-    <!-- Premium dialog/popup entrance & exit: soft scale + fade, MD3-style motion -->
-    <style name="DialogAnimation">
-        <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
-        <item name="android:windowExitAnimation">@anim/dialog_exit</item>
-    </style>
-
-    <style name="RoundedCornersImageView">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">8dp</item>
-    </style>
-
-    <style name="RoundImageView">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">50%</item>
-    </style>
-
-    <!-- Gaming Button -->
-    <style name="TurtleButton" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/accent_primary</item>
-        <item name="android:textColor">@color/turtle_text_on_accent</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="cornerRadius">@dimen/radius_item</item>
-        <item name="rippleColor">@color/turtle_accent_ripple</item>
-    </style>
-
-    <!-- Outlined Button -->
-    <style name="TurtleButtonOutline" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="backgroundTint">@android:color/transparent</item>
-        <item name="strokeColor">@color/accent_primary</item>
-        <item name="android:textColor">@color/accent_primary</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="cornerRadius">@dimen/radius_item</item>
-        <item name="rippleColor">@color/turtle_accent_ripple</item>
-    </style>
-
-    <!-- Zero-duration animation style: removes all activity enter/exit animations -->
-    <style name="NoAnimations" parent="@android:style/Animation.Activity">
-        <item name="android:activityOpenEnterAnimation">@null</item>
-        <item name="android:activityOpenExitAnimation">@null</item>
-        <item name="android:activityCloseEnterAnimation">@null</item>
-        <item name="android:activityCloseExitAnimation">@null</item>
-        <item name="android:taskOpenEnterAnimation">@null</item>
-        <item name="android:taskOpenExitAnimation">@null</item>
-        <item name="android:taskCloseEnterAnimation">@null</item>
-        <item name="android:taskCloseExitAnimation">@null</item>
-        <item name="android:taskToFrontEnterAnimation">@null</item>
-        <item name="android:taskToFrontExitAnimation">@null</item>
-        <item name="android:taskToBackEnterAnimation">@null</item>
-        <item name="android:taskToBackExitAnimation">@null</item>
-    </style>
-    <style name="SettingsSectionHeader">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">11sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/turtle_text_secondary</item>
-        <item name="android:letterSpacing">0.08</item>
-        <item name="android:paddingHorizontal">4dp</item>
-        <item name="android:paddingBottom">8dp</item>
-        <item name="android:paddingTop">4dp</item>
-    </style>
-
-    <style name="ShareTrampolineTheme" parent="AppTheme">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowContentOverlay">@null</item>
+    <!-- Base Miuix Application Theme -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="viewInflaterClass">com.endiq.turtlelauncher.ui.miuix.MiuixViewInflater</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowFullscreen">false</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowAnimationStyle">@style/NoAnimations</item>
+        <item name="android:windowBackground">@color/miuix_surface</item>
+        <item name="android:colorBackground">@color/miuix_surface</item>
+        <item name="colorSurface">@color/miuix_surface_container</item>
+        <item name="colorOnSurface">@color/miuix_on_surface</item>
+        <item name="android:textColor">@color/miuix_on_surface</item>
+        <item name="android:textColorPrimary">@color/miuix_on_surface</item>
+        <item name="android:textColorSecondary">@color/miuix_on_surface_variant_summary</item>
+        <item name="android:textColorHint">@color/miuix_on_secondary_container</item>
+        <item name="android:textSize">@dimen/_11ssp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+
+        <!-- Miuix Accent & Control Tokens -->
+        <item name="colorAccent">@color/miuix_primary</item>
+        <item name="colorPrimary">@color/miuix_primary</item>
+        <item name="colorPrimaryDark">@color/miuix_surface</item>
+        <item name="colorPrimaryVariant">@color/miuix_primary_variant</item>
+        <item name="colorSecondary">@color/miuix_primary</item>
+        <item name="colorSecondaryVariant">@color/miuix_secondary_variant</item>
+        <item name="colorOnPrimary">@color/miuix_on_primary</item>
+        <item name="colorOnSecondary">@color/miuix_on_secondary</item>
+        <item name="colorError">@color/miuix_error</item>
+        <item name="colorControlNormal">@color/miuix_on_surface_variant_summary</item>
+        <item name="colorControlActivated">@color/miuix_primary</item>
+        <item name="colorControlHighlight">@color/turtle_accent_ripple</item>
+        <item name="android:colorControlNormal">@color/miuix_on_surface_variant_summary</item>
+        <item name="android:colorControlActivated">@color/miuix_primary</item>
+        <item name="android:colorControlHighlight">@color/turtle_accent_ripple</item>
+
+        <!-- Miuix Widget Styles -->
+        <item name="android:seekBarStyle">@style/Widget.Turtle.SeekBar</item>
+        <item name="seekBarStyle">@style/Widget.Turtle.SeekBar</item>
+        <item name="android:switchStyle">@style/Widget.Turtle.Switch</item>
+        <item name="switchStyle">@style/Widget.Turtle.Switch</item>
+        <item name="alertDialogTheme">@style/CustomAlertDialogTheme</item>
+        <item name="android:alertDialogTheme">@style/CustomAlertDialogTheme</item>
+
+        <!-- Fullscreen & Edge-to-Edge -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:navigationBarColor">@color/miuix_surface</item>
+        <item name="android:statusBarColor">@color/miuix_surface</item>
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarSize">3dp</item>
+    </style>
+
+    <!-- Miuix SeekBar / Slider Style -->
+    <style name="Widget.Turtle.SeekBar" parent="Widget.AppCompat.SeekBar">
+        <item name="android:progressDrawable">@drawable/seekbar_progress</item>
+        <item name="android:thumb">@drawable/seekbar_thumb</item>
+        <item name="android:splitTrack">false</item>
+        <item name="android:minHeight">28dp</item>
+        <item name="android:maxHeight">28dp</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
+    <!-- Miuix Switch Style -->
+    <style name="Widget.Turtle.Switch" parent="android:Widget.Material.CompoundButton.Switch">
+        <item name="android:thumb">@drawable/switch_thumb</item>
+        <item name="android:track">@drawable/switch_track_selector</item>
+        <item name="android:switchMinWidth">49dp</item>
+        <item name="android:thumbTextPadding">8dp</item>
+        <item name="android:showText">false</item>
+    </style>
+
+    <!-- Miuix SmallTitle Section Header (`top.yukonga.miuix.kmp.basic.SmallTitle`) -->
+    <style name="SettingsSectionHeader">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/_10sdp</item>
+        <item name="android:layout_marginTop">@dimen/_12sdp</item>
+        <item name="android:layout_marginBottom">@dimen/_6sdp</item>
+        <item name="android:textColor">@color/miuix_on_background_variant</item>
+        <item name="android:textSize">@dimen/_11ssp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <!-- Miuix Primary Button Style -->
+    <style name="TurtleButton" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/bg_launch_button</item>
+        <item name="android:textColor">@color/miuix_on_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">42dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+    </style>
+
+    <!-- Miuix Secondary Button Style -->
+    <style name="TurtleButtonOutline" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/background_pill_outline</item>
+        <item name="android:textColor">@color/miuix_on_secondary_variant</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <style name="ThickDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0.75dp</item>
+        <item name="android:background">@color/miuix_divider_line</item>
+    </style>
+
+    <style name="DefaultTabStyle">
+        <item name="tab_indicator_drawable">@drawable/selector_bar_vertical</item>
+        <item name="tab_indicator_width">@dimen/_4sdp</item>
+        <item name="tab_indicator_height">@dimen/_14sdp</item>
+        <item name="tab_indicator_style">STYLE_LEFT</item>
+        <item name="tab_indicator_y_offset">@dimen/_2sdp</item>
+        <item name="tab_indicator_enable_flow">true</item>
+        <item name="tab_item_is_equ_width">false</item>
+        <item name="tab_enable_gradient_scale">true</item>
+        <item name="tab_min_scale">0.96</item>
+        <item name="tab_max_scale">1.04</item>
+        <item name="tab_enable_ico_color">true</item>
+        <item name="tab_enable_text_bold">true</item>
+    </style>
+
+    <style name="FullScreenDialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="viewInflaterClass">com.endiq.turtlelauncher.ui.miuix.MiuixViewInflater</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.60</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="colorAccent">@color/miuix_primary</item>
+        <item name="colorPrimary">@color/miuix_primary</item>
+        <item name="colorControlActivated">@color/miuix_primary</item>
+    </style>
+
+    <!-- Miuix AlertDialog Theme -->
+    <style name="CustomAlertDialogTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="viewInflaterClass">com.endiq.turtlelauncher.ui.miuix.MiuixViewInflater</item>
+        <item name="android:background">@color/miuix_background</item>
+        <item name="android:windowBackground">@drawable/background_card</item>
+        <item name="android:textColorPrimary">@color/miuix_on_background</item>
+        <item name="android:textColorSecondary">@color/miuix_on_surface_secondary</item>
+        <item name="colorAccent">@color/miuix_primary</item>
+        <item name="colorPrimary">@color/miuix_primary</item>
+        <item name="colorControlActivated">@color/miuix_primary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AlertDialogButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AlertDialogButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AlertDialogButtonStyle</item>
+    </style>
+
+    <style name="AlertDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/miuix_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
     </style>
 </resources>

@@ -133,7 +133,7 @@
             android:visibility="gone"
             android:layout_marginTop="@dimen/space_s">
 
-            <EditText
+            <com.endiq.turtlelauncher.ui.view.AnimEditText
                 android:id="@+id/join_code_input"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -185,13 +185,13 @@
                 android:text="@string/terracotta_custom_node_list"
                 android:textSize="13sp"
                 android:textColor="@color/turtle_text_primary"/>
-            <Switch
+            <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                 android:id="@+id/custom_node_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
-        <EditText
+        <com.endiq.turtlelauncher.ui.view.AnimEditText
             android:id="@+id/custom_node_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -260,7 +260,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ProgressBar
+        <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
             android:layout_width="36dp"
             android:layout_height="36dp"/>
 
@@ -378,7 +378,7 @@
             android:paddingHorizontal="@dimen/space_l"
             android:paddingVertical="@dimen/space_m">
 
-            <EditText
+            <com.endiq.turtlelauncher.ui.view.AnimEditText
                 android:id="@+id/chat_message_input"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

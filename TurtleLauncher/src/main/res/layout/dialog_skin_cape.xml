@@ -278,7 +278,7 @@
                 android:layout_marginBottom="@dimen/_8sdp"
                 android:visibility="gone"/>
 
-            <ProgressBar
+            <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
                 android:id="@+id/laby_gallery_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -387,7 +387,7 @@
                 android:layout_marginBottom="@dimen/_8sdp"
                 android:visibility="gone"/>
 
-            <ProgressBar
+            <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
                 android:id="@+id/littleskin_gallery_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -410,7 +410,7 @@
                 android:text="@string/skin_cape_pick_gallery"
                 android:layout_marginBottom="@dimen/_12sdp"/>
 
-            <ProgressBar
+            <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
                 android:id="@+id/progress_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -425,7 +425,7 @@
                 android:background="@color/turtle_highlight_subtle"
                 android:layout_marginVertical="@dimen/_8sdp"/>
 
-            <Switch
+            <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                 android:id="@+id/switch_slim_model"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -436,7 +436,7 @@
                 android:visibility="gone"
                 tools:ignore="UseSwitchCompatOrMaterialXml"/>
 
-            <Switch
+            <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                 android:id="@+id/switch_lan_visible"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

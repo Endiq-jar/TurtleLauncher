@@ -109,7 +109,7 @@
                         android:layout_toStartOf="@+id/autoDetectCores"
                         android:text="@string/setting_auto_detect_cores_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/autoDetectCores"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -144,7 +144,7 @@
                         android:layout_toStartOf="@+id/manualCoreOverride"
                         android:text="@string/setting_manual_core_override_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/manualCoreOverride"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -179,7 +179,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_manual_core_count_desc" />
 
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/manualCoreCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -228,7 +228,7 @@
                         android:layout_toStartOf="@+id/perInstanceCpuOverride"
                         android:text="@string/setting_per_instance_cpu_override_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/perInstanceCpuOverride"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -263,7 +263,7 @@
                         android:layout_toStartOf="@+id/advancedCpuTuning"
                         android:text="@string/setting_advanced_cpu_tuning_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/advancedCpuTuning"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -299,7 +299,7 @@
                         android:layout_toStartOf="@+id/bigCoreAffinity"
                         android:text="@string/setting_thread_affinity_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/bigCoreAffinity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -335,7 +335,7 @@
                         android:layout_toStartOf="@+id/schedulerTuning"
                         android:text="@string/setting_scheduler_tuning_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/schedulerTuning"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -389,7 +389,7 @@
                         android:layout_toStartOf="@+id/autoRamCalculator"
                         android:text="@string/setting_auto_ram_calculator_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/autoRamCalculator"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -424,7 +424,7 @@
                         android:layout_toStartOf="@+id/equalHeapSizes"
                         android:text="@string/setting_equal_heap_sizes_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/equalHeapSizes"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -510,7 +510,7 @@
                         android:layout_toStartOf="@+id/memoryPressureMonitor"
                         android:text="@string/setting_memory_pressure_monitor_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/memoryPressureMonitor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -545,7 +545,7 @@
                         android:layout_toStartOf="@+id/gcStatistics"
                         android:text="@string/setting_gc_statistics_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/gcStatistics"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -607,7 +607,7 @@
                         android:layout_toStartOf="@+id/jniBatching"
                         android:text="@string/setting_jni_batching_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/jniBatching"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -642,7 +642,7 @@
                         android:layout_toStartOf="@+id/jniCachedReferences"
                         android:text="@string/setting_jni_cached_references_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/jniCachedReferences"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -677,7 +677,7 @@
                         android:layout_toStartOf="@+id/nativeObjectPooling"
                         android:text="@string/setting_native_object_pooling_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/nativeObjectPooling"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -712,7 +712,7 @@
                         android:layout_toStartOf="@+id/reducedJniCalls"
                         android:text="@string/setting_reduced_jni_calls_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/reducedJniCalls"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

@@ -7,12 +7,11 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
+import com.endiq.turtlelauncher.ui.miuix.MiuixTheme
 import java.util.LinkedList
 
 /**
- * TurtleLauncher v10: minimal sparkline view for the "RAM Usage Graph" HUD module.
- * Call [pushSample] each tick with (usedMb, maxMb); it keeps a short rolling window
- * and redraws a lightweight line graph — no chart library dependency needed.
+ * Miuix-styled sparkline view for the "RAM Usage Graph" HUD module.
  */
 class RamGraphView @JvmOverloads constructor(
     context: Context,
@@ -24,12 +23,15 @@ class RamGraphView @JvmOverloads constructor(
     private val samples = LinkedList<Float>() // 0f..1f, used/max ratio
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#9CCF93") // Status: Success
+        color = MiuixTheme.colors(context).primary
         style = Paint.Style.STROKE
-        strokeWidth = 3f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        strokeWidth = 2.5f * resources.displayMetrics.density
     }
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#339CCF93") // Status: Success @ 20% alpha
+        val p = MiuixTheme.colors(context).primary
+        color = Color.argb(56, Color.red(p), Color.green(p), Color.blue(p))
         style = Paint.Style.FILL
     }
 

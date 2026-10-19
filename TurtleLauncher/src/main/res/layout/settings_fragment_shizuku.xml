@@ -88,7 +88,7 @@
                     android:textSize="@dimen/_10ssp"
                     android:text="@string/shizuku_status_unknown"/>
 
-                <Button
+                <com.endiq.turtlelauncher.ui.view.AnimButton
                     android:id="@+id/shizuku_action_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -139,7 +139,7 @@
                         android:layout_toStartOf="@id/shizuku_enabled"
                         android:text="@string/setting_shizuku_enabled_desc"/>
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/shizuku_enabled"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -174,7 +174,7 @@
                         android:layout_toStartOf="@id/shizuku_auto_perf"
                         android:text="@string/setting_shizuku_auto_perf_desc"/>
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/shizuku_auto_perf"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

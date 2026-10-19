@@ -91,7 +91,7 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <Switch
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                     android:id="@+id/music_enable_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -121,19 +121,19 @@
                     android:layout_marginTop="@dimen/space_xs"
                     android:orientation="vertical">
 
-                    <RadioButton
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixRadioButton
                         android:id="@+id/scope_full_game"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/music_scope_full_game" />
 
-                    <RadioButton
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixRadioButton
                         android:id="@+id/scope_only_startup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/music_scope_only_startup" />
 
-                    <RadioButton
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixRadioButton
                         android:id="@+id/scope_only_launcher"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -219,7 +219,7 @@
                     android:text="@string/music_volume"
                     android:textColor="@color/turtle_primary_text" />
 
-                <SeekBar
+                <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                     android:id="@+id/music_volume_seekbar"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

@@ -1,44 +1,84 @@
 package com.endiq.turtlelauncher.ui.layout
 
-import android.animation.AnimatorInflater
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.drawable.RippleDrawable
+import android.graphics.Canvas
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.widget.RelativeLayout
-import androidx.core.content.ContextCompat
 import com.endiq.turtlelauncher.R
+import com.endiq.turtlelauncher.ui.miuix.MiuixPressFeedback
+import com.endiq.turtlelauncher.ui.miuix.MiuixSquircle
+import com.endiq.turtlelauncher.ui.miuix.MiuixTheme
 
-@SuppressLint("Recycle")
+/**
+ * Miuix `Card` / `BasicComponent` RelativeLayout container (`top.yukonga.miuix.kmp.basic.Card`
+ * and `top.yukonga.miuix.kmp.basic.BasicComponent`).
+ * Applies a G2-continuous Miuix Squircle outline, Folme spring `SinkFeedback` (`0.96f`),
+ * and `MiuixIndication` press/hover/focus overlay.
+ */
 class AnimRelativeLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
-) : RelativeLayout(context, attrs, defStyleAttr, defStyleRes) {
+    defStyleAttr: Int = 0
+) : RelativeLayout(context, attrs, defStyleAttr) {
+
+    var isRippleEnabled: Boolean = true
+        set(value) {
+            field = value
+            @Suppress("UNNECESSARY_SAFE_CALL")
+            pressFeedback?.enableIndication = value
+        }
+
+    private val pressFeedback = MiuixPressFeedback(
+        view = this,
+        sinkScale = 0.96f,
+        damping = 0.85f,
+        response = 0.28f,
+        cornerRadiusDp = MiuixTheme.CornerRadiiDp.CARD,
+        enableIndication = true,
+        enableSink = true
+    )
+
     init {
-        stateListAnimator = AnimatorInflater.loadStateListAnimator(context, R.xml.anim_scale)
-        if (context.obtainStyledAttributes(attrs, R.styleable.AnimRelativeLayout).getBoolean(R.styleable.AnimRelativeLayout_ripple_for_relative, false)) {
-            setRipple()
+        val styleable = context.obtainStyledAttributes(attrs, R.styleable.AnimRelativeLayout)
+        isRippleEnabled = styleable.getBoolean(R.styleable.AnimRelativeLayout_ripple_for_relative, true)
+        styleable.recycle()
+
+        stateListAnimator = null
+        if (background != null) {
+            val radiusPx = MiuixTheme.dpToPx(context, MiuixTheme.CornerRadiiDp.CARD)
+            MiuixSquircle.applyOutline(this, radiusPx, clipToOutline = true)
         }
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        post {
+        if (changed) {
             pivotX = width / 2f
             pivotY = height / 2f
         }
     }
 
-    private fun setRipple() {
-        val rippleDrawable = RippleDrawable(
-            ColorStateList.valueOf(ContextCompat.getColor(context, R.color.background_ripple_effect)),
-            background,
-            null
-        )
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        pressFeedback.onTouchEvent(event)
+        return super.onTouchEvent(event)
+    }
 
-        background = rippleDrawable
+    override fun onHoverEvent(event: MotionEvent?): Boolean {
+        pressFeedback.onHoverEvent(event)
+        return super.onHoverEvent(event)
+    }
+
+    override fun drawableStateChanged() {
+        super.drawableStateChanged()
+        @Suppress("UNNECESSARY_SAFE_CALL")
+        pressFeedback?.onDrawableStateChanged()
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+        pressFeedback.drawIndication(canvas)
     }
 }

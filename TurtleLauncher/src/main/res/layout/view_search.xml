@@ -40,7 +40,7 @@
         app:layout_constraintStart_toEndOf="@+id/edit_text"
         app:layout_constraintTop_toTopOf="@+id/edit_text" />
 
-    <CheckBox
+    <com.endiq.turtlelauncher.ui.view.AnimCheckBox
         android:id="@+id/case_sensitive"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/search_button" />
 
-    <CheckBox
+    <com.endiq.turtlelauncher.ui.view.AnimCheckBox
         android:id="@+id/show_search_results_only"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

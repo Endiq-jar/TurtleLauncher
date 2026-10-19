@@ -31,8 +31,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tab_deselect_color="@color/black_or_white"
-            app:tab_select_color="@color/black_or_white">
+            app:tab_deselect_color="@color/miuix_on_surface_variant_summary"
+            app:tab_select_color="@color/miuix_primary">
 
             <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
                 android:layout_width="wrap_content"

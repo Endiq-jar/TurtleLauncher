@@ -23,7 +23,7 @@
         tools:visibility="visible"
         tools:ignore="ContentDescription" />
 
-    <RadioButton
+    <com.endiq.turtlelauncher.ui.miuix.MiuixRadioButton
         android:id="@+id/radio_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

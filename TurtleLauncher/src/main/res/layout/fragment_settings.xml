@@ -91,7 +91,7 @@
                 android:visibility="gone"
                 android:contentDescription="@string/generic_return"/>
 
-            <EditText
+            <com.endiq.turtlelauncher.ui.view.AnimEditText
                 android:id="@+id/search_input"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"

@@ -100,7 +100,7 @@
                         android:layout_toStartOf="@+id/version_isolation"
                         android:text="@string/setting_version_isolation_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/version_isolation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -226,7 +226,7 @@
                         android:layout_toStartOf="@+id/autoSetGameLanguage"
                         android:text="@string/setting_set_game_language_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/autoSetGameLanguage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -262,7 +262,7 @@
                         android:layout_toStartOf="@+id/gameLanguageOverridden"
                         android:text="@string/setting_set_game_language_overridden_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/gameLanguageOverridden"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

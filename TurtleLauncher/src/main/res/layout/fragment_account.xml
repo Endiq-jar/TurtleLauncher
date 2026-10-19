@@ -60,8 +60,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/add_server"
-                app:tab_deselect_color="@color/black_or_white"
-                app:tab_select_color="@color/black_or_white"
+                app:tab_deselect_color="@color/miuix_on_surface_variant_summary"
+                app:tab_select_color="@color/miuix_primary"
                 tools:visibility="visible">
 
                 <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout

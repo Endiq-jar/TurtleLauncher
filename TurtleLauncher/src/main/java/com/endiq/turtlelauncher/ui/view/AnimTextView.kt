@@ -1,43 +1,81 @@
 package com.endiq.turtlelauncher.ui.view
 
-import android.animation.AnimatorInflater
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.drawable.RippleDrawable
+import android.graphics.Canvas
 import android.util.AttributeSet
+import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.content.ContextCompat
 import com.endiq.turtlelauncher.R
+import com.endiq.turtlelauncher.ui.miuix.MiuixPressFeedback
+import com.endiq.turtlelauncher.ui.miuix.MiuixSquircle
 
-@SuppressLint("Recycle")
+/**
+ * Interactive Miuix TextView with G2-continuous squircle clipping, `MiuixIndication`
+ * press/hover/focus overlay, and Folme spring `SinkFeedback`.
+ */
 class AnimTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = android.R.attr.textStyle
+    defStyleAttr: Int = android.R.attr.textViewStyle
 ) : AppCompatTextView(context, attrs, defStyleAttr) {
+
+    var isRippleEnabled: Boolean = false
+        set(value) {
+            field = value
+            @Suppress("UNNECESSARY_SAFE_CALL")
+            pressFeedback?.enableIndication = value
+        }
+
+    private val pressFeedback = MiuixPressFeedback(
+        view = this,
+        sinkScale = 0.95f,
+        damping = 0.85f,
+        response = 0.26f,
+        cornerRadiusDp = 12f,
+        enableIndication = false,
+        enableSink = true
+    )
+
     init {
-        stateListAnimator = AnimatorInflater.loadStateListAnimator(context, R.xml.anim_scale)
-        if (context.obtainStyledAttributes(attrs, R.styleable.AnimTextView).getBoolean(R.styleable.AnimTextView_ripple_for_text, false)) {
-            setRipple()
+        stateListAnimator = null
+        val styleable = context.obtainStyledAttributes(attrs, R.styleable.AnimTextView)
+        isRippleEnabled = styleable.getBoolean(R.styleable.AnimTextView_ripple_for_text, false)
+        styleable.recycle()
+
+        if (background != null) {
+            val radiusPx = 12f * resources.displayMetrics.density
+            MiuixSquircle.applyOutline(this, radiusPx, clipToOutline = true)
         }
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        post {
+        if (changed) {
             pivotX = width / 2f
             pivotY = height / 2f
         }
     }
 
-    private fun setRipple() {
-        val rippleDrawable = RippleDrawable(
-            ColorStateList.valueOf(ContextCompat.getColor(context, R.color.background_ripple_effect)),
-            background,
-            null
-        )
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        pressFeedback.onTouchEvent(event)
+        return super.onTouchEvent(event)
+    }
 
-        background = rippleDrawable
+    override fun onHoverEvent(event: MotionEvent?): Boolean {
+        pressFeedback.onHoverEvent(event)
+        return super.onHoverEvent(event)
+    }
+
+    override fun drawableStateChanged() {
+        super.drawableStateChanged()
+        @Suppress("UNNECESSARY_SAFE_CALL")
+        pressFeedback?.onDrawableStateChanged()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        pressFeedback.drawIndication(canvas)
     }
 }

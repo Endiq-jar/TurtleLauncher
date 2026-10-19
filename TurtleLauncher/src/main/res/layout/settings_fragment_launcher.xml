@@ -100,7 +100,7 @@
                         android:layout_toStartOf="@+id/checkLibraries"
                         android:text="@string/setting_check_libraries_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/checkLibraries"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -136,7 +136,7 @@
                         android:layout_toStartOf="@+id/verifyManifest"
                         android:text="@string/setting_verify_manifest_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/verifyManifest"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -172,7 +172,7 @@
                         android:layout_toStartOf="@+id/resourceImageCache"
                         android:text="@string/setting_resource_image_cache_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/resourceImageCache"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -207,7 +207,7 @@
                         android:layout_toStartOf="@+id/addFullResourceName"
                         android:text="@string/setting_resource_full_name_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/addFullResourceName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -313,7 +313,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_max_download_threads_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/maxDownloadThreads"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -459,7 +459,7 @@
                         android:layout_toStartOf="@+id/animation"
                         android:text="@string/setting_animation_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/animation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -567,7 +567,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_animation_speed_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/animationSpeed"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -616,7 +616,7 @@
                         android:layout_marginHorizontal="@dimen/_12sdp"
                         android:text="@string/setting_page_opacity_desc" />
     
-                    <SeekBar
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSlider
                         android:id="@+id/pageOpacity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -684,7 +684,7 @@
                         android:layout_toStartOf="@+id/enableLogOutput"
                         android:text="@string/setting_enable_log_output_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/enableLogOutput"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -719,7 +719,7 @@
                         android:layout_toStartOf="@+id/quitLauncher"
                         android:text="@string/setting_quit_launcher_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/quitLauncher"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -807,7 +807,7 @@
                         android:layout_toStartOf="@+id/acceptPreReleaseUpdates"
                         android:text="@string/setting_accept_pre_release_updates_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/acceptPreReleaseUpdates"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -843,7 +843,7 @@
                         android:layout_toStartOf="@+id/notification_permission_request"
                         android:text="@string/setting_ask_for_notification_desc" />
     
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/notification_permission_request"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -878,7 +878,7 @@
                         android:layout_toStartOf="@+id/aiAssistantEnabled"
                         android:text="@string/setting_ai_assistant_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/aiAssistantEnabled"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -914,7 +914,7 @@
                         android:layout_toStartOf="@+id/aiAssistantHistoryEnabled"
                         android:text="@string/setting_ai_assistant_history_desc" />
 
-                    <Switch
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixSwitch
                         android:id="@+id/aiAssistantHistoryEnabled"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

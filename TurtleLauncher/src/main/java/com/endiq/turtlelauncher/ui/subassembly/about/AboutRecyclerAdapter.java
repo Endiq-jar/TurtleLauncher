@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.endiq.turtlelauncher.databinding.ItemAboutViewBinding;
+import com.endiq.turtlelauncher.utils.anim.AnimatedIcon;
 import com.endiq.turtlelauncher.utils.ZHTools;
 
 import java.util.List;
@@ -56,6 +57,10 @@ public class AboutRecyclerAdapter extends RecyclerView.Adapter<AboutRecyclerAdap
             // Recycled rows must restore both actions and visibility, not retain the last row.
             com.bumptech.glide.Glide.with(binding.imageView).clear(binding.imageView);
             binding.imageView.setImageDrawable(data.getIcon());
+            // ShapeableImageView bypasses the XML AnimatedIconView conversion, so bind its
+            // interaction style here. The key includes the row title, giving every credit
+            // row its own stable style/seed instead of one shared animation.
+            AnimatedIcon.bindNamed(binding.imageView, "about_" + data.getTitle());
             if (data.getImageResource() != 0) {
                 // Decode to the thumbnail's bounds, not 1024px multiplied by screen density.
                 com.bumptech.glide.Glide.with(binding.imageView).load(data.getImageResource())

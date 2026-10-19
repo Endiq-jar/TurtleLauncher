@@ -33,6 +33,7 @@ class ProfilePathAdapter(
     // Without the storage permission, fall back to the default path.
     private var currentId: String? = if (StoragePermissionsUtils.checkPermissions()) launcherProfile.getValue() else "default"
     private val managerPopupWindow: PopupWindow = PopupWindow().apply {
+        animationStyle = R.style.TurtlePopupAnimation
         isFocusable = true
         isOutsideTouchable = true
     }

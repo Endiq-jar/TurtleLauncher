@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Subtle hand-off for a fragment transaction. The screen-specific entrance
+     (slide/bounce/zoom/sheet, chosen in Settings -> Animations) is played by
+     FragmentWithAnim on the content inside, so this layer only fades and
+     settles the container instead of double-sliding it. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/fast_out_slow_in">
+    <alpha
+        android:fromAlpha="0.35"
+        android:toAlpha="1.0"
+        android:duration="220" />
+    <scale
+        android:fromXScale="0.985"
+        android:fromYScale="0.985"
+        android:toXScale="1.0"
+        android:toYScale="1.0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:duration="220" />
+</set>

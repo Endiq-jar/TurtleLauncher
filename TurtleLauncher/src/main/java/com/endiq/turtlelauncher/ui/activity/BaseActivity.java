@@ -77,6 +77,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onPostResume();
         Tools.setFullscreen(this);
         Tools.ignoreNotch(shouldIgnoreNotch(),this);
+        // Install the shared list motion on activity-level lists (Splash, Launcher) and
+        // on any fragment lists whose view was created after BaseFragment.onStart().
+        com.endiq.turtlelauncher.utils.anim.TurtleTransitions.installMotion(getWindow().getDecorView());
     }
 
     @Override

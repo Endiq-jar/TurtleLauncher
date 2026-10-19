@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import com.endiq.turtlelauncher.InfoDistributor;
 import com.endiq.turtlelauncher.context.ContextExecutor;
 import com.endiq.turtlelauncher.context.LocaleHelper;
@@ -30,6 +31,11 @@ public class TurtleApplication extends Application {
 
 	@Override
 	public void onCreate() {
+		// Dark-only launcher. Set the night mode before any Activity, dialog or resource
+		// lookup happens so every window starts from the dark theme and the night colour
+		// resources - no light flash on a light-mode device, no partial theming.
+		AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+
 		ContextExecutor.setApplication(this);
 
 		Thread.setDefaultUncaughtExceptionHandler((thread, th) -> {

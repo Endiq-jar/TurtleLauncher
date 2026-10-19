@@ -472,10 +472,16 @@ public class MainMenuFragment extends FragmentWithAnim {
 
     @Override
     public void slideIn(AnimPlayer animPlayer) {
+        // The two big content panels take the configured screen transition, one beat
+        // apart. Chrome (app bar, rail, footer) fades instead of sliding the full
+        // screen height, and still arrives in sequence so the screen assembles itself.
         com.endiq.turtlelauncher.utils.anim.TurtleTransitions.stagger(
                 animPlayer,
                 java.util.Arrays.asList(binding.launcherMenu, binding.playLayout),
                 55L);
+        addDelayed(animPlayer, binding.homeTopBar, Animations.FadeIn, 0L);
+        addDelayed(animPlayer, binding.quickActionsRail, Animations.FadeIn, 55L);
+        addDelayed(animPlayer, binding.launcherFooter, Animations.FadeIn, 165L);
         animPlayer.apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceEnlarge));
     }
 
@@ -484,5 +490,19 @@ public class MainMenuFragment extends FragmentWithAnim {
         animPlayer.apply(new AnimPlayer.Entry(binding.launcherMenu, TurtleTransitions.exit()))
                 .apply(new AnimPlayer.Entry(binding.playLayout, TurtleTransitions.exit()))
                 .apply(new AnimPlayer.Entry(binding.playButtonsLayout, Animations.BounceShrink));
+        addDelayed(animPlayer, binding.homeTopBar, Animations.FadeOut, 0L);
+        addDelayed(animPlayer, binding.quickActionsRail, Animations.FadeOut, 20L);
+        addDelayed(animPlayer, binding.launcherFooter, Animations.FadeOut, 40L);
+    }
+
+    /** Adds [animations] for [view], delayed so several entries form one sequence. */
+    private static void addDelayed(AnimPlayer player, android.view.View view,
+                                   Animations animations, long delayMs) {
+        android.animation.Animator[] animators =
+                animations.getAnimator().getAnimators(view);
+        for (android.animation.Animator animator : animators) {
+            animator.setStartDelay(delayMs);
+        }
+        player.addAll(animators);
     }
 }

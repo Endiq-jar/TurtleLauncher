@@ -22,6 +22,7 @@ import com.endiq.turtlelauncher.ui.fragment.FragmentWithAnim
 import com.endiq.turtlelauncher.utils.ZHTools
 import com.endiq.turtlelauncher.utils.anim.AnimUtils
 import com.endiq.turtlelauncher.utils.anim.AnimUtils.Companion.playVisibilityAnim
+import com.endiq.turtlelauncher.utils.anim.AnimatedIcon
 import com.endiq.turtlelauncher.utils.stringutils.StringUtils
 import java.util.concurrent.Future
 
@@ -195,6 +196,9 @@ abstract class ModListFragment : FragmentWithAnim(R.layout.fragment_mod_download
 
     protected fun setIcon(icon: Drawable?) {
         binding.icon.setImageDrawable(icon)
+        // Set from a Drawable, so derive the style from the caller's class name once per
+        // screen instead of leaving the header icon static.
+        AnimatedIcon.bindNamed(binding.icon, "modlist_" + javaClass.simpleName)
     }
 
     protected fun getIconView() = binding.icon

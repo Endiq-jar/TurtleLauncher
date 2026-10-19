@@ -19,6 +19,7 @@ import com.endiq.turtlelauncher.feature.unpack.UnpackSingleFilesTask
 import com.endiq.turtlelauncher.task.Task
 import com.endiq.turtlelauncher.ui.dialog.TipDialog
 import com.endiq.turtlelauncher.utils.StoragePermissionsUtils
+import com.endiq.turtlelauncher.utils.anim.TurtleTransitions
 import net.endiq.launcher.LauncherActivity
 import net.endiq.launcher.MissingStorageActivity
 import net.endiq.launcher.Tools
@@ -40,6 +41,13 @@ class SplashActivity : BaseActivity() {
 
         binding.titleText.text = InfoDistributor.APP_NAME
         binding.splashText.setText(R.string.splash_screen_desc)
+        // Assemble the splash top-to-bottom: turtle logo, name, status text, button.
+        binding.root.post {
+            TurtleTransitions.stagger(
+                listOf(binding.splashLogo, binding.titleText, binding.splashText, binding.startButton),
+                55L
+            )
+        }
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@SplashActivity)
             adapter = installableAdapter

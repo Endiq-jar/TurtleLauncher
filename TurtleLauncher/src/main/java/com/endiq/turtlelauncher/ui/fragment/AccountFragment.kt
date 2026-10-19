@@ -98,6 +98,7 @@ class AccountFragment : FragmentWithAnim(R.layout.fragment_account), View.OnClic
     }
 
     private val mServerActionPopupWindow: PopupWindow = PopupWindow().apply {
+        animationStyle = R.style.TurtlePopupAnimation
         isFocusable = true
         isOutsideTouchable = true
     }

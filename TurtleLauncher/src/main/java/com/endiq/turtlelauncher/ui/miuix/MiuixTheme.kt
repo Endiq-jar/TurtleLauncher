@@ -1,7 +1,6 @@
 package com.endiq.turtlelauncher.ui.miuix
 
 import android.content.Context
-import android.content.res.Configuration
 import androidx.annotation.ColorInt
 
 /**
@@ -66,21 +65,23 @@ data class MiuixColorScheme(
 
 object MiuixTheme {
     /**
-     * Exact Miuix `darkColorScheme()` from `top.yukonga.miuix.kmp.theme.Colors`.
+     * Miuix `darkColorScheme()` (https://github.com/compose-miuix-ui/miuix), re-hued to
+     * Turtle's pastel-green accent. `onPrimary` is the deep green ink rather than white:
+     * pastel green is a light surface and white text on it drops below a readable contrast.
      */
     @JvmField
     val DarkColorScheme = MiuixColorScheme(
-        primary = 0xFF277AF7.toInt(),
-        onPrimary = 0xFFFFFFFF.toInt(),
-        primaryVariant = 0xFF0073DD.toInt(),
-        onPrimaryVariant = 0xFF99C7F1.toInt(),
-        primaryContainer = 0xFF338FE4.toInt(),
-        onPrimaryContainer = 0xFFFFFFFF.toInt(),
-        disabledPrimary = 0xFF253E64.toInt(),
-        disabledOnPrimary = 0xFF677993.toInt(),
-        disabledPrimaryButton = 0xFF253E64.toInt(),
-        disabledOnPrimaryButton = 0xFF677893.toInt(),
-        disabledPrimarySlider = 0xFF44587C.toInt(),
+        primary = 0xFF8FD9A8.toInt(),
+        onPrimary = 0xFF0B1F12.toInt(),
+        primaryVariant = 0xFF74C793.toInt(),
+        onPrimaryVariant = 0xFFD8F7E2.toInt(),
+        primaryContainer = 0xFFA7E8BD.toInt(),
+        onPrimaryContainer = 0xFF0B1F12.toInt(),
+        disabledPrimary = 0xFF2D4A38.toInt(),
+        disabledOnPrimary = 0xFF7A9482.toInt(),
+        disabledPrimaryButton = 0xFF2D4A38.toInt(),
+        disabledOnPrimaryButton = 0xFF7A9482.toInt(),
+        disabledPrimarySlider = 0xFF3F5F4C.toInt(),
         secondary = 0xFF505050.toInt(),
         onSecondary = 0xFFFFFFFF.toInt(),
         secondaryVariant = 0xFF434343.toInt(),
@@ -93,24 +94,24 @@ object MiuixTheme {
         onSecondaryContainer = 0xFF7C7C7C.toInt(),
         secondaryContainerVariant = 0xFF4F4F4F.toInt(),
         onSecondaryContainerVariant = 0xFF959595.toInt(),
-        tertiaryContainer = 0xFF2B3B54.toInt(),
-        onTertiaryContainer = 0xFF4788FF.toInt(),
+        tertiaryContainer = 0xFF1B3A28.toInt(),
+        onTertiaryContainer = 0xFFB8EFCB.toInt(),
         tertiaryContainerVariant = 0xFF505050.toInt(),
-        background = 0xFF242424.toInt(),
+        background = 0xFF1B241D.toInt(),
         onBackground = 0xE6FFFFFF.toInt(),
-        onBackgroundVariant = 0xFF787E96.toInt(),
+        onBackgroundVariant = 0xFF8A9C90.toInt(),
         surface = 0xFF000000.toInt(),
         onSurface = 0xFFF2F2F2.toInt(),
-        surfaceVariant = 0xFF242424.toInt(),
+        surfaceVariant = 0xFF1A221C.toInt(),
         onSurfaceSecondary = 0xCCFFFFFF.toInt(),
         onSurfaceVariantSummary = 0x80FFFFFF.toInt(),
         onSurfaceVariantActions = 0x66FFFFFF.toInt(),
         disabledOnSurface = 0xFF666666.toInt(),
-        surfaceContainer = 0xFF242424.toInt(),
+        surfaceContainer = 0xFF1A221C.toInt(),
         onSurfaceContainer = 0xE6FFFFFF.toInt(),
-        surfaceContainerHigh = 0xFF242424.toInt(),
+        surfaceContainerHigh = 0xFF1A221C.toInt(),
         onSurfaceContainerHigh = 0xFF666666.toInt(),
-        surfaceContainerHighest = 0xFF2D2D2D.toInt(),
+        surfaceContainerHighest = 0xFF243028.toInt(),
         onSurfaceContainerHighest = 0xFFE9E9E9.toInt(),
         outline = 0xFF404040.toInt(),
         dividerLine = 0xFF393939.toInt(),
@@ -119,68 +120,9 @@ object MiuixTheme {
         onError = 0xFF690005.toInt(),
         errorContainer = 0xFF2E0603.toInt(),
         onErrorContainer = 0xFFFFDAD6.toInt(),
-        sliderKeyPoint = 0x4D7A8AA6,
-        sliderKeyPointForeground = 0xFF5DAAFF.toInt(),
+        sliderKeyPoint = 0x4D7A9C86,
+        sliderKeyPointForeground = 0xFFA7E8BD.toInt(),
         sliderBackground = 0x26FFFFFF
-    )
-
-    /**
-     * Exact Miuix `lightColorScheme()` from `top.yukonga.miuix.kmp.theme.Colors`.
-     */
-    @JvmField
-    val LightColorScheme = MiuixColorScheme(
-        primary = 0xFF3482FF.toInt(),
-        onPrimary = 0xFFFFFFFF.toInt(),
-        primaryVariant = 0xFF3482FF.toInt(),
-        onPrimaryVariant = 0xFFAECDFF.toInt(),
-        primaryContainer = 0xFF5D9BFF.toInt(),
-        onPrimaryContainer = 0xFFFFFFFF.toInt(),
-        disabledPrimary = 0xFFC2D9FF.toInt(),
-        disabledOnPrimary = 0xFFF3F8FF.toInt(),
-        disabledPrimaryButton = 0xFFC2D9FF.toInt(),
-        disabledOnPrimaryButton = 0xFFFFFFFF.toInt(),
-        disabledPrimarySlider = 0xFFB8CFF5.toInt(),
-        secondary = 0xFFE6E6E6.toInt(),
-        onSecondary = 0xFFFFFFFF.toInt(),
-        secondaryVariant = 0xFFF0F0F0.toInt(),
-        onSecondaryVariant = 0xFF303030.toInt(),
-        disabledSecondary = 0xFFF0F0F0.toInt(),
-        disabledOnSecondary = 0xFFFCFCFC.toInt(),
-        disabledSecondaryVariant = 0xFFF2F2F2.toInt(),
-        disabledOnSecondaryVariant = 0xFFB2B2B2.toInt(),
-        secondaryContainer = 0xFFF0F0F0.toInt(),
-        onSecondaryContainer = 0xFFA9A9A9.toInt(),
-        secondaryContainerVariant = 0xFFF0F0F0.toInt(),
-        onSecondaryContainerVariant = 0xFFA8A8A8.toInt(),
-        tertiaryContainer = 0xFFEAF2FF.toInt(),
-        onTertiaryContainer = 0xFF3482FF.toInt(),
-        tertiaryContainerVariant = 0xFFEAF2FF.toInt(),
-        background = 0xFFFFFFFF.toInt(),
-        onBackground = 0xFF000000.toInt(),
-        onBackgroundVariant = 0xFF8C93B0.toInt(),
-        surface = 0xFFF7F7F7.toInt(),
-        onSurface = 0xFF000000.toInt(),
-        surfaceVariant = 0xFFFFFFFF.toInt(),
-        onSurfaceSecondary = 0xCC000000.toInt(),
-        onSurfaceVariantSummary = 0x99000000.toInt(),
-        onSurfaceVariantActions = 0x66000000,
-        disabledOnSurface = 0xFFB2B2B2.toInt(),
-        surfaceContainer = 0xFFFFFFFF.toInt(),
-        onSurfaceContainer = 0xFF000000.toInt(),
-        surfaceContainerHigh = 0xFFE8E8E8.toInt(),
-        onSurfaceContainerHigh = 0xFFA2A2A2.toInt(),
-        surfaceContainerHighest = 0xFFE8E8E8.toInt(),
-        onSurfaceContainerHighest = 0xFF000000.toInt(),
-        outline = 0xFFD9D9D9.toInt(),
-        dividerLine = 0xFFE0E0E0.toInt(),
-        windowDimming = 0x4D000000,
-        error = 0xFFE94634.toInt(),
-        onError = 0xFFFFFFFF.toInt(),
-        errorContainer = 0xFFFDF6F4.toInt(),
-        onErrorContainer = 0xFF410002.toInt(),
-        sliderKeyPoint = 0x4DA3B3CD,
-        sliderKeyPointForeground = 0xFF6EB5FF.toInt(),
-        sliderBackground = 0x0F000000
     )
 
     /**
@@ -226,17 +168,21 @@ object MiuixTheme {
         const val HOLD_DOWN = 0.10f
     }
 
+    /**
+     * The launcher is a dark-only app (see `TurtleApplication` /
+     * `TurtleStartupInitializer`: `MODE_NIGHT_YES` is forced before any Activity is
+     * created). This answers `true` unconditionally so programmatically drawn Miuix
+     * surfaces never fall back to the light scheme on a light-mode device or under an
+     * OEM "force light" setting.
+     */
     @JvmStatic
-    fun isDarkMode(context: Context?): Boolean {
-        if (context == null) return true
-        val nightMask = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        return nightMask != Configuration.UI_MODE_NIGHT_NO
-    }
+    @Suppress("UNUSED_PARAMETER")
+    fun isDarkMode(context: Context?): Boolean = true
 
+    /** Always the dark scheme - the app has no light palette at runtime. */
     @JvmStatic
-    fun colors(context: Context?): MiuixColorScheme {
-        return if (isDarkMode(context)) DarkColorScheme else LightColorScheme
-    }
+    @Suppress("UNUSED_PARAMETER")
+    fun colors(context: Context?): MiuixColorScheme = DarkColorScheme
 
     @JvmStatic
     fun dpToPx(context: Context, dp: Float): Float {

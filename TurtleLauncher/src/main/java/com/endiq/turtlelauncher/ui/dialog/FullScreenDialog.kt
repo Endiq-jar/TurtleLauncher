@@ -13,11 +13,11 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import com.endiq.turtlelauncher.R
-import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.ui.miuix.MiuixSpring
 import com.endiq.turtlelauncher.ui.miuix.MiuixSquircle
 import com.endiq.turtlelauncher.ui.miuix.MiuixSquircleDrawable
 import com.endiq.turtlelauncher.ui.miuix.MiuixTheme
+import com.endiq.turtlelauncher.utils.anim.TurtleTransitions
 import kotlin.math.roundToInt
 
 /**
@@ -28,6 +28,9 @@ import kotlin.math.roundToInt
  * - Folme spring entrance animation (`damping = 0.9f, response = 0.3f`, scale `0.85 -> 1.0`)
  */
 abstract class FullScreenDialog(context: Context) : Dialog(context, R.style.FullScreenDialog) {
+
+    /** Guards against a second dismiss arriving while the exit spring is running. */
+    private var dismissing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,12 +103,20 @@ abstract class FullScreenDialog(context: Context) : Dialog(context, R.style.Full
                 maxOf(rootView.paddingBottom, minPad)
             )
         }
+        // Dialog windows are not part of the Activity's decor view, so
+        // BaseActivity.installMotion never reaches their RecyclerViews. Wire the
+        // dialog's own list motion here (ModDependenciesDialog, SelectItemDialog, ...).
+        TurtleTransitions.installMotion(rootView)
     }
 
     override fun onStart() {
         super.onStart()
-        if (AllSettings.animation.getValue()) {
+        // The window exists and the content is attached here, so this is the first point
+        // where the dialog's own lists can be tagged for their staggered first pass.
+        window?.decorView?.let { TurtleTransitions.installMotion(it) }
+        if (TurtleTransitions.isEnabled()) {
             val content = window?.decorView?.findViewById<View>(android.R.id.content) ?: return
+            content.animate().cancel()
             content.alpha = 0f
             content.scaleX = 0.86f
             content.scaleY = 0.86f
@@ -118,6 +129,46 @@ abstract class FullScreenDialog(context: Context) : Dialog(context, R.style.Full
                 .setInterpolator(MiuixSpring.folmeInterpolator(0.9f, 0.3f, durationMs))
                 .start()
         }
+    }
+
+    /**
+     * Spring the surface out before the window disappears. Previously [dismiss] removed
+     * the dialog instantly, so every one of the 15 dialogs built on this base class had
+     * an entrance animation but no exit - the "removed transition" this restores.
+     *
+     * The reverse animation is intentionally shorter and slightly more damped than the
+     * entrance: a dismissal should feel decisive, not bounce back at the user.
+     */
+    override fun dismiss() {
+        if (dismissing) return
+        if (!TurtleTransitions.isEnabled()) {
+            super.dismiss()
+            return
+        }
+        val content = window?.decorView?.findViewById<View>(android.R.id.content)
+        if (content == null || !content.isAttachedToWindow) {
+            super.dismiss()
+            return
+        }
+        dismissing = true
+        val durationMs = 220L
+        content.animate().cancel()
+        content.animate()
+            .alpha(0f)
+            .scaleX(0.92f)
+            .scaleY(0.92f)
+            .setDuration(durationMs)
+            .setInterpolator(MiuixSpring.folmeInterpolator(0.95f, 0.26f, durationMs))
+            .withEndAction {
+                dismissing = false
+                finishDismiss()
+            }
+            .start()
+    }
+
+    /** Called from the animation callback: [super.dismiss] outside the lambda body. */
+    private fun finishDismiss() {
+        super.dismiss()
     }
 
     /**

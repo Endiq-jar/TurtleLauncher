@@ -12,6 +12,7 @@ import com.endiq.turtlelauncher.R;
 import com.endiq.turtlelauncher.databinding.ItemAccountManagerBinding;
 import com.endiq.turtlelauncher.feature.accounts.AccountUtils;
 import com.endiq.turtlelauncher.feature.log.Logging;
+import com.endiq.turtlelauncher.utils.anim.AnimatedIcon;
 import com.endiq.turtlelauncher.utils.skin.SkinLoader;
 
 import net.endiq.launcher.Tools;
@@ -92,6 +93,9 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.Holder> 
 
             try {
                 binding.icon.setImageDrawable(SkinLoader.getAvatarDrawable(mContext, account, mContext.getResources().getDimensionPixelSize(R.dimen._38sdp)));
+                // Avatar is set as a Drawable, so the XML AnimatedIconView cannot infer a
+                // style: key it by account type so each row still gets its own motion.
+                AnimatedIcon.bindNamed(binding.icon, "account_" + account.username);
             } catch (Exception e) {
                 Logging.e("AccountAdapter", "Failed to load avatar.", e);
             }

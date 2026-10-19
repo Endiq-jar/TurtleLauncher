@@ -45,6 +45,7 @@ class VersionAdapter(
     // already pin-sorted list (see PinnedVersionUtils.applyPinnedOrder in the owning fragment).
     private var pinnedCount: Int = 0
     private var managerPopupWindow: PopupWindow = PopupWindow().apply {
+        animationStyle = R.style.TurtlePopupAnimation
         isFocusable = true
         isOutsideTouchable = true
     }

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.opengl.EGL14;
@@ -43,6 +42,7 @@ import com.endiq.turtlelauncher.task.Task;
 import com.endiq.turtlelauncher.task.TaskExecutors;
 import com.endiq.turtlelauncher.ui.dialog.TipDialog;
 import com.endiq.turtlelauncher.ui.fragment.FragmentWithAnim;
+import com.endiq.turtlelauncher.utils.anim.TurtleTransitions;
 import com.endiq.turtlelauncher.utils.file.FileTools;
 import com.endiq.turtlelauncher.utils.path.PathManager;
 import net.endiq.launcher.Tools;
@@ -178,8 +178,13 @@ public final class ZHTools {
 
     private static FragmentTransaction getFragmentTransaction(FragmentActivity activity) {
         FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-        if (AllSettings.getAnimation().getValue()) {
-            transaction.setCustomAnimations(R.anim.cut_into, R.anim.cut_out, R.anim.cut_into, R.anim.cut_out);
+        // Use the same gate as every other motion path (setting + system animator scale +
+        // reduced-motion + active game session). The old check only read the setting, so
+        // system "Remove animations" still left hard cuts overriding the user's choice.
+        if (TurtleTransitions.isEnabled()) {
+            transaction.setCustomAnimations(
+                    R.anim.fragment_in, R.anim.fragment_out,
+                    R.anim.fragment_in, R.anim.fragment_out);
         }
         return transaction.setReorderingAllowed(true);
     }
@@ -445,9 +450,13 @@ public final class ZHTools {
                 .execute();
     }
 
+    /**
+     * The launcher is dark-only (see TurtleApplication: MODE_NIGHT_YES is forced before
+     * any Activity exists), so callers that pick between dark and light palette colours
+     * always get the dark branch - even on an OEM build that reports light mode.
+     */
     public static boolean isDarkMode(Context context) {
-        Configuration configuration = context.getResources().getConfiguration();
-        return (configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        return true;
     }
 
     public static void getWebViewAfterProcessing(WebView view) {

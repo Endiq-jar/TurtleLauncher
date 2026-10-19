@@ -671,7 +671,7 @@
                         android:layout_toStartOf="@+id/openScreenshotsGallery_chevron"
                         android:text="@string/settings_row_screenshots_gallery_desc" />
 
-                    <ImageView
+                    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                         android:id="@+id/openScreenshotsGallery_chevron"
                         android:layout_width="20dp"
                         android:layout_height="20dp"

@@ -55,7 +55,16 @@ object AnimatedLogo {
         clear(view)
         val static = ContextCompat.getDrawable(view.context, resource)
         view.setImageDrawable(static)
-        prepare(view, resource, static) { drawable -> view.setImageDrawable(drawable) }
+        // Kinetic layer: every logo has its own slow transform style (glide, bounce,
+        // twist, shimmer, rattle, sway). It is independent of WebP decoding, so logos
+        // still move on API 26/27 and while the animated frames are loading.
+        AnimatedIcon.bindLogoMotion(view, resource)
+        prepare(view, resource, static) { drawable ->
+            view.setImageDrawable(drawable)
+            // AnimatedIconButton.setImageDrawable() drops its icon request, so make
+            // sure a logo hosted by one keeps its kinetic layer after frame swaps.
+            AnimatedIcon.bindLogoMotion(view, resource)
+        }
     }
 
     /**
@@ -65,8 +74,10 @@ object AnimatedLogo {
      */
     @JvmStatic
     fun bindWatermark(view: ImageView, layers: LayerDrawable, layerIndex: Int, resource: Int) {
+        AnimatedIcon.clear(view)
         clear(view)
         val static = layers.getDrawable(layerIndex)
+        AnimatedIcon.bindLogoMotion(view, resource)
         prepare(view, resource, static) { drawable ->
             if (drawable != null) layers.setDrawable(layerIndex, drawable)
         }
@@ -78,6 +89,9 @@ object AnimatedLogo {
      */
     @JvmStatic
     fun playOnce(view: ImageView) {
+        // One transform sweep even when the animated frames cannot play (API < 28,
+        // reduced motion, decode still in flight).
+        AnimatedIcon.playOnce(view)
         (view.getTag(R.id.animated_logo_request) as? Request)?.playOnceIfIdle()
     }
 
@@ -85,6 +99,9 @@ object AnimatedLogo {
     fun clear(view: ImageView) {
         (view.getTag(R.id.animated_logo_request) as? Request)?.close()
         view.setTag(R.id.animated_logo_request, null)
+        // Drop the logo's kinetic request too. AnimatedIcon.clear() only closes its own
+        // tag, so this cannot recurse back into AnimatedLogo.
+        AnimatedIcon.clear(view)
     }
 
     private fun prepare(view: ImageView, resource: Int, static: Drawable?, show: (Drawable?) -> Unit) {

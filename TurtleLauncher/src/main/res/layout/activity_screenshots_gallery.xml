@@ -14,7 +14,7 @@
         android:paddingHorizontal="@dimen/space_l"
         android:paddingVertical="@dimen/space_m">
 
-        <ImageButton
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
             android:id="@+id/screenshots_back_button"
             android:layout_width="28dp"
             android:layout_height="28dp"

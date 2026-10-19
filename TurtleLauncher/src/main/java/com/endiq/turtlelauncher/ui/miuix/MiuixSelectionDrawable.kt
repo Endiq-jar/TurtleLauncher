@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
  * and `RadioButton`:
  * - Circular `22dp` indicator (`CircleShape`)
  * - Unchecked fill: `secondary` (`#505050` dark / `#E6E6E6` light)
- * - Checked fill: `primary` (`#277AF7` dark / `#3482FF` light)
+ * - Checked fill: `primary` (pastel green `#8FD9A8`)
  * - Animated white round-cap checkmark (`(7.59, 12.08) -> (10.3, 14.9) -> (15.48, 8.22)` in 23x23 viewport)
  *   or animated inner radio circle.
  */

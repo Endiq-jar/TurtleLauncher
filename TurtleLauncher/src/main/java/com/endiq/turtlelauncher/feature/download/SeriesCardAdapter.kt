@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.download.utils.SeriesBannerResolver
 import com.endiq.turtlelauncher.feature.download.utils.VersionSeriesCodenames
+import com.endiq.turtlelauncher.utils.anim.AnimatedIcon
 import com.endiq.turtlelauncher.utils.anim.AnimatedLogo
 
 
@@ -55,7 +56,9 @@ class SeriesCardAdapter(
         if (layers != null && art.iconLayerIndex >= 0 && AnimatedLogo.isAnimatedLogo(card.iconRes)) {
             AnimatedLogo.bindWatermark(holder.banner, layers, art.iconLayerIndex, card.iconRes)
         } else {
-            AnimatedLogo.clear(holder.banner)
+            // Static banner: AnimatedLogo has nothing to own, but the card still gets
+            // an interaction style keyed by its label.
+            AnimatedIcon.bindNamed(holder.banner, "series_" + card.label)
         }
         holder.label.text = card.label
 

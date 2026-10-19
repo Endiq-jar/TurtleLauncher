@@ -1,6 +1,7 @@
 package com.endiq.turtlelauncher.ui.fragment
 
 import androidx.fragment.app.Fragment
+import com.endiq.turtlelauncher.utils.anim.TurtleTransitions
 import net.endiq.launcher.progresskeeper.ProgressKeeper
 import net.endiq.launcher.progresskeeper.TaskCountListener
 
@@ -22,6 +23,9 @@ abstract class BaseFragment : Fragment, TaskCountListener {
     override fun onStart() {
         super.onStart()
         ProgressKeeper.addTaskCountListener(this)
+        // Every screen gets the shared list motion (item animator + staggered first
+        // population) without each fragment having to remember to wire its own lists.
+        view?.let { TurtleTransitions.installMotion(it) }
     }
 
     override fun onStop() {

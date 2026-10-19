@@ -1,6 +1,7 @@
 package com.endiq.turtlelauncher.utils.anim
 
 import android.view.View
+import android.view.ViewGroup
 import com.endiq.anim.AnimCallback
 import com.endiq.anim.AnimPlayer
 import com.endiq.anim.animations.Animations
@@ -204,6 +205,9 @@ object TurtleTransitions {
     @JvmOverloads
     fun animateList(recyclerView: RecyclerView, stepMs: Long = 28L) {
         if (!isEnabled()) return
+        if (recyclerView.itemAnimator !is TurtleItemAnimator) {
+            recyclerView.itemAnimator = TurtleItemAnimator()
+        }
 
         // Never animate during a scroll. Entry animations and a fling compete for the same
         // main-thread frame budget, and the fling is what the user is actually watching - so
@@ -224,14 +228,82 @@ object TurtleTransitions {
         stagger(children, stepMs)
     }
 
+    /**
+     * Layout animation used for the first population of a list. It follows the
+     * screen-entry style picked in Settings -> Animations so a slide screen gets
+     * side-entering rows, a fade screen gets a fade, and everything else drops in.
+     */
     @JvmStatic
-    fun listLayoutAnimationController(context: Context): LayoutAnimationController =
+    fun listLayoutAnimationController(context: Context): LayoutAnimationController {
+        val animationRes = when (enter()) {
+            Animations.SlideInLeft, Animations.ZoomInLeft -> R.anim.item_slide_left
+            Animations.SlideInRight, Animations.ZoomInRight -> R.anim.item_slide_right
+            Animations.FadeIn, Animations.FadeInUp, Animations.FadeInDown,
+            Animations.FadeInLeft, Animations.FadeInRight -> R.anim.item_fade_in
+            Animations.SlideInUp -> R.anim.item_rise_up
+            else -> R.anim.item_fall_down
+        }
+        return listLayoutAnimationController(context, animationRes)
+    }
+
+    @JvmStatic
+    fun listLayoutAnimationController(
+        context: Context,
+        animationRes: Int
+    ): LayoutAnimationController =
         LayoutAnimationController(
-            AnimationUtils.loadAnimation(context, R.anim.fade_downwards)
+            AnimationUtils.loadAnimation(context, animationRes)
         ).apply {
             delay = 0.12f
             order = LayoutAnimationController.ORDER_NORMAL
         }
+
+    /**
+     * Installs the launcher-wide list motion on every RecyclerView below [root].
+     *
+     * Fragment and Activity screens are trees of views inflated at many different times
+     * (async loads, tab swaps, dialogs), so a single pass over the hierarchy is the only
+     * reliable way to reach all of them. Every list gets:
+     *
+     *  * [TurtleItemAnimator] for add/remove/move/change events,
+     *  * one staggered first-population pass ([animateList]) when it first has rows.
+     *
+     * Idempotent: a list already carrying the animator or already entered is skipped, so
+     * calling this from every BaseFragment.onStart() and BaseActivity.onPostResume() is
+     * cheap.
+     */
+    @JvmStatic
+    fun installMotion(root: View) {
+        val recyclers = ArrayList<RecyclerView>()
+        collectRecyclerViews(root, recyclers)
+        for (recyclerView in recyclers) {
+            if (!isEnabled()) {
+                if (recyclerView.itemAnimator is TurtleItemAnimator) {
+                    recyclerView.itemAnimator = null
+                }
+                continue
+            }
+            if (recyclerView.itemAnimator !is TurtleItemAnimator) {
+                recyclerView.itemAnimator = TurtleItemAnimator()
+            }
+            if (recyclerView.getTag(R.id.turtle_list_entered) != true) {
+                val count = recyclerView.adapter?.itemCount ?: 0
+                if (count > 0) {
+                    recyclerView.setTag(R.id.turtle_list_entered, true)
+                    recyclerView.post { animateList(recyclerView) }
+                }
+            }
+        }
+    }
+
+    private fun collectRecyclerViews(view: View, out: MutableList<RecyclerView>) {
+        if (view is RecyclerView) out.add(view)
+        if (view is ViewGroup) {
+            for (index in 0 until view.childCount) {
+                collectRecyclerViews(view.getChildAt(index), out)
+            }
+        }
+    }
 
     /**
      * Press feedback for views that aren't an `AnimRelativeLayout` (which already carries a

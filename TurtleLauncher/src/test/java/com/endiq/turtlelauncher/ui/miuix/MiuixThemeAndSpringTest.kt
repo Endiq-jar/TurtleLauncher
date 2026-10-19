@@ -7,24 +7,22 @@ import org.junit.Test
 class MiuixThemeAndSpringTest {
 
     @Test
-    fun darkAndLightColorSchemesMatchMiuixSpecs() {
+    fun darkColorSchemeMatchesMiuixSpecs() {
         val dark = MiuixTheme.DarkColorScheme
-        val light = MiuixTheme.LightColorScheme
 
-        assertEquals(0xFF277AF7.toInt(), dark.primary)
+        assertEquals(0xFF8FD9A8.toInt(), dark.primary)
+        assertEquals(0xFF0B1F12.toInt(), dark.onPrimary)
         assertEquals(0xFF000000.toInt(), dark.surface)
-        assertEquals(0xFF242424.toInt(), dark.surfaceContainer)
+        assertEquals(0xFF1A221C.toInt(), dark.surfaceContainer)
         assertEquals(0xFF434343.toInt(), dark.secondaryContainer)
-        assertEquals(0xFF2B3B54.toInt(), dark.tertiaryContainer)
-        assertEquals(0xFF4788FF.toInt(), dark.onTertiaryContainer)
-        assertEquals(0xFF787E96.toInt(), dark.onBackgroundVariant)
+        assertEquals(0xFF1B3A28.toInt(), dark.tertiaryContainer)
+        assertEquals(0xFFB8EFCB.toInt(), dark.onTertiaryContainer)
+        assertEquals(0xFF8A9C90.toInt(), dark.onBackgroundVariant)
 
-        assertEquals(0xFF3482FF.toInt(), light.primary)
-        assertEquals(0xFFF7F7F7.toInt(), light.surface)
-        assertEquals(0xFFFFFFFF.toInt(), light.surfaceContainer)
-        assertEquals(0xFFF0F0F0.toInt(), light.secondaryContainer)
-        assertEquals(0xFFEAF2FF.toInt(), light.tertiaryContainer)
-        assertEquals(0xFF8C93B0.toInt(), light.onBackgroundVariant)
+        // Dark-only launcher: the scheme is dark regardless of the device configuration,
+        // so programmatically drawn surfaces can never fall back to a light palette.
+        assertTrue(MiuixTheme.isDarkMode(null))
+        assertEquals(dark, MiuixTheme.colors(null))
     }
 
     @Test

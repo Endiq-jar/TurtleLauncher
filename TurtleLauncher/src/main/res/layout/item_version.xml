@@ -9,7 +9,7 @@
     android:background="@drawable/background_item"
     app:ripple_for_constraint="true">
 
-    <ImageView
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
         android:id="@+id/drag_handle"
         android:layout_width="@dimen/_20sdp"
         android:layout_height="@dimen/_20sdp"

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/fast_out_linear_in">
+    <rotate
+        android:fromDegrees="0"
+        android:toDegrees="180"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:duration="260" />
+    <alpha
+        android:interpolator="@android:interpolator/fast_out_linear_in"
+        android:fromAlpha="1"
+        android:toAlpha="0"
+        android:duration="220" />
+</set>

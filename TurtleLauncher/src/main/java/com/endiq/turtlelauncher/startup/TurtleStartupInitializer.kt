@@ -15,6 +15,9 @@ class TurtleStartupInitializer : Initializer<Unit> {
     }
 
     override fun create(context: Context) {
+        // Dark-only launcher. TurtleApplication already forces this first thing in
+        // onCreate(); repeating it here keeps the guarantee if that call is ever moved,
+        // because this initializer still runs before the first Activity is created.
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
 
         // Material You dynamic color: on supported devices (Android 12+), derives the theme

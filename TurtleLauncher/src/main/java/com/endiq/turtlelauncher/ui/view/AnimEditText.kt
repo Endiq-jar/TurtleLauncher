@@ -15,7 +15,7 @@ import kotlin.math.roundToInt
 /**
  * Exact Android View port of Miuix `TextField` (`top.yukonga.miuix.kmp.basic.TextField`):
  * - 16dp G2-continuous Miuix Squircle container (`secondaryContainer` `#434343` / `#F0F0F0`)
- * - Animated `0dp -> 2dp` `primary` (`#277AF7` / `#3482FF`) squircle border on focus (`150ms`)
+ * - Animated `0dp -> 2dp` `primary` (pastel green `#8FD9A8`) squircle border on focus (`150ms`)
  * - `onSecondaryContainer` (`#7C7C7C` / `#A9A9A9`) hint color and `onBackground` text color
  */
 class AnimEditText @JvmOverloads constructor(

@@ -7,6 +7,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.version.Version
 import com.endiq.turtlelauncher.feature.version.VersionsManager
+import com.endiq.turtlelauncher.utils.anim.AnimatedIcon
 import org.apache.commons.io.FileUtils
 
 /**
@@ -32,6 +33,12 @@ class VersionIconUtils(
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .into(imageView)
+                // A user-supplied icon is not a vector resource, so give it an explicit
+                // style keyed by version name instead of leaving it static.
+                AnimatedIcon.bindNamed(
+                    imageView,
+                    "version_icon_" + version.getVersionName()
+                )
                 isIconSet = true
                 isCustomIcon = true
             }
@@ -42,6 +49,12 @@ class VersionIconUtils(
                 if (!isIconSet) {
                     getLoaderIcon(loaderInfo.name)?.let { icon ->
                         imageView.setImageDrawable(ContextCompat.getDrawable(context, icon))
+                        // Loader marks (anvil, neoforge, optifine, fabric, quilt, ...)
+                        // are icons too: bind a distinct per-loader interaction style.
+                        AnimatedIcon.bindNamed(
+                            imageView,
+                            "loader_" + loaderInfo.name + "_" + version.getVersionName()
+                        )
                         isIconSet = true
                     }
                 } else return@forEach

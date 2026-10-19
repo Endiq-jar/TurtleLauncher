@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="CustomAlertDialogTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+    <style name="CustomAlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
         <item name="viewInflaterClass">com.endiq.turtlelauncher.ui.miuix.MiuixViewInflater</item>
         <item name="android:background">@color/miuix_background</item>
         <item name="android:windowBackground">@drawable/background_card</item>
@@ -9,6 +9,7 @@
         <item name="colorAccent">@color/miuix_primary</item>
         <item name="colorPrimary">@color/miuix_primary</item>
         <item name="colorControlActivated">@color/miuix_primary</item>
+        <item name="android:windowAnimationStyle">@style/TurtleDialogAnimation</item>
         <item name="buttonBarPositiveButtonStyle">@style/AlertDialogButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/AlertDialogButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">@style/AlertDialogButtonStyle</item>

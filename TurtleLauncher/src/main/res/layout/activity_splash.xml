@@ -38,6 +38,24 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+    <!-- Animated turtle logo: static poster at rest, WebP frames + a slow glide
+         transform while hovered, pressed, focused or clicked (see AnimatedLogo /
+         AnimatedIcon). -->
+    <com.endiq.turtlelauncher.ui.view.LogoImageView
+        android:id="@+id/splash_logo"
+        android:layout_width="112dp"
+        android:layout_height="112dp"
+        android:contentDescription="@string/artwork_ic_turtle_full"
+        android:padding="4dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_turtle_full"
+        app:layout_constraintBottom_toTopOf="@id/setup_progress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
     <com.endiq.turtlelauncher.ui.miuix.MiuixProgressBar
         android:id="@+id/setup_progress"
         style="?android:attr/progressBarStyleLarge"
@@ -48,8 +66,7 @@
         app:layout_constraintBottom_toTopOf="@id/splash_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"/>
+        app:layout_constraintTop_toBottomOf="@id/splash_logo"/>
 
     <!-- Status text -->
     <TextView

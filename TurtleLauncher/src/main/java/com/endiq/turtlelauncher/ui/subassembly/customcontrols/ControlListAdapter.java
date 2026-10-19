@@ -20,6 +20,7 @@ import com.endiq.turtlelauncher.databinding.ItemFileListViewBinding;
 import com.endiq.turtlelauncher.task.Task;
 import com.endiq.turtlelauncher.task.TaskExecutors;
 import com.endiq.turtlelauncher.ui.dialog.ControlInfoDialog;
+import com.endiq.turtlelauncher.utils.anim.AnimatedIcon;
 import com.endiq.turtlelauncher.utils.stringutils.StringUtils;
 
 import net.endiq.launcher.Tools;
@@ -112,6 +113,9 @@ public class ControlListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         public void setData(ControlItemBean controlItemBean) {
+            // Key the icon by file so every invalid row still gets its own motion.
+            AnimatedIcon.bindNamed(binding.image,
+                    "control_invalid_" + controlItemBean.controlInfoData.fileName);
             String text = StringUtils.insertSpace(context.getString(R.string.controls_info_invalid), controlItemBean.controlInfoData.fileName);
             binding.name.setText(text);
 
@@ -134,6 +138,8 @@ public class ControlListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         public void setData(ControlItemBean controlItemBean) {
             ControlInfoData controlInfoData = controlItemBean.controlInfoData;
+            // The icon depends on the row, so bind it here rather than in the constructor.
+            AnimatedIcon.bindNamed(binding.image, "control_" + controlInfoData.fileName);
 
             binding.infoButton.setOnClickListener(v -> {
                 @SuppressLint("NotifyDataSetChanged")

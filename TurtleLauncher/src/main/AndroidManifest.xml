@@ -114,7 +114,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation" />
         <activity android:name="net.endiq.launcher.ShowErrorActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|keyboard|navigation"
-            android:theme="@style/Theme.AppCompat.DayNight.Dialog" />
+            android:theme="@style/TurtleErrorDialogTheme" />
         <activity
             android:process=":gui_installer"
             android:name="net.endiq.launcher.JavaGUILauncherActivity"

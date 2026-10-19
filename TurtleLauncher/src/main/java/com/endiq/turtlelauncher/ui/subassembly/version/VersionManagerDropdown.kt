@@ -23,6 +23,7 @@ import java.io.File
 class VersionManagerDropdown(private val parentFragment: Fragment) {
 
     private val popupWindow: PopupWindow = PopupWindow().apply {
+        animationStyle = R.style.TurtlePopupAnimation
         isFocusable = true
         isOutsideTouchable = true
     }

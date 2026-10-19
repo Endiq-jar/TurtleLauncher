@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
 /**
  * Miuix-styled Button (`top.yukonga.miuix.kmp.basic.Button` / `TextButton`):
  * - 16dp G2-continuous Miuix Squircle surface (`MiuixSquircleDrawable`)
- * - Secondary (`secondaryVariant` `#434343` / `#F0F0F0`), Primary (`primary` `#277AF7` / `#3482FF`),
+ * - Secondary (`secondaryVariant` `#434343` / `#F0F0F0`), Primary (`primary` pastel green `#8FD9A8`),
  *   or Danger (`error` `#F12522` / `#E94634`) color schemes
  * - Folme spring `SinkFeedback` (`0.94f`, `damping = 0.85f, response = 0.28f`)
  * - `MiuixIndication` state overlay (`HOVER = 0.06f`, `FOCUS = 0.08f`, `PRESS = 0.10f`)

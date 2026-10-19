@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ============================================================
-         Miuix Design System Palette — Night Mode
-         Exact tokens from top.yukonga.miuix.kmp.theme.Colors (darkColorScheme)
+         Turtle pastel-green palette — Night Mode
+         Same tokens as values/colors.xml. Night mode no longer
+         re-introduces the old blue accent: both configurations are
+         pastel green, so the launcher never flashes blue at dusk or
+         while a fragment is recreating.
          ============================================================ -->
-    <color name="miuix_primary">#FF277AF7</color>
-    <color name="miuix_on_primary">#FFFFFFFF</color>
-    <color name="miuix_primary_variant">#FF0073DD</color>
-    <color name="miuix_on_primary_variant">#FF99C7F1</color>
-    <color name="miuix_primary_container">#FF338FE4</color>
-    <color name="miuix_on_primary_container">#FFFFFFFF</color>
-    <color name="miuix_disabled_primary">#FF253E64</color>
-    <color name="miuix_disabled_on_primary">#FF677993</color>
-    <color name="miuix_disabled_primary_button">#FF253E64</color>
-    <color name="miuix_disabled_on_primary_button">#FF677893</color>
-    <color name="miuix_disabled_primary_slider">#FF44587C</color>
+    <color name="miuix_primary">@color/pastel_green_400</color>
+    <color name="miuix_on_primary">@color/pastel_green_950</color>
+    <color name="miuix_primary_variant">@color/pastel_green_500</color>
+    <color name="miuix_on_primary_variant">@color/pastel_green_100</color>
+    <color name="miuix_primary_container">@color/pastel_green_300</color>
+    <color name="miuix_on_primary_container">@color/pastel_green_950</color>
+    <color name="miuix_disabled_primary">#FF2D4A38</color>
+    <color name="miuix_disabled_on_primary">#FF7A9482</color>
+    <color name="miuix_disabled_primary_button">#FF2D4A38</color>
+    <color name="miuix_disabled_on_primary_button">#FF7A9482</color>
+    <color name="miuix_disabled_primary_slider">#FF3F5F4C</color>
 
     <color name="miuix_secondary">#FF505050</color>
     <color name="miuix_on_secondary">#FFFFFFFF</color>
@@ -30,27 +33,27 @@
     <color name="miuix_secondary_container_variant">#FF4F4F4F</color>
     <color name="miuix_on_secondary_container_variant">#FF959595</color>
 
-    <color name="miuix_tertiary_container">#FF2B3B54</color>
-    <color name="miuix_on_tertiary_container">#FF4788FF</color>
+    <color name="miuix_tertiary_container">@color/pastel_green_900</color>
+    <color name="miuix_on_tertiary_container">@color/pastel_green_200</color>
     <color name="miuix_tertiary_container_variant">#FF505050</color>
 
-    <color name="miuix_background">#FF242424</color>
+    <color name="miuix_background">#FF1B241D</color>
     <color name="miuix_on_background">#E6FFFFFF</color>
-    <color name="miuix_on_background_variant">#FF787E96</color>
+    <color name="miuix_on_background_variant">#FF8A9C90</color>
 
     <color name="miuix_surface">#FF000000</color>
     <color name="miuix_on_surface">#FFF2F2F2</color>
-    <color name="miuix_surface_variant">#FF242424</color>
+    <color name="miuix_surface_variant">#FF1A221C</color>
     <color name="miuix_on_surface_secondary">#CCFFFFFF</color>
     <color name="miuix_on_surface_variant_summary">#80FFFFFF</color>
     <color name="miuix_on_surface_variant_actions">#66FFFFFF</color>
     <color name="miuix_disabled_on_surface">#FF666666</color>
 
-    <color name="miuix_surface_container">#FF242424</color>
+    <color name="miuix_surface_container">#FF1A221C</color>
     <color name="miuix_on_surface_container">#E6FFFFFF</color>
-    <color name="miuix_surface_container_high">#FF242424</color>
+    <color name="miuix_surface_container_high">#FF1A221C</color>
     <color name="miuix_on_surface_container_high">#FF666666</color>
-    <color name="miuix_surface_container_highest">#FF2D2D2D</color>
+    <color name="miuix_surface_container_highest">#FF243028</color>
     <color name="miuix_on_surface_container_highest">#FFE9E9E9</color>
 
     <color name="miuix_outline">#FF404040</color>
@@ -62,63 +65,63 @@
     <color name="miuix_error_container">#FF2E0603</color>
     <color name="miuix_on_error_container">#FFFFDAD6</color>
 
-    <color name="miuix_slider_key_point">#4D7A8AA6</color>
-    <color name="miuix_slider_key_point_foreground">#FF5DAAFF</color>
+    <color name="miuix_slider_key_point">#4D7A9C86</color>
+    <color name="miuix_slider_key_point_foreground">@color/pastel_green_300</color>
     <color name="miuix_slider_background">#26FFFFFF</color>
 
-    <color name="miuix_light_primary">#FF3482FF</color>
-    <color name="miuix_light_surface">#FFF7F7F7</color>
+    <color name="miuix_light_primary">@color/pastel_green_600</color>
+    <color name="miuix_light_surface">#FFF5FAF6</color>
     <color name="miuix_light_surface_container">#FFFFFFFF</color>
-    <color name="miuix_light_secondary_container">#FFF0F0F0</color>
-    <color name="miuix_light_on_surface">#FF000000</color>
+    <color name="miuix_light_secondary_container">#FFEDF7F0</color>
+    <color name="miuix_light_on_surface">@color/pastel_green_950</color>
 
     <!-- ============================================================
          Core Semantic Tokens mapped to Miuix
          ============================================================ -->
     <color name="palette_primary">#FF000000</color>
-    <color name="palette_secondary">#FF277AF7</color>
+    <color name="palette_secondary">@color/pastel_green_300</color>
     <color name="palette_accent">#FFF2F2F2</color>
-    <color name="palette_neutral">#FF787E96</color>
+    <color name="palette_neutral">#FF8A9C90</color>
 
     <color name="turtle_bg_deep">#FF000000</color>
-    <color name="turtle_bg_surface">#FF161616</color>
-    <color name="turtle_bg_card">#FF242424</color>
-    <color name="turtle_bg_elevated">#FF2D2D2D</color>
-    <color name="turtle_bg_input">#FF434343</color>
-    <color name="turtle_bg_terminal">#FF121212</color>
-    <color name="turtle_glass_overlay">#E6242424</color>
+    <color name="turtle_bg_surface">#FF101612</color>
+    <color name="turtle_bg_card">#FF1A221C</color>
+    <color name="turtle_bg_elevated">#FF243028</color>
+    <color name="turtle_bg_input">#FF37463B</color>
+    <color name="turtle_bg_terminal">#FF0C110E</color>
+    <color name="turtle_glass_overlay">#E61A221C</color>
 
-    <color name="turtle_accent">#FF277AF7</color>
-    <color name="turtle_accent_bright">#FF4788FF</color>
-    <color name="turtle_accent_pressed">#FF0073DD</color>
-    <color name="turtle_accent_dim">#FF253E64</color>
-    <color name="turtle_accent_glow">#26277AF7</color>
-    <color name="turtle_accent_subtle">#FF2B3B54</color>
-    <color name="turtle_accent_ripple">#1AFFFFFF</color>
+    <color name="turtle_accent">@color/pastel_green_400</color>
+    <color name="turtle_accent_bright">@color/pastel_green_200</color>
+    <color name="turtle_accent_pressed">@color/pastel_green_500</color>
+    <color name="turtle_accent_dim">#FF2D4A38</color>
+    <color name="turtle_accent_glow">#338FD9A8</color>
+    <color name="turtle_accent_subtle">@color/pastel_green_900</color>
+    <color name="turtle_accent_ripple">#2E8FD9A8</color>
     <color name="turtle_highlight_subtle">#14FFFFFF</color>
 
     <color name="turtle_border_subtle">#FF303030</color>
     <color name="turtle_border_default">#FF404040</color>
-    <color name="turtle_border_focus">#FF277AF7</color>
+    <color name="turtle_border_focus">@color/pastel_green_400</color>
     <color name="turtle_divider">#FF393939</color>
 
     <color name="turtle_text_primary">#FFF2F2F2</color>
     <color name="turtle_text_secondary">#80FFFFFF</color>
     <color name="turtle_text_muted">#66FFFFFF</color>
-    <color name="turtle_text_on_accent">#FFFFFFFF</color>
+    <color name="turtle_text_on_accent">@color/pastel_green_950</color>
 
-    <color name="turtle_success">#FF2CCB6F</color>
+    <color name="turtle_success">#FF5FD08A</color>
     <color name="turtle_warning">#FFFFB020</color>
     <color name="turtle_error">#FFF12522</color>
-    <color name="turtle_info">#FF277AF7</color>
+    <color name="turtle_info">@color/pastel_green_400</color>
 
     <color name="new_background_dark">#FF000000</color>
-    <color name="new_background_cards_panels">#FF242424</color>
-    <color name="new_accent_primary">#FF277AF7</color>
-    <color name="new_accent_secondary">#FF338FE4</color>
+    <color name="new_background_cards_panels">#FF1A221C</color>
+    <color name="new_accent_primary">@color/pastel_green_400</color>
+    <color name="new_accent_secondary">@color/pastel_green_300</color>
     <color name="new_text_primary">#FFF2F2F2</color>
     <color name="new_text_secondary">#80FFFFFF</color>
-    <color name="new_success_highlight">#FF2CCB6F</color>
+    <color name="new_success_highlight">#FF5FD08A</color>
     <color name="new_error_danger">#FFF12522</color>
 
     <color name="bg_deep">@color/turtle_bg_deep</color>
@@ -154,8 +157,8 @@
     <color name="background_settings_item">@color/turtle_bg_card</color>
     <color name="background_overlay">#99000000</color>
     <color name="dialog_background">@color/miuix_background</color>
-    <color name="panel_translucent">#E6242424</color>
-    <color name="game_panel_overlay">#D91E1E1E</color>
+    <color name="panel_translucent">#E61A221C</color>
+    <color name="game_panel_overlay">#D9181E1A</color>
 
     <color name="primary_text">@color/turtle_text_primary</color>
     <color name="secondary_text">@color/turtle_text_secondary</color>
@@ -165,14 +168,14 @@
     <color name="button_disabled">@color/miuix_disabled_secondary_variant</color>
     <color name="divider">@color/miuix_divider_line</color>
     <color name="menu_overlay">@color/turtle_bg_surface</color>
-    <color name="menu_bar">#CC1A1A1A</color>
+    <color name="menu_bar">#CC121A15</color>
     <color name="menu_progress">@color/miuix_primary</color>
-    <color name="menu_button">#FF2D2D2D</color>
+    <color name="menu_button">#FF243028</color>
     <color name="minebutton_color">@color/turtle_bg_elevated</color>
 
     <!-- Mirrors values/colors.xml: tokens that drawables, layouts and code still reference. -->
     <color name="background_item_disabled">#55404040</color>
-    <color name="background_item_selected">#AA434343</color>
+    <color name="background_item_selected">#AA2E4639</color>
     <color name="background_app_error">@color/turtle_bg_deep</color>
     <color name="background_sponsor_advanced">#559CCF93</color>
     <color name="background_sponsor_intermediate">#55FF8A8A</color>
@@ -187,10 +190,10 @@
 
     <color name="file_icon_tint">@color/palette_secondary</color>
     <color name="icon_tint">@color/palette_secondary</color>
-    <color name="ic_launcher_background">#FF000000</color>
+    <color name="ic_launcher_background">@color/pastel_green_950</color>
 
-    <color name="background_mod_category">#FF434343</color>
-    <color name="stroke_mod_category">#FF505050</color>
+    <color name="background_mod_category">#FF37463B</color>
+    <color name="stroke_mod_category">#FF506455</color>
 
     <color name="version_dot_ready">@color/turtle_success</color>
     <color name="version_dot_modded">@color/miuix_primary</color>

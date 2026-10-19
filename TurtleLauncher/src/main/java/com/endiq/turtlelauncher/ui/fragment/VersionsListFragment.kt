@@ -55,6 +55,7 @@ class VersionsListFragment : FragmentWithAnim(R.layout.fragment_versions_list) {
     private val mFavoritesFolderViewList: MutableList<View> = ArrayList()
 
     private val mFavoritesActionPopupWindow: PopupWindow = PopupWindow().apply {
+        animationStyle = R.style.TurtlePopupAnimation
         isFocusable = true
         isOutsideTouchable = true
     }

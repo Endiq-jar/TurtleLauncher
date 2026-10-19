@@ -1,7 +1,10 @@
 <resources>
 
     <!-- Base Miuix Application Theme -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <!-- Dark-only launcher: the base theme is the dark Material theme, not DayNight.
+         The night resources in values-night/ still apply, but the app renders dark
+         even if a device (or an OEM skin) reports light mode. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
         <item name="viewInflaterClass">com.endiq.turtlelauncher.ui.miuix.MiuixViewInflater</item>
         <!-- No `preferenceTheme` here: attr/preferenceTheme and
              style/PreferenceThemeOverlay.v14.Material both live in androidx.preference, which is
@@ -46,6 +49,22 @@
         <item name="switchStyle">@style/Widget.Turtle.Switch</item>
         <item name="alertDialogTheme">@style/CustomAlertDialogTheme</item>
         <item name="android:alertDialogTheme">@style/CustomAlertDialogTheme</item>
+
+        <!-- Window transitions: restored app-wide (activities, dialogs and the
+             full-screen dialog surface all animate instead of hard-cutting). -->
+        <item name="android:windowAnimationStyle">@style/TurtleActivityAnimation</item>
+
+        <!-- Dark window chrome: light status/navigation icons (never dark-on-dark) and
+             dark surfaces for the Material widgets that read theme attrs directly
+             (popup menus, tooltips, overflow lists, floating action surfaces). -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:colorBackgroundFloating">@color/miuix_surface_container</item>
+        <item name="colorBackgroundFloating">@color/miuix_surface_container</item>
+        <item name="colorSurfaceVariant">@color/miuix_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/miuix_on_surface_variant_summary</item>
+        <item name="colorOutline">@color/miuix_outline</item>
+        <item name="colorOnBackground">@color/miuix_on_background</item>
 
         <!-- Fullscreen & Edge-to-Edge -->
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
@@ -180,8 +199,9 @@
         <item name="tab_enable_text_bold">true</item>
     </style>
 
-    <style name="FullScreenDialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+    <style name="FullScreenDialog" parent="Theme.MaterialComponents.Dialog">
         <item name="viewInflaterClass">com.endiq.turtlelauncher.ui.miuix.MiuixViewInflater</item>
+        <item name="android:windowAnimationStyle">@style/TurtleDialogSurfaceAnimation</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -194,7 +214,7 @@
     </style>
 
     <!-- Miuix AlertDialog Theme -->
-    <style name="CustomAlertDialogTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+    <style name="CustomAlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
         <item name="viewInflaterClass">com.endiq.turtlelauncher.ui.miuix.MiuixViewInflater</item>
         <item name="android:background">@color/miuix_background</item>
         <item name="android:windowBackground">@drawable/background_card</item>
@@ -203,6 +223,7 @@
         <item name="colorAccent">@color/miuix_primary</item>
         <item name="colorPrimary">@color/miuix_primary</item>
         <item name="colorControlActivated">@color/miuix_primary</item>
+        <item name="android:windowAnimationStyle">@style/TurtleDialogAnimation</item>
         <item name="buttonBarPositiveButtonStyle">@style/AlertDialogButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/AlertDialogButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">@style/AlertDialogButtonStyle</item>
@@ -212,6 +233,47 @@
         <item name="android:textColor">@color/miuix_primary</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Activity transitions: every activity launch, finish and task switch slides and
+         fades instead of cutting. The matching @anim files live in res/anim/. -->
+    <style name="TurtleActivityAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/activity_open_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/activity_open_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/activity_close_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/activity_close_exit</item>
+        <item name="android:taskOpenEnterAnimation">@anim/activity_open_enter</item>
+        <item name="android:taskOpenExitAnimation">@anim/activity_open_exit</item>
+        <item name="android:taskCloseEnterAnimation">@anim/activity_close_enter</item>
+        <item name="android:taskCloseExitAnimation">@anim/activity_close_exit</item>
+        <item name="android:taskToFrontEnterAnimation">@anim/fade_in</item>
+        <item name="android:taskToFrontExitAnimation">@anim/fade_out</item>
+        <item name="android:taskToBackEnterAnimation">@anim/fade_in</item>
+        <item name="android:taskToBackExitAnimation">@anim/fade_out</item>
+    </style>
+
+    <!-- Alert dialog windows (Material/Miuix): a small pop in, a quicker fade out. -->
+    <style name="TurtleDialogAnimation" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/dialog_exit</item>
+    </style>
+
+    <!-- FullScreenDialog's window surface: the dialog content springs in/out itself
+         (see FullScreenDialog.kt), so the window only fades to avoid double motion. -->
+    <style name="TurtleDialogSurfaceAnimation" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
+    </style>
+
+    <!-- Crash/error activity: dialog-styled window, so give it the dialog pop. -->
+    <style name="TurtleErrorDialogTheme" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowAnimationStyle">@style/TurtleDialogAnimation</item>
+    </style>
+
+    <!-- PopupWindow menus: same pop-out vocabulary as dialogs, anchored at the top. -->
+    <style name="TurtlePopupAnimation" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/popup_in</item>
+        <item name="android:windowExitAnimation">@anim/popup_out</item>
     </style>
 
     <!-- Zero-duration animation style: removes all activity enter/exit animations -->

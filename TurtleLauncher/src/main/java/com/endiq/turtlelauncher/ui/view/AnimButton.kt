@@ -23,8 +23,15 @@ import kotlin.math.roundToInt
  *   or Danger (`error` `#F12522` / `#E94634`) color schemes
  * - Folme spring `SinkFeedback` (`0.94f`, `damping = 0.85f, response = 0.28f`)
  * - `MiuixIndication` state overlay (`HOVER = 0.06f`, `FOCUS = 0.08f`, `PRESS = 0.10f`)
+ *
+ * `open` because the Java control-editor buttons still subclass it
+ * (`net.endiq.launcher.customcontrols.handleview.AddSubButton` / `CloneButton` / `DeleteButton`).
+ * Kotlin classes are final by default, so without `open` javac fails with
+ * "cannot inherit from final AnimButton". Only the class is opened - members stay final on
+ * purpose: [applyMiuixStyle] runs from the constructor, and a subclass override called that
+ * early would see a half-initialised button.
  */
-class AnimButton @JvmOverloads constructor(
+open class AnimButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = R.attr.buttonStyle

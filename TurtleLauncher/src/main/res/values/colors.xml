@@ -177,6 +177,25 @@
     <color name="menu_button">#FF2D2D2D</color>
     <color name="minebutton_color">@color/turtle_bg_elevated</color>
 
+    <!-- Tokens that drawables, layouts and Java/Kotlin call sites still reference, re-expressed
+         on the Miuix palette. A state fill cannot alias a token and keep its alpha at the same
+         time, so those stay literal but use Miuix hues (disabledSecondaryVariant, secondaryVariant);
+         favourite and the sponsor tiers are semantic colours the design system has no equivalent
+         for, so they keep their original value. -->
+    <color name="background_item_disabled">#55404040</color>
+    <color name="background_item_selected">#AA434343</color>
+    <color name="background_app_error">@color/turtle_bg_deep</color>
+    <color name="background_sponsor_advanced">#559CCF93</color>
+    <color name="background_sponsor_intermediate">#55FF8A8A</color>
+    <color name="favorite_color">#FFFF8A8A</color>
+    <color name="menu_bar_text">@color/miuix_on_surface</color>
+    <color name="turtle_icon_color">@color/miuix_on_surface</color>
+    <color name="turtle_stroke">@color/miuix_outline</color>
+    <!-- ThemeOverlay.Turtle.HighContrast -->
+    <color name="turtle_hc_border">@color/miuix_on_surface</color>
+    <color name="turtle_hc_text_secondary">@color/miuix_on_surface</color>
+    <color name="turtle_hc_surface">@color/turtle_bg_deep</color>
+
     <color name="file_icon_tint">@color/palette_secondary</color>
     <color name="icon_tint">@color/palette_secondary</color>
     <color name="ic_launcher_background">#FF000000</color>

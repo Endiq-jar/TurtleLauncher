@@ -266,7 +266,9 @@ class VersionAdapter(
 
                 dragHandle.visibility = if (PinnedVersionUtils.isPinned(version.getVersionName())) View.VISIBLE else View.GONE
                 dragHandle.setOnTouchListener { _, event ->
-                    if (event.actionMasked == android.view.MotionEvent.ACTION_DOWN) listener.onStartDrag(this)
+                    // Inside binding.apply `this` is the ItemVersionBinding, so qualify the
+                    // ViewHolder explicitly - onStartDrag needs the RecyclerView.ViewHolder.
+                    if (event.actionMasked == android.view.MotionEvent.ACTION_DOWN) listener.onStartDrag(this@ViewHolder)
                     false
                 }
 

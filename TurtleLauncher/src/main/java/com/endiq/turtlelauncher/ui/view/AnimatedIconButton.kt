@@ -8,7 +8,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatImageButton
-import androidx.core.content.ContextCompat
 import com.endiq.turtlelauncher.ui.miuix.MiuixPressFeedback
 import com.endiq.turtlelauncher.utils.anim.AnimatedIcon
 
@@ -52,31 +51,27 @@ class AnimatedIconButton @JvmOverloads constructor(
     }
 
     override fun setImageDrawable(drawable: Drawable?) {
-        if (!suppressRebind) AnimatedIcon.unbind(this)
+        if (!suppressRebind) AnimatedIcon.clear(this)
         super.setImageDrawable(drawable)
     }
 
+    /**
+     * WebP logos are routed to AnimatedLogo and vector icons get an AnimatedIcon style by
+     * `bindAny`; anything else simply keeps the drawable `super.setImageResource` already applied.
+     * `suppressRebind` covers the `setImageDrawable` calls AnimatedLogo.bind makes while it swaps
+     * in its frames, so binding a logo cannot clear the binding again mid-flight.
+     */
     private fun bindSource(@DrawableRes resId: Int) {
-        if (AnimatedIcon.isAnimatedIcon(resId)) {
-            suppressRebind = true
-            try {
-                AnimatedIcon.bind(this, resId)
-            } finally {
-                suppressRebind = false
-            }
-        } else {
-            AnimatedIcon.unbind(this)
-            suppressRebind = true
-            try {
-                super.setImageDrawable(ContextCompat.getDrawable(context, resId))
-            } finally {
-                suppressRebind = false
-            }
+        suppressRebind = true
+        try {
+            if (resId == 0) AnimatedIcon.clear(this) else AnimatedIcon.bindAny(this, resId)
+        } finally {
+            suppressRebind = false
         }
     }
 
     override fun performClick(): Boolean {
-        AnimatedIcon.playOnce(this)
+        AnimatedIcon.playOnceAny(this)
         return super.performClick()
     }
 

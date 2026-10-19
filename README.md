@@ -56,7 +56,7 @@
 <p align="center">
   <a href="#-about-turtlelauncher">About</a> ·
   <a href="#-features">Features</a> ·
-  <a href="#-screenshots">#%EF%B8%8F-screenshots</a> ·
+  <a href="#%EF%B8%8F-screenshots">Screenshot</a> ·
   <a href="#-installation">Installation</a>
   <br />
   <a href="#-built-with">Technology</a> ·

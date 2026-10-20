@@ -10,22 +10,29 @@ import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 
 /**
- * One-time extraction of the bundled logo pack (assets/logo_pack.zip, 2048 named
- * PNG variants) into [PathManager.DIR_CUSTOM_LOGO], where [LogoPickerFragment]'s
- * existing file-list already picks up anything that lives in that directory -
- * same mechanism as a user-imported logo, just pre-seeded in bulk.
+ * One-time extraction of the bundled logo pack (assets/logo_pack.zip) into
+ * [PathManager.DIR_CUSTOM_LOGO], where [LogoPickerFragment]'s existing file-list
+ * already picks up anything that lives in that directory - same mechanism as a
+ * user-imported logo, just pre-seeded in bulk.
  *
  * Mirrors [DarkModeManager]'s bundled-asset pattern, except the dark GUI pack is
  * installed as a single zip (Minecraft reads it directly); this pack needs its
  * entries extracted individually so each variant shows up as its own selectable
  * logo in the picker grid.
  *
- * v2: the original bundled pack (2000 anonymous `variant-NNNN.png` files, ~44MB)
- * was replaced by a smaller, named 2048-icon set (~7MB). [UNPACKED_KEY] was bumped
- * so anyone who already triggered the old extraction gets re-unpacked instead of
- * ending up with both sets stacked in the same folder; [purgeLegacyVariants] clears
- * out just the old pack's files (identified by their `variant-NNNN.*` naming, which
- * is unique to that pack) without touching anything the user imported themselves.
+ * The bundled set has been swapped a couple of times (v1: 2000 `variant-NNNN`
+ * icons; v2: those replaced by 2048 named icons; v3: back to the 2000
+ * `variant-NNNN` icons plus a different 2048-icon "same turtle" set, both
+ * pngquant/optipng-optimized). Different bundled packs can share the same
+ * `NNNN-slug.png` naming, so which files belong to "the bundled pack" can't be
+ * told apart by name alone - [MANIFEST_NAME] instead records exactly which
+ * filenames the last extraction wrote, so purging it never touches a file the
+ * user imported themselves. The manifest itself lives in the app's internal
+ * files dir rather than [PathManager.DIR_CUSTOM_LOGO] - that folder is listed
+ * as-is by [FileRecyclerViewCreator] with no dotfile filtering, so anything
+ * dropped inside it would show up as a (broken) selectable "logo". [AllSettings
+ * .logoPackUnpacked]'s key is still bumped on every pack swap, so stale devices
+ * actually re-run this instead of sitting on an old set forever.
  */
 object LogoPackUnpacker {
     private const val TAG = "LogoPackUnpacker"
@@ -33,7 +40,8 @@ object LogoPackUnpacker {
     /** Bundled asset name (lives in src/main/assets). */
     private const val PACK_ASSET_NAME = "logo_pack.zip"
 
-    private val LEGACY_VARIANT_NAME = Regex("^variant-\\d+\\.(png|svg)$", RegexOption.IGNORE_CASE)
+    /** Manifest filename (one bundled-logo filename per line) under context.filesDir. */
+    private const val MANIFEST_NAME = "logo_pack_manifest.txt"
 
     /** Runs the extraction synchronously - call from a background thread/Task. */
     @JvmStatic
@@ -42,8 +50,9 @@ object LogoPackUnpacker {
 
         val destDir = File(PathManager.DIR_CUSTOM_LOGO)
         if (!destDir.exists()) mkdirs(destDir)
-        purgeLegacyVariants(destDir)
+        purgePreviousPack(context, destDir)
 
+        val extractedNames = mutableListOf<String>()
         try {
             context.assets.open(PACK_ASSET_NAME).use { assetStream ->
                 ZipInputStream(assetStream).use { zip ->
@@ -62,6 +71,7 @@ object LogoPackUnpacker {
                                         out.write(buffer, 0, read)
                                     }
                                 }
+                                extractedNames.add(name)
                             }
                         }
                         zip.closeEntry()
@@ -69,15 +79,20 @@ object LogoPackUnpacker {
                     }
                 }
             }
+            File(context.filesDir, MANIFEST_NAME).writeText(extractedNames.joinToString("\n"))
             AllSettings.logoPackUnpacked.put(true).save()
         } catch (e: Exception) {
             Logging.e(TAG, "Failed to unpack the bundled logo pack", e)
         }
     }
 
-    /** Removes leftover files from the old (pre-v2) bundled pack, if present. */
-    private fun purgeLegacyVariants(dir: File) {
-        dir.listFiles { f -> f.isFile && LEGACY_VARIANT_NAME.matches(f.name) }
-            ?.forEach { it.delete() }
+    /** Deletes exactly the files the previous bundled-pack extraction wrote (per its manifest). */
+    private fun purgePreviousPack(context: Context, dir: File) {
+        val manifest = File(context.filesDir, MANIFEST_NAME)
+        if (!manifest.exists()) return
+        manifest.readLines()
+            .filter { it.isNotBlank() }
+            .forEach { name -> File(dir, name).delete() }
+        manifest.delete()
     }
 }

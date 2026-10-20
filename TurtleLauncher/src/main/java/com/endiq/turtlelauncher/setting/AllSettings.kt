@@ -92,11 +92,12 @@ class AllSettings {
         @JvmStatic val selectedLogo             = StringSettingUnit("selected_logo", "")
         /** Whether the bundled logo pack (assets/logo_pack.zip) has already been
          *  extracted into PathManager.DIR_CUSTOM_LOGO. Extraction happens once,
-         *  lazily, the first time LogoPickerFragment is opened. Key suffixed _v2
-         *  since the bundled pack itself was swapped for a smaller one - bumping it
-         *  forces re-extraction (LogoPackUnpacker purges the old pack's leftovers)
-         *  instead of silently keeping stale devices on the old, larger set. */
-        @JvmStatic val logoPackUnpacked         = BooleanSettingUnit("logo_pack_unpacked_v2", false)
+         *  lazily, the first time LogoPickerFragment is opened. Key is suffixed
+         *  with a version since the bundled pack's contents have changed more than
+         *  once - bumping it forces re-extraction (LogoPackUnpacker purges exactly
+         *  the previous pack's files via its manifest) instead of silently leaving
+         *  stale devices on an old set. */
+        @JvmStatic val logoPackUnpacked         = BooleanSettingUnit("logo_pack_unpacked_v3", false)
 
         // ── Mouse & Keyboard (ported from Zalith Launcher 2's control settings) ──
         /** Zalith2 physicalMouseMode: when ON a connected physical mouse stays a normal

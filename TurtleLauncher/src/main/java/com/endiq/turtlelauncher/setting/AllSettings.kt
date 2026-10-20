@@ -87,6 +87,14 @@ class AllSettings {
         @JvmStatic val virtualMouseStart        = BooleanSettingUnit("mouse_start", true)
         @JvmStatic val customMouse              = StringSettingUnit("custom_mouse", "")
 
+        // ── Logo ──────────────────────────────────────────────────────────────
+        /** Filename under PathManager.DIR_CUSTOM_LOGO, or empty for the built-in default logo. */
+        @JvmStatic val selectedLogo             = StringSettingUnit("selected_logo", "")
+        /** Whether the bundled 2000-icon logo pack (assets/logo_pack.zip) has already
+         *  been extracted into PathManager.DIR_CUSTOM_LOGO. Extraction happens once,
+         *  lazily, the first time LogoPickerFragment is opened. */
+        @JvmStatic val logoPackUnpacked         = BooleanSettingUnit("logo_pack_unpacked", false)
+
         // ── Mouse & Keyboard (ported from Zalith Launcher 2's control settings) ──
         /** Zalith2 physicalMouseMode: when ON a connected physical mouse stays a normal
          *  Android pointer (absolute hover positioning); when OFF the launcher grabs it via

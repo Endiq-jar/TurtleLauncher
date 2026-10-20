@@ -146,6 +146,9 @@ public class MainMenuFragment extends FragmentWithAnim {
 
         // Top app bar: title/subtitle + quick-action icon row
         binding.homeTopBarTitle.setText(com.endiq.turtlelauncher.InfoDistributor.LAUNCHER_NAME);
+        binding.topBarLogoButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
+            com.endiq.turtlelauncher.ui.fragment.LogoPickerFragment.class,
+            com.endiq.turtlelauncher.ui.fragment.LogoPickerFragment.TAG, null));
         binding.topBarAccountButton.setOnClickListener(v ->
             ZHTools.swapFragmentWithAnim(this, AccountFragment.class, AccountFragment.TAG, null));
         refreshAccountButton();

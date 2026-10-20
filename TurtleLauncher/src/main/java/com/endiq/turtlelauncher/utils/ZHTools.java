@@ -105,6 +105,21 @@ public final class ZHTools {
         return new File(PathManager.DIR_CUSTOM_MOUSE, customMouse);
     }
 
+    public synchronized static Drawable customLogo(Context context) {
+        File logoFile = getCustomLogo();
+        if (logoFile == null) {
+            return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_turtle_full, context.getTheme());
+        }
+        return Drawable.createFromPath(logoFile.getAbsolutePath());
+    }
+
+    public static File getCustomLogo() {
+        String customLogo = AllSettings.getSelectedLogo().getValue();
+        if (customLogo.isEmpty()) return null;
+        File file = new File(PathManager.DIR_CUSTOM_LOGO, customLogo);
+        return file.exists() ? file : null;
+    }
+
     public static void dialogForceClose(Context ctx) {
         new TipDialog.Builder(ctx)
                 .setTitle(R.string.option_force_close)

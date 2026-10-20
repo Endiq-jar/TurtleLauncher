@@ -23,6 +23,7 @@ class PathManager {
         @JvmField var DIR_RUNTIME_MOD: File? = null
 
         lateinit var DIR_CUSTOM_MOUSE: String
+        lateinit var DIR_CUSTOM_LOGO: String
         lateinit var DIR_BACKGROUND: File
         lateinit var DIR_APP_CACHE: File
         lateinit var DIR_USER_SKIN: File
@@ -49,6 +50,7 @@ class PathManager {
             DIR_CACHE_STRING = "$DIR_CACHE/string_cache"
             DIR_ADDONS_INFO_CACHE = "$DIR_CACHE/addons_info_cache"
             DIR_CUSTOM_MOUSE = "$DIR_GAME_HOME/mouse"
+            DIR_CUSTOM_LOGO = "$DIR_GAME_HOME/logo"
             DIR_BACKGROUND = File("$DIR_GAME_HOME/background")
             // externalCacheDir is null when external storage isn't mounted - fall back
             // to the internal cache dir rather than crashing during startup init.

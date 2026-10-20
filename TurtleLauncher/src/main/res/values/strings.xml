@@ -442,6 +442,13 @@
     <string name="custom_mouse_dialog">You can add mouse images in (Launcher Settings - %s - %s)</string>
     <string name="custom_mouse_desc">Open the virtual mouse management interface, where you can add your favorite virtual mouse icons and use them</string>
     <string name="custom_mouse_message_default">The currently selected virtual mouse is the default virtual mouse, sharing, renaming, and deleting operations are not supported</string>
+    <!-- Custom Logo -->
+    <string name="main_nav_logo">Launcher Logo</string>
+    <string name="custom_logo_add">Add Logo</string>
+    <string name="custom_logo_added">Successfully set launcher logo:</string>
+    <string name="custom_logo_default">Default Logo</string>
+    <string name="custom_logo_title">Launcher Logo</string>
+    <string name="custom_logo_message_default">The currently selected logo is the default logo, sharing, renaming, and deleting operations are not supported</string>
     <string name="custom_background_add">Add Background Image</string>
     <string name="custom_background_title">Custom Launcher Background Image</string>
     <string name="custom_background_desc">Open the launcher background icon management interface, where you can add your favorite background images and set different backgrounds for different interfaces</string>

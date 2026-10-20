@@ -58,6 +58,16 @@
             app:layout_constraintEnd_toEndOf="parent">
 
             <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
+                android:id="@+id/top_bar_logo_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_filetype_image"
+                android:padding="9dp"
+                android:tint="@color/turtle_text_secondary"
+                android:contentDescription="@string/main_nav_logo"/>
+
+            <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
                 android:id="@+id/top_bar_account_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"

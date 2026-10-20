@@ -1,7 +1,6 @@
 package com.endiq.turtlelauncher.ui.fragment
 import com.endiq.turtlelauncher.utils.anim.TurtleTransitions
 
-import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,9 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.DrawableImageViewTarget
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.endiq.anim.AnimPlayer
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.FragmentLogoPickerBinding
@@ -20,24 +17,22 @@ import com.endiq.turtlelauncher.feature.LogoPackUnpacker
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.task.Task
 import com.endiq.turtlelauncher.task.TaskExecutors
-import com.endiq.turtlelauncher.ui.dialog.FilesDialog
-import com.endiq.turtlelauncher.ui.dialog.FilesDialog.FilesButton
-import com.endiq.turtlelauncher.ui.subassembly.filelist.FileIcon
-import com.endiq.turtlelauncher.ui.subassembly.filelist.FileItemBean
-import com.endiq.turtlelauncher.ui.subassembly.filelist.FileRecyclerViewCreator
-import com.endiq.turtlelauncher.utils.path.PathManager
+import com.endiq.turtlelauncher.ui.subassembly.logo.LogoEntry
+import com.endiq.turtlelauncher.ui.subassembly.logo.LogoEntryAdapter
 import com.endiq.turtlelauncher.utils.ZHTools
 import com.endiq.turtlelauncher.utils.file.FileTools
 import com.endiq.turtlelauncher.utils.file.FileTools.Companion.mkdirs
-import com.endiq.turtlelauncher.utils.stringutils.StringUtils
+import com.endiq.turtlelauncher.utils.path.PathManager
 import net.endiq.launcher.Tools
 import java.io.File
 
 /**
- * Lets the user pick the launcher's logo (shown on the splash screen) from a
- * pack of logo images - either imported one at a time via [openDocumentLauncher],
- * or bulk-dropped into [PathManager.DIR_CUSTOM_LOGO] ahead of time. Mirrors
- * [CustomMouseFragment]'s file-picker pattern, minus the drawing tool.
+ * Launcher logo picker - Discord "App Icon" settings style: a plain scrolling
+ * list of thumbnail + name + selected checkmark, where tapping any row applies
+ * it immediately. No separate preview pane, no per-row rename/share/delete menu
+ * (unlike the file-browser-style pickers elsewhere in this app, e.g. the virtual
+ * mouse picker) - "Add Logo" in the header is the only extra action, for
+ * importing a logo of the user's own alongside the bundled pack.
  */
 class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
     companion object {
@@ -46,7 +41,7 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
 
     private lateinit var binding: FragmentLogoPickerBinding
     private lateinit var openDocumentLauncher: ActivityResultLauncher<Array<String>>
-    private var fileRecyclerViewCreator: FileRecyclerViewCreator? = null
+    private var adapter: LogoEntryAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +51,7 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
                 // Snapshot the context up front: requireActivity() from the worker
                 // thread would crash if the user navigates away mid-copy.
                 val appContext = requireContext().applicationContext
-                val destPath = logoPath().absolutePath
+                val destPath = logoDir().absolutePath
                 Task.runTask {
                     FileTools.copyFileInBackground(appContext, uri, destPath)
                 }.ended(TaskExecutors.getAndroidUI()) {
@@ -82,18 +77,23 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        initViews()
+        binding.returnButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
+        binding.logoAddButton.setOnClickListener { openDocumentLauncher.launch(arrayOf("image/*")) }
 
-        binding.actionBar.apply {
-            returnButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
-            addFileButton.setOnClickListener { openDocumentLauncher.launch(arrayOf("image/*")) }
-            refreshButton.setOnClickListener { loadData() }
+        binding.logoRecycler.layoutManager = LinearLayoutManager(requireContext())
+        adapter = LogoEntryAdapter(
+            mutableListOf(),
+            thumbnailCornerRadiusPx = resources.getDimensionPixelSize(R.dimen.radius_item),
+            selectedValue = AllSettings.selectedLogo.getValue()
+        ) { entry ->
+            AllSettings.selectedLogo.put(entry.settingValue).save()
         }
+        binding.logoRecycler.adapter = adapter
 
         ensurePackUnpacked()
     }
 
-    /** Extracts the bundled 2000-icon pack into DIR_CUSTOM_LOGO on first open only. */
+    /** Extracts the bundled icon pack into DIR_CUSTOM_LOGO on first open only. */
     private fun ensurePackUnpacked() {
         if (AllSettings.logoPackUnpacked.getValue()) {
             loadData()
@@ -113,99 +113,42 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
         }.execute()
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     private fun loadData() {
-        val fileItemBeans = FileRecyclerViewCreator.loadItemBeansFromPath(
-            requireActivity(),
-            logoPath(),
-            FileIcon.FILE,
-            showFile = true,
-            showFolder = false
-        )
-        fileItemBeans.add(0, FileItemBean(
-            getString(R.string.custom_logo_default),
-            ContextCompat.getDrawable(requireActivity(), R.drawable.ic_turtle_full)
-        ))
-        TaskExecutors.runInUIThread {
-            fileRecyclerViewCreator?.loadData(fileItemBeans)
-            // Show the currently selected logo by default.
-            refreshIcon()
-        }
+        Task.runTask {
+            val files = logoDir().listFiles { f -> f.isFile }?.sortedBy { it.name } ?: emptyList()
+            val entries = mutableListOf(LogoEntry(null, getString(R.string.custom_logo_default)))
+            entries.addAll(files.map { LogoEntry(it, displayName(it)) })
+            entries
+        }.ended(TaskExecutors.getAndroidUI()) { entries: List<LogoEntry> ->
+            if (!isAdded) return@ended
+            adapter?.replaceAll(entries)
+        }.execute()
     }
 
-    private fun logoPath(): File {
+    private fun logoDir(): File {
         val path = File(PathManager.DIR_CUSTOM_LOGO)
         if (!path.exists()) mkdirs(path)
         return path
     }
 
-    private fun refreshIcon() {
-        binding.logoIcon.apply {
-            ZHTools.getCustomLogo()?.let { file ->
-                Glide.with(requireActivity())
-                    .load(file)
-                    .override(width, height)
-                    .fitCenter()
-                    .into(DrawableImageViewTarget(this))
-                return@apply
-            }
-            setImageDrawable(ZHTools.customLogo(context))
-        }
-    }
-
-    private fun initViews() {
-        binding.actionBar.apply {
-            addFileButton.setContentDescription(getString(R.string.custom_logo_add))
-            searchButton.visibility = View.GONE
-            pasteButton.visibility = View.GONE
-            createFolderButton.visibility = View.GONE
-
-            ZHTools.setTooltipText(
-                returnButton,
-                addFileButton,
-                refreshButton
-            )
-        }
-
-        fileRecyclerViewCreator = FileRecyclerViewCreator(requireActivity(), binding.recyclerView, { position: Int, fileItemBean: FileItemBean ->
-                val file = fileItemBean.file
-                val fileName = file?.name
-                val isDefaultLogo = position == 0
-
-                val filesButton = FilesButton()
-                filesButton.setButtonVisibility(false, false,
-                    !isDefaultLogo, !isDefaultLogo, !isDefaultLogo, isDefaultLogo) // the default logo cannot be shared, renamed or deleted
-
-                var message = getString(R.string.file_message)
-                if (isDefaultLogo) message += """
-     
-     ${getString(R.string.custom_logo_message_default)}
-     """.trimIndent()
-                filesButton.setMessageText(message)
-                filesButton.setMoreButtonText(getString(R.string.generic_select))
-
-                val filesDialog = FilesDialog(requireActivity(), filesButton, Task.runTask { loadData() }, logoPath(), file)
-                filesDialog.setMoreButtonClick {
-                    AllSettings.selectedLogo.put(fileName ?: "").save()
-                    refreshIcon()
-                    Toast.makeText(requireActivity(),
-                        StringUtils.insertSpace(getString(R.string.custom_logo_added), (fileName ?: getString(R.string.custom_logo_default))),
-                        Toast.LENGTH_SHORT).show()
-                    filesDialog.dismiss()
-                }
-                filesDialog.show()
-            },
-            null
-        )
+    /** "0001-original-studio-clean.png" -> "Original Studio Clean"; falls back to the
+     *  raw name (e.g. "variant-1722" -> "Variant 1722") when nothing's left to title-case. */
+    private fun displayName(file: File): String {
+        val base = file.nameWithoutExtension
+        val slug = base.replace(Regex("^(variant-)?\\d+-?"), "").ifBlank { base }
+        return slug.split('-', '_')
+            .filter { it.isNotBlank() }
+            .joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
+            .ifBlank { base }
     }
 
     override fun slideIn(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.logoLayout, TurtleTransitions.enter()))
-            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.enter()))
+        animPlayer.apply(AnimPlayer.Entry(binding.logoTitle, TurtleTransitions.enter()))
+            .apply(AnimPlayer.Entry(binding.logoListCard, TurtleTransitions.enter()))
     }
 
     override fun slideOut(animPlayer: AnimPlayer) {
-        animPlayer.apply(AnimPlayer.Entry(binding.logoLayout, TurtleTransitions.exit()))
-            .apply(AnimPlayer.Entry(binding.operateLayout, TurtleTransitions.exit()))
+        animPlayer.apply(AnimPlayer.Entry(binding.logoTitle, TurtleTransitions.exit()))
+            .apply(AnimPlayer.Entry(binding.logoListCard, TurtleTransitions.exit()))
     }
 }

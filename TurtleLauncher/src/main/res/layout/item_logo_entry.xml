@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.endiq.turtlelauncher.ui.layout.AnimConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_xs"
+    android:background="@drawable/background_item_unselected"
+    android:paddingHorizontal="@dimen/space_m"
+    android:paddingVertical="@dimen/space_s"
+    app:ripple_for_constraint="true"
+    tools:ignore="ContentDescription">
+
+    <ImageView
+        android:id="@+id/logo_thumb"
+        android:layout_width="@dimen/_44sdp"
+        android:layout_height="@dimen/_44sdp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/ic_turtle_full" />
+
+    <com.endiq.turtlelauncher.ui.view.AnimTextView
+        android:id="@+id/logo_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_m"
+        android:layout_marginEnd="@dimen/space_s"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/turtle_primary_text"
+        app:layout_constraintBottom_toBottomOf="@+id/logo_thumb"
+        app:layout_constraintEnd_toStartOf="@+id/logo_selected_check"
+        app:layout_constraintStart_toEndOf="@+id/logo_thumb"
+        app:layout_constraintTop_toTopOf="@+id/logo_thumb"
+        tools:text="Blurple (Default)" />
+
+    <com.endiq.turtlelauncher.ui.view.AnimatedIconView
+        android:id="@+id/logo_selected_check"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_20sdp"
+        android:src="@drawable/ic_check"
+        android:tint="@color/accent_primary"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/logo_thumb"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/logo_thumb"
+        tools:visibility="visible" />
+
+</com.endiq.turtlelauncher.ui.layout.AnimConstraintLayout>

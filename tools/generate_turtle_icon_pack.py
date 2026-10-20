@@ -1,361 +1,298 @@
 #!/usr/bin/env python3
-"""Build 2,048 deterministic pixel-art TurtleLauncher concepts + the original.
+"""2,048 original-shape TurtleLauncher variants. Requires Pillow.
 
-Requires Python 3.10+ and Pillow. Outputs stay in ignored release/ by default.
-No launcher resources are modified. All new art is drawn procedurally, not by
-an image model. PNGs are 512px; SVGs preserve the crisp pixel geometry.
+Extracts the actual eight-color turtle from the repository icon. Never redraws,
+rotates, flips, stretches, or adds pixels to the turtle. Only palette swaps and
+background/decorations change. All outputs are ignored under release/.
 """
-from __future__ import annotations
-
-import argparse
+from pathlib import Path
 import csv
 import hashlib
 import json
 import math
-from pathlib import Path
 import random
 import shutil
 import zipfile
-
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-THEMES = [
-    ('Meadow', '#76ad50', '#c0e987', '#324b29', '#163d39', '#417b65'),
-    ('Ocean', '#34ad9a', '#a5efdb', '#17465c', '#08283f', '#166b8c'),
-    ('Cosmic', '#9084d9', '#dfccff', '#332252', '#151329', '#463569'),
-    ('Cyber', '#34d6b6', '#c1ffec', '#135260', '#09242c', '#146170'),
-    ('Royal', '#a690d8', '#eee0ff', '#463667', '#2d173c', '#78508e'),
-    ('Ember', '#d88b3e', '#ffda8c', '#713b2b', '#351b25', '#984329'),
-    ('Glacier', '#80c8df', '#e4fbff', '#365b86', '#14283e', '#486e9b'),
-    ('Dune', '#bca16b', '#ffebaf', '#675139', '#3c3030', '#987350'),
-    ('Sakura', '#cf83ab', '#ffe4f2', '#683954', '#36233d', '#946280'),
-    ('Autumn', '#bb8143', '#f9d782', '#634126', '#302d23', '#7a673e'),
-    ('Lunar', '#9ba9b6', '#f0f2df', '#3f4d62', '#151d2c', '#46536a'),
-    ('Jungle', '#57a85b', '#c3eb80', '#254a39', '#102d31', '#29694c'),
-    ('Arcade', '#c37cdb', '#ffdefb', '#603575', '#241538', '#773f83'),
-    ('Coral', '#df8b79', '#ffdec4', '#704846', '#263a4b', '#497b86'),
-    ('Aurora', '#62baab', '#d8f6b0', '#285955', '#1c2947', '#526a91'),
-    ('Golden', '#c9a654', '#fff0b0', '#6b542a', '#25363c', '#607a71'),
+SIZE = 192
+PALETTES = [
+ ('Original', None, '#174849', '#66abb2'),
+ ('Emerald', '#7ad99a', '#082e2c', '#367b68'),
+ ('Ocean', '#77daeb', '#101d43', '#386f9b'),
+ ('Sapphire', '#88afff', '#111c3e', '#556eb8'),
+ ('Lavender', '#cfb4fa', '#29223e', '#8276a6'),
+ ('Rose', '#f1accb', '#351f37', '#b57d9c'),
+ ('Coral', '#ffa99b', '#352c45', '#b77c85'),
+ ('Amber', '#f3c36e', '#382b27', '#a97d4b'),
+ ('Lime', '#d3e878', '#20332d', '#788f55'),
+ ('Glacier', '#c2f2ed', '#18323e', '#6b9daa'),
+ ('Pearl', '#e8e7d9', '#303747', '#9b9ead'),
+ ('Copper', '#dba57b', '#32252b', '#99654d'),
+ ('Violet', '#c89bf2', '#22153a', '#7953a3'),
+ ('Cherry', '#e98b9f', '#301d2b', '#914559'),
+ ('Mint', '#a1e4bc', '#173732', '#629e8b'),
+ ('Gold', '#f3da8d', '#252f35', '#8d855c'),
 ]
-ACCESSORIES = ['Classic', 'Explorer', 'Crown', 'Sprout', 'Astronaut', 'Wizard',
-               'Headphones', 'Scarf', 'Crystal', 'Flower', 'Flag', 'Wings',
-               'Antenna', 'Sail', 'Mushroom', 'Lightning']
+SCENES = ['Studio', 'Sunset', 'Moonrise', 'Mountains', 'Coast', 'Dunes',
+          'Forest', 'Grid', 'Orbit', 'Arcade', 'Clouds', 'Rain',
+          'Botanical', 'Mosaic', 'Northern-lights', 'Rings']
+DECOR = ['Clean', 'Stars', 'Sparkles', 'Bubbles', 'Corners', 'Diamonds', 'Confetti', 'Fireflies']
 
 
-def rgb(color):
-    return tuple(bytes.fromhex(color.lstrip('#')))
+def rgb(c):
+    return tuple(bytes.fromhex(c.lstrip('#')))
 
 
 def mix(a, b, t):
-    return tuple(round(x * (1 - t) + y * t) for x, y in zip(a, b))
+    return tuple(round(x * (1-t) + y*t) for x, y in zip(a, b))
 
 
-def make_turtle(number, theme):
-    rng = random.Random(8191 + number * 7919)
-    _, body_hex, light_hex, dark_hex, _, _ = theme
-    body, light, dark = map(rgb, (body_hex, light_hex, dark_hex))
-    shell = mix(body, dark, .35)
-    ink = mix(dark, (8, 18, 24), .35)
-    gold = (255, 218, 121)
-    im = Image.new('RGBA', (96, 96))
+def extract_original():
+    original = Image.open(ROOT/'TurtleLauncher/src/main/res/mipmap-xxxhdpi/ic_launcher.png').convert('RGB')
+    assert original.size == (192, 192)
+    sprite = Image.new('RGBA', original.size)
+    for y in range(192):
+        for x in range(192):
+            c = original.getpixel((x,y))
+            # The original has exactly eight turtle colors; the blue gradient
+            # and its tiny stars do not satisfy this green-palette predicate.
+            if c[1] > c[2]*1.15 and c[0] < c[1]*1.1:
+                sprite.putpixel((x,y), c+(255,))
+    colors = sorted(set(sprite.get_flattened_data())-{(0,0,0,0)}, key=lambda c:sum(c[:3]))
+    assert len(colors) == 8, 'Source artwork palette changed; review extraction.'
+    assert sprite.getbbox() == (28,60,152,132)
+    assert sum(1 for c in sprite.get_flattened_data() if c[3]) == 5312
+    return original, sprite, colors
+
+
+def recolor(source, colors, target):
+    if target is None:
+        return source.copy()
+    base = rgb(target)
+    # Bijective palette mapping preserves every original pixel region,
+    # including shell details, outline, legs, face and eye.
+    levels = [.14, .23, .42, .57, .72, .84, .94, 1.0]
+    mapping = {old:mix((7,14,20), base, t)+(255,) for old,t in zip(colors, levels)}
+    result = Image.new('RGBA', source.size)
+    result.putdata([mapping.get(c,(0,0,0,0)) for c in source.get_flattened_data()])
+    assert result.getchannel('A').tobytes() == source.getchannel('A').tobytes()
+    return result
+
+
+def scene_image(palette, scene, decoration, seed, protected):
+    rng = random.Random(seed)
+    low, high = rgb(palette[2]), rgb(palette[3])
+    light = mix(high,(237,248,233),.62)
+    mid = mix(low,high,.55)
+    im = Image.new('RGB',(192,192))
     d = ImageDraw.Draw(im)
-    accessory = (number // 8) % 16
-    pose = number % 8
-    # Geometry is independently varied, not merely recoloured.
-    cx, cy = 44 + rng.randrange(-3, 4), 49 + rng.randrange(-3, 4)
-    rx, ry = rng.randrange(19, 26), rng.randrange(13, 20)
-    head_len = rng.randrange(10, 16)
-    leg = rng.randrange(7, 13)
-    if pose in (2, 3, 6):  # overhead swimming / walking turtle
-        rx, ry = rng.randrange(15, 21), rng.randrange(20, 26)
-        cx, cy = 48 + rng.randrange(-3, 4), 48 + rng.randrange(-2, 3)
-        for side in (-1, 1):
-            for level in (-1, 1):
-                x, y = cx + side * (rx - 3), cy + level * (ry - 7)
-                if pose == 3:
-                    pts = [(x, y - 4), (x + side * leg, y + level * 7),
-                           (x + side * (leg + 3), y + level * 12), (x - side * 3, y + 5)]
-                    d.polygon(pts, fill=ink)
-                    d.line(pts[:3], fill=body, width=4)
-                else:
-                    d.rectangle((min(x, x + side * leg), y - 3, max(x, x + side * leg), y + 4), fill=ink)
-                    d.rectangle((min(x, x + side * (leg - 2)), y - 1, max(x, x + side * (leg - 2)), y + 2), fill=body)
-        d.polygon([(cx - 4, cy + ry - 2), (cx + 3, cy + ry - 2), (cx + rng.randrange(-5, 6), cy + ry + 8)], fill=ink)
-        d.rounded_rectangle((cx - 8, cy - ry - head_len, cx + 8, cy - ry + 5), radius=5, fill=ink)
-        d.rounded_rectangle((cx - 6, cy - ry - head_len + 2, cx + 6, cy - ry + 5), radius=3, fill=light)
-        for x in (cx - 5, cx + 4):
-            d.rectangle((x, cy - ry - head_len + 5, x + 1, cy - ry - head_len + 7), fill=ink)
-        shell_box = (cx - rx, cy - ry, cx + rx, cy + ry)
-        ax, ay = cx, cy - ry - head_len
-    else:  # recognisable side-view descendant of the repository icon
-        foot_y = cy + ry + (3 if pose == 4 else 6)
-        for x in (cx - rx + 6, cx + rx - 8):
-            step = rng.randrange(-4, 5)
-            if pose in (1, 5):
-                d.polygon([(x - 4, cy + 6), (x + 6, cy + 7), (x + leg, foot_y + step), (x + 1, foot_y + step + 3)], fill=ink)
-                d.line([(x, cy + 10), (x + leg - 2, foot_y + step)], fill=body, width=4)
-            else:
-                d.rectangle((x - 4, cy + 5, x + 4, foot_y + step), fill=ink)
-                d.rectangle((x - 2, cy + 7, x + 2, foot_y + step - 2), fill=body)
-        d.polygon([(cx - rx + 3, cy + 6), (cx - rx - rng.randrange(6, 12), cy + ry - 1), (cx - rx + 5, cy + ry - 1)], fill=ink)
-        d.line([(cx - rx - 5, cy + ry - 2), (cx - rx + 4, cy + 8)], fill=body, width=3)
-        hx, hy = cx + rx - 2, cy + rng.randrange(-3, 5)
-        d.rounded_rectangle((hx - 5, hy - 6, hx + head_len, hy + 9), radius=4, fill=ink)
-        d.rectangle((hx - 4, hy - 3, hx + head_len - 3, hy + 6), fill=light)
-        d.rectangle((hx + head_len - 7, hy - 2, hx + head_len - 5, hy + 1), fill=ink)
-        d.point((hx + head_len - 7, hy - 2), fill=(255, 255, 239))
-        d.line((hx + head_len - 5, hy + 5, hx + head_len - 3, hy + 5), fill=dark)
-        shell_box = (cx - rx, cy - ry, cx + rx, cy + ry - 2)
-        ax, ay = hx + 4, hy - 7
-    # Clipped shell patterns: eight genuinely different structures.
-    mask = Image.new('L', (96, 96))
-    md = ImageDraw.Draw(mask)
-    md.ellipse(shell_box, fill=255)
-    texture = Image.new('RGBA', (96, 96), shell + (255,))
-    td = ImageDraw.Draw(texture)
-    pattern = rng.randrange(8)
-    if pattern == 0:  # scutes
-        for row, y in enumerate(range(cy - ry, cy + ry, 9)):
-            for x in range(cx - rx - 8, cx + rx + 8, 11):
-                x += (row % 2) * 5
-                td.polygon([(x, y), (x + 7, y), (x + 10, y + 4), (x + 7, y + 8), (x, y + 8), (x - 3, y + 4)], fill=body, outline=dark)
-    elif pattern == 1:
-        for x in range(cx - rx, cx + rx, rng.randrange(5, 9)):
-            td.line((x, cy - ry, x + 12, cy + ry), fill=light, width=3)
-    elif pattern == 2:
-        for _ in range(24):
-            x, y = rng.randrange(cx - rx, cx + rx), rng.randrange(cy - ry, cy + ry)
-            td.rectangle((x, y, x + 3, y + 3), fill=light if rng.random() > .4 else dark)
-    elif pattern == 3:
-        for radius in range(3, rx + 5, 5):
-            td.ellipse((cx - radius, cy - radius, cx + radius, cy + radius), outline=light, width=2)
-    elif pattern == 4:
-        for x in range(cx - rx, cx + rx, 8):
-            for y in range(cy - ry, cy + ry, 8):
-                td.rectangle((x, y, x + 5, y + 5), fill=body if (x + y) % 16 else light)
-    elif pattern == 5:
-        for y in range(cy - ry, cy + ry, 6):
-            td.line([(cx - rx, y), (cx - 5, y + 6), (cx + 7, y), (cx + rx, y + 5)], fill=light, width=2)
-    elif pattern == 6:
-        for a in range(0, 360, 45):
-            td.line((cx, cy, cx + math.cos(math.radians(a)) * 35, cy + math.sin(math.radians(a)) * 35), fill=light, width=2)
-        td.ellipse((cx - 6, cy - 6, cx + 6, cy + 6), fill=body, outline=dark, width=2)
+    for y in range(192):
+        d.line((0,y,191,y), fill=mix(high,low,y/191))
+    if scene == 0:
+        # A restrained studio halo, original-style clean backdrop.
+        for r in range(85,0,-1):
+            t = (1-r/85)*.14
+            d.ellipse((96-r,92-r,96+r,92+r), fill=mix(mid,light,t))
+    elif scene == 1:
+        d.ellipse((114,22,166,74),fill=light)
+        for y in range(82,192,9):
+            d.rectangle((0,y,192,y+3),fill=mix(mid,low,(y-82)/110))
+    elif scene == 2:
+        d.ellipse((27,24,67,64),fill=light)
+        d.ellipse((37,18,75,56),fill=mix(high,low,.2))
+        for _ in range(30):
+            x,y=rng.randrange(192),rng.randrange(100)
+            d.point((x,y),fill=light)
+    elif scene == 3:
+        for n in range(3):
+            y=110+n*24
+            d.polygon([(0,y),(35,y-44),(65,y-12),(109,y-60),(150,y-18),(192,y-50),(192,192),(0,192)],fill=mix(high,low,.32+n*.23))
+    elif scene == 4:
+        d.ellipse((121,20,151,50),fill=light)
+        d.rectangle((0,130,192,192),fill=low)
+        for y in range(134,192,9):
+            d.line([(0,y),(40,y-3),(85,y+1),(140,y-3),(192,y)],fill=mid,width=2)
+    elif scene == 5:
+        d.ellipse((29,29,63,63),fill=light)
+        for y in (130,150,175):
+            d.polygon([(0,y+8),(35,y-8),(75,y-15),(130,y+2),(192,y-9),(192,192),(0,192)],fill=mix(high,low,(y-100)/100))
+    elif scene == 6:
+        for n in range(14):
+            x=n*17-12; y=rng.randrange(83,150)
+            d.rectangle((x-2,y,x+2,192),fill=low)
+            d.polygon([(x,y-48),(x-19,y+17),(x+19,y+17)],fill=mix(low,high,rng.uniform(.1,.5)))
+    elif scene == 7:
+        for y in range(0,192,16):
+            d.line((0,y,191,y),fill=mid)
+        for x in range(0,192,16):
+            d.line((x,0,x,191),fill=mid)
+    elif scene == 8:
+        d.ellipse((30,28,162,160),outline=mid,width=2)
+        d.arc((16,55,176,137),15,340,fill=light,width=2)
+        d.ellipse((148,55,158,65),fill=light)
+        d.ellipse((31,140,37,146),fill=light)
+    elif scene == 9:
+        for y in range(132,192,12):
+            d.line((0,y,191,y),fill=mid,width=1)
+        for x in range(-160,400,40):
+            d.line((96,88,x,192),fill=mid)
+        for x in range(16,180,20):
+            height=rng.randrange(10,38)
+            d.rectangle((x,188-height,x+9,188),fill=high)
+    elif scene == 10:
+        for x,y in [(12,29),(104,15),(144,48),(0,145),(111,157)]:
+            for dx,dy,r in [(0,0,10),(12,-5,14),(28,0,10)]:
+                d.ellipse((x+dx-r,y+dy-r,x+dx+r,y+dy+r),fill=mix(high,light,.45))
+    elif scene == 11:
+        for x in range(-120,192,13):
+            d.line((x,0,x+90,192),fill=mid,width=2)
+    elif scene == 12:
+        for x,sign in [(16,1),(176,-1)]:
+            d.line((x,165,x+sign*4,46),fill=mid,width=2)
+            for y in range(52,166,16):
+                d.ellipse((x-10,y-6,x+sign*16+10,y+6),outline=high,width=2)
+    elif scene == 13:
+        for y in range(0,192,16):
+            for x in range(0,192,16):
+                d.rectangle((x,y,x+14,y+14),fill=mix(low,high,rng.uniform(.1,.65)))
+    elif scene == 14:
+        for n in range(5):
+            points=[(x,25+n*12+int(10*math.sin(x/25+n))) for x in range(192)]
+            d.line(points,fill=mix(high,light,n*.09),width=5)
     else:
-        td.polygon([(cx, cy - ry + 3), (cx + rx - 3, cy), (cx, cy + ry - 3), (cx - rx + 3, cy)], fill=body, outline=light, width=2)
-        td.rectangle((cx - 3, cy - 3, cx + 3, cy + 3), fill=gold)
-    im.paste(texture, (0, 0), mask)
-    d = ImageDraw.Draw(im)
-    d.ellipse(shell_box, outline=ink, width=3)
-    d.arc((shell_box[0] + 4, shell_box[1] + 4, shell_box[2] - 4, shell_box[3] - 4), 195, 265, fill=light, width=2)
-    sx, sy = cx, cy - ry
-    if accessory == 1:  # explorer cap
-        d.rectangle((ax - 8, ay - 5, ax + 6, ay), fill=gold)
-        d.rectangle((ax - 11, ay, ax + 11, ay + 2), fill=dark)
-    elif accessory == 2:
-        d.polygon([(ax - 8, ay), (ax - 9, ay - 9), (ax - 3, ay - 5), (ax, ay - 12), (ax + 4, ay - 5), (ax + 9, ay - 9), (ax + 8, ay)], fill=gold)
-        d.rectangle((ax - 1, ay - 4, ax + 1, ay - 2), fill=(238, 103, 127))
-    elif accessory == 3:
-        d.line((sx, sy + 2, sx, sy - 8), fill=light, width=2)
-        d.ellipse((sx - 9, sy - 12, sx, sy - 6), fill=body)
-        d.ellipse((sx + 1, sy - 15, sx + 10, sy - 8), fill=light)
-    elif accessory == 4:
-        d.arc((ax - 12, ay - 12, ax + 13, ay + 17), 160, 380, fill=(219, 247, 255), width=2)
-        d.rectangle((ax - 10, ay + 8, ax + 10, ay + 10), fill=gold)
-    elif accessory == 5:
-        d.polygon([(ax - 10, ay), (ax + 1, ay - 17), (ax + 8, ay), (ax + 12, ay + 2), (ax - 12, ay + 2)], fill=(112, 91, 185))
-        d.rectangle((ax - 1, ay - 7, ax + 1, ay - 5), fill=gold)
-    elif accessory == 6:
-        d.arc((ax - 10, ay - 8, ax + 10, ay + 13), 180, 360, fill=gold, width=3)
-        d.rectangle((ax - 11, ay + 1, ax - 7, ay + 8), fill=(225, 137, 145))
-        d.rectangle((ax + 7, ay + 1, ax + 11, ay + 8), fill=(225, 137, 145))
-    elif accessory == 7:
-        d.rectangle((ax - 9, ay + 10, ax + 5, ay + 13), fill=(234, 114, 99))
-        d.polygon([(ax - 8, ay + 12), (ax - 17, ay + 18), (ax - 10, ay + 20), (ax - 4, ay + 12)], fill=gold)
-    elif accessory == 8:
-        for dx, size in [(-9, 10), (0, 17), (9, 12)]:
-            d.polygon([(sx + dx - 4, sy + 3), (sx + dx - 3, sy - size + 5), (sx + dx, sy - size), (sx + dx + 4, sy - size + 6), (sx + dx + 3, sy + 3)], fill=light, outline=dark)
-    elif accessory == 9:
-        for dx, dy in [(0, -5), (-5, 0), (5, 0), (0, 5)]:
-            d.ellipse((ax + dx - 3, ay + dy - 8, ax + dx + 3, ay + dy - 2), fill=(255, 184, 210))
-        d.rectangle((ax - 2, ay - 7, ax + 2, ay - 3), fill=gold)
-    elif accessory == 10:
-        d.line((sx, sy + 1, sx, sy - 19), fill=gold, width=2)
-        d.polygon([(sx + 2, sy - 19), (sx + 16, sy - 14), (sx + 2, sy - 9)], fill=light)
-    elif accessory == 11:
-        for sign in (-1, 1):
-            d.polygon([(cx, cy), (cx + sign * 27, cy - 17), (cx + sign * 23, cy - 4), (cx + sign * 14, cy + 2)], fill=light, outline=dark)
-    elif accessory == 12:
-        d.line((ax, ay, ax + 4, ay - 12), fill=gold, width=2)
-        d.rectangle((ax + 1, ay - 16, ax + 6, ay - 12), fill=light)
-    elif accessory == 13:
-        d.line((sx, sy + 3, sx, sy - 20), fill=gold, width=2)
-        d.polygon([(sx + 3, sy - 19), (sx + 18, sy - 3), (sx + 3, sy - 3)], fill=light)
-    elif accessory == 14:
-        d.rectangle((sx - 3, sy - 7, sx + 3, sy + 2), fill=gold)
-        d.pieslice((sx - 12, sy - 22, sx + 12, sy - 3), 180, 360, fill=(224, 111, 117))
-        for dx in (-6, 3):
-            d.rectangle((sx + dx, sy - 15, sx + dx + 3, sy - 12), fill=(255, 239, 206))
-    elif accessory == 15:
-        d.polygon([(sx + 2, sy - 20), (sx - 8, sy - 7), (sx - 1, sy - 7), (sx - 5, sy + 3), (sx + 9, sy - 11), (sx + 2, sy - 11)], fill=gold)
-    if pose in (4, 6, 7):
-        im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-    return im, pose, accessory, pattern
-
-
-def background(number, theme):
-    rng = random.Random(number + 591)
-    low, high = map(rgb, theme[4:6])
-    im = Image.new('RGBA', (96, 96))
-    d = ImageDraw.Draw(im)
-    for y in range(96):
-        d.line((0, y, 95, y), fill=mix(high, low, y / 95) + (255,))
-    motif = (number // 16) % 8
-    accent = mix(high, (235, 251, 239), .35)
-    if motif == 0:
+        for r in range(25,160,13):
+            d.ellipse((96-r,96-r,96+r,96+r),outline=mid,width=2)
+    # Decorations cannot cover the turtle or even approach within four pixels.
+    overlay=Image.new('RGBA',(192,192)); od=ImageDraw.Draw(overlay)
+    if decoration == 1:
+        for x,y in [(25,23),(161,34),(18,154),(144,160),(84,27)]:
+            od.line((x-3,y,x+3,y),fill=light,width=1)
+            od.line((x,y-3,x,y+3),fill=light,width=1)
+    elif decoration == 2:
+        for x,y in [(30,34),(163,58),(39,160),(144,151)]:
+            od.polygon([(x,y-6),(x+2,y-2),(x+6,y),(x+2,y+2),(x,y+6),(x-2,y+2),(x-6,y),(x-2,y-2)],fill=light)
+    elif decoration == 3:
+        for x,y,r in [(23,44,6),(165,81,8),(36,153,5),(149,149,9),(115,24,4)]:
+            od.ellipse((x-r,y-r,x+r,y+r),outline=light,width=1)
+    elif decoration == 4:
+        for x,s in [(15,1),(177,-1)]:
+            for y,t in [(15,1),(177,-1)]:
+                od.line([(x+s*14,y),(x,y),(x,y+t*14)],fill=light,width=2)
+    elif decoration == 5:
+        for x,y in [(29,29),(159,29),(29,163),(159,163)]:
+            od.polygon([(x,y-5),(x+5,y),(x,y+5),(x-5,y)],outline=light)
+    elif decoration == 6:
+        for _ in range(40):
+            x,y=rng.randrange(10,182),rng.randrange(12,180)
+            od.rectangle((x,y,x+2,y+2),fill=light)
+    elif decoration == 7:
         for _ in range(25):
-            x, y = rng.randrange(8, 88), rng.randrange(6, 86)
-            d.point((x, y), fill=accent)
-    elif motif == 1:
-        for x in range(-30, 110, 15):
-            d.line((x, 0, x + 60, 95), fill=mix(high, low, .25), width=3)
-    elif motif == 2:
-        d.ellipse((9, 9, 87, 87), outline=accent, width=1)
-        d.ellipse((14, 14, 82, 82), outline=mix(high, low, .1), width=2)
-    elif motif == 3:
-        for x in range(0, 96, 12):
-            d.line((x, 0, x, 96), fill=mix(high, low, .3))
-            d.line((0, x, 96, x), fill=mix(high, low, .3))
-    elif motif == 4:
-        d.ellipse((58, 9, 80, 31), fill=accent)
-        for y in (76, 84, 92):
-            d.line([(0, y), (24, y - 3), (48, y + 1), (72, y - 4), (96, y)], fill=high, width=2)
-    elif motif == 5:
-        for _ in range(12):
-            x, y = rng.randrange(5, 90), rng.randrange(5, 88)
-            d.rectangle((x, y, x + 2, y + 2), outline=accent)
-    elif motif == 6:
-        for y in (70, 80, 90):
-            d.polygon([(0, y), (18, y - 14), (35, y - 3), (60, y - 17), (96, y - 3), (96, 96), (0, 96)], fill=mix(low, high, (96 - y) / 45))
-    else:
-        for n in range(4):
-            d.arc((8 - n * 7, 8 - n * 7, 88 + n * 7, 88 + n * 7), 200, 330, fill=accent, width=2)
-    d.ellipse((22, 76, 76, 82), fill=low)
-    return im, motif
+            x,y=rng.randrange(8,184),rng.randrange(15,180)
+            od.ellipse((x,y,x+1,y+1),fill=light)
+    overlay.putalpha(Image.composite(Image.new('L',(192,192),0),overlay.getchannel('A'),protected))
+    im=Image.alpha_composite(im.convert('RGBA'),overlay).convert('RGB')
+    return im
 
 
-def svg_from_pixels(im):
-    """Lossless vector run-length encoding, with no embedded raster images."""
-    parts = ['<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 96 96" shape-rendering="crispEdges">']
-    for y in range(96):
-        x = 0
-        while x < 96:
-            c = im.getpixel((x, y))
-            start = x
-            while x < 96 and im.getpixel((x, y)) == c:
-                x += 1
-            if c[3]:
-                color = '#%02x%02x%02x' % c[:3]
-                parts.append(f'<path fill="{color}" d="M{start} {y}h{x-start}v1H{start}z"/>')
-    parts.append('</svg>')
-    return ''.join(parts)
+def svg_pixels(image):
+    parts=['<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 192 192" shape-rendering="crispEdges">']
+    for y in range(192):
+        x=0
+        while x<192:
+            c=image.getpixel((x,y)); start=x
+            while x<192 and image.getpixel((x,y))==c:
+                x+=1
+            parts.append('<path fill="#%02x%02x%02x" d="M%d %dh%dv1H%dz"/>'%(*c,start,y,x-start,start))
+    return ''.join(parts)+'</svg>'
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=ROOT / 'release/turtle-icon-pack')
-    args = parser.parse_args()
-    out = args.output.resolve()
-    out.mkdir(parents=True, exist_ok=True)
-    for folder in ('png', 'svg', 'original'):
-        (out / folder).mkdir(exist_ok=True)
-    original = ROOT / 'TurtleLauncher/src/main/res/mipmap-xxxhdpi/ic_launcher.png'
-    shutil.copyfile(original, out / 'original/original.png')
-    shutil.copyfile(ROOT / 'TurtleLauncher/src/main/res/drawable/ic_turtle_full.webp', out / 'original/ic_turtle_full.webp')
-    rows, hashes, silhouettes = [], set(), set()
-    sample = []
-    for i in range(2048):
-        theme = THEMES[i // 128]
-        turtle, pose, accessory, pattern = make_turtle(i, theme)
-        silhouette = hashlib.sha256(turtle.getchannel('A').tobytes()).hexdigest()
-        assert silhouette not in silhouettes, f'Duplicate silhouette at {i}'
-        silhouettes.add(silhouette)
-        image, motif = background(i, theme)
-        image.alpha_composite(turtle)
-        image = image.convert('RGB')
-        digest = hashlib.sha256(image.tobytes()).hexdigest()
-        assert digest not in hashes, f'Duplicate image at {i}'
-        hashes.add(digest)
-        stem = f'{i+1:04d}-{theme[0].lower()}-{ACCESSORIES[accessory].lower()}'
-        png = image.resize((512, 512), Image.Resampling.NEAREST)
-        png.save(out / 'png' / f'{stem}.png', optimize=True)
-        (out / 'svg' / f'{stem}.svg').write_text(svg_from_pixels(image.convert('RGBA')))
-        rows.append(dict(id=i+1, name=stem, theme=theme[0], accessory=ACCESSORIES[accessory], pose=pose, shell_pattern=pattern, background=motif, sha256_pixels=digest, sha256_silhouette=silhouette))
-        # Sample varied views/accessories, not just every 32nd (same-pose) icon.
-        if i % 128 in {(i // 128 * 7 + k * 33) % 128 for k in range(4)}:
-            sample.append((stem, png.copy()))
-        if (i + 1) % 128 == 0:
-            print(f'{i+1}/2048 generated: {theme[0]}', flush=True)
-    with (out / 'manifest.csv').open('w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
-        writer.writeheader()
-        writer.writerows(rows)
-    (out / 'manifest.json').write_text(json.dumps(rows, indent=2))
-    cards = ''.join(f'<a class="card" data-name="{r["name"]}" href="png/{r["name"]}.png"><img loading="lazy" width="128" height="128" src="png/{r["name"]}.png"><span>{r["name"]}</span></a>' for r in rows)
-    (out / 'index.html').write_text('''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TurtleLauncher • 2048 icons</title><style>
-    *{box-sizing:border-box}body{margin:0;background:#101d23;color:#e3f5e9;font:15px system-ui}header{padding:42px 5vw 28px;border-bottom:1px solid #335044}h1{font-size:clamp(28px,5vw,54px);letter-spacing:-2px;margin:8px 0}p{color:#acc1b6;line-height:1.7}input{width:min(500px,100%);padding:14px;border-radius:10px;border:1px solid #547366;background:#20362e;color:white;font:inherit}main{padding:24px 5vw;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:18px}.card{display:flex;align-items:center;flex-direction:column;background:#1b2d2a;padding:14px;border:1px solid #2c453c;border-radius:14px;color:#c8e1d0;text-decoration:none}.card:hover{border-color:#9cddb3}.card img{width:100%;height:auto;aspect-ratio:1;image-rendering:pixelated;border-radius:10px}.card span{font-size:11px;margin-top:12px;overflow-wrap:anywhere}a{color:#b5efc7} .original{width:64px;image-rendering:pixelated;float:right} [hidden]{display:none!important}</style>
-    <header><a href="original/original.png"><img class="original" src="original/original.png" alt="Original TurtleLauncher icon"></a><p>TURTLELAUNCHER / PIXEL EXPLORATIONS</p><h1>One turtle. 2,048 identities.</h1><p>2,048 unique designs • 16 themes • PNG 512 × 512 + scalable SVG<br>Click an icon to open the PNG. Matching SVG files are in the svg folder.<br><a href="original/original.png">Untouched original</a> · <a href="manifest.csv">Catalog CSV</a></p><input id="search" placeholder="Filter: ocean, wizard, crown, 0042…" aria-label="Filter icons"><p id="count">2,048 icons</p></header><main>''' + cards + '''</main><script>const cards=[...document.querySelectorAll('.card')];document.querySelector('#search').addEventListener('input',e=>{let n=0;const q=e.target.value.toLowerCase();cards.forEach(c=>{c.hidden=!c.dataset.name.includes(q);if(!c.hidden)n++});document.querySelector('#count').textContent=n.toLocaleString()+' icons'});</script></html>''')
-    preview = Image.new('RGB', (1440, 1660), '#101d23')
-    draw = ImageDraw.Draw(preview)
-    fontpath = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
-    font = ImageFont.truetype(fontpath, 38) if Path(fontpath).exists() else ImageFont.load_default()
-    small = ImageFont.truetype(fontpath, 13) if Path(fontpath).exists() else ImageFont.load_default()
-    draw.text((38, 25), 'TURTLELAUNCHER / 2,048 UNIQUE ICONS', fill='#def3e3', font=font)
-    draw.text((40, 84), '64 examples • 16 themes • untouched original included in ZIP', fill='#a4c1b0', font=small)
-    for n, (name, image) in enumerate(sample):
-        x, y = 32 + (n % 8) * 176, 132 + (n // 8) * 188
-        preview.paste(image.resize((160, 160), Image.Resampling.NEAREST), (x, y))
-        draw.text((x, y + 164), name[:24], fill='#b6cebf', font=small)
-    preview.save(out / 'PREVIEW.jpg', quality=92)
-    (out / 'README.txt').write_text('''TURTLELAUNCHER — 2,048 NEW ICONS + ORIGINAL
+    out=ROOT/'release/same-turtle-v2'
+    for folder in ['png','svg','original','source-palettes']:
+        (out/folder).mkdir(parents=True,exist_ok=True)
+    original,source,colors=extract_original()
+    mask=source.getchannel('A')
+    protected=mask.filter(ImageFilter.MaxFilter(9))
+    source.save(out/'original/extracted-turtle.png')
+    shutil.copyfile(ROOT/'TurtleLauncher/src/main/res/mipmap-xxxhdpi/ic_launcher.png',out/'original/original.png')
+    rows=[]; seen=set(); samples=[]
+    for pi,palette in enumerate(PALETTES):
+        turtle=recolor(source,colors,palette[1])
+        turtle.save(out/'source-palettes'/f'{pi:02d}-{palette[0].lower()}.png')
+        assert turtle.getchannel('A').tobytes()==mask.tobytes()
+        for si,scene in enumerate(SCENES):
+            for di,decoration in enumerate(DECOR):
+                i=pi*128+si*8+di
+                stem=f'{i+1:04d}-{palette[0].lower()}-{scene.lower()}-{decoration.lower()}'
+                im=scene_image(palette,si,di,i+801,protected)
+                im.paste(turtle,(0,0),mask)
+                # Exact pixel test, not just a silhouette check: every turtle
+                # pixel equals the corresponding palette-swapped source pixel.
+                for (x,y) in [(x,y) for y in range(60,132) for x in range(28,152) if mask.getpixel((x,y))]:
+                    assert im.getpixel((x,y))==turtle.getpixel((x,y))[:3]
+                digest=hashlib.sha256(im.tobytes()).hexdigest()
+                assert digest not in seen
+                seen.add(digest)
+                im.resize((512,512),Image.Resampling.NEAREST).save(out/'png'/f'{stem}.png',optimize=True)
+                (out/'svg'/f'{stem}.svg').write_text(svg_pixels(im))
+                rows.append(dict(id=i+1,name=stem,turtle_palette=palette[0],background=scene,decoration=decoration,sha256_pixels=digest,sha256_turtle_alpha=hashlib.sha256(mask.tobytes()).hexdigest()))
+                if si in [(pi*3+k*5)%16 for k in range(4)] and di==(pi+si)%8:
+                    samples.append((stem,im))
+        print(f'{pi+1}/16 palettes complete; original turtle shape preserved',flush=True)
+    with (out/'manifest.csv').open('w',newline='') as f:
+        writer=csv.DictWriter(f,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
+    (out/'manifest.json').write_text(json.dumps(rows,indent=2))
+    cards=''.join(f'<a class="card" data-name="{r["name"]}" href="png/{r["name"]}.png"><img loading="lazy" width="160" height="160" src="png/{r["name"]}.png"><span>{r["name"]}</span></a>' for r in rows)
+    (out/'index.html').write_text('''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Original Turtle / 2048 Variants</title><style>*{box-sizing:border-box}body{background:#101e25;color:#d8ebdf;margin:0;font:15px system-ui}header{padding:40px 5vw}h1{font-size:clamp(28px,5vw,52px);letter-spacing:-1px}p{color:#a6c5b9;line-height:1.8}input{background:#213a38;color:white;border:1px solid #53746b;padding:14px;border-radius:10px;width:min(500px,100%)}main{padding:0 5vw 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:18px}.card{padding:12px;background:#1c302f;border:1px solid #355047;border-radius:14px;text-decoration:none;color:#bedccc}.card img{width:100%;height:auto;border-radius:10px;image-rendering:pixelated}.card span{display:block;margin-top:10px;font-size:11px;overflow-wrap:anywhere}a{color:#b3e9cf}[hidden]{display:none!important}.original{float:right;width:96px;image-rendering:pixelated}</style><header><a href="original/original.png"><img class="original" src="original/original.png" alt="Unchanged original"></a><p>TURTLELAUNCHER / ORIGINAL SHAPE EDITION</p><h1>Same turtle. New worlds.</h1><p>2,048 variations using the actual original turtle pixels.<br>No redrawing, new anatomy, shell patterns, poses, stretching or flipping.<br>16 turtle palettes × 16 backgrounds × 8 surrounding decoration styles.<br><a href="original/original.png">Untouched original</a> · <a href="original/extracted-turtle.png">Original transparent turtle</a></p><input id="search" placeholder="Filter: original, ocean, moonrise, stars…" aria-label="Filter"><p id="count">2,048 icons</p></header><main>'''+cards+'''</main><script>const cards=[...document.querySelectorAll('.card')];document.querySelector('#search').addEventListener('input',e=>{let n=0;cards.forEach(c=>{c.hidden=!c.dataset.name.includes(e.target.value.toLowerCase());if(!c.hidden)n++});document.querySelector('#count').textContent=n+' icons'});</script></html>''')
+    preview=Image.new('RGB',(1440,1690),'#101e25');d=ImageDraw.Draw(preview)
+    fontpath='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+    big=ImageFont.truetype(fontpath,40); small=ImageFont.truetype(fontpath,13)
+    d.text((32,22),'SAME TURTLE. NEW WORLDS.',font=big,fill='#d8ebdf')
+    d.text((34,79),'2,048 icons • actual original turtle pixels • 16 palettes • no changes to shape or details',font=small,fill='#abc9bc')
+    d.text((34,104),'64 samples below. Untouched original and offline gallery included in ZIP.',font=small,fill='#abc9bc')
+    for n,(name,image) in enumerate(samples):
+        x,y=32+(n%8)*176,146+(n//8)*190
+        preview.paste(image.resize((160,160),Image.Resampling.NEAREST),(x,y))
+        d.text((x,y+164),name[:20],font=small,fill='#abc9bc')
+    preview.save(out/'PREVIEW.jpg',quality=94)
+    (out/'README.txt').write_text('''TURTLELAUNCHER — ORIGINAL SHAPE EDITION (V2)
 
-Open index.html in a browser after extracting the ZIP to browse and filter.
+2,048 new variants + byte-for-byte unchanged original icon.
+Open index.html after extracting to browse and filter offline.
 
-png/       2,048 new 512 x 512 pixel-art app-icon concepts, RGB PNG.
-svg/       2,048 matching scalable vectors (pixel geometry, not embedded PNGs).
-original/  Unmodified repository launcher PNG and full turtle WebP artwork.
-PREVIEW.jpg  A sample of 64 icons (not the entire collection).
-manifest.csv / manifest.json  Names, design parameters, pixel and silhouette hashes.
+png/: 2,048 512x512 PNGs. svg/: 2,048 matching pixel-vector SVGs.
+original/original.png: unchanged repository launcher icon.
+original/extracted-turtle.png: actual turtle, transparent background, no redraw.
+source-palettes/: the same exact turtle in 16 color palettes.
+PREVIEW.jpg: 64 samples. manifest.csv / manifest.json: complete catalog.
 
-These are procedurally drawn designs inspired by the existing pixel turtle.
-They vary anatomy, pose, shell pattern, accessories, theme and background.
-All 2,048 pixel hashes AND binary foreground silhouette hashes are unique.
-The generator checks both before packaging. Color differences alone are not
-used as the uniqueness criterion. Subjective resemblance is still possible
-within a related turtle-icon family; these are not 2,048 unrelated brands.
+Every turtle uses the SAME position, shape, silhouette, pixel regions, face,
+eye, shell, legs and tail as the original. No flipping, rotation, new poses,
+new anatomy, drawing over the turtle, or replacement shell patterns.
+Only 1:1 color palette substitutions are allowed. Palette Original keeps the
+original turtle colors. Decorations stay outside a four-pixel safety margin.
 
-SVGs are crisp vector pixel art, not smooth Bezier illustrations.
-PNGs have opaque square backgrounds. These are design concepts, not an
-Android adaptive-icon installation pack. No app resources were replaced.
-
-The original artwork is from Endiq-jar/TurtleLauncher; the repository license
-is included as LICENSE.repository. No separate trademark rights are granted.
-Reproduce using tools/generate_turtle_icon_pack.py (Python + Pillow).
+16 palettes x 16 scene backgrounds x 8 decoration styles = 2,048 icons.
+All 2,048 full images have unique pixel hashes. All turtle alpha hashes must
+be IDENTICAL. Every turtle pixel is checked against its palette source.
+This is a family of variants of ONE logo, not 2,048 different turtle shapes.
+Generated procedurally with Pillow, not by an image model. Original is from
+Endiq-jar/TurtleLauncher. Repository license included; no trademark rights
+are granted. These are artwork PNGs, not an Android adaptive-icon installer.
 ''')
-    shutil.copyfile(ROOT / 'LICENSE', out / 'LICENSE.repository')
-    archive = out.parent / 'TurtleLauncher-2048-icons-plus-original.zip'
-    with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+    shutil.copyfile(ROOT/'LICENSE',out/'LICENSE.repository')
+    archive=out.parent/'TurtleLauncher-2048-same-turtle-v2.zip'
+    with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for path in sorted(out.rglob('*')):
-            if path.is_file():
-                z.write(path, Path('TurtleLauncher-Icon-Pack') / path.relative_to(out))
+            if path.is_file():z.write(path,Path('TurtleLauncher-Same-Turtle-V2')/path.relative_to(out))
     with zipfile.ZipFile(archive) as z:
         assert z.testzip() is None
-        assert len([n for n in z.namelist() if '/png/' in n]) == 2048
-        assert len([n for n in z.namelist() if '/svg/' in n]) == 2048
-        assert z.read('TurtleLauncher-Icon-Pack/original/original.png') == original.read_bytes()
-    print(f'Validated {len(hashes)} unique images and {len(silhouettes)} unique silhouettes.')
-    print(f'ZIP: {archive} ({archive.stat().st_size / 1024**2:.1f} MiB)')
+        assert len([n for n in z.namelist() if '/png/' in n])==2048
+        assert len([n for n in z.namelist() if '/svg/' in n])==2048
+        assert z.read('TurtleLauncher-Same-Turtle-V2/original/original.png')==(ROOT/'TurtleLauncher/src/main/res/mipmap-xxxhdpi/ic_launcher.png').read_bytes()
+    print(f'PASS: {len(seen)} unique images. All 2,048 turtles preserve original geometry and pixel details.')
+    print(f'{archive}: {archive.stat().st_size/1024**2:.1f} MiB')
 
-
-if __name__ == '__main__':
-    main()
+if __name__=='__main__':main()

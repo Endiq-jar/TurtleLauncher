@@ -123,9 +123,9 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
             val entries = mutableListOf(LogoEntry(null, getString(R.string.custom_logo_default)))
             entries.addAll(files.map { LogoEntry(it, displayName(it)) })
             entries
-        }.ended(TaskExecutors.getAndroidUI()) { entries: List<LogoEntry> ->
+        }.ended(TaskExecutors.getAndroidUI()) { entries: List<LogoEntry>? ->
             if (!isAdded) return@ended
-            adapter?.replaceAll(entries)
+            adapter?.replaceAll(entries.orEmpty())
         }.execute()
     }
 

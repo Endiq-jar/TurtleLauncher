@@ -60,7 +60,11 @@ class LogoEntryAdapter(
 
         fun bind(entry: LogoEntry) {
             name.text = entry.displayName
-            check.visibility = if (entry.settingValue == selectedValue) View.VISIBLE else View.INVISIBLE
+            val isSelected = entry.settingValue == selectedValue
+            check.visibility = if (isSelected) View.VISIBLE else View.INVISIBLE
+            itemView.setBackgroundResource(
+                if (isSelected) R.drawable.background_item_selected else R.drawable.background_item_unselected
+            )
 
             val glide = Glide.with(thumb)
             if (entry.file != null) {

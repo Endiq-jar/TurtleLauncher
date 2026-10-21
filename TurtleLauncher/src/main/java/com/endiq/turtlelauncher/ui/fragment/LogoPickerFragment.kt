@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import com.endiq.anim.AnimPlayer
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.FragmentLogoPickerBinding
@@ -37,6 +37,10 @@ import java.io.File
 class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
     companion object {
         const val TAG: String = "LogoPickerFragment"
+        // Static column count (matches ScreenshotsGalleryActivity's GRID_COLUMNS
+        // convention) rather than a width-derived one - the launcher is always
+        // sensorLandscape, so a fixed count is fine and keeps this simple.
+        private const val GRID_COLUMNS = 6
     }
 
     private lateinit var binding: FragmentLogoPickerBinding
@@ -80,7 +84,7 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
         binding.returnButton.setOnClickListener { ZHTools.onBackPressed(requireActivity()) }
         binding.logoAddButton.setOnClickListener { openDocumentLauncher.launch(arrayOf("image/*")) }
 
-        binding.logoRecycler.layoutManager = LinearLayoutManager(requireContext())
+        binding.logoRecycler.layoutManager = GridLayoutManager(requireContext(), GRID_COLUMNS)
         adapter = LogoEntryAdapter(
             mutableListOf(),
             thumbnailCornerRadiusPx = resources.getDimensionPixelSize(R.dimen.radius_item),

@@ -105,11 +105,20 @@ public final class ZHTools {
         return new File(PathManager.DIR_CUSTOM_MOUSE, customMouse);
     }
 
+    /**
+     * The logo to show everywhere the launcher's turtle logo appears: the user's picked logo,
+     * or the built-in turtle when nothing is picked (or the picked file can't be decoded).
+     */
     public synchronized static Drawable customLogo(Context context) {
+        Drawable custom = customLogoOrNull();
+        if (custom != null) return custom;
+        return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_turtle_full, context.getTheme());
+    }
+
+    /** The user's picked logo as a drawable, or null when the built-in turtle should be used. */
+    public static Drawable customLogoOrNull() {
         File logoFile = getCustomLogo();
-        if (logoFile == null) {
-            return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_turtle_full, context.getTheme());
-        }
+        if (logoFile == null) return null;
         return Drawable.createFromPath(logoFile.getAbsolutePath());
     }
 

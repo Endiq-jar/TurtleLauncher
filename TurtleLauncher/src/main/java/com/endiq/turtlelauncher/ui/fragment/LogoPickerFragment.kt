@@ -14,6 +14,7 @@ import com.endiq.anim.AnimPlayer
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.FragmentLogoPickerBinding
 import com.endiq.turtlelauncher.feature.LogoPackUnpacker
+import com.endiq.turtlelauncher.feature.logo.HomeScreenIcon
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.task.Task
 import com.endiq.turtlelauncher.task.TaskExecutors
@@ -91,6 +92,16 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
             selectedValue = AllSettings.selectedLogo.getValue()
         ) { entry ->
             AllSettings.selectedLogo.put(entry.settingValue).save()
+            // Also switch the home-screen icon when this logo is one of the presets.
+            val appContext = requireContext().applicationContext
+            val bundled = HomeScreenIcon.isBundled(appContext, entry.file?.name)
+            val switched = HomeScreenIcon.apply(appContext, entry.file?.name)
+            val message = when {
+                !switched -> R.string.logo_home_icon_failed
+                bundled -> R.string.logo_home_icon_changed
+                else -> R.string.logo_home_icon_default
+            }
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
         binding.logoRecycler.adapter = adapter
 
@@ -119,7 +130,11 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
 
     private fun loadData() {
         Task.runTask {
-            val files = logoDir().listFiles { f -> f.isFile }?.sortedBy { it.name } ?: emptyList()
+            // Logos that can be the home-screen icon come first; imported ones follow by name.
+            val bundled = LogoPackUnpacker.bundledNames(requireContext().applicationContext)
+            val files = logoDir().listFiles { f -> f.isFile }
+                ?.sortedWith(compareBy({ it.name !in bundled }, { it.name }))
+                ?: emptyList()
             val entries = mutableListOf(LogoEntry(null, getString(R.string.custom_logo_default)))
             entries.addAll(files.map { LogoEntry(it, displayName(it)) })
             entries

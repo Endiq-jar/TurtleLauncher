@@ -41,10 +41,8 @@ class SplashActivity : BaseActivity() {
 
         binding.titleText.text = InfoDistributor.APP_NAME
         binding.splashText.setText(R.string.splash_screen_desc)
-        // A user-picked logo (LogoPickerFragment) overrides the default turtle artwork.
-        com.endiq.turtlelauncher.utils.ZHTools.getCustomLogo()?.let {
-            binding.splashLogo.setImageDrawable(com.endiq.turtlelauncher.utils.ZHTools.customLogo(this))
-        }
+        // A user-picked logo (LogoPickerFragment) is applied by LogoImageView/AnimatedLogo.bind
+        // from the inflated layout, so it also survives the hover/press animation.
         // Assemble the splash top-to-bottom: turtle logo, name, status text, button.
         binding.root.post {
             TurtleTransitions.stagger(

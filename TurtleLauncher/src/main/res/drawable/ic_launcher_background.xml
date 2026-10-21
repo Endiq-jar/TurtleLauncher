@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pastel-green field behind the turtle in the adaptive icon -->
+<!-- Night-sky gradient behind the turtle, matching the logo artwork -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
         android:angle="270"
-        android:startColor="#FFB8EFCB"
-        android:endColor="#FF74C793"
+        android:startColor="#FF66AAB1"
+        android:endColor="#FF17494A"
         android:type="linear" />
 </shape>

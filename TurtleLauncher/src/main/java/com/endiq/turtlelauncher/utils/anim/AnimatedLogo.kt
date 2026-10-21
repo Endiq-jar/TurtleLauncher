@@ -15,6 +15,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.task.TaskExecutors
+import com.endiq.turtlelauncher.utils.ZHTools
 
 /**
  * Finite animated WebP logos (grass block, command block, classic blocks, app title, turtle).
@@ -53,12 +54,17 @@ object AnimatedLogo {
     fun bind(view: ImageView, resource: Int) {
         AnimatedIcon.clear(view) // a view is either a WebP logo or a vector icon
         clear(view)
-        val static = ContextCompat.getDrawable(view.context, resource)
+        // The turtle is the launcher's replaceable logo: when the user picked another one
+        // (LogoPickerFragment) it replaces the artwork, and its animated WebP is skipped,
+        // since that frame set belongs to the built-in turtle and would bring it back.
+        val picked = if (resource == R.drawable.ic_turtle_full) ZHTools.customLogoOrNull() else null
+        val static = picked ?: ContextCompat.getDrawable(view.context, resource)
         view.setImageDrawable(static)
         // Kinetic layer: every logo has its own slow transform style (glide, bounce,
         // twist, shimmer, rattle, sway). It is independent of WebP decoding, so logos
         // still move on API 26/27 and while the animated frames are loading.
         AnimatedIcon.bindLogoMotion(view, resource)
+        if (picked != null) return
         prepare(view, resource, static) { drawable ->
             view.setImageDrawable(drawable)
             // AnimatedIconButton.setImageDrawable() drops its icon request, so make

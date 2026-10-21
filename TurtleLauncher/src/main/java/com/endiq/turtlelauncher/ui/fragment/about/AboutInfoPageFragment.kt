@@ -84,7 +84,7 @@ class AboutInfoPageFragment() : Fragment(R.layout.fragment_about_info_page) {
 
         mAboutData.add(
             AboutItemBean(
-                resources.getDrawable(R.drawable.ic_turtle_full, requireContext().theme),
+                com.endiq.turtlelauncher.utils.ZHTools.customLogo(requireContext()),
                 "Endiq",
                 getString(R.string.about_current_developer),
                 AboutItemButtonBean(requireActivity(), getString(R.string.about_access_link), "https://github.com/Endiq-jar")
@@ -92,7 +92,7 @@ class AboutInfoPageFragment() : Fragment(R.layout.fragment_about_info_page) {
         )
         mAboutData.add(
             AboutItemBean(
-                resources.getDrawable(R.drawable.ic_turtle_full, requireContext().theme),
+                com.endiq.turtlelauncher.utils.ZHTools.customLogo(requireContext()),
                 "Turtle Launcher",
                 getString(R.string.about_TurtleLauncher_desc),
                 AboutItemButtonBean(requireActivity(), "Github", UrlManager.URL_HOME)

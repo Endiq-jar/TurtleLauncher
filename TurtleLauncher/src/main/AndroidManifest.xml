@@ -57,10 +57,84 @@
             android:screenOrientation="sensorLandscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Home-screen icon choices. Exactly one of these launcher entries is enabled at a
+             time; HomeScreenIcon switches them when a logo is picked. The default is enabled
+             in the manifest; the rest start disabled. -->
+        <activity-alias
+            android:name="com.endiq.turtlelauncher.HomeIconDefault"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:label="Turtle Launcher"
+            android:targetActivity="com.endiq.turtlelauncher.ui.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.endiq.turtlelauncher.HomeIconPreset1"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/home_icon_preset_1"
+            android:label="Turtle Launcher"
+            android:targetActivity="com.endiq.turtlelauncher.ui.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.endiq.turtlelauncher.HomeIconPreset2"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/home_icon_preset_2"
+            android:label="Turtle Launcher"
+            android:targetActivity="com.endiq.turtlelauncher.ui.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.endiq.turtlelauncher.HomeIconPreset3"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/home_icon_preset_3"
+            android:label="Turtle Launcher"
+            android:targetActivity="com.endiq.turtlelauncher.ui.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.endiq.turtlelauncher.HomeIconPreset4"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/home_icon_preset_4"
+            android:label="Turtle Launcher"
+            android:targetActivity="com.endiq.turtlelauncher.ui.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.endiq.turtlelauncher.HomeIconPreset5"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/home_icon_preset_5"
+            android:label="Turtle Launcher"
+            android:targetActivity="com.endiq.turtlelauncher.ui.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <activity
             android:name="net.endiq.launcher.MissingStorageActivity"
             android:exported="false"

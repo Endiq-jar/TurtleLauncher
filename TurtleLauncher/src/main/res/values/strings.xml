@@ -1539,4 +1539,7 @@
     <string name="discord_sdk_notice_description">Discord Social SDK is proprietary software provided by Discord under its own terms, not under the launcher GPL license. The open-source notices below apply to its third-party components. SDK terms: https://support-dev.discord.com/hc/en-us/articles/30225844245271-Discord-Social-SDK-Terms</string>
     <string name="discord_open_app">Open Discord</string>
     <string name="discord_open_failed">Could not open Discord. Open the Discord app manually.</string>
+    <string name="logo_home_icon_changed">Home screen icon changed to this logo</string>
+    <string name="logo_home_icon_default">Logo applied. Only the preset logos can be the home screen icon, so it was reset to the default.</string>
+    <string name="logo_home_icon_failed">Logo applied, but the home screen icon could not be changed</string>
 </resources>

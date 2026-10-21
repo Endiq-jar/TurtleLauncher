@@ -93,10 +93,12 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
         ) { entry ->
             AllSettings.selectedLogo.put(entry.settingValue).save()
             // Also switch the home-screen icon when this logo is one of the presets.
-            val switched = HomeScreenIcon.apply(requireContext().applicationContext, entry.file?.name)
+            val appContext = requireContext().applicationContext
+            val bundled = HomeScreenIcon.isBundled(appContext, entry.file?.name)
+            val switched = HomeScreenIcon.apply(appContext, entry.file?.name)
             val message = when {
                 !switched -> R.string.logo_home_icon_failed
-                HomeScreenIcon.isPreset(entry.file?.name) -> R.string.logo_home_icon_changed
+                bundled -> R.string.logo_home_icon_changed
                 else -> R.string.logo_home_icon_default
             }
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
@@ -128,9 +130,10 @@ class LogoPickerFragment : FragmentWithAnim(R.layout.fragment_logo_picker) {
 
     private fun loadData() {
         Task.runTask {
-            // Home-screen presets first, so they're easy to find; the rest follow by name.
+            // Logos that can be the home-screen icon come first; imported ones follow by name.
+            val bundled = LogoPackUnpacker.bundledNames(requireContext().applicationContext)
             val files = logoDir().listFiles { f -> f.isFile }
-                ?.sortedWith(compareBy({ !HomeScreenIcon.isPreset(it.name) }, { it.name }))
+                ?.sortedWith(compareBy({ it.name !in bundled }, { it.name }))
                 ?: emptyList()
             val entries = mutableListOf(LogoEntry(null, getString(R.string.custom_logo_default)))
             entries.addAll(files.map { LogoEntry(it, displayName(it)) })

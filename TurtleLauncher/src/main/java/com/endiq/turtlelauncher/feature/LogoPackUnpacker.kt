@@ -86,6 +86,13 @@ object LogoPackUnpacker {
         }
     }
 
+    /** File names the last bundled-pack extraction wrote (empty if it never ran). */
+    @JvmStatic
+    fun bundledNames(context: Context): Set<String> =
+        runCatching {
+            File(context.filesDir, MANIFEST_NAME).readLines().filter { it.isNotBlank() }.toHashSet()
+        }.getOrDefault(emptySet())
+
     /** Deletes exactly the files the previous bundled-pack extraction wrote (per its manifest). */
     private fun purgePreviousPack(context: Context, dir: File) {
         val manifest = File(context.filesDir, MANIFEST_NAME)

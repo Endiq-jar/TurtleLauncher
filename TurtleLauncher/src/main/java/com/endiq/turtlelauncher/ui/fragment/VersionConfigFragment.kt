@@ -33,7 +33,6 @@ import com.endiq.turtlelauncher.ui.dialog.TipDialog
 import com.endiq.turtlelauncher.ui.subassembly.adapter.ObjectSpinnerAdapter
 import com.endiq.turtlelauncher.utils.ZHTools
 import com.endiq.turtlelauncher.utils.file.FileTools.Companion.copyFileInBackground
-import com.skydoves.powerspinner.DefaultSpinnerAdapter
 import com.skydoves.powerspinner.OnSpinnerItemSelectedListener
 import com.skydoves.powerspinner.PowerSpinnerView
 import net.endiq.launcher.Tools
@@ -301,7 +300,7 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = rendererNames.indexOf(config.getRenderer())
                     if (index != -1) rendererIndex = index
                 }
-                val rendererAdapter = DefaultSpinnerAdapter(rendererSpinner)
+                val rendererAdapter = ObjectSpinnerAdapter<String>(rendererSpinner) { it }
                 rendererAdapter.setItems(renderList)
                 rendererSpinner.setSpinnerAdapter(rendererAdapter)
                 rendererSpinner.selectItemByIndex(rendererIndex)
@@ -320,7 +319,7 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = driverNames.indexOf(config.getDriver())
                     if (index != -1) driverIndex = index
                 }
-                val driverAdapter = DefaultSpinnerAdapter(driverSpinner)
+                val driverAdapter = ObjectSpinnerAdapter<String>(driverSpinner) { it }
                 driverAdapter.setItems(driverList)
                 driverSpinner.setSpinnerAdapter(driverAdapter)
                 driverSpinner.selectItemByIndex(driverIndex)
@@ -353,7 +352,7 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = runtimes.indexOf(Runtime(selectedRuntime))
                     if (index != -1) jvmIndex = index
                 }
-                val runtimeAdapter = DefaultSpinnerAdapter(runtimeSpinner)
+                val runtimeAdapter = ObjectSpinnerAdapter<String>(runtimeSpinner) { it }
                 runtimeAdapter.setItems(runtimeNames)
                 runtimeSpinner.setSpinnerAdapter(runtimeAdapter)
                 runtimeSpinner.selectItemByIndex(jvmIndex)

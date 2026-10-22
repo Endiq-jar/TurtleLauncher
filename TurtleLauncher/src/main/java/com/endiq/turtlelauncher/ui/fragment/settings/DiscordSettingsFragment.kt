@@ -83,11 +83,15 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
     }
 
     private fun showCustomizationMenu() {
+        val enabledLabel = getString(
+            if (AllSettings.discordRpcPresenceEnabled.getValue()) R.string.discord_rpc_on else R.string.discord_rpc_off
+        )
         val elapsedLabel = getString(
             if (AllSettings.discordRpcShowElapsed.getValue()) R.string.discord_rpc_on else R.string.discord_rpc_off
         )
         val typeLabel = typeLabel(AllSettings.discordRpcType.getValue())
         val items = arrayOf(
+            getString(R.string.discord_rpc_presence_enabled) + ": " + enabledLabel,
             getString(R.string.discord_rpc_details),
             getString(R.string.discord_rpc_state),
             getString(R.string.discord_rpc_elapsed) + ": " + elapsedLabel,
@@ -101,84 +105,93 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
             getString(R.string.discord_rpc_button1_url),
             getString(R.string.discord_rpc_button2),
             getString(R.string.discord_rpc_button2_url),
+            getString(R.string.discord_rpc_preview),
             getString(R.string.discord_rpc_reset_customization)
         )
         AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
             .setTitle(R.string.discord_rpc_customization_title)
             .setItems(items) { _, which ->
                 when (which) {
-                    0 -> showCustomizationTextEditor(
+                    0 -> {
+                        AllSettings.discordRpcPresenceEnabled
+                            .put(!AllSettings.discordRpcPresenceEnabled.getValue()).save()
+                        refreshRpcState()
+                    }
+                    1 -> showCustomizationTextEditor(
                         R.string.discord_rpc_details,
                         R.string.discord_rpc_details_hint,
                         AllSettings.discordRpcDetails.getValue()
                     ) { AllSettings.discordRpcDetails.put(it).save() }
-                    1 -> showCustomizationTextEditor(
+                    2 -> showCustomizationTextEditor(
                         R.string.discord_rpc_state,
                         R.string.discord_rpc_state_hint,
                         AllSettings.discordRpcState.getValue()
                     ) { AllSettings.discordRpcState.put(it).save() }
-                    2 -> {
+                    3 -> {
                         AllSettings.discordRpcShowElapsed
                             .put(!AllSettings.discordRpcShowElapsed.getValue()).save()
                         refreshRpcState()
                     }
-                    3 -> showTypePicker()
-                    4 -> showCustomizationTextEditor(
+                    4 -> showTypePicker()
+                    5 -> showCustomizationTextEditor(
                         R.string.discord_rpc_application_id,
                         R.string.discord_rpc_application_id_hint,
                         AllSettings.discordRpcApplicationId.getValue(),
                         inputType = InputType.TYPE_CLASS_NUMBER,
                         showTemplateHelp = false
                     ) { AllSettings.discordRpcApplicationId.put(it).save() }
-                    5 -> showCustomizationTextEditor(
+                    6 -> showCustomizationTextEditor(
                         R.string.discord_rpc_large_image,
                         R.string.discord_rpc_large_image_hint,
                         AllSettings.discordRpcLargeImage.getValue(),
                         showTemplateHelp = false
                     ) { AllSettings.discordRpcLargeImage.put(it).save() }
-                    6 -> showCustomizationTextEditor(
+                    7 -> showCustomizationTextEditor(
                         R.string.discord_rpc_large_text,
                         R.string.discord_rpc_large_text_hint,
                         AllSettings.discordRpcLargeText.getValue()
                     ) { AllSettings.discordRpcLargeText.put(it).save() }
-                    7 -> showCustomizationTextEditor(
+                    8 -> showCustomizationTextEditor(
                         R.string.discord_rpc_small_image,
                         R.string.discord_rpc_small_image_hint,
                         AllSettings.discordRpcSmallImage.getValue(),
                         showTemplateHelp = false
                     ) { AllSettings.discordRpcSmallImage.put(it).save() }
-                    8 -> showCustomizationTextEditor(
+                    9 -> showCustomizationTextEditor(
                         R.string.discord_rpc_small_text,
                         R.string.discord_rpc_small_text_hint,
                         AllSettings.discordRpcSmallText.getValue()
                     ) { AllSettings.discordRpcSmallText.put(it).save() }
-                    9 -> showCustomizationTextEditor(
+                    10 -> showCustomizationTextEditor(
                         R.string.discord_rpc_button1,
                         R.string.discord_rpc_button1_hint,
                         AllSettings.discordRpcButton1.getValue(),
                         showTemplateHelp = false
-                    ) { AllSettings.discordRpcButton1.put(it).save() }
-                    10 -> showCustomizationTextEditor(
+                    ) { AllSettings.discordRpcButton1.put(it).save(); warnIfButtonIncomplete(1) }
+                    11 -> showCustomizationTextEditor(
                         R.string.discord_rpc_button1_url,
                         R.string.discord_rpc_button1_url_hint,
                         AllSettings.discordRpcButton1Url.getValue(),
                         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI,
-                        showTemplateHelp = false
-                    ) { AllSettings.discordRpcButton1Url.put(it).save() }
-                    11 -> showCustomizationTextEditor(
+                        showTemplateHelp = false,
+                        urlField = true
+                    ) { AllSettings.discordRpcButton1Url.put(it).save(); warnIfButtonIncomplete(1) }
+                    12 -> showCustomizationTextEditor(
                         R.string.discord_rpc_button2,
                         R.string.discord_rpc_button2_hint,
                         AllSettings.discordRpcButton2.getValue(),
                         showTemplateHelp = false
-                    ) { AllSettings.discordRpcButton2.put(it).save() }
-                    12 -> showCustomizationTextEditor(
+                    ) { AllSettings.discordRpcButton2.put(it).save(); warnIfButtonIncomplete(2) }
+                    13 -> showCustomizationTextEditor(
                         R.string.discord_rpc_button2_url,
                         R.string.discord_rpc_button2_url_hint,
                         AllSettings.discordRpcButton2Url.getValue(),
                         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI,
-                        showTemplateHelp = false
-                    ) { AllSettings.discordRpcButton2Url.put(it).save() }
-                    13 -> resetCustomization()
+                        showTemplateHelp = false,
+                        urlField = true
+                    ) { AllSettings.discordRpcButton2Url.put(it).save(); warnIfButtonIncomplete(2) }
+                    14 -> showPreview()
+                    15 -> resetCustomization()
                 }
             }
             .show()
@@ -191,6 +204,7 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
         inputType: Int = InputType.TYPE_CLASS_TEXT,
         required: Boolean = false,
         showTemplateHelp: Boolean = true,
+        urlField: Boolean = false,
         onSave: (String) -> Unit
     ) {
         val builder = EditTextDialog.Builder(requireContext())
@@ -200,13 +214,65 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
             .setInputType(inputType)
             .setConfirmText(R.string.generic_save)
             .setConfirmListener { editText, _ ->
-                onSave(editText.text.toString().trim())
+                val value = editText.text.toString().trim()
+                if (urlField && value.isNotEmpty()) {
+                    // Normalize (assume https:// when no scheme was typed - the #1 cause of a
+                    // "saved but the button never shows up" report) and reject anything that
+                    // still isn't a usable http(s) link instead of silently storing it.
+                    val normalized = com.endiq.turtlelauncher.feature.discord.DiscordPresencePayload.buttonUrl(value)
+                    if (normalized == null) {
+                        editText.error = getString(R.string.discord_rpc_invalid_url)
+                        return@setConfirmListener false
+                    }
+                    onSave(normalized)
+                } else {
+                    onSave(value)
+                }
                 refreshRpcState()
                 true
             }
         if (required) builder.setAsRequired()
         if (showTemplateHelp) builder.setMessage(R.string.discord_rpc_template_help)
         builder.showDialog()
+    }
+
+    /** Discord only shows a button when it has both a label and a link - tell the user
+     * when they've only filled in one half, instead of leaving them to wonder why nothing
+     * shows up in their Discord profile. */
+    private fun warnIfButtonIncomplete(button: Int) {
+        val label = if (button == 1) AllSettings.discordRpcButton1.getValue() else AllSettings.discordRpcButton2.getValue()
+        val url = if (button == 1) AllSettings.discordRpcButton1Url.getValue() else AllSettings.discordRpcButton2Url.getValue()
+        if (label.isNotBlank() != url.isNotBlank()) {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.discord_rpc_button_incomplete, button),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun showPreview() {
+        val version = "1.21.1"
+        fun render(template: String, fallback: String) = template.ifBlank { fallback }
+            .replace("{version}", version)
+            .replace("{activity}", "Playing Minecraft")
+        val lines = mutableListOf<String>()
+        lines += render(AllSettings.discordRpcDetails.getValue(), "")
+        lines += render(AllSettings.discordRpcState.getValue(), "")
+        if (AllSettings.discordRpcShowElapsed.getValue()) lines += getString(R.string.discord_rpc_preview_elapsed)
+        listOf(
+            AllSettings.discordRpcButton1.getValue() to AllSettings.discordRpcButton1Url.getValue(),
+            AllSettings.discordRpcButton2.getValue() to AllSettings.discordRpcButton2Url.getValue(),
+        ).forEachIndexed { index, (label, url) ->
+            val shown = label.isNotBlank() && com.endiq.turtlelauncher.feature.discord.DiscordPresencePayload.buttonUrl(url) != null
+            lines += "[" + getString(if (index == 0) R.string.discord_rpc_button1 else R.string.discord_rpc_button2) +
+                (if (shown) ": $label -> $url" else ": " + getString(R.string.discord_rpc_preview_button_hidden))
+        }
+        AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+            .setTitle(R.string.discord_rpc_preview_title)
+            .setMessage(lines.filter { it.isNotBlank() }.joinToString("\n"))
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun showTypePicker() {
@@ -240,6 +306,7 @@ class DiscordSettingsFragment : FragmentWithAnim(R.layout.settings_fragment_disc
     )
 
     private fun resetCustomization() {
+        AllSettings.discordRpcPresenceEnabled.reset()
         AllSettings.discordRpcName.reset()
         AllSettings.discordRpcDetails.reset()
         AllSettings.discordRpcState.reset()

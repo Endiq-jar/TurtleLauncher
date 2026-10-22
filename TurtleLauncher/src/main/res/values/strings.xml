@@ -1328,6 +1328,13 @@
     <string name="discord_rpc_reset_done">Discord presence customization reset</string>
     <string name="discord_rpc_on">On</string>
     <string name="discord_rpc_off">Off</string>
+    <string name="discord_rpc_presence_enabled">Rich Presence</string>
+    <string name="discord_rpc_invalid_url">Enter a valid link, e.g. discord.gg/yourserver or https://example.com</string>
+    <string name="discord_rpc_button_incomplete">Button %1$d needs both a label and a link to show up in Discord</string>
+    <string name="discord_rpc_preview">Preview current presence</string>
+    <string name="discord_rpc_preview_title">Presence preview</string>
+    <string name="discord_rpc_preview_elapsed">⏱ elapsed time shown</string>
+    <string name="discord_rpc_preview_button_hidden">hidden - needs both a label and a valid link</string>
     <string name="music_delete_track">Remove</string>
 
     <string name="whats_new_title">🐢 What\'s New in TurtleLauncher</string>

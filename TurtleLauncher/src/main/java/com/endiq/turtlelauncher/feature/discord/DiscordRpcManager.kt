@@ -85,6 +85,11 @@ object DiscordRpcManager {
             owner = lease
             runCatching {
                 Settings.refreshSettings()
+                if (!AllSettings.discordRpcPresenceEnabled.getValue()) {
+                    active = false
+                    shutdown(resetSession = false)
+                    return@execute
+                }
                 // Erase unused legacy credentials rather than leaving them in private storage.
                 val legacyKeys = listOf("discordRpcToken", "discordAccessToken", "discordRefreshToken",
                     "discordUserId", "discordUsername", "discordAvatarHash")
@@ -128,6 +133,11 @@ object DiscordRpcManager {
         executor.execute {
             if (active) {
                 Settings.refreshSettings()
+                if (!AllSettings.discordRpcPresenceEnabled.getValue()) {
+                    active = false
+                    shutdown(resetSession = false)
+                    return@execute
+                }
                 publish()
             }
         }

@@ -22,6 +22,8 @@ class AllSettings {
         @JvmStatic val musicPlaylistJson = StringSettingUnit("musicPlaylistJson", "[]")
 
         // ── Discord ────────────────────────────────────────────────────────────
+        /** Master switch - when off, the SDK is never started/published and any live activity is cleared. */
+        @JvmStatic val discordRpcPresenceEnabled = BooleanSettingUnit("discordRpcPresenceEnabled", true)
         @JvmStatic val discordRpcName = StringSettingUnit("discordRpcName", "Turtle Launcher")
         @JvmStatic val discordRpcDetails = StringSettingUnit("discordRpcDetails", "Playing {version}")
         @JvmStatic val discordRpcState = StringSettingUnit("discordRpcState", "Launched with Turtle Launcher")

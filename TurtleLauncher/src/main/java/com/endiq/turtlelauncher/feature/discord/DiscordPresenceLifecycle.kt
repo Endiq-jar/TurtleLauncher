@@ -42,8 +42,11 @@ object DiscordPresenceLifecycle : Application.ActivityLifecycleCallbacks {
         client?.refresh()
     }
     override fun onActivityStopped(activity: Activity) {
-        visible.remove(activity)
-        if (visible.isEmpty()) handler.postDelayed(close, 2000L)
+        // Previously this scheduled client?.close() 2s after the last LauncherActivity
+        // went invisible, which tore down the whole Discord connection the moment the
+        // launcher was merely backgrounded (Home button, app switcher, etc). Keep the
+        // presence connection alive in the background - only onActivityDestroyed below
+        // (the activity actually being torn down, not just hidden) releases it.
     }
     override fun onActivityDestroyed(activity: Activity) {
         visible.remove(activity)

@@ -71,7 +71,7 @@
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
                         app:spinner_popup_max_height="@dimen/_240sdp"
-                        tools:paddingVertical="@dimen/_12sdp" />
+                        android:paddingVertical="@dimen/_12sdp" />
 
                     <TextView
                         android:id="@+id/control_title"
@@ -165,7 +165,7 @@
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
                         app:spinner_popup_max_height="@dimen/_240sdp"
-                        tools:paddingVertical="@dimen/_12sdp" />
+                        android:paddingVertical="@dimen/_12sdp" />
 
                     <TextView
                         android:id="@+id/driver_title"
@@ -188,7 +188,7 @@
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
                         app:spinner_popup_max_height="@dimen/_240sdp"
-                        tools:paddingVertical="@dimen/_12sdp" />
+                        android:paddingVertical="@dimen/_12sdp" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -301,7 +301,7 @@
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
                         app:spinner_popup_max_height="@dimen/_240sdp"
-                        tools:paddingVertical="@dimen/_12sdp" />
+                        android:paddingVertical="@dimen/_12sdp" />
 
                 </LinearLayout>
             </LinearLayout>

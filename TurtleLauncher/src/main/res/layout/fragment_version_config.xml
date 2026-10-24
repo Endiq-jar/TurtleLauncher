@@ -62,7 +62,7 @@
                     <com.skydoves.powerspinner.PowerSpinnerView
                         android:id="@+id/isolation_type"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/_40sdp"
+                        android:layout_height="wrap_content"
                         android:background="@drawable/background_item"
                         android:padding="@dimen/padding_heavy"
                         app:layout_constraintTop_toBottomOf="@id/isolation_type_title"
@@ -70,8 +70,7 @@
                         app:spinner_arrow_tint="@color/turtle_primary_text"
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp"
-                        android:paddingVertical="@dimen/_12sdp" />
+                        app:spinner_popup_max_height="@dimen/_240sdp" />
 
                     <TextView
                         android:id="@+id/control_title"
@@ -156,7 +155,7 @@
                     <com.skydoves.powerspinner.PowerSpinnerView
                         android:id="@+id/renderer_spinner"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/_40sdp"
+                        android:layout_height="wrap_content"
                         android:background="@drawable/background_item"
                         android:padding="@dimen/padding_heavy"
                         app:layout_constraintTop_toBottomOf="@+id/renderer_title"
@@ -164,8 +163,7 @@
                         app:spinner_arrow_tint="@color/turtle_primary_text"
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp"
-                        android:paddingVertical="@dimen/_12sdp" />
+                        app:spinner_popup_max_height="@dimen/_240sdp" />
 
                     <TextView
                         android:id="@+id/driver_title"
@@ -179,7 +177,7 @@
                     <com.skydoves.powerspinner.PowerSpinnerView
                         android:id="@+id/driver_spinner"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/_40sdp"
+                        android:layout_height="wrap_content"
                         android:background="@drawable/background_item"
                         android:padding="@dimen/padding_heavy"
                         app:layout_constraintTop_toBottomOf="@+id/driver_title"
@@ -187,8 +185,7 @@
                         app:spinner_arrow_tint="@color/turtle_primary_text"
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp"
-                        android:paddingVertical="@dimen/_12sdp" />
+                        app:spinner_popup_max_height="@dimen/_240sdp" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -293,15 +290,14 @@
                     <com.skydoves.powerspinner.PowerSpinnerView
                         android:id="@+id/runtime_spinner"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/_40sdp"
+                        android:layout_height="wrap_content"
                         android:background="@drawable/background_item"
                         android:padding="@dimen/padding_heavy"
                         android:textColor="@color/turtle_primary_text"
                         app:spinner_arrow_tint="@color/turtle_primary_text"
                         app:spinner_item_height="@dimen/_40sdp"
                         app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp"
-                        android:paddingVertical="@dimen/_12sdp" />
+                        app:spinner_popup_max_height="@dimen/_240sdp" />
 
                 </LinearLayout>
             </LinearLayout>

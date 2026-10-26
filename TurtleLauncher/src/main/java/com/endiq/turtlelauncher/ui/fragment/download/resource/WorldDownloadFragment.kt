@@ -27,6 +27,14 @@ class WorldDownloadFragment(parentFragment: Fragment? = null) : AbstractResource
 ) {
     private var openDocumentLauncher: ActivityResultLauncher<Any>? = null
 
+    /**
+     * Modrinth (the only download platform right now) has no world/archive project
+     * type, so this tab can never list results. Say that plainly - the tab used to
+     * fire a doomed search and then show a generic failure - and keep the
+     * "install from local .zip" button as the supported way in.
+     */
+    override fun remoteSearchUnavailableMessage(): Int = R.string.download_world_remote_unavailable
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         openDocumentLauncher = registerForActivityResult(OpenDocumentWithExtension("zip")) { uris: List<Uri>? ->

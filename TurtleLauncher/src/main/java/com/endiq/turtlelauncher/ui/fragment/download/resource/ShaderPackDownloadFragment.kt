@@ -2,6 +2,7 @@ package com.endiq.turtlelauncher.ui.fragment.download.resource
 
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -11,6 +12,7 @@ import com.endiq.turtlelauncher.feature.download.enums.Classify
 import com.endiq.turtlelauncher.feature.download.enums.Platform
 import com.endiq.turtlelauncher.feature.download.platform.AbstractPlatformHelper.Companion.getShaderPackPath
 import com.endiq.turtlelauncher.feature.download.utils.CategoryUtils
+import com.endiq.turtlelauncher.renderer.CurrentRenderer
 import com.endiq.turtlelauncher.task.Task
 import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.utils.ZHTools
@@ -42,6 +44,23 @@ class ShaderPackDownloadFragment(parentFragment: Fragment? = null) : AbstractRes
                     dialog.dismiss()
                 }.execute()
             }
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // Downloading a shader pack is only half the job: it renders only under a
+        // renderer that supports shaders (VirGL / Zink / MobileGlues). Without this
+        // the pack downloads "successfully" and then does nothing in game, which
+        // reads as a broken download. download_shader_pack_renderer_warning existed
+        // but was never shown anywhere.
+        if (!CurrentRenderer.supportsShaderPacks(requireContext())) {
+            showWarningBanner(
+                getString(
+                    R.string.download_shader_pack_renderer_warning,
+                    CurrentRenderer.name(requireContext())
+                )
+            )
         }
     }
 

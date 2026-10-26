@@ -20,6 +20,10 @@ class FileItemBean(
      *  (so AnimatedIconView binds its hover/press/click style) instead of [image].
      *  Used by the pastel-green file-type family - see FileTypeIcons. */
     @JvmField var fileIconRes: Int = 0
+    /** The icon a mod jar ships for itself, once extracted by ModIconLoader.
+     *  0/null while unknown, so the row keeps the generic jar glyph until the
+     *  background extraction posts its result. */
+    @JvmField var modIconFile: File? = null
     @JvmField var file: File? = null
     @JvmField var isHighlighted: Boolean = false
     @JvmField var isCanCheck: Boolean = true

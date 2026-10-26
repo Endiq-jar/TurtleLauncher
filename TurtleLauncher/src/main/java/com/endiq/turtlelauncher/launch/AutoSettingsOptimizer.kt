@@ -4,9 +4,7 @@ import android.content.Context
 import android.opengl.EGL14
 import android.os.Build
 import com.endiq.turtlelauncher.feature.log.Logging
-import com.endiq.turtlelauncher.renderer.renderers.FreedrenoRenderer
-import com.endiq.turtlelauncher.renderer.renderers.MobileGluesRenderer
-import com.endiq.turtlelauncher.renderer.renderers.ZinkRenderer
+import com.endiq.turtlelauncher.renderer.Renderers
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.utils.platform.BatterySaverManager
 import com.endiq.turtlelauncher.utils.platform.ThermalManager
@@ -24,101 +22,111 @@ object AutoSettingsOptimizer {
      * @param mcVersionId   Minecraft version string, e.g. "26.1.2" (empty = legacy path)
      */
     fun apply(context: Context, mcVersionId: String = "") {
-        applyGraphics(context, mcVersionId)
+        // One profile for both halves, so the renderer choice and the resolution
+        // level can never be based on two different readings of the device.
+        val profile = buildProfile(context, mcVersionId)
+        applyGraphics(context, profile)
         // Fast Boot must not cache a cold launch's thermal decision for all later sessions.
-        applyPerformanceTier(context)
+        applyPerformanceTier(context, profile)
         if (mcVersionId.isNotEmpty()) {
             AllSettings.lastOptimizedVersion.put(mcVersionId).save()
         }
     }
 
-    private fun applyGraphics(context: Context, mcVersionId: String) {
-        val gpu = detectGpu()
-        val isMC26Plus = LaunchArgs.isMinecraftVersionAtLeast(mcVersionId, 26, 1, 0)
+    /**
+     * Everything the graphics policy is allowed to look at, gathered once.
+     * Kept separate from the decisions (which live in [GraphicsTuning]) so the
+     * decisions stay unit-testable without an Android device.
+     */
+    internal fun buildProfile(context: Context, mcVersionId: String): GraphicsTuning.DeviceProfile {
         @Suppress("DEPRECATION")
         val display = if (Build.VERSION.SDK_INT >= 30) context.display
             else (context.getSystemService(Context.WINDOW_SERVICE) as? android.view.WindowManager)?.defaultDisplay
-        val refreshRate = display?.refreshRate?.toInt() ?: 60
         val metrics = context.resources.displayMetrics
+        val powerSaving = BatterySaverManager.isPowerSaveMode(context)
+        return GraphicsTuning.DeviceProfile(
+            gpuName = detectGpu(),
+            totalRamMb = Tools.getTotalDeviceMemory(context).toLong(),
+            screenPixels = metrics.widthPixels.toLong() * metrics.heightPixels.toLong(),
+            refreshRateHz = display?.refreshRate?.toInt() ?: 60,
+            hasVulkan = Tools.checkVulkanSupport(context.packageManager),
+            minecraftVersion = mcVersionId,
+            benchmarkScore = AllSettings.lastGraphicsBenchmark.getValue()
+                .substringBefore('|').toIntOrNull()?.takeIf { it > 0 },
+            severeThermal = ThermalManager.isSeverelyThrottled(context),
+            powerSaving = powerSaving
+        )
+    }
+
+    private fun applyGraphics(context: Context, profile: GraphicsTuning.DeviceProfile) {
+        val isMC26Plus = LaunchArgs.isMinecraftVersionAtLeast(profile.minecraftVersion, 26, 1, 0)
         val cpuCores = Runtime.getRuntime().availableProcessors()
         // Queried via ActivityManager, not a live GL context (none exists yet at this point -
         // the game hasn't started) - the standard, correct way to get this ahead of time.
         val glEsVersionPacked = (context.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager)
             ?.deviceConfigurationInfo?.reqGlEsVersion ?: 0
         val glEsVersion = "${glEsVersionPacked shr 16}.${glEsVersionPacked and 0xffff}"
-        Logging.i(TAG, "Detected GPU: $gpu | Manufacturer: ${Build.MANUFACTURER} | Android ${Build.VERSION.SDK_INT} | " +
-                "MC26+: $isMC26Plus | Refresh rate: ${refreshRate}Hz | Resolution: ${metrics.widthPixels}x${metrics.heightPixels} | " +
-                "CPU cores: $cpuCores | OpenGL ES: $glEsVersion")
-
-        val hasVulkan = Tools.checkVulkanSupport(context.packageManager)
-
-        val (rendererUuid, driver) = when {
-            gpu.contains("adreno", ignoreCase = true) -> {
-                // Freedreno is explicitly "optimized primarily for Qualcomm Adreno GPUs"
-                // (see FreedrenoRenderer's doc comment) - a better match than a generic
-                // GL4ES build now that it's an actual available option.
-                val driverChoice = if (hasVulkan) "Turnip" else "default"
-                Pair(FreedrenoRenderer().getUniqueIdentifier(), driverChoice)
-            }
-            gpu.contains("mali", ignoreCase = true) -> {
-                if (hasVulkan) {
-                    Pair(ZinkRenderer().getUniqueIdentifier(), "default")
-                } else {
-                    // MobileGlues, not LTW: matches the launcher default (see class doc).
-                    Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
-                }
-            }
-            gpu.contains("powervr", ignoreCase = true) ||
-            gpu.contains("sgx", ignoreCase = true) ||
-            gpu.contains("apple", ignoreCase = true) -> {
-                // MobileGlues on every version, including MC 26.1+ - the Zink pick this used to make
-                // for 26.x avoided the CubeMap GL_INVALID_ENUM crash but lands in the opposite
-                // problem on 26.3+: Amethyst-Android's release notes list MobileGlues and Krypton
-                // Wrapper as crashing there because of how SDL now creates its EGL window, and MC
-                // 26.3 hangs on PowerVR unless the renderer is MobileGlues (see CrashAnalyzer's rule
-                // for that log shape). MobileGlues is also what the ANGLE hook has to sit under:
-                // GL -> MobileGlues -> ANGLE -> Vulkan, with the same wrapper on every MC version.
-                Logging.i(
-                    TAG,
-                    "PowerVR/Apple GPU: selecting MobileGlues (MC26+: $isMC26Plus, Vulkan: $hasVulkan); " +
-                        "ANGLE sits under it when the ANGLE hook applies"
-                )
-                Pair(MobileGluesRenderer().getUniqueIdentifier(), "default")
-            }
-            else -> {
-                if (isMC26Plus && hasVulkan) {
-                    Logging.i(TAG, "MC 26.1+ unknown GPU: attempting Zink to avoid CubeMap GL_INVALID_ENUM crash")
-                    Pair(ZinkRenderer().getUniqueIdentifier(), "default")
-                } else {
-                    Logging.i(TAG, "Unknown GPU, leaving renderer/driver unchanged")
-                    return
-                }
-            }
-        }
+        Logging.i(TAG, "Detected GPU: ${profile.gpuName} | Manufacturer: ${Build.MANUFACTURER} | Android ${Build.VERSION.SDK_INT} | " +
+                "MC26+: $isMC26Plus | Refresh rate: ${profile.refreshRateHz}Hz | Resolution: ${profile.screenPixels}px | " +
+                "CPU cores: $cpuCores | OpenGL ES: $glEsVersion | benchmark: ${profile.benchmarkScore ?: "not run"}")
 
         val previous = AllSettings.lastAutoGraphics.getValue().split('|')
         val currentRenderer = AllSettings.renderer.getValue()
         val currentDriver = AllSettings.driver.getValue()
+        // Renderer and driver are tracked separately: a user who pinned the driver can
+        // still benefit from an automatic renderer choice, and vice versa. The old code
+        // treated them as one switch and gave up on both.
         val mayChangeRenderer = PerformancePolicy.mayAutoTune(
             currentRenderer, previous.getOrNull(0)?.takeIf { it.isNotBlank() }, AllSettings.renderer.defaultValue
         )
         val mayChangeDriver = PerformancePolicy.mayAutoTune(
             currentDriver, previous.getOrNull(1)?.takeIf { it.isNotBlank() }, AllSettings.driver.defaultValue
         )
-        if (!mayChangeRenderer || !mayChangeDriver) {
-            Logging.i(TAG, "Keeping manually selected renderer/driver instead of overwriting it with auto recommendations")
-            return
+
+        val available = runCatching {
+            Renderers.getCompatibleRenderers(context).second.map { it.getRendererId() }.toSet()
+        }.getOrElse {
+            Logging.w(TAG, "Could not enumerate compatible renderers: ${it.message}")
+            null
         }
-        Logging.i(TAG, "Auto-selected renderer=$rendererUuid driver=$driver")
-        if (currentRenderer != rendererUuid) AllSettings.renderer.put(rendererUuid).save()
-        if (currentDriver != driver) AllSettings.driver.put(driver).save()
-        val snapshot = "$rendererUuid|$driver"
-        if (AllSettings.lastAutoGraphics.getValue() != snapshot) AllSettings.lastAutoGraphics.put(snapshot).save()
+
+        val recommendation = GraphicsTuning.recommend(
+            profile = profile,
+            currentRenderer = currentRenderer,
+            currentDriver = currentDriver,
+            mayChangeRenderer = mayChangeRenderer,
+            mayChangeDriver = mayChangeDriver,
+            isAvailable = { id -> available?.contains(id) ?: false },
+            inVersionRange = { id, version -> GraphicsTuning.withinCatalogRange(id, version) }
+        )
+
+        var appliedRenderer: String? = null
+        var appliedDriver: String? = null
+        recommendation.rendererUniqueId?.let { uuid ->
+            if (currentRenderer != uuid) {
+                AllSettings.renderer.put(uuid).save()
+                appliedRenderer = uuid
+            }
+        }
+        recommendation.driver?.let { driver ->
+            if (currentDriver != driver) {
+                AllSettings.driver.put(driver).save()
+                appliedDriver = driver
+            }
+        }
+        Logging.i(TAG, "Auto graphics: ${recommendation.reason}; " +
+                "renderer=${appliedRenderer ?: "kept $currentRenderer"}, driver=${appliedDriver ?: "kept $currentDriver"}")
+
+        // Store only the fields this run actually owns; a field left at its user-chosen
+        // value stays blank in the snapshot so it is never treated as an automatic pick.
+        val snapshot = "${appliedRenderer ?: previous.getOrNull(0).orEmpty()}|" +
+            (appliedDriver ?: previous.getOrNull(1).orEmpty())
+        if (snapshot != "|" && AllSettings.lastAutoGraphics.getValue() != snapshot) {
+            AllSettings.lastAutoGraphics.put(snapshot).save()
+        }
     }
 
-    private fun applyPerformanceTier(context: Context) {
-        val totalRamMb = Tools.getTotalDeviceMemory(context)
-
+    private fun applyPerformanceTier(context: Context, profile: GraphicsTuning.DeviceProfile) {
         val appliedRam: Int
         if (!AllSettings.autoRamCalculator.getValue()) {
             appliedRam = AllSettings.ramAllocation.value.getValue()
@@ -138,9 +146,9 @@ object AutoSettingsOptimizer {
             }
         }
 
-        val powerSaving = BatterySaverManager.isPowerSaveMode(context)
+        val powerSaving = profile.powerSaving
         val throttled = ThermalManager.isThrottled(context) || powerSaving
-        val severelyThrottled = ThermalManager.isSeverelyThrottled(context)
+        val severelyThrottled = profile.severeThermal
         if (throttled) {
             Logging.i(TAG, "Capping FPS-boost profile regardless of RAM tier (thermal severe=$severelyThrottled, batterySaver=$powerSaving)")
         }
@@ -156,7 +164,10 @@ object AutoSettingsOptimizer {
                 previous[setting.key] = value.toString()
             }
         }
-        tune(AllSettings.resolutionRatio, PerformancePolicy.resolutionPercent(totalRamMb.toLong(), severelyThrottled))
+        // Resolution now comes from the shared graphics policy: benchmark score when it
+        // has been run, RAM tier otherwise, minus penalties for large/high-refresh
+        // displays. Still clamped to the same 60..100% range as before.
+        tune(AllSettings.resolutionRatio, GraphicsTuning.resolutionPercent(profile))
         // Never equate a large RAM capacity with permission to uncap the GPU or pre-touch
         // a large heap. These features remain available as explicit user choices.
         tune(AllSettings.unlimitedFps, false)
@@ -180,9 +191,10 @@ object AutoSettingsOptimizer {
     }
 
     /**
-     * Best-effort GPU name for the auto-picker. Internal rather than private because
-     * Used to identify the hardware for automatic settings.
-     * instead of running a second EGL probe of its own.
+     * Best-effort GPU name for the auto-picker: the live `GL_RENDERER`/`GL_VENDOR`
+     * pair when an EGL probe succeeds, otherwise the weaker `ro.hardware.egl`
+     * property. Internal so the settings screen can show the same value the picker
+     * used, instead of running a second EGL probe of its own.
      */
     internal fun detectGpu(): String {
         queryGlRenderer()?.let { return it }

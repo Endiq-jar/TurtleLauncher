@@ -363,6 +363,41 @@
                         android:layout_centerVertical="true" />
                 </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
 
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/graphicsBenchmark_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/graphicsBenchmark_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/setting_graphics_benchmark_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/graphicsBenchmark_summary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/graphicsBenchmark_title"
+                        android:layout_alignParentStart="true"
+                        android:text="@string/setting_graphics_benchmark_desc" />
+
+                    <TextView
+                        android:id="@+id/graphicsBenchmark_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/graphicsBenchmark_summary"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/setting_graphics_benchmark_not_run"
+                        android:textColor="@color/turtle_primary_text" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+
                 <!-- GL4ES LIBGL_* JNI tweaks moved to Phone Settings > JNI Optimization (four
                      granular switches instead of this one combined toggle). -->
 

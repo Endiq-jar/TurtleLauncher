@@ -77,6 +77,13 @@ class AllSettings {
         /** Auto Settings Optimizer: automatically tunes renderer/driver, RAM allocation, resolution scale, and FPS boost flags for this device at launch. */
         @JvmStatic val autoSettingsOptimizer    = BooleanSettingUnit("autoSettingsOptimizer", true)
 
+        /**
+         * Result of the last on-device GPU benchmark, stored as "score|timestampMs".
+         * Empty means "never run". AutoSettingsOptimizer reads the score to pick a
+         * resolution level; without it the picker falls back to the RAM tier.
+         */
+        @JvmStatic val lastGraphicsBenchmark    = StringSettingUnit("lastGraphicsBenchmark", "")
+
         // ── Control ───────────────────────────────────────────────────────────
         @JvmStatic val disableGestures          = BooleanSettingUnit("disableGestures", true)
         @JvmStatic val disableDoubleTap         = BooleanSettingUnit("disableDoubleTap", false)

@@ -16,6 +16,7 @@ import com.endiq.turtlelauncher.databinding.FragmentDownloadBinding
 import com.endiq.turtlelauncher.event.value.DownloadPageEvent
 import com.endiq.turtlelauncher.event.value.DownloadPageEvent.PageSwapEvent.Companion.IN
 import com.endiq.turtlelauncher.event.value.DownloadPageEvent.PageSwapEvent.Companion.OUT
+import com.endiq.turtlelauncher.feature.download.enums.Classify
 import com.endiq.turtlelauncher.ui.fragment.download.resource.ModDownloadFragment
 import com.endiq.turtlelauncher.ui.fragment.download.resource.ModPackDownloadFragment
 import com.endiq.turtlelauncher.ui.fragment.download.resource.ResourcePackDownloadFragment
@@ -53,7 +54,7 @@ class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
         }
 
         val initialTab = arguments?.getInt(ARG_INITIAL_TAB, -1) ?: -1
-        if (initialTab >= 0) {
+        if (initialTab in DownloadPages.entries.indices) {
             binding.downloadViewpager.setCurrentItem(initialTab, false)
             binding.classifyTab.onPageSelected(initialTab)
         }
@@ -94,18 +95,23 @@ class DownloadFragment : FragmentWithAnim(R.layout.fragment_download) {
     }
 
     private inner class ViewPagerAdapter(private val hostFragment: Fragment): FragmentStateAdapter(hostFragment.requireActivity()) {
-        override fun getItemCount(): Int = 5
+        // Tab order and page order come from the same list (DownloadPages), which
+        // fragment_download.xml mirrors - see DownloadPages' doc comment for the
+        // World/Shader Pack mix-up this prevents.
+        override fun getItemCount(): Int = DownloadPages.entries.size
+
         override fun createFragment(position: Int): Fragment {
-            return when(position) {
-                1 -> ModPackDownloadFragment(hostFragment).apply {
+            return when (DownloadPages.classifyAt(position)) {
+                Classify.MODPACK -> ModPackDownloadFragment(hostFragment).apply {
                     val query = this@DownloadFragment.arguments?.getString(ARG_INITIAL_QUERY)
                     this.arguments = Bundle().apply {
                         query?.let { putString(ModPackDownloadFragment.ARG_INITIAL_QUERY, it) }
                     }
                 }
-                2 -> ResourcePackDownloadFragment(hostFragment)
-                3 -> WorldDownloadFragment(hostFragment)
-                4 -> ShaderPackDownloadFragment(hostFragment)
+
+                Classify.RESOURCE_PACK -> ResourcePackDownloadFragment(hostFragment)
+                Classify.WORLD -> WorldDownloadFragment(hostFragment)
+                Classify.SHADER_PACK -> ShaderPackDownloadFragment(hostFragment)
                 else -> ModDownloadFragment(hostFragment)
             }
         }

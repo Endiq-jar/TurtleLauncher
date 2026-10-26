@@ -118,32 +118,6 @@
                 android:padding="@dimen/_8sdp">
 
                 <com.endiq.turtlelauncher.ui.view.AnimatedIconView
-                    android:id="@+id/shader_pack_image"
-                    android:layout_width="@dimen/_20sdp"
-                    android:layout_height="@dimen/_20sdp"
-                    android:layout_centerVertical="true"
-                    android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"
-                    android:scaleX="0.95"
-                    android:scaleY="0.95"
-                    app:srcCompat="@drawable/ic_profile_shader_pack" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/_6sdp"
-                    android:layout_toEndOf="@+id/shader_pack_image"
-                    android:text="@string/download_classify_shader_pack"
-                    android:textColor="@color/turtle_primary_text" />
-            </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
-
-            <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/_8sdp">
-
-                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
                     android:id="@+id/world_image"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
@@ -161,6 +135,32 @@
                     android:layout_marginStart="@dimen/_6sdp"
                     android:layout_toEndOf="@+id/world_image"
                     android:text="@string/download_classify_world"
+                    android:textColor="@color/turtle_primary_text" />
+            </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+
+            <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/_8sdp">
+
+                <com.endiq.turtlelauncher.ui.view.AnimatedIconView
+                    android:id="@+id/shader_pack_image"
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitCenter"
+                    android:scaleX="0.95"
+                    android:scaleY="0.95"
+                    app:srcCompat="@drawable/ic_profile_shader_pack" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/_6sdp"
+                    android:layout_toEndOf="@+id/shader_pack_image"
+                    android:text="@string/download_classify_shader_pack"
                     android:textColor="@color/turtle_primary_text" />
             </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
         </com.angcyo.tablayout.DslTabLayout>

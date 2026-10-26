@@ -90,6 +90,9 @@ jobs:
         run: |
           python3 tests/check_resources.py
           python3 tests/check_launcher_art.py
+          python3 tests/check_icons.py
+          python3 tests/check_download_tabs.py
+          python3 tests/check_translations.py
           python3 tests/check_glfw_overlay.py
           tests/native/run.sh
           tests/native/run-discord.sh

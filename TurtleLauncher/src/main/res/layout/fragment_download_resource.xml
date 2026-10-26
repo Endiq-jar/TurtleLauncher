@@ -172,6 +172,22 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
+                    <!-- Shader support depends on the renderer, not on the download.
+                         ShaderPackDownloadFragment fills this in (and makes it visible)
+                         when the selected renderer cannot render shader packs. -->
+                    <TextView
+                        android:id="@+id/renderer_warning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/_4sdp"
+                        android:layout_marginBottom="@dimen/_6sdp"
+                        android:background="@drawable/background_card"
+                        android:padding="@dimen/_8sdp"
+                        android:textColor="@color/turtle_primary_text"
+                        android:textSize="@dimen/_10ssp"
+                        android:visibility="gone"
+                        tools:text="@string/download_shader_pack_renderer_warning" />
+
                     <com.endiq.turtlelauncher.ui.view.AnimButton
                         android:id="@+id/install_button"
                         android:layout_width="match_parent"

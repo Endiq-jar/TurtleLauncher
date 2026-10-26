@@ -133,6 +133,17 @@
     <string name="setting_renderer_shader_cache_desc">Reuse compiled shaders between launches (Zink/VirGL/VGPU/Freedreno). Turn off only to rule out a corrupted cache.</string>
     <string name="setting_renderer_debug_logging_title">Renderer Debug Logging</string>
     <string name="setting_renderer_debug_logging_desc">Log renderer selection and environment variables to the in-app log, for diagnosing a renderer that won\'t start.</string>
+    <!-- Graphics benchmark (Optimization settings) -->
+    <string name="setting_graphics_benchmark_title">Graphics benchmark</string>
+    <string name="setting_graphics_benchmark_desc">Measures how fast this GPU fills the screen, then uses the score to pick a safer render resolution. Takes about two seconds.</string>
+    <string name="setting_graphics_benchmark_not_run">Not run yet</string>
+    <string name="setting_graphics_benchmark_running">Benchmarking…</string>
+    <string name="setting_graphics_benchmark_result">Score %1$d (%2$s)\n%3$d megapixels/s, %4$d ms\n%5$s</string>
+    <string name="setting_graphics_benchmark_failed">Benchmark unavailable: %1$s</string>
+    <string name="setting_graphics_benchmark_apply">Apply recommendation</string>
+    <string name="setting_graphics_benchmark_applied">Recommendation applied. Launch the game to see it.</string>
+    <string name="setting_graphics_benchmark_current">GPU: %1$s | Renderer: %2$s</string>
+    <string name="setting_graphics_benchmark_resolution">Recommended render resolution: %1$d%%</string>
     <string name="setting_jni_batching_title">JNI Batching</string>
     <string name="setting_jni_batching_desc">Batches GL calls together instead of dispatching each one across the JNI boundary immediately (GL4ES-family renderers only).</string>
     <string name="setting_jni_cached_references_title">Cached JNI References</string>
@@ -1076,6 +1087,8 @@
     <string name="download_search_failed">Failed to search for resources!</string>
     <string name="download_search_no_result">No related resources found!</string>
     <string name="download_search_platform_not_supported">The current platform does not support downloading this type of resource, or does not support this category filter!</string>
+    <!-- Shown on the Download > World tab: Modrinth has no world/archive project type. -->
+    <string name="download_world_remote_unavailable">World downloads are not available from Modrinth, so this tab cannot list results. Use "Install from local" to add a world .zip you already downloaded.</string>
     <string name="download_install_custom_name">Custom File Name</string>
     <string name="download_install_download_file">Downloading resource file (%.2fMB / %.2fMB, speed: %s/s)</string>
     <string name="download_install_dependencies">%s has the following dependencies or incompatible mods</string>

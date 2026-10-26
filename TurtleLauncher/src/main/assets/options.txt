@@ -67,7 +67,6 @@ narratorHotkey:true
 resourcePacks:[]
 incompatibleResourcePacks:[]
 lastServer:
-lang:en_mm
 chatVisibility:0
 chatOpacity:1.0
 chatLineSpacing:0.0

@@ -120,16 +120,24 @@ class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fr
             ""
         )
 
-        // Every language in the launcher's list (the same one the game-language picker uses),
-        // plus "Follow System Language" first.
+        // Only the languages the launcher actually has translations for
+        // (values-* folders), plus "Follow System Language" first - see
+        // res/values/launcher_languages.xml for why this is not the game's
+        // ~130-language list anymore.
         ListSettingsWrapper(
             context,
             AllSettings.launcherLanguage,
             binding.launcherLanguageLayout,
             binding.launcherLanguageTitle,
             binding.launcherLanguageValue,
-            R.array.all_game_language, R.array.all_game_language_value
-        )
+            R.array.launcher_language_names, R.array.launcher_language_values
+        ).setOnItemChangedListener {
+            // No reboot prompt: LocaleHelper is applied in attachBaseContext, so
+            // recreating the activity re-reads the setting and rebuilds every
+            // screen in the chosen language right away. Posted so the picker
+            // dialog finishes dismissing against the old activity first.
+            binding.root.post { activity?.recreate() }
+        }
 
         ListSettingsWrapper(
             context,

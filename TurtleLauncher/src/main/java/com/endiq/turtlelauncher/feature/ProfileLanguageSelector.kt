@@ -50,9 +50,31 @@ class ProfileLanguageSelector {
             return VersionRange.atMost(VersionNumber.asVersion("16w32a")).contains(VersionNumber.asVersion(versionName))
         }
 
+        /**
+         * The value a freshly installed profile starts with (see assets/options.txt).
+         * It is not a language Minecraft actually ships, so the game falls back to
+         * English - which is exactly what "no language chosen yet" means here.
+         */
+        private const val BUNDLED_DEFAULT_LANG = "en_mm"
+
         @JvmStatic
         fun setGameLanguage(version: Version, overridden: Boolean) {
-            if (MCOptions.containsKey("lang") && !overridden) return
+            val existing = MCOptions.get("lang")
+            // Respect a language the player picked inside Minecraft's own Options
+            // screen - unless they asked Settings to override it. The old check was
+            // just `containsKey("lang")`, and since the bundled options.txt ships
+            // `lang:en_mm`, that made Settings -> Game -> Language a no-op on every
+            // install: the key was always present, so the chosen language was never
+            // written. Treating only a non-default value as a real choice fixes it,
+            // including on devices whose options.txt was copied before this change.
+            val chosenInGame = !existing.isNullOrEmpty() && existing != BUNDLED_DEFAULT_LANG
+            if (chosenInGame && !overridden) {
+                Logging.i(
+                    "ProfileLanguageSelector",
+                    "Keeping the language chosen in-game: $existing (enable gameLanguageOverridden to override it)"
+                )
+                return
+            }
             val language = getLanguage(version, AllSettings.setGameLanguage.getValue())
             Logging.i("ProfileLanguageSelector", "The game language has been set to: $language")
             MCOptions.set("lang", language)

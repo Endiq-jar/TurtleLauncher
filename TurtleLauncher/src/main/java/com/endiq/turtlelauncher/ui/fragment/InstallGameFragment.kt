@@ -252,7 +252,14 @@ class InstallGameFragment : FragmentWithAnim(R.layout.fragment_install_game), Vi
                 cleanroomLayout -> swapFragment(DownloadCleanroomFragment::class.java, DownloadCleanroomFragment.TAG)
                 modpackLayout -> {
                     val bundle = android.os.Bundle().apply {
-                        putInt(com.endiq.turtlelauncher.ui.fragment.DownloadFragment.ARG_INITIAL_TAB, 1) // ModPack tab
+                        // Modpack tab, resolved from the shared page list instead of a
+                        // hardcoded index (see DownloadPages).
+                        putInt(
+                            com.endiq.turtlelauncher.ui.fragment.DownloadFragment.ARG_INITIAL_TAB,
+                            com.endiq.turtlelauncher.ui.fragment.DownloadPages.indexOf(
+                                com.endiq.turtlelauncher.feature.download.enums.Classify.MODPACK
+                            )
+                        )
                         putString(com.endiq.turtlelauncher.ui.fragment.DownloadFragment.ARG_INITIAL_QUERY, FEATURED_MODPACK_QUERY)
                     }
                     ZHTools.swapFragmentWithAnim(this@InstallGameFragment, com.endiq.turtlelauncher.ui.fragment.DownloadFragment::class.java,

@@ -273,7 +273,34 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
                 binding.modToggle.setVisibility(View.GONE);
             }
 
-            if (file != null && file.isFile() && ImageUtils.isImage(file)) {
+            final boolean isModJar = file != null && file.isFile() &&
+                    (file.getName().endsWith(com.endiq.turtlelauncher.feature.mod.ModUtils.JAR_FILE_SUFFIX) ||
+                     file.getName().endsWith(com.endiq.turtlelauncher.feature.mod.ModUtils.DISABLE_JAR_FILE_SUFFIX));
+
+            if (isModJar) {
+                // Mod manager rows show the icon the jar ships (fabric.mod.json "icon",
+                // mods.toml logoFile, or a root icon.png), falling back to the generic
+                // jar glyph. Extraction happens off the UI thread and rebinds this row
+                // once the icon is cached - see ModIconLoader.
+                AnimatedLogo.clear(binding.image);
+                AnimatedIcon.clear(binding.image);
+                File modIcon = com.endiq.turtlelauncher.feature.mod.ModIconLoader.cachedIcon(file);
+                if (modIcon != null) {
+                    showModIcon(modIcon, file);
+                } else {
+                    binding.image.setImageResource(fileItemBean.fileIconRes != 0
+                            ? fileItemBean.fileIconRes
+                            : R.drawable.ic_filetype_jar);
+                    binding.image.setAlpha(file.getName().endsWith(
+                            com.endiq.turtlelauncher.feature.mod.ModUtils.DISABLE_JAR_FILE_SUFFIX) ? 0.45f : 1f);
+                    com.endiq.turtlelauncher.feature.mod.ModIconLoader.requestIcon(file, icon -> {
+                        // The row may have been recycled onto another mod while the jar was read.
+                        if (icon == null || mFileItemBean == null || mFileItemBean.file != file) return;
+                        mFileItemBean.modIconFile = icon;
+                        showModIcon(icon, file);
+                    });
+                }
+            } else if (file != null && file.isFile() && ImageUtils.isImage(file)) {
                 AnimatedLogo.clear(binding.image);
                 AnimatedIcon.clear(binding.image);
                 Glide.with(context).load(file)
@@ -293,6 +320,17 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
                 AnimatedIcon.clear(binding.image);
                 binding.image.setImageDrawable(fileItemBean.image);
             }
+        }
+
+        /** Paint a mod's own icon into the row's 28dp chip. */
+        private void showModIcon(File icon, File modFile) {
+            binding.image.setAlpha(modFile.getName().endsWith(
+                    com.endiq.turtlelauncher.feature.mod.ModUtils.DISABLE_JAR_FILE_SUFFIX) ? 0.45f : 1f);
+            Glide.with(context)
+                    .load(icon)
+                    .override(binding.image.getWidth(), binding.image.getHeight())
+                    .centerCrop()
+                    .into(new DrawableImageViewTarget(binding.image));
         }
     }
 }

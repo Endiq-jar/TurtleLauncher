@@ -77,6 +77,26 @@ abstract class AbstractResourceDownloadFragment(
 
     abstract fun initInstallButton(installButton: Button)
 
+    /**
+     * Message shown instead of searching when the current platform cannot serve
+     * this tab at all (Modrinth has no world/archive project type). Returning
+     * null (the default) means "this tab searches normally"; see
+     * [com.endiq.turtlelauncher.ui.fragment.DownloadPages.supportsRemoteSearch].
+     */
+    protected open fun remoteSearchUnavailableMessage(): Int? = null
+
+    /**
+     * Optional banner shown at the top of the operation panel. Subclasses use it to
+     * explain something about the *current device* (e.g. "your renderer can't render
+     * shader packs") rather than about the search result.
+     */
+    protected fun showWarningBanner(message: String) {
+        binding.rendererWarning.apply {
+            text = message
+            visibility = View.VISIBLE
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -239,11 +259,16 @@ abstract class AbstractResourceDownloadFragment(
         }
     }
 
-    private fun onSearchError(error: Int) {
+    private fun onSearchError(error: Int, detail: String? = null) {
         binding.apply {
             statusText.text = when (error) {
+                // A platform may refuse a classify/category on purpose ("Modrinth has no
+                // world downloads", "this platform does not support the X category"). Show
+                // that reason instead of the generic "search failed", which used to read
+                // as a broken tab.
+                ERROR_PLATFORM_NOT_SUPPORTED -> detail?.takeIf { it.isNotBlank() }
+                    ?: getString(R.string.download_search_platform_not_supported)
                 ERROR_INTERNAL -> getString(R.string.download_search_failed)
-                ERROR_PLATFORM_NOT_SUPPORTED -> getString(R.string.download_search_platform_not_supported)
                 else -> getString(R.string.download_search_no_result)
             }
         }
@@ -296,6 +321,7 @@ abstract class AbstractResourceDownloadFragment(
      * Clear the previous search state, then search.
      */
     private fun search() {
+        if (showRemoteSearchUnavailable()) return
         setStatusText(false)
         setRecyclerView(false)
         setLoadingLayout(true)
@@ -315,6 +341,19 @@ abstract class AbstractResourceDownloadFragment(
      */
     private fun checkSearch() {
         if (mInfoAdapter.itemCount == 0) search()
+    }
+
+    /**
+     * Explains an unsupported tab (World on Modrinth) instead of firing a search
+     * that can only fail, and keeps the "install from local .zip" button usable.
+     */
+    private fun showRemoteSearchUnavailable(): Boolean {
+        val message = remoteSearchUnavailableMessage() ?: return false
+        binding.recyclerView.visibility = View.GONE
+        setLoadingLayout(false)
+        binding.statusText.text = getString(message)
+        setStatusText(true)
+        return true
     }
 
     @Subscribe
@@ -385,7 +424,7 @@ abstract class AbstractResourceDownloadFragment(
                     mInfoAdapter.setItems(MOD_ITEMS_EMPTY)
                     Logging.e("SearchTask", Tools.printToString(e))
                     if (e is PlatformNotSupportedException) {
-                        onSearchError(ERROR_PLATFORM_NOT_SUPPORTED)
+                        onSearchError(ERROR_PLATFORM_NOT_SUPPORTED, e.message)
                     } else {
                         onSearchError(ERROR_NO_RESULTS)
                     }

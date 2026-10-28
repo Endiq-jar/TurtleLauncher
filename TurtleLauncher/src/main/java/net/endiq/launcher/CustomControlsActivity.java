@@ -3,6 +3,7 @@ package net.endiq.launcher;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.FrameLayout;
+import com.petterp.floatingx.assist.FxGravity;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -49,7 +50,7 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 
 			if (open) drawerLayout.closeDrawer(drawerNavigationView);
 			else drawerLayout.openDrawer(drawerNavigationView);
-		}, false).setVisibility(true);
+		}, false, FxGravity.LEFT_OR_TOP).setVisibility(true);
 
 		BackgroundManager.setBackgroundImage(this, BackgroundType.CUSTOM_CONTROLS, binding.backgroundView, null);
 

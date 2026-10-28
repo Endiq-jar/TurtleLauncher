@@ -38,8 +38,8 @@ DEFAULT_ALIAS = """        <!-- Home-screen icon choices. Exactly one launcher e
             android:name="com.endiq.turtlelauncher.HomeIconDefault"
             android:enabled="true"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
+            android:icon="@mipmap/home_icon_0018_original_moonrise_stars"
+            android:roundIcon="@mipmap/home_icon_0018_original_moonrise_stars"
             android:label="Turtle Launcher"
             android:targetActivity="com.endiq.turtlelauncher.ui.activity.SplashActivity">
             <intent-filter>

@@ -31,10 +31,11 @@ import android.app.ActivityManager
 import android.content.Context
 import com.endiq.turtlelauncher.feature.turtle.HudRefreshPolicy
 
-class GameMenuViewWrapper(
+class GameMenuViewWrapper @JvmOverloads constructor(
     private val activity: Activity,
     private val listener: View.OnClickListener,
-    private val showInfo: Boolean
+    private val showInfo: Boolean,
+    private val buttonGravity: FxGravity? = null
 ) {
     companion object {
         private const val TAG = "GameMenuViewWrapper"
@@ -416,6 +417,7 @@ class GameMenuViewWrapper(
     }
 
     private fun getCurrentGravity(): FxGravity {
+        buttonGravity?.let { return it }
         return when(AllSettings.gameMenuLocation.getValue()) {
             "left_or_top" -> FxGravity.LEFT_OR_TOP
             "left_or_bottom" -> FxGravity.LEFT_OR_BOTTOM

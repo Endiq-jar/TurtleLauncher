@@ -97,8 +97,8 @@ class AllSettings {
         @JvmStatic val customMouse              = StringSettingUnit("custom_mouse", "")
 
         // ── Logo ──────────────────────────────────────────────────────────────
-        /** Filename under PathManager.DIR_CUSTOM_LOGO, or empty for the built-in default logo. */
-        @JvmStatic val selectedLogo             = StringSettingUnit("selected_logo", "")
+        /** Filename under PathManager.DIR_CUSTOM_LOGO; Moonrise Stars is the fresh-install default. */
+        @JvmStatic val selectedLogo             = StringSettingUnit("selected_logo", "0018-original-moonrise-stars.png")
         /** Whether the bundled logo pack (assets/logo_pack.zip) has already been
          *  extracted into PathManager.DIR_CUSTOM_LOGO. Extraction happens once,
          *  lazily, the first time LogoPickerFragment is opened. Key is suffixed

@@ -8,7 +8,9 @@ import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.doAfterTextChanged
 import com.endiq.anim.AnimPlayer
@@ -300,15 +302,27 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = rendererNames.indexOf(config.getRenderer())
                     if (index != -1) rendererIndex = index
                 }
-                val rendererAdapter = ObjectSpinnerAdapter<String>(rendererSpinner) { it }
-                rendererAdapter.setItems(renderList)
-                rendererSpinner.setSpinnerAdapter(rendererAdapter)
-                rendererSpinner.selectItemByIndex(rendererIndex)
-                rendererSpinner.setOnSpinnerItemSelectedListener(
-                    OnSpinnerItemSelectedListener { _: Int, _: String?, i1: Int, _: String? ->
-                        if (i1 == renderList.size - 1) config.setRenderer("")
-                        else config.setRenderer(rendererNames[i1])
-                    })
+                // PowerSpinner's PopupWindow is rendered as a blank surface on some
+                // landscape/split-screen devices. Keep the same compact spinner field,
+                // but use a bounded native choice dialog for the actual options.
+                rendererSpinner.text = renderList[rendererIndex]
+                rendererSpinner.setOnClickListener {
+                    val selectedIndex = if (config.getRenderer().isEmpty()) {
+                        renderList.lastIndex
+                    } else {
+                        rendererNames.indexOf(config.getRenderer()).takeIf { it >= 0 } ?: renderList.lastIndex
+                    }
+                    showChoiceDialog(
+                        context,
+                        getString(R.string.setting_renderer_title),
+                        renderList,
+                        selectedIndex
+                    ) { index ->
+                        rendererSpinner.text = renderList[index]
+                        if (index == renderList.lastIndex) config.setRenderer("")
+                        else config.setRenderer(rendererNames[index])
+                    }
+                }
 
                 // Driver.
                 val driverNames = DriverPluginManager.getDriverNameList()
@@ -319,15 +333,24 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = driverNames.indexOf(config.getDriver())
                     if (index != -1) driverIndex = index
                 }
-                val driverAdapter = ObjectSpinnerAdapter<String>(driverSpinner) { it }
-                driverAdapter.setItems(driverList)
-                driverSpinner.setSpinnerAdapter(driverAdapter)
-                driverSpinner.selectItemByIndex(driverIndex)
-                driverSpinner.setOnSpinnerItemSelectedListener(
-                    OnSpinnerItemSelectedListener { _: Int, _: String?, i1: Int, _: String? ->
-                        if (i1 == driverList.size - 1) config.setDriver("")
-                        else config.setDriver(driverNames[i1])
-                    })
+                driverSpinner.text = driverList[driverIndex]
+                driverSpinner.setOnClickListener {
+                    val selectedIndex = if (config.getDriver().isEmpty()) {
+                        driverList.lastIndex
+                    } else {
+                        driverNames.indexOf(config.getDriver()).takeIf { it >= 0 } ?: driverList.lastIndex
+                    }
+                    showChoiceDialog(
+                        context,
+                        getString(R.string.setting_driver_title),
+                        driverList,
+                        selectedIndex
+                    ) { index ->
+                        driverSpinner.text = driverList[index]
+                        if (index == driverList.lastIndex) config.setDriver("")
+                        else config.setDriver(driverNames[index])
+                    }
+                }
 
                 // Custom info.
                 customInfoEdit.setText(config.getCustomInfo())
@@ -366,6 +389,43 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     })
             }
         }
+    }
+
+    /**
+     * Shows spinner choices in a normal, content-driven dialog instead of PowerSpinner's
+     * PopupWindow. The latter can show only its background on wide landscape panes, leaving
+     * the user with a blank gray dropdown. Cap width against this Activity's window so the
+     * picker also remains usable in split-screen.
+     */
+    private fun showChoiceDialog(
+        context: Context,
+        title: CharSequence,
+        options: List<String>,
+        selectedIndex: Int,
+        onSelected: (Int) -> Unit
+    ) {
+        if (options.isEmpty()) return
+
+        val dialog = AlertDialog.Builder(context, R.style.CustomAlertDialogTheme)
+            .setTitle(title)
+            .setSingleChoiceItems(options.toTypedArray(), selectedIndex) { shown, which ->
+                if (which in options.indices) onSelected(which)
+                shown.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val density = context.resources.displayMetrics.density
+            val activityWidth = requireActivity().window.decorView.width
+                .takeIf { it > 0 } ?: context.resources.displayMetrics.widthPixels
+            val width = minOf(
+                (560f * density + 0.5f).toInt(),
+                (activityWidth - 32f * density).toInt().coerceAtLeast(1)
+            )
+            dialog.window?.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT)
+        }
+        dialog.show()
     }
 
     private fun save() {

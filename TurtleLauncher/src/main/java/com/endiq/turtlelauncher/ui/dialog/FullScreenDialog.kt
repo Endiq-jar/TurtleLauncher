@@ -1,9 +1,9 @@
 package com.endiq.turtlelauncher.ui.dialog
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
@@ -182,24 +182,31 @@ abstract class FullScreenDialog(context: Context) : Dialog(context, R.style.Full
      */
     protected fun checkHeight(root: View, content: View, scrollView: View, dpValue: Int = 50) {
         root.post {
-            val wm = requireNotNull(window?.windowManager) { "WindowManager is null" }
-            val point = Point()
-            wm.defaultDisplay.getSize(point)
-            val maxHeight = (point.y - dpValue * context.resources.displayMetrics.density + 0.5f).toInt()
+            val density = context.resources.displayMetrics.density
+            val marginPx = (dpValue * density + 0.5f).toInt()
+            // Use the activity's actual window bounds, not the physical display. Display
+            // metrics report the whole panel in split-screen/freeform mode and let a
+            // WRAP_CONTENT dialog expand across the entire pane.
+            val activityDecor = (context as? Activity)?.window?.decorView
+            val availableWidth = activityDecor?.width?.takeIf { it > 0 }
+                ?: context.resources.displayMetrics.widthPixels
+            val availableHeight = activityDecor?.height?.takeIf { it > 0 }
+                ?: context.resources.displayMetrics.heightPixels
+            val maxWidth = (560f * density + 0.5f).toInt()
+            val horizontalMargin = (16f * density + 0.5f).toInt()
+            val dialogWidth = minOf(maxWidth, (availableWidth - 2 * horizontalMargin).coerceAtLeast(1))
+            val maxHeight = (availableHeight - marginPx).coerceAtLeast(1)
 
-            val isRootHeightLessThanMax = root.measuredHeight < maxHeight
-            val layoutParams = scrollView.layoutParams
+            // Bound the scroll region itself. Limiting only the window leaves its
+            // WRAP_CONTENT children laid out at their full height, which can clip the
+            // title and buttons (or leave an apparently empty dialog) on short windows.
+            val fixedHeight = (root.measuredHeight - scrollView.measuredHeight).coerceAtLeast(0)
+            val maxScrollHeight = (maxHeight - fixedHeight).coerceAtLeast(1)
+            val scrollParams = scrollView.layoutParams
+            scrollParams.height = minOf(content.measuredHeight, maxScrollHeight)
+            scrollView.layoutParams = scrollParams
 
-            if (isRootHeightLessThanMax) {
-                layoutParams.height = content.measuredHeight
-                scrollView.layoutParams = layoutParams
-                window?.setLayout(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT
-                )
-            } else {
-                window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, maxHeight)
-            }
+            window?.setLayout(dialogWidth, WindowManager.LayoutParams.WRAP_CONTENT)
         }
     }
 }

@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -13,8 +14,6 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import com.endiq.turtlelauncher.R
-import com.endiq.turtlelauncher.ui.miuix.MiuixSquircle
-import com.endiq.turtlelauncher.ui.miuix.MiuixSquircleDrawable
 import com.endiq.turtlelauncher.ui.miuix.MiuixTheme
 import kotlin.math.roundToInt
 
@@ -61,24 +60,25 @@ class ChoicePickerDialog(
 
     private fun buildContent(): View {
         val colors = MiuixTheme.colors(context)
-        val radius = dp(24f).toFloat()
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(18f), dp(18f), dp(18f), dp(14f))
-            background = MiuixSquircleDrawable(
-                fillColor = colors.background,
-                cornerRadiusPx = radius,
-                strokeColor = colors.outline,
-                strokeWidthPx = dp(1f).toFloat(),
-                indicationBaseColor = colors.onSurface,
-                enableIndication = false
-            )
-            MiuixSquircle.applyOutline(this, radius, clipToOutline = true)
+            // Keep the surface rounded, but do not clip child glyphs to a platform
+            // ViewOutline: some vendor renderers produce an empty outline for paths,
+            // which leaves the panel visible while clipping every label away.
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(colors.background)
+                cornerRadius = dp(24f).toFloat()
+                setStroke(dp(1f), colors.outline)
+            }
+            clipChildren = false
+            clipToPadding = false
         }
 
         root.addView(TextView(context).apply {
             text = title
-            setTextColor(colors.onSurface)
+            setTextColor(Color.WHITE)
             textSize = 20f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER_VERTICAL
@@ -89,7 +89,7 @@ class ChoicePickerDialog(
         if (options.isEmpty()) {
             choices.addView(TextView(context).apply {
                 text = context.getString(R.string.generic_default)
-                setTextColor(colors.onSurfaceVariantActions)
+                setTextColor(Color.LTGRAY)
                 textSize = 16f
                 gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(14f), 0, dp(14f), 0)
@@ -113,7 +113,7 @@ class ChoicePickerDialog(
                 }
                 row.addView(TextView(context).apply {
                     text = label
-                    setTextColor(colors.onSurface)
+                    setTextColor(Color.WHITE)
                     textSize = 16f
                     gravity = Gravity.CENTER_VERTICAL
                     maxLines = 2
@@ -148,7 +148,7 @@ class ChoicePickerDialog(
 
         val cancel = TextView(context).apply {
             text = context.getString(android.R.string.cancel)
-            setTextColor(colors.onSurface)
+            setTextColor(Color.WHITE)
             textSize = 16f
             gravity = Gravity.CENTER
             isClickable = true

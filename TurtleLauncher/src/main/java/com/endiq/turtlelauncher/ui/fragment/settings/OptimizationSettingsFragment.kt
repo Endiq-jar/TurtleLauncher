@@ -70,6 +70,11 @@ class OptimizationSettingsFragment : AbstractSettingsFragment(R.layout.settings_
         initGraphicsBenchmark()
     }
 
+    private fun canShowUi(): Boolean {
+        val act = activity ?: return false
+        return isAdded && view != null && !act.isFinishing && !act.isDestroyed
+    }
+
     /**
      * Runs [GraphicsBenchmark] on a background thread, stores the score for
      * AutoSettingsOptimizer, and offers to apply the resulting recommendation
@@ -88,11 +93,13 @@ class OptimizationSettingsFragment : AbstractSettingsFragment(R.layout.settings_
             }.onThrowable(TaskExecutors.getAndroidUI()) { error ->
                 Logging.w("OptimizationSettings", "Benchmark failed: ${error.message}")
                 TaskExecutors.runInUIThread {
+                    if (!canShowUi()) return@runInUIThread
+                    val uiContext = requireContext()
                     layout.isEnabled = true
-                    binding.graphicsBenchmarkValue.setText(R.string.setting_graphics_benchmark_not_run)
-                    TipDialog.Builder(context)
+                    updateBenchmarkValue()
+                    TipDialog.Builder(uiContext)
                         .setTitle(R.string.setting_graphics_benchmark_title)
-                        .setMessage(context.getString(
+                        .setMessage(uiContext.getString(
                             R.string.setting_graphics_benchmark_failed,
                             error.message ?: error.javaClass.simpleName
                         ))
@@ -100,19 +107,23 @@ class OptimizationSettingsFragment : AbstractSettingsFragment(R.layout.settings_
                         .showDialog()
                 }
             }.finallyTask(TaskExecutors.getAndroidUI()) {
-                layout.isEnabled = true
+                if (canShowUi()) layout.isEnabled = true
             }.ended(TaskExecutors.getAndroidUI()) { result ->
                 if (result == null) return@ended
-                AllSettings.lastGraphicsBenchmark
-                    .put("${result.score}|${System.currentTimeMillis()}")
-                    .save()
+                if (!result.failed) {
+                    AllSettings.lastGraphicsBenchmark
+                        .put("${result.score}|${System.currentTimeMillis()}")
+                        .save()
+                }
+                if (!canShowUi()) return@ended
+                val uiContext = requireContext()
                 updateBenchmarkValue()
                 if (result.failed) {
-                    TipDialog.Builder(context)
+                    TipDialog.Builder(uiContext)
                         .setTitle(R.string.setting_graphics_benchmark_title)
-                        .setMessage(context.getString(
+                        .setMessage(uiContext.getString(
                             R.string.setting_graphics_benchmark_failed,
-                            result.failureReason ?: context.getString(R.string.generic_unknown)
+                            result.failureReason ?: uiContext.getString(R.string.generic_unknown)
                         ))
                         .setShowCancel(false)
                         .showDialog()
@@ -163,11 +174,13 @@ class OptimizationSettingsFragment : AbstractSettingsFragment(R.layout.settings_
             .setConfirm(R.string.setting_graphics_benchmark_apply)
             .setCancel(R.string.generic_close)
             .setConfirmClickListener {
+                if (!canShowUi()) return@setConfirmClickListener
+                val uiContext = requireContext()
                 // Re-run the optimizer with the fresh score. It still respects any
                 // renderer/driver the user chose by hand.
-                AutoSettingsOptimizer.apply(context)
+                AutoSettingsOptimizer.apply(uiContext)
                 android.widget.Toast.makeText(
-                    context,
+                    uiContext,
                     R.string.setting_graphics_benchmark_applied,
                     android.widget.Toast.LENGTH_SHORT
                 ).show()

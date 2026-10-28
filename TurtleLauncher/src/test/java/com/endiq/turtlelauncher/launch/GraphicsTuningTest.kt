@@ -97,7 +97,7 @@ class GraphicsTuningTest {
     @Test
     fun `renderers outside their Minecraft version range are skipped`() {
         val pick = GraphicsTuning.recommendRenderer(
-            profile(minecraftVersion = "1.21.5", vulkan = true),
+            profile(version = "1.21.5", vulkan = true),
             inVersionRange = { id, _ -> id != "FREEDRENO" }
         )
         assertEquals("MOBILEGLUES", pick!!.first)

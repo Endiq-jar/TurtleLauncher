@@ -190,6 +190,9 @@ object AutoSettingsOptimizer {
         }
     }
 
+    @Volatile
+    private var cachedGlGpu: String? = null
+
     /**
      * Best-effort GPU name for the auto-picker: the live `GL_RENDERER`/`GL_VENDOR`
      * pair when an EGL probe succeeds, otherwise the weaker `ro.hardware.egl`
@@ -197,7 +200,11 @@ object AutoSettingsOptimizer {
      * used, instead of running a second EGL probe of its own.
      */
     internal fun detectGpu(): String {
-        queryGlRenderer()?.let { return it }
+        cachedGlGpu?.let { return it }
+        queryGlRenderer()?.let {
+            cachedGlGpu = it
+            return it
+        }
         return try {
             // queryGlRenderer owns a balanced EGL probe. Do not initialize another
             // display here and leak its reference on the fallback path.

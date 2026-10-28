@@ -1088,7 +1088,7 @@
     <string name="download_search_no_result">No related resources found!</string>
     <string name="download_search_platform_not_supported">The current platform does not support downloading this type of resource, or does not support this category filter!</string>
     <!-- Shown on the Download > World tab: Modrinth has no world/archive project type. -->
-    <string name="download_world_remote_unavailable">World downloads are not available from Modrinth, so this tab cannot list results. Use "Install from local" to add a world .zip you already downloaded.</string>
+    <string name="download_world_remote_unavailable">World downloads are not available from Modrinth, so this tab cannot list results. Use \"Install from local\" to add a world .zip you already downloaded.</string>
     <string name="download_install_custom_name">Custom File Name</string>
     <string name="download_install_download_file">Downloading resource file (%.2fMB / %.2fMB, speed: %s/s)</string>
     <string name="download_install_dependencies">%s has the following dependencies or incompatible mods</string>

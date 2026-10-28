@@ -8,7 +8,6 @@ import android.opengl.EGLSurface
 import android.opengl.GLES20
 import com.endiq.turtlelauncher.feature.log.Logging
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 /**
  * A short, self-contained GPU benchmark used to decide graphics settings.
@@ -94,6 +93,10 @@ object GraphicsBenchmark {
      * plugin combinations do refuse it).
      */
     fun run(): Result {
+        val previousDisplay = EGL14.eglGetCurrentDisplay()
+        val previousContext = EGL14.eglGetCurrentContext()
+        val previousRead = EGL14.eglGetCurrentSurface(EGL14.EGL_READ)
+        val previousDraw = EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW)
         var display: EGLDisplay = EGL14.EGL_NO_DISPLAY
         var context: EGLContext = EGL14.EGL_NO_CONTEXT
         var surface: EGLSurface = EGL14.EGL_NO_SURFACE
@@ -104,8 +107,10 @@ object GraphicsBenchmark {
             display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
             if (display == EGL14.EGL_NO_DISPLAY) return failure("eglGetDisplay returned no display")
             val version = IntArray(2)
-            if (!EGL14.eglInitialize(display, version, 0, version, 1)) return failure("eglInitialize failed")
-            initialized = true
+            if (display != previousDisplay) {
+                if (!EGL14.eglInitialize(display, version, 0, version, 1)) return failure("eglInitialize failed")
+                initialized = true
+            }
 
             val configAttribs = intArrayOf(
                 EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
@@ -172,9 +177,10 @@ object GraphicsBenchmark {
             GLES20.glDisableVertexAttribArray(positionLocation)
             GLES20.glDeleteProgram(program)
 
-            val durationMs = max(1L, durationNs / 1_000_000L)
+            val safeDurationNs = max(1L, durationNs)
+            val durationMs = max(1L, safeDurationNs / 1_000_000L)
             val pixels = WIDTH.toLong() * HEIGHT.toLong() * TIMED_FRAMES
-            val megapixelsPerSecond = (pixels * 1000L / durationNs).toInt()
+            val megapixelsPerSecond = (pixels * 1000L / safeDurationNs).toInt()
             Result(
                 // ~100 MPix/s of this shader is a low-end device; a 2020 flagship lands
                 // around 1000+. The constant only sets the scale, tier boundaries do the rest.
@@ -192,6 +198,9 @@ object GraphicsBenchmark {
                 EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
                 if (surface != EGL14.EGL_NO_SURFACE) EGL14.eglDestroySurface(display, surface)
                 if (context != EGL14.EGL_NO_CONTEXT) EGL14.eglDestroyContext(display, context)
+                if (previousDisplay != EGL14.EGL_NO_DISPLAY) {
+                    EGL14.eglMakeCurrent(previousDisplay, previousDraw, previousRead, previousContext)
+                }
                 if (initialized) EGL14.eglTerminate(display)
             }
         }
@@ -255,5 +264,5 @@ object GraphicsBenchmark {
     }
 
     /** Rounded score for display. */
-    fun displayScore(result: Result): Int = if (result.failed) 0 else result.score.roundToInt()
+    fun displayScore(result: Result): Int = if (result.failed) 0 else result.score
 }

@@ -8,6 +8,7 @@ import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.utils.path.PathManager
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
@@ -44,7 +45,7 @@ object ModIconLoader {
 
     /** Values: the extracted icon file, or [NONE] when the jar has no usable icon. */
     private val memo = ConcurrentHashMap<String, File>()
-    private val inFlight: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    private val inFlight = ConcurrentHashMap<String, CopyOnWriteArrayList<Listener>>()
 
     @JvmField
     val NONE: File = File("")
@@ -76,7 +77,7 @@ object ModIconLoader {
         file ?: return null
         val fingerprint = fingerprint(file)
         memo[fingerprint]?.let { return it.takeIf { cached -> cached != NONE } }
-        val cached = cacheFileFor(file)
+        val cached = runCatching { cacheFileFor(file) }.getOrNull() ?: return null
         if (cached.isFile && cached.length() > 0) {
             memo[fingerprint] = cached
             return cached
@@ -94,20 +95,36 @@ object ModIconLoader {
             listener.onIcon(null)
             return
         }
+        val fingerprint = fingerprint(file)
+        memo[fingerprint]?.let { cached ->
+            listener.onIcon(cached.takeIf { it != NONE })
+            return
+        }
         cachedIcon(file)?.let {
             listener.onIcon(it)
             return
         }
-        val fingerprint = fingerprint(file)
-        if (!inFlight.add(fingerprint)) return // another row already asked for this jar
+        var startExtraction = false
+        inFlight.compute(fingerprint) { _, existing ->
+            if (existing != null) {
+                existing.add(listener)
+                existing
+            } else {
+                startExtraction = true
+                CopyOnWriteArrayList<Listener>().apply { add(listener) }
+            }
+        }
+        if (!startExtraction) return
         TaskExecutors.getDefault().execute {
             val icon = runCatching { extractIcon(file) }.getOrElse { error ->
                 Logging.w(TAG, "Could not read the icon of ${file.name}: ${error.message}")
                 null
             }
             memo[fingerprint] = icon ?: NONE
-            inFlight.remove(fingerprint)
-            TaskExecutors.runInUIThread(Runnable { listener.onIcon(icon) })
+            val waiting = inFlight.remove(fingerprint)
+            TaskExecutors.runInUIThread(Runnable {
+                waiting?.forEach { it.onIcon(icon) }
+            })
         }
     }
 

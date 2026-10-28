@@ -1,9 +1,11 @@
 package com.endiq.turtlelauncher.ui.subassembly.filelist;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.request.target.DrawableImageViewTarget;
 import com.endiq.turtlelauncher.R;
 import com.endiq.turtlelauncher.databinding.ItemFileListViewBinding;
@@ -50,11 +53,17 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
         holder.setData(mData.get(position), position);
     }
 
+    private static boolean isContextDestroyed(Context ctx) {
+        return ctx instanceof Activity && (((Activity) ctx).isDestroyed() || ((Activity) ctx).isFinishing());
+    }
+
     @Override
     public void onViewRecycled(@NonNull InnerHolder holder) {
-        // Stop any hover/press logo/icon animation before the row is pooled.
+        // Stop any hover/press logo/icon animation and in-flight Glide load before the row is pooled.
         AnimatedLogo.clear(holder.binding.image);
         AnimatedIcon.clear(holder.binding.image);
+        Glide.with(holder.context.getApplicationContext()).clear(holder.binding.image);
+        holder.binding.image.setAlpha(1f);
         super.onViewRecycled(holder);
     }
 
@@ -277,6 +286,8 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
                     (file.getName().endsWith(com.endiq.turtlelauncher.feature.mod.ModUtils.JAR_FILE_SUFFIX) ||
                      file.getName().endsWith(com.endiq.turtlelauncher.feature.mod.ModUtils.DISABLE_JAR_FILE_SUFFIX));
 
+            binding.image.setAlpha(1f);
+
             if (isModJar) {
                 // Mod manager rows show the icon the jar ships (fabric.mod.json "icon",
                 // mods.toml logoFile, or a root icon.png), falling back to the generic
@@ -288,6 +299,7 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
                 if (modIcon != null) {
                     showModIcon(modIcon, file);
                 } else {
+                    Glide.with(context.getApplicationContext()).clear(binding.image);
                     binding.image.setImageResource(fileItemBean.fileIconRes != 0
                             ? fileItemBean.fileIconRes
                             : R.drawable.ic_filetype_jar);
@@ -303,34 +315,44 @@ public class FileRecyclerAdapter extends RecyclerView.Adapter<FileRecyclerAdapte
             } else if (file != null && file.isFile() && ImageUtils.isImage(file)) {
                 AnimatedLogo.clear(binding.image);
                 AnimatedIcon.clear(binding.image);
-                Glide.with(context).load(file)
-                        .override(binding.image.getWidth(), binding.image.getHeight())
-                        .centerCrop()
-                        .into(new DrawableImageViewTarget(binding.image));
+                loadCroppedFileImage(file);
             } else if (fileItemBean.animatedIconRes != 0) {
+                Glide.with(context.getApplicationContext()).clear(binding.image);
                 // Version-era logos: static poster until the row is hovered/pressed/focused.
                 AnimatedLogo.bind(binding.image, fileItemBean.animatedIconRes);
             } else if (fileItemBean.fileIconRes != 0) {
+                Glide.with(context.getApplicationContext()).clear(binding.image);
                 // Pastel-green file-type icons; setImageResource lets the
                 // AnimatedIconView bind this type's hover/press/click style.
                 AnimatedLogo.clear(binding.image);
                 binding.image.setImageResource(fileItemBean.fileIconRes);
             } else {
+                Glide.with(context.getApplicationContext()).clear(binding.image);
                 AnimatedLogo.clear(binding.image);
                 AnimatedIcon.clear(binding.image);
                 binding.image.setImageDrawable(fileItemBean.image);
             }
         }
 
+        private void loadCroppedFileImage(File imageFile) {
+            if (isContextDestroyed(context)) return;
+            RequestBuilder<Drawable> request = Glide.with(context.getApplicationContext())
+                    .load(imageFile)
+                    .centerCrop();
+            int width = binding.image.getWidth();
+            int height = binding.image.getHeight();
+            if (width > 0 && height > 0) {
+                request = request.override(width, height);
+            }
+            request.into(new DrawableImageViewTarget(binding.image));
+        }
+
         /** Paint a mod's own icon into the row's 28dp chip. */
         private void showModIcon(File icon, File modFile) {
+            if (isContextDestroyed(context)) return;
             binding.image.setAlpha(modFile.getName().endsWith(
                     com.endiq.turtlelauncher.feature.mod.ModUtils.DISABLE_JAR_FILE_SUFFIX) ? 0.45f : 1f);
-            Glide.with(context)
-                    .load(icon)
-                    .override(binding.image.getWidth(), binding.image.getHeight())
-                    .centerCrop()
-                    .into(new DrawableImageViewTarget(binding.image));
+            loadCroppedFileImage(icon);
         }
     }
 }

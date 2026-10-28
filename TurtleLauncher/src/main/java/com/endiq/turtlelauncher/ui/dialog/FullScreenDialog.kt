@@ -197,6 +197,15 @@ abstract class FullScreenDialog(context: Context) : Dialog(context, R.style.Full
             val dialogWidth = minOf(maxWidth, (availableWidth - 2 * horizontalMargin).coerceAtLeast(1))
             val maxHeight = (availableHeight - marginPx).coerceAtLeast(1)
 
+            // root/scrollView/content were measured by whichever pass ran before this
+            // post{} callback fired - typically the dialog's initial FLAG_FULLSCREEN pass,
+            // i.e. the full window width, not dialogWidth. Trusting those heights and only
+            // shrinking the window afterwards computes the fixed scroll height against the
+            // wrong width; re-measure explicitly at dialogWidth first so it's accurate.
+            val widthSpec = View.MeasureSpec.makeMeasureSpec(dialogWidth, View.MeasureSpec.EXACTLY)
+            val naturalHeightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            root.measure(widthSpec, naturalHeightSpec)
+
             // Bound the scroll region itself. Limiting only the window leaves its
             // WRAP_CONTENT children laid out at their full height, which can clip the
             // title and buttons (or leave an apparently empty dialog) on short windows.

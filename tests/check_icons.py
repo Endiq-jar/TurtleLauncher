@@ -9,6 +9,7 @@ Static checks only (no Android SDK needed):
   * layouts use AnimatedIconView/AnimatedIconButton for ic_* views.
 """
 import re
+import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -45,6 +46,25 @@ assert converted >= 85, f"only {converted} converted icons"
 
 for brand in ("ic_discord", "ic_github", "ic_curseforge", "ic_openjdk"):
     assert (drawable / f"{brand}.xml").is_file(), f"missing brand logo {brand}"
+
+# Every pathData must already be in tools/fix_paths.py normalized form.
+# Compact upstream SVG syntax (packed arc flags like `00-`, back-to-back
+# decimals like `.123.456`) crashes Android's native PathParser at inflate
+# time with "a needs to be followed by a multiple of 7 floats" - this took
+# down the whole Settings screen via ic_discord (Oct 18 2026 crash report),
+# and byte-equality with the normalizer is what keeps it from coming back.
+sys.path.insert(0, str(repo / "tools"))
+from fix_paths import normalize_path  # noqa: E402
+
+path_data_count = 0
+for base in (main / "res").glob("drawable*"):
+    for xml in sorted(base.glob("*.xml")):
+        for m in re.finditer(r'android:pathData="([^"]*)"', xml.read_text()):
+            path_data_count += 1
+            assert normalize_path(m.group(1)) == m.group(1), (
+                f"{xml.name}: pathData is not Android-safe normalized form - "
+                "run tools/fix_paths.py (packed arc flags/decimals crash PathParser)")
+assert path_data_count >= 300, f"only {path_data_count} pathData entries checked"
 
 import_script = (repo / "tools/import_icons.py").read_text()
 assert "MAPPING" in import_script and "tabler" in import_script and "flowbite" in import_script

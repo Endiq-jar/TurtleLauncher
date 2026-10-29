@@ -29,12 +29,10 @@ import com.endiq.turtlelauncher.renderer.Renderers
 import com.endiq.turtlelauncher.setting.AllSettings.Companion.versionIsolation
 import com.endiq.turtlelauncher.task.Task
 import com.endiq.turtlelauncher.task.TaskExecutors.Companion.getAndroidUI
+import com.endiq.turtlelauncher.ui.dialog.ChoicePickerDialog
 import com.endiq.turtlelauncher.ui.dialog.TipDialog
-import com.endiq.turtlelauncher.ui.subassembly.adapter.ObjectSpinnerAdapter
 import com.endiq.turtlelauncher.utils.ZHTools
 import com.endiq.turtlelauncher.utils.file.FileTools.Companion.copyFileInBackground
-import com.skydoves.powerspinner.OnSpinnerItemSelectedListener
-import com.skydoves.powerspinner.PowerSpinnerView
 import net.endiq.launcher.Tools
 import net.endiq.launcher.multirt.MultiRTUtils
 import net.endiq.launcher.multirt.Runtime
@@ -61,6 +59,7 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
         }
     }
     private var mSelectPathMark = ""
+    private var activeChoiceDialog: ChoicePickerDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -115,7 +114,6 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                 mTempConfig?.setCpuCoreOverride(if (cores == null || cores <= 0) -1 else cores)
             }
 
-            initSpinners(isolationType, rendererSpinner, driverSpinner, runtimeSpinner)
         }
 
         val versionConfig = currentVersion.getVersionConfig()
@@ -125,7 +123,7 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
 
         disableCustomPath(versionConfig.isIsolation())
 
-        loadValues(view.context)
+        loadValues(requireActivity())
         refreshIcon(true)
     }
 
@@ -134,20 +132,9 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
         binding.resetCustomPath.isEnabled = !disable
     }
 
-    private fun initSpinners(vararg spinners: PowerSpinnerView) {
-        spinners.forEach { spinner ->
-            spinner.apply {
-                setIsFocusable(true)
-                lifecycleOwner = this@VersionConfigFragment
-            }
-        }
-    }
-
     private fun closeSpinner() {
-        binding.isolationType.dismiss()
-        binding.rendererSpinner.dismiss()
-        binding.driverSpinner.dismiss()
-        binding.runtimeSpinner.dismiss()
+        activeChoiceDialog?.dismiss()
+        activeChoiceDialog = null
     }
 
     override fun onClick(v: View?) {
@@ -266,23 +253,27 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
             binding.apply {
                 // Version isolation.
                 val isolationTypes: EnumEntries<IsolationType> = IsolationType.entries
-                val isolationAdapter = ObjectSpinnerAdapter<IsolationType>(isolationType) { getIsolationString(requireActivity(), it) }
-                isolationAdapter.setItems(isolationTypes)
-                isolationType.setSpinnerAdapter(isolationAdapter)
-                isolationType.selectItemByIndex(
-                    isolationTypes.indexOf(config.getIsolationType())
-                        .coerceAtLeast(0)
-                        .coerceAtMost(isolationTypes.size - 1)
-                )
-                isolationType.setOnSpinnerItemSelectedListener(
-                    OnSpinnerItemSelectedListener { _: Int, _: IsolationType?, _: Int, newItem: IsolationType ->
+                val isolationLabels = isolationTypes.map { getIsolationString(context, it) }
+                fun isolationIndex() = isolationTypes.indexOf(config.getIsolationType())
+                    .coerceIn(0, isolationTypes.lastIndex)
+                isolationType.text = isolationLabels[isolationIndex()]
+                isolationType.setOnClickListener {
+                    showChoiceDialog(
+                        context,
+                        getString(R.string.setting_version_isolation_title),
+                        isolationLabels,
+                        isolationIndex()
+                    ) { index ->
+                        val newItem = isolationTypes[index]
                         config.setIsolationType(newItem)
+                        isolationType.text = isolationLabels[index]
                         when (newItem) {
                             IsolationType.ENABLE -> disableCustomPath(true)
                             IsolationType.DISABLE -> disableCustomPath(false)
                             else -> disableCustomPath(versionIsolation.getValue())
                         }
-                    })
+                    }
+                }
 
                 // Controls layout.
                 controlName.text = config.getControl()
@@ -300,15 +291,26 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = rendererNames.indexOf(config.getRenderer())
                     if (index != -1) rendererIndex = index
                 }
-                val rendererAdapter = ObjectSpinnerAdapter<String>(rendererSpinner) { it }
-                rendererAdapter.setItems(renderList)
-                rendererSpinner.setSpinnerAdapter(rendererAdapter)
-                rendererSpinner.selectItemByIndex(rendererIndex)
-                rendererSpinner.setOnSpinnerItemSelectedListener(
-                    OnSpinnerItemSelectedListener { _: Int, _: String?, i1: Int, _: String? ->
-                        if (i1 == renderList.size - 1) config.setRenderer("")
-                        else config.setRenderer(rendererNames[i1])
-                    })
+                // Keep the compact selector field, but render options in our own
+                // window-bounded picker rather than PowerSpinner's unreliable popup.
+                rendererSpinner.text = renderList[rendererIndex]
+                rendererSpinner.setOnClickListener {
+                    val selectedIndex = if (config.getRenderer().isEmpty()) {
+                        renderList.lastIndex
+                    } else {
+                        rendererNames.indexOf(config.getRenderer()).takeIf { it >= 0 } ?: renderList.lastIndex
+                    }
+                    showChoiceDialog(
+                        context,
+                        getString(R.string.setting_renderer_title),
+                        renderList,
+                        selectedIndex
+                    ) { index ->
+                        rendererSpinner.text = renderList[index]
+                        if (index == renderList.lastIndex) config.setRenderer("")
+                        else config.setRenderer(rendererNames[index])
+                    }
+                }
 
                 // Driver.
                 val driverNames = DriverPluginManager.getDriverNameList()
@@ -319,15 +321,24 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = driverNames.indexOf(config.getDriver())
                     if (index != -1) driverIndex = index
                 }
-                val driverAdapter = ObjectSpinnerAdapter<String>(driverSpinner) { it }
-                driverAdapter.setItems(driverList)
-                driverSpinner.setSpinnerAdapter(driverAdapter)
-                driverSpinner.selectItemByIndex(driverIndex)
-                driverSpinner.setOnSpinnerItemSelectedListener(
-                    OnSpinnerItemSelectedListener { _: Int, _: String?, i1: Int, _: String? ->
-                        if (i1 == driverList.size - 1) config.setDriver("")
-                        else config.setDriver(driverNames[i1])
-                    })
+                driverSpinner.text = driverList[driverIndex]
+                driverSpinner.setOnClickListener {
+                    val selectedIndex = if (config.getDriver().isEmpty()) {
+                        driverList.lastIndex
+                    } else {
+                        driverNames.indexOf(config.getDriver()).takeIf { it >= 0 } ?: driverList.lastIndex
+                    }
+                    showChoiceDialog(
+                        context,
+                        getString(R.string.setting_driver_title),
+                        driverList,
+                        selectedIndex
+                    ) { index ->
+                        driverSpinner.text = driverList[index]
+                        if (index == driverList.lastIndex) config.setDriver("")
+                        else config.setDriver(driverNames[index])
+                    }
+                }
 
                 // Custom info.
                 customInfoEdit.setText(config.getCustomInfo())
@@ -352,20 +363,45 @@ class VersionConfigFragment : FragmentWithAnim(R.layout.fragment_version_config)
                     val index = runtimes.indexOf(Runtime(selectedRuntime))
                     if (index != -1) jvmIndex = index
                 }
-                val runtimeAdapter = ObjectSpinnerAdapter<String>(runtimeSpinner) { it }
-                runtimeAdapter.setItems(runtimeNames)
-                runtimeSpinner.setSpinnerAdapter(runtimeAdapter)
-                runtimeSpinner.selectItemByIndex(jvmIndex)
-                runtimeSpinner.setOnSpinnerItemSelectedListener(
-                    OnSpinnerItemSelectedListener { _: Int, _: String?, i1: Int, _: String? ->
-                        if (i1 == runtimeNames.size - 1) config.setJavaDir("")
+                runtimeSpinner.text = runtimeNames[jvmIndex]
+                runtimeSpinner.setOnClickListener {
+                    val selectedIndex = if (config.getJavaDir().startsWith(Tools.LAUNCHERPROFILES_RTPREFIX)) {
+                        val selectedRuntime = config.getJavaDir().substring(Tools.LAUNCHERPROFILES_RTPREFIX.length)
+                        runtimes.indexOf(Runtime(selectedRuntime)).takeIf { it >= 0 } ?: runtimeNames.lastIndex
+                    } else runtimeNames.lastIndex
+                    showChoiceDialog(
+                        context,
+                        getString(R.string.multirt_config_title),
+                        runtimeNames,
+                        selectedIndex
+                    ) { index ->
+                        runtimeSpinner.text = runtimeNames[index]
+                        if (index == runtimeNames.lastIndex) config.setJavaDir("")
                         else {
-                            val runtime = runtimes[i1]
+                            val runtime = runtimes[index]
                             config.setJavaDir(if (runtime.versionString == null) "" else Tools.LAUNCHERPROFILES_RTPREFIX + runtime.name)
                         }
-                    })
+                    }
+                }
             }
         }
+    }
+
+    /** All configuration choices share a single custom, window-bounded picker. */
+    private fun showChoiceDialog(
+        context: Context,
+        title: CharSequence,
+        options: List<String>,
+        selectedIndex: Int,
+        onSelected: (Int) -> Unit
+    ) {
+        activeChoiceDialog?.dismiss()
+        val dialog = ChoicePickerDialog(context, title, options, selectedIndex, onSelected)
+        activeChoiceDialog = dialog
+        dialog.setOnDismissListener {
+            if (activeChoiceDialog === dialog) activeChoiceDialog = null
+        }
+        dialog.show()
     }
 
     private fun save() {

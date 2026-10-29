@@ -59,7 +59,7 @@
                         android:text="@string/setting_version_isolation_title"
                         app:layout_constraintTop_toBottomOf="@id/version_settings_title" />
 
-                    <com.skydoves.powerspinner.PowerSpinnerView
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
                         android:id="@+id/isolation_type"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -67,10 +67,11 @@
                         android:padding="@dimen/padding_heavy"
                         app:layout_constraintTop_toBottomOf="@id/isolation_type_title"
                         android:textColor="@color/turtle_primary_text"
-                        app:spinner_arrow_tint="@color/turtle_primary_text"
-                        app:spinner_item_height="@dimen/_40sdp"
-                        app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp" />
+                        android:drawableEnd="@drawable/ic_chevron_down"
+                        android:drawablePadding="@dimen/_6sdp"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                     <TextView
                         android:id="@+id/control_title"
@@ -152,7 +153,7 @@
                         app:layout_constraintStart_toStartOf="@+id/renderer_spinner"
                         app:layout_constraintTop_toBottomOf="@+id/custom_path_layout" />
 
-                    <com.skydoves.powerspinner.PowerSpinnerView
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
                         android:id="@+id/renderer_spinner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -160,10 +161,11 @@
                         android:padding="@dimen/padding_heavy"
                         app:layout_constraintTop_toBottomOf="@+id/renderer_title"
                         android:textColor="@color/turtle_primary_text"
-                        app:spinner_arrow_tint="@color/turtle_primary_text"
-                        app:spinner_item_height="@dimen/_40sdp"
-                        app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp" />
+                        android:drawableEnd="@drawable/ic_chevron_down"
+                        android:drawablePadding="@dimen/_6sdp"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                     <TextView
                         android:id="@+id/driver_title"
@@ -174,7 +176,7 @@
                         app:layout_constraintStart_toStartOf="@+id/driver_spinner"
                         app:layout_constraintTop_toBottomOf="@+id/renderer_spinner" />
 
-                    <com.skydoves.powerspinner.PowerSpinnerView
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
                         android:id="@+id/driver_spinner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -182,10 +184,11 @@
                         android:padding="@dimen/padding_heavy"
                         app:layout_constraintTop_toBottomOf="@+id/driver_title"
                         android:textColor="@color/turtle_primary_text"
-                        app:spinner_arrow_tint="@color/turtle_primary_text"
-                        app:spinner_item_height="@dimen/_40sdp"
-                        app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp" />
+                        android:drawableEnd="@drawable/ic_chevron_down"
+                        android:drawablePadding="@dimen/_6sdp"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -287,17 +290,18 @@
                         android:layout_marginTop="@dimen/_8sdp"
                         android:text="@string/multirt_config_title" />
 
-                    <com.skydoves.powerspinner.PowerSpinnerView
+                    <com.endiq.turtlelauncher.ui.view.AnimTextView
                         android:id="@+id/runtime_spinner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/background_item"
                         android:padding="@dimen/padding_heavy"
                         android:textColor="@color/turtle_primary_text"
-                        app:spinner_arrow_tint="@color/turtle_primary_text"
-                        app:spinner_item_height="@dimen/_40sdp"
-                        app:spinner_popup_background="@drawable/background_edit_box"
-                        app:spinner_popup_max_height="@dimen/_240sdp" />
+                        android:drawableEnd="@drawable/ic_chevron_down"
+                        android:drawablePadding="@dimen/_6sdp"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                 </LinearLayout>
             </LinearLayout>

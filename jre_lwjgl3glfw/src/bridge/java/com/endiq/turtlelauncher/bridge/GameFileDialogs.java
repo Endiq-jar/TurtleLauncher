@@ -37,13 +37,21 @@ public final class GameFileDialogs {
     private GameFileDialogs() { }
 
     public static void main(String[] args) throws Throwable {
-        // Flip on LWJGL's own loader diagnostics before Library is ever touched, so a
-        // native-load failure logs the exact paths tried and the exact underlying
-        // exception instead of only Library's generic "Failed to locate library: X",
-        // which it throws for ANY UnsatisfiedLinkError while discarding the cause.
-        // Plain system properties - classloader-neutral, safe for every launch.
-        System.setProperty("org.lwjgl.util.Debug", "true");
-        System.setProperty("org.lwjgl.util.DebugLoader", "true");
+        // LWJGL's loader diagnostics print the exact paths tried and the exact
+        // underlying exception for a native-load failure, where Library would
+        // otherwise only report a generic cause-discarding "Failed to locate
+        // library: X". But org.lwjgl.util.Debug is not free: it switches on
+        // per-call validation across the bindings and a MemoryUtil allocator
+        // that captures a stack trace for every native allocation - a heavy,
+        // constant FPS/heat tax on the render thread. It used to be enabled
+        // unconditionally here (left over from native-load crash hunting);
+        // now it only turns on when the launcher's renderer debug logging
+        // setting passes -Dturtlelauncher.lwjglDebug=true. Plain system
+        // properties either way - classloader-neutral, safe for every launch.
+        if (Boolean.getBoolean("turtlelauncher.lwjglDebug")) {
+            System.setProperty("org.lwjgl.util.Debug", "true");
+            System.setProperty("org.lwjgl.util.DebugLoader", "true");
+        }
 
         String realMainClass = System.getProperty("turtlelauncher.realMainClass");
         if (runsOnSystemClassLoader(realMainClass)) {

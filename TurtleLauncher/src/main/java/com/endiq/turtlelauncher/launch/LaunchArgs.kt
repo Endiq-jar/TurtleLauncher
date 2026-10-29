@@ -78,6 +78,12 @@ class LaunchArgs(
 
             argsList.add("-Dturtlelauncher.sdlBootstrap=true")
         }
+        // Renderer debug logging opts the guest into LWJGL Debug/DebugLoader (see
+        // GameFileDialogs). Off by default: LWJGL debug mode's per-call checks and
+        // allocation stack traces are a serious ongoing FPS/heat cost in-game.
+        if (com.endiq.turtlelauncher.setting.AllSettings.rendererDebugLogging.getValue()) {
+            argsList.add("-Dturtlelauncher.lwjglDebug=true")
+        }
         argsList.add("-Dturtlelauncher.realMainClass=${versionInfo.mainClass}")
         argsList.add("com.endiq.turtlelauncher.bridge.GameFileDialogs")
         argsList.addAll(getMinecraftClientArgs())

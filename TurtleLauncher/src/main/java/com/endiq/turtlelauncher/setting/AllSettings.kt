@@ -164,9 +164,16 @@ class AllSettings {
         @JvmStatic val selectRuntimeMode        = StringSettingUnit("selectRuntimeMode", "auto")
         @JvmStatic val javaArgs = StringSettingUnit(
             "javaArgs",
-            "-XX:+UseG1GC -XX:MaxGCPauseMillis=4 -XX:G1HeapRegionSize=32M " +
+            // No MaxGCPauseMillis here: PerformancePolicy supplies the pause target
+            // (50/100ms) via the FPS-boost args. The old stock preset pinned 4ms,
+            // which keeps G1 cycling almost constantly (CPU burn + heat, worst on
+            // low-end chips), and forced AlwaysPreTouch unconditionally, bypassing
+            // the isPreTouchSafe() heap-share guard the framePacing toggle applies.
+            // Stored copies of the old preset are migrated in
+            // LauncherPreferences.loadPreferences().
+            "-XX:+UseG1GC -XX:G1HeapRegionSize=32M " +
             "-XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=40 -XX:G1ReservePercent=15 " +
-            "-XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:+PerfDisableSharedMem -XX:+UseStringDeduplication"
+            "-XX:+DisableExplicitGC -XX:+PerfDisableSharedMem -XX:+UseStringDeduplication"
         )
         @JvmStatic val ramAllocation = lazy {
             IntSettingUnit("allocation", LauncherPreferences.findBestRAMAllocation(ContextExecutor.getApplication()))

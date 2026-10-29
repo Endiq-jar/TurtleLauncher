@@ -74,6 +74,15 @@ allowed = natives.count("System.loadLibrary(") + preload_body.count("System.load
 assert len(load_calls) == allowed, (
     f"{len(load_calls)} System.load* calls but only {allowed} inside gated helpers")
 
+# LWJGL debug mode is a heavy per-call/allocation-trace tax on the render
+# thread and must stay opt-in (renderer debug logging setting), never on by
+# default again - it shipped enabled for every launch and tanked game FPS.
+debug_gate = main.index('Boolean.getBoolean("turtlelauncher.lwjglDebug")')
+for prop in ("org.lwjgl.util.Debug", "org.lwjgl.util.DebugLoader"):
+    assert main.index(f'System.setProperty("{prop}"') > debug_gate, \
+        f"{prop} must only be set inside the turtlelauncher.lwjglDebug gate"
+assert code.count('System.setProperty("org.lwjgl.util.Debug"') == 1
+
 # Crash analyzer must recognise this signature before the generic
 # "Failed to locate library" rule (which wrongly suggests clearing caches).
 analyzer = (root / "TurtleLauncher/src/main/java/com/endiq/turtlelauncher"

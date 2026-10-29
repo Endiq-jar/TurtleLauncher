@@ -42,4 +42,18 @@ account_guard = fragment.index("binding == null || !isAdded()", account)
 require_ctx = fragment.index("requireContext(),", account)  # a call site, not a comment mention
 assert account_guard < require_ctx, "refreshAccountButton must check isAdded before requireContext()"
 
-print("UI lifecycle guards passed: no Glide/bind work runs for a destroyed activity")
+# The in-game HUD refresh loop must be self-healing: a tick that lands before
+# the floating view attaches (common on slow devices at game startup) or
+# while paused must not end the loop - it used to return without re-posting,
+# freezing every HUD readout (FPS included) for the rest of the session.
+wrapper = (main / "com/endiq/turtlelauncher/ui/subassembly/view"
+           / "GameMenuViewWrapper.kt").read_text()
+assert "if (paused || disposed || !view.isAttachedToWindow) return" not in wrapper, \
+    "HUD refresh task must not die on a pre-attach/paused tick"
+task = wrapper.index("override fun run()")
+task_body = wrapper[task:wrapper.index("handler.postDelayed(this, interval)", task)]
+assert "if (disposed) return" in task_body
+assert wrapper.count("runCatching { updateInfoText() }") >= 2, \
+    "HUD updates must be guarded so one failing widget read cannot kill the HUD"
+
+print("UI lifecycle guards passed: no Glide/bind work for a destroyed activity; HUD loop self-heals")

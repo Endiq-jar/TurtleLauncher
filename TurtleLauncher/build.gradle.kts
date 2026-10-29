@@ -267,9 +267,23 @@ android {
     }
 
     packaging {
+        // Both native libs and dex forced to DEFLATE (useLegacyPackaging = true) rather than
+        // AGP's newer default of storing them uncompressed for faster mmap/load. Native libs
+        // already needed this flag explicitly; dex only defaults to uncompressed when
+        // minSdk >= 28 (this project's minSdk is 26, so dex was already compressed in
+        // practice), but it's set explicitly here too so the whole APK's compression is
+        // deliberate, not incidental. resources.arsc is left at its default (uncompressed) -
+        // AGP/AAPT2 require that for 4 KB zip-alignment on API 30+, and the file itself is a
+        // small fraction of the APK regardless. Picture/already-compressed asset formats
+        // (png, webp, jar, tar.xz, ...) are already DEFLATE-compressed by AAPT2's own default
+        // packaging for anything not explicitly listed in noCompress (nothing is, here) -
+        // there's no further Gradle-level switch for those.
         jniLibs {
             useLegacyPackaging = true
             pickFirsts += listOf("**/libbytehook.so", "**/libdiscord_partner_sdk.so")
+        }
+        dex {
+            useLegacyPackaging = true
         }
     }
 

@@ -94,6 +94,9 @@ jobs:
           python3 tests/check_download_tabs.py
           python3 tests/check_translations.py
           python3 tests/check_glfw_overlay.py
+          python3 tests/check_guest_bootstrap.py
+          python3 tests/check_ui_lifecycle_guards.py
+          python3 tests/check_performance_defaults.py
           tests/native/run.sh
           tests/native/run-discord.sh
 

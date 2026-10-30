@@ -118,6 +118,28 @@ object CrashAnalyzer {
                     )
                 )
             ),
+            // Checked before "native_library_path" below: this crash ALSO ends in
+            // "Failed to locate library: liblwjgl-legacy.so", but the library was
+            // never missing - clearing the natives cache cannot help.
+            Rule(
+                title = "lwjgl_native_wrong_classloader",
+                matches = { has(it, "already loaded in another classloader") && has(it, "libpojavexec", "liblwjgl") },
+                diagnosis = fixed(
+                    "LWJGL natives were bound to the wrong classloader before the mod loader started (fixed)",
+                    "The guest bootstrap (GameFileDialogs, running on the system classloader) loaded " +
+                        "libpojavexec/liblwjgl before handing over to the real main class. Mod loaders " +
+                        "(Fabric's Knot, Forge, Launchwrapper) load their own copy of LWJGL in a child " +
+                        "classloader, and the JVM forbids loading one native library into two " +
+                        "classloaders - so the game's GLFW init failed with 'already loaded in another " +
+                        "classloader', which LWJGL then masked as the misleading 'Failed to locate " +
+                        "library: liblwjgl-legacy.so' even though the file was present on " +
+                        "java.library.path the whole time.",
+                    listOf(
+                        "Update to the latest TurtleLauncher build - GameFileDialogs no longer touches LWJGL natives for mod-loader launches; the game classloader loads them itself.",
+                        "Don't clear the natives cache for this one - no files are missing or corrupted."
+                    )
+                )
+            ),
             Rule(
                 title = "native_library_path",
                 matches = { has(it, "Failed to locate library:", "no pojavexec in java.library.path", "no pojavexec_awt in java.library.path") },

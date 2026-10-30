@@ -201,7 +201,9 @@ def main(argv=None):
     total = 0
     changed = 0
     for root in roots:
-        root = Path(root)
+        # resolve() so xml.relative_to(REPO) below also works when the caller
+        # passes a relative root (REPO is absolute).
+        root = Path(root).resolve()
         for xml in sorted(root.glob("*.xml")):
             total += 1
             if fix_file(xml):

@@ -20,10 +20,29 @@ import net.endiq.launcher.Tools;
 import net.endiq.launcher.multirt.MultiRTUtils;
 import net.endiq.launcher.utils.JREUtils;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class LauncherPreferences {
     public static void loadPreferences() {
-        String argLwjglLibname = "-Dorg.lwjgl.opengl.libname=";
         String javaArgs = AllSettings.getJavaArgs().getValue();
+        // One-time migration of the exact old stock JVM preset (see the javaArgs
+        // default in AllSettings): it pinned -XX:MaxGCPauseMillis=4, which keeps
+        // G1 cycling almost constantly (sustained GC CPU + device heat), and
+        // -XX:+AlwaysPreTouch without the heap-share safety guard. Only an exact
+        // token-for-token match is replaced, so user-customized args (even ones
+        // that merely contain similar tokens) are never rewritten.
+        List<String> oldStockArgs = Arrays.asList(
+                "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=4", "-XX:G1HeapRegionSize=32M",
+                "-XX:+UnlockExperimentalVMOptions", "-XX:G1NewSizePercent=40", "-XX:G1ReservePercent=15",
+                "-XX:+DisableExplicitGC", "-XX:+AlwaysPreTouch", "-XX:+PerfDisableSharedMem",
+                "-XX:+UseStringDeduplication");
+        if (JREUtils.parseJavaArguments(javaArgs).equals(oldStockArgs)) {
+            javaArgs = AllSettings.getJavaArgs().getDefaultValue();
+            AllSettings.getJavaArgs().put(javaArgs).save();
+            Logging.i("LauncherPreferences", "Migrated stock JVM args to the cooler defaults");
+        }
+        String argLwjglLibname = "-Dorg.lwjgl.opengl.libname=";
         for (String arg : JREUtils.parseJavaArguments(javaArgs)) {
             if (arg.startsWith(argLwjglLibname)) {
                 // purge arg

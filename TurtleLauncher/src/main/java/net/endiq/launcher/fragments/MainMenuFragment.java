@@ -290,6 +290,15 @@ public class MainMenuFragment extends FragmentWithAnim {
     }
 
     private void refreshCurrentVersion() {
+        // Reached via TaskExecutors.runInUIThread (a plain Handler post) from the
+        // RefreshVersionsEvent subscriber below, so it can run after onStop()
+        // unregistered EventBus - and even after the Activity was destroyed.
+        // Touching the dead UI then crashes inside Glide ("You cannot start a
+        // load for a destroyed activity" from VersionIconUtils). Note binding is
+        // never nulled in this fragment, so a binding==null check is not enough.
+        if (binding == null || !isAdded()) return;
+        android.app.Activity activity = getActivity();
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
         Version version = VersionsManager.INSTANCE.getCurrentVersion();
 
         int versionInfoVisibility;
@@ -330,7 +339,9 @@ public class MainMenuFragment extends FragmentWithAnim {
      * button has no room for.
      */
     private void refreshAccountButton() {
-        if (binding == null) return;
+        // Also dispatched from an EventBus subscriber; requireContext() below
+        // would throw if the fragment is no longer attached.
+        if (binding == null || !isAdded()) return;
         MinecraftAccount account = AccountsManager.INSTANCE.getCurrentAccount();
         if (account == null) {
             binding.topBarAccountButton.setImageTintList(

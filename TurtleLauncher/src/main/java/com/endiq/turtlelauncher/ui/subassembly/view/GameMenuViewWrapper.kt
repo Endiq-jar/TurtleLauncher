@@ -310,7 +310,10 @@ class GameMenuViewWrapper @JvmOverloads constructor(
             }
         }
 
-        updateInfoText()
+        // Guarded: one failing widget read (e.g. a native bridge call) must not
+        // abort the visibility/timer setup below and leave the HUD dead.
+        runCatching { updateInfoText() }
+            .onFailure { android.util.Log.w(TAG, "HUD update failed", it) }
 
         if (showInfo) {
             memoryText.visibility = if (showMemory) View.VISIBLE else View.GONE
@@ -345,8 +348,17 @@ class GameMenuViewWrapper @JvmOverloads constructor(
                 )
                 refreshTask = object : Runnable {
                     override fun run() {
-                        if (paused || disposed || !view.isAttachedToWindow) return
-                        updateInfoText()
+                        if (disposed) return
+                        if (!paused && view.isAttachedToWindow) {
+                            runCatching { updateInfoText() }
+                                .onFailure { android.util.Log.w(TAG, "HUD update failed", it) }
+                        }
+                        // Always reschedule. This used to return without re-posting
+                        // when a tick landed before the floating view had attached
+                        // (common on slow devices during game startup) or while
+                        // paused, which killed every HUD readout - FPS included -
+                        // for the rest of the session. cancelInfoTimer() (from
+                        // onPause/dispose/hide) is the single stop path.
                         handler.postDelayed(this, interval)
                     }
                 }.also { handler.postDelayed(it, interval) }

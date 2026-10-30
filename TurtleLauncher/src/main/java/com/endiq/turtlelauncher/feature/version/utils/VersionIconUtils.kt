@@ -1,5 +1,8 @@
 package com.endiq.turtlelauncher.feature.version.utils
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
@@ -19,6 +22,13 @@ class VersionIconUtils(
     private val iconFile = VersionsManager.getVersionIconFile(version)
 
     fun start(imageView: ImageView): Boolean {
+        // Glide.with(view) resolves the hosting Activity and throws
+        // "You cannot start a load for a destroyed activity" once it is gone.
+        // Some callers get here from a Handler-posted refresh (MainMenuFragment
+        // after a RefreshVersionsEvent) that can run after the Activity was
+        // destroyed, which used to crash the launcher repeatedly. Binding an
+        // icon into a dead view is pointless anyway - skip the whole bind.
+        if (isDestroyedActivity(imageView.context)) return false
         com.endiq.turtlelauncher.utils.anim.AnimatedLogo.clear(imageView)
         Glide.with(imageView).clear(imageView)
         val context = imageView.context
@@ -78,6 +88,16 @@ class VersionIconUtils(
      * @return the cover icon of the current version
      */
     fun getIconFile() = iconFile
+
+    /** True when [context] unwraps to an Activity that is finishing/destroyed. */
+    private fun isDestroyedActivity(context: Context): Boolean {
+        var current: Context? = context
+        while (current is ContextWrapper && current !is Activity) {
+            current = current.baseContext
+        }
+        val activity = current as? Activity ?: return false
+        return activity.isFinishing || activity.isDestroyed
+    }
 
     private fun getLoaderIcon(name: String): Int? {
         return when(name.lowercase()) {

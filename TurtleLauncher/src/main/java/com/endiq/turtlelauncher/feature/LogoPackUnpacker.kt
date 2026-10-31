@@ -33,6 +33,16 @@ import java.util.zip.ZipInputStream
  * dropped inside it would show up as a (broken) selectable "logo". [AllSettings
  * .logoPackUnpacked]'s key is still bumped on every pack swap, so stale devices
  * actually re-run this instead of sitting on an old set forever.
+ *
+ * NOTE (Oct 2026): all 4048 images in this pack are extracted and selectable
+ * here as a profile logo, but AndroidManifest.xml only ships a [HomeScreenIcon]
+ * `activity-alias` for the 2048 named ones - Android hard-caps `activity-alias`
+ * children of `<application>` at 4000, and the full v3 set (2048 + 2000) blew
+ * past that and broke installs. Picking one of the "variant-NNNN" logos still
+ * works as a profile logo; it just can't become the home-screen icon, since
+ * [HomeScreenIcon.apply] falls back to the default turtle icon when no alias
+ * matches. Don't add an alias per pack image again without checking the total
+ * stays well under 4000.
  */
 object LogoPackUnpacker {
     private const val TAG = "LogoPackUnpacker"

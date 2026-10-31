@@ -71,12 +71,7 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
 
         // Thread Affinity reuses the existing bigCoreAffinity setting (previously only
         // surfaced in Experimental Settings) - single source of truth, just exposed here too.
-        // Forced on unconditionally (JREUtils always sets it) - lock the switch on
-        // instead of leaving a toggle that does nothing.
-        AllSettings.bigCoreAffinity.put(true).save()
         SwitchSettingsWrapper(context, AllSettings.bigCoreAffinity, binding.bigCoreAffinityLayout, binding.bigCoreAffinity)
-        binding.bigCoreAffinity.isEnabled = false
-        binding.bigCoreAffinityLayout.alpha = 0.5f
 
         SwitchSettingsWrapper(context, AllSettings.schedulerTuning, binding.schedulerTuningLayout, binding.schedulerTuning)
 

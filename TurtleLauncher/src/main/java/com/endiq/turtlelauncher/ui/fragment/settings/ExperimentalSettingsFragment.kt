@@ -46,17 +46,12 @@ class ExperimentalSettingsFragment :
             binding.dumpShaders
         )
 
-        // Force Renderer to Run on Big Core is forced on unconditionally (JREUtils always
-        // sets it) - lock the switch on instead of leaving a toggle that does nothing.
-        AllSettings.bigCoreAffinity.put(true).save()
         SwitchSettingsWrapper(
             context,
             AllSettings.bigCoreAffinity,
             binding.bigCoreAffinityLayout,
             binding.bigCoreAffinity
         )
-        binding.bigCoreAffinity.isEnabled = false
-        binding.bigCoreAffinityLayout.alpha = 0.5f
 
         SwitchSettingsWrapper(
             context,

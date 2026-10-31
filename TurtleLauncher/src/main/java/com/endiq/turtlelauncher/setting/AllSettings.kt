@@ -240,7 +240,7 @@ class AllSettings {
 
         // ── Experimental ──────────────────────────────────────────────────────
         @JvmStatic val dumpShaders              = BooleanSettingUnit("dump_shaders", false)
-        @JvmStatic val bigCoreAffinity          = BooleanSettingUnit("bigCoreAffinity", true)
+        @JvmStatic val bigCoreAffinity          = BooleanSettingUnit("bigCoreAffinity", false)
         /** Fast Boot: skips file checksum/manifest verification and the pre-launch RAM check dialog to launch faster. */
         @JvmStatic val fastBoot                 = BooleanSettingUnit("fastBoot", true)
 

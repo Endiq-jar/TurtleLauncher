@@ -251,8 +251,8 @@ public final class JREUtils {
             envMap.put("POJAV_ADAPTIVE_VSYNC", "1");
         if (AllSettings.getLowLatencyRendering().getValue())
             envMap.put("POJAV_LOW_LATENCY_RENDERING", "1");
-        if (AllSettings.getBigCoreAffinity().getValue())
-            envMap.put("POJAV_BIG_CORE_AFFINITY", "1");
+        // Force Renderer to Run on Big Core: forced on unconditionally, toggle ignored.
+        envMap.put("POJAV_BIG_CORE_AFFINITY", "1");
         // TurtleLauncher Phone Settings: Scheduler Tuning - only meaningful once Advanced
         // CPU Tuning is expanded; same env-var-handoff pattern as POJAV_BIG_CORE_AFFINITY
         // above (native side reads the flag, this launcher only signals intent).

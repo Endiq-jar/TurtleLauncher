@@ -94,7 +94,7 @@ object DiscordOAuthClient {
     private val random = SecureRandom()
 
     /** Stored between step 1 and step 2 so the verifier survives a process restart. */
-    internal data class PendingAuth(
+    data class PendingAuth(
         val verifier: String = "",
         val state: String = "",
         val redirectUri: String = "",

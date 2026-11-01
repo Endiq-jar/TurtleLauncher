@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.endiq.turtlelauncher.R
@@ -63,7 +64,7 @@ class SocialMessageAdapter(
             binding.messageBody.setBackgroundResource(
                 if (self) R.drawable.background_edit_box else R.drawable.background_grid_card
             )
-            val bodyLayoutParams = binding.messageBody.layoutParams as ViewGroup.MarginLayoutParams
+            val bodyLayoutParams = binding.messageBody.layoutParams as LinearLayout.LayoutParams
             bodyLayoutParams.gravity = if (self) Gravity.END else Gravity.START
             binding.messageBody.layoutParams = bodyLayoutParams
 

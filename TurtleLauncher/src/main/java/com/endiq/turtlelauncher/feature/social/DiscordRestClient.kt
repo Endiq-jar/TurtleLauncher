@@ -26,7 +26,7 @@ import java.time.Instant
  *
  * All calls are synchronous and must run off the main thread.
  */
-internal object DiscordRestClient {
+object DiscordRestClient {
     private const val TAG = "DiscordRest"
     private val client by lazy { UrlManager.createOkHttpClient() }
     private val JSON = "application/json; charset=utf-8".toMediaType()

@@ -468,7 +468,7 @@ object SocialRepository {
         val identity = SocialIdentityStore.current()
         when {
             conversation.kind == ConversationKind.CHANNEL -> {
-                runCatching { LinkedChannelManager.messages() }
+                LinkedChannelManager.messages()
                     .onSuccess { remote ->
                         mergeRemoteHistory(
                             conversationId,
@@ -673,7 +673,7 @@ object SocialRepository {
     }
 
     fun refreshChannelMessages(onDone: ((List<SocialMessage>) -> Unit)? = null) = enqueue {
-        runCatching { LinkedChannelManager.messages() }
+        LinkedChannelManager.messages()
             .onSuccess { messages ->
                 synchronized(lock) { channelMessages = messages.toMutableList() }
                 onDone?.let { callback -> TaskExecutors.runInUIThread { callback(messages) } }
@@ -779,7 +779,7 @@ object SocialRepository {
     }
 
     private fun refreshChannelMessagesInternal() {
-        runCatching { LinkedChannelManager.messages() }.onSuccess { messages ->
+        LinkedChannelManager.messages().onSuccess { messages ->
             synchronized(lock) { channelMessages = messages.toMutableList() }
         }
     }

@@ -367,8 +367,11 @@ public class LauncherActivity extends BaseActivity {
         // Keep the Friends store warm for the whole launcher session: presence and direct
         // messages arrive over the Friends/LAN tunnel even when the screen is closed, and the
         // notification channel has to exist before the first message can raise one.
-        com.endiq.turtlelauncher.feature.social.SocialRepository.INSTANCE.attach();
-        com.endiq.turtlelauncher.feature.social.SocialNotifications.INSTANCE.ensureChannel(this);
+        //
+        // Off the main thread and behind try/catch on purpose: this is optional social setup,
+        // and it must never delay (or crash) launcher startup - the Discord Rich Presence lease
+        // is established by the Activity lifecycle callbacks and would die with the Activity.
+        warmUpSocial();
 
         // Startup/background music (see the Music screen's "Enable Startup Music" +
         // playback scope). Gated internally on AllSettings.musicEnabled and a track
@@ -443,6 +446,29 @@ public class LauncherActivity extends BaseActivity {
                     });
         } else if (openFriends) {
             openFriendsScreen();
+        }
+    }
+
+    private void warmUpSocial() {
+        final android.content.Context context = getApplicationContext();
+        try {
+            com.endiq.turtlelauncher.feature.social.SocialNotifications.INSTANCE.ensureChannel(context);
+        } catch (Throwable t) {
+            com.endiq.turtlelauncher.feature.log.Logging.w("LauncherActivity",
+                    "Social notifications unavailable", t);
+        }
+        try {
+            TaskExecutors.getDefault().execute(() -> {
+                try {
+                    com.endiq.turtlelauncher.feature.social.SocialRepository.INSTANCE.attach();
+                } catch (Throwable t) {
+                    com.endiq.turtlelauncher.feature.log.Logging.w("LauncherActivity",
+                            "Social store could not start", t);
+                }
+            });
+        } catch (Throwable t) {
+            com.endiq.turtlelauncher.feature.log.Logging.w("LauncherActivity",
+                    "Social store could not be scheduled", t);
         }
     }
 

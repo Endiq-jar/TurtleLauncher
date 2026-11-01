@@ -10,11 +10,26 @@ class DiscordPresenceClient(context: Context, private var version: String? = nul
     private var remote: Messenger? = null
     private var bound = false
     private var closing = false
+
+    /**
+     * True between ACTIVATE and DEACTIVATE, i.e. while this process actually owns the Discord
+     * connection. The keep-alive heartbeat only re-arms a connection that is supposed to be
+     * up - a lane that merely queued (another process owns it) must not be restarted.
+     */
+    @Volatile
+    var activated: Boolean = false
+        private set
     private val reply = Messenger(Handler(Looper.getMainLooper()) { message ->
         if (message.sendingUid == Process.myUid()) {
             when (message.what) {
-                DiscordPresenceService.ACTIVATE -> if (!closing) DiscordRpcManager.start(message.data.getString("version"), this)
-                DiscordPresenceService.DEACTIVATE -> DiscordRpcManager.stop(this) { send(DiscordPresenceService.STOPPED) }
+                DiscordPresenceService.ACTIVATE -> if (!closing) {
+                    activated = true
+                    DiscordRpcManager.start(message.data.getString("version"), this)
+                }
+                DiscordPresenceService.DEACTIVATE -> {
+                    activated = false
+                    DiscordRpcManager.stop(this) { send(DiscordPresenceService.STOPPED) }
+                }
             }
         }
         true
@@ -33,9 +48,21 @@ class DiscordPresenceClient(context: Context, private var version: String? = nul
         if (!bound) connect() else send(DiscordPresenceService.UPDATE)
     }
 
+    /**
+     * Full re-arm after a connection that should be up is not: drops this process's SDK client
+     * and re-elects, so presence recovers when Discord is (re)started after the launcher, or
+     * when the RPC pipe dropped while both apps stayed alive.
+     */
+    fun recover() {
+        if (closing) return
+        activated = false
+        DiscordRpcManager.stop(null) { if (!closing) refresh() }
+    }
+
     fun close() {
         if (closing) return
         closing = true
+        activated = false
         // Do not elect another process until this one has released its Discord connection.
         DiscordRpcManager.stop(this) {
             send(DiscordPresenceService.REMOVE)

@@ -328,6 +328,8 @@ class FriendsFragment : FragmentWithAnim(R.layout.fragment_friends) {
     // ── Conversations ──────────────────────────────────────────────────────────────
 
     private fun openConversation(conversationId: String, title: String, subtitle: String) {
+        // Repository callbacks and dialog actions can land after this fragment was detached.
+        if (!isAdded || _binding == null) return
         val args = Bundle().apply {
             putString(ConversationFragment.ARG_CONVERSATION_ID, conversationId)
             putString(ConversationFragment.ARG_TITLE, title)

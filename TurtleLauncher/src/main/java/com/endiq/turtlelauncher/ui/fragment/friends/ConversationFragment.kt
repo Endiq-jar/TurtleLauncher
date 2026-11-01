@@ -165,12 +165,18 @@ class ConversationFragment : FragmentWithAnim(R.layout.fragment_social_conversat
         val text = binding.messageInput.text?.toString().orEmpty()
         if (text.isBlank()) return
         binding.messageInput.setText("")
+        val root = binding.root
         SocialRepository.sendMessage(id, text) { message ->
-            binding.root.post {
+            root.post {
                 if (_binding == null) return@post
                 refreshMessages()
                 if (message.failed) {
-                    toast(getString(R.string.social_message_failed, message.failureReason ?: getString(R.string.social_send_failed)))
+                    toast(
+                        getString(
+                            R.string.social_message_failed,
+                            message.failureReason ?: getString(R.string.social_send_failed),
+                        )
+                    )
                 }
             }
         }

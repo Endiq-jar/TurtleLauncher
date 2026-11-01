@@ -287,6 +287,32 @@
                             android:textColor="@color/turtle_primary_text"/>
                     </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
 
+                    <!-- Friends (unified Discord + Turtle friends, DMs, parties and voice) -->
+                    <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                        android:id="@+id/friends_button"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_marginBottom="@dimen/space_xs"
+                        android:background="@drawable/background_grid_card"
+                        app:ripple_for_relative="true">
+                        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
+                            android:id="@+id/friends_icon"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_centerInParent="true"
+                            android:src="@drawable/ic_friends_network"
+                            android:tint="@color/accent_primary"
+                            android:contentDescription="@string/social_title"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone"
+                            android:text="@string/social_title"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/turtle_primary_text"/>
+                    </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+
                     <!-- Share Logs -->
                     <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
                         android:id="@+id/share_logs_button"

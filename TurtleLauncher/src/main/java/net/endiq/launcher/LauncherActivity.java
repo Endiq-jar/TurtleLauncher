@@ -362,6 +362,13 @@ public class LauncherActivity extends BaseActivity {
         processViews();
 
         handleAssistantShortcut(getIntent());
+        handleSocialIntent(getIntent());
+
+        // Keep the Friends store warm for the whole launcher session: presence and direct
+        // messages arrive over the Friends/LAN tunnel even when the screen is closed, and the
+        // notification channel has to exist before the first message can raise one.
+        com.endiq.turtlelauncher.feature.social.SocialRepository.INSTANCE.attach();
+        com.endiq.turtlelauncher.feature.social.SocialNotifications.INSTANCE.ensureChannel(this);
 
         // Startup/background music (see the Music screen's "Enable Startup Music" +
         // playback scope). Gated internally on AllSettings.musicEnabled and a track
@@ -408,6 +415,46 @@ public class LauncherActivity extends BaseActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleAssistantShortcut(intent);
+        handleSocialIntent(intent);
+    }
+
+    /**
+     * Friends / Discord intents: the OAuth2 redirect (turtlelauncher://discord-callback) from the
+     * browser, and the OPEN_FRIENDS extra attached to social notifications. Both end on the
+     * Friends screen; the redirect is finished off the main thread by SocialEntryPoints.
+     */
+    private void handleSocialIntent(Intent intent) {
+        if (intent == null) return;
+        final boolean openFriends = intent.getBooleanExtra(
+                com.endiq.turtlelauncher.feature.social.SocialNotifications.EXTRA_OPEN_FRIENDS, false);
+        // Consume the flag so a recreation does not reopen the screen.
+        intent.removeExtra(com.endiq.turtlelauncher.feature.social.SocialNotifications.EXTRA_OPEN_FRIENDS);
+
+        final android.net.Uri data = intent.getData();
+        if (com.endiq.turtlelauncher.feature.social.SocialEntryPoints.INSTANCE.isDiscordRedirect(data)) {
+            intent.setData(null);
+            com.endiq.turtlelauncher.feature.social.SocialEntryPoints.INSTANCE.completeDiscordRedirect(data,
+                    (success, error) -> {
+                        final String message = success
+                                ? getString(R.string.social_linked)
+                                : getString(R.string.social_link_failed, error == null ? "" : error);
+                        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                        openFriendsScreen();
+                    });
+        } else if (openFriends) {
+            openFriendsScreen();
+        }
+    }
+
+    private void openFriendsScreen() {
+        binding.getRoot().post(() -> {
+            Fragment currentFragment = getCurrentFragment();
+            if (currentFragment == null) return;
+            if (currentFragment instanceof com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment) return;
+            ZHTools.swapFragmentWithAnim(currentFragment,
+                    com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment.class,
+                    com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment.TAG, null);
+        });
     }
 
     private void handleAssistantShortcut(Intent intent) {

@@ -51,6 +51,13 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         private const val MAX_JOIN_ATTEMPTS = 3
 
         private const val HOST_TIMEOUT_MS = 20_000L
+
+        /**
+         * Optional Terracotta room/invite code to pre-fill. The Friends screen uses this when
+         * a friend invites you to a Minecraft session, so accepting an invite lands on the
+         * Friends/LAN screen with the code already typed in and one tap from connecting.
+         */
+        const val BUNDLE_JOIN_CODE: String = "bundle_join_code"
     }
 
     private enum class Group { WAITING, LOADING, CONNECTED, EXCEPTION }
@@ -177,8 +184,18 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
         setupCustomNodeControls()
         refreshRelayStatus()
         showCoreVersions()
-
+        prefillInviteCode()
         renderState(Terracotta.getState())
+    }
+
+    /** Pre-fills the join row when opened from a party invite (see [BUNDLE_JOIN_CODE]). */
+    private fun prefillInviteCode() {
+        val code = arguments?.getString(BUNDLE_JOIN_CODE)?.trim().orEmpty()
+        if (code.isEmpty()) return
+        if (binding.joinCodeInput.text?.toString().orEmpty().isNotBlank()) return
+        binding.joinCodeRow.visibility = View.VISIBLE
+        binding.joinCodeInput.setText(code)
+        validateJoinCode()
     }
 
     /** Core versions in the waiting screen - same info Zalith Launcher 2 shows in its
@@ -337,6 +354,14 @@ class TerracottaFragment : FragmentWithAnim(R.layout.fragment_terracotta) {
             is TerracottaState.ExceptionState -> handleException(state.type)
             else -> showWaiting()
         }
+
+        // Keep the Friends feature's party card in step with the real room. Parties are
+        // created from the Friends screen, so the invite code / host address only appear
+        // here once this screen actually hosts or connects; refreshSession no-ops when the
+        // user has no party.
+        runCatching {
+            com.endiq.turtlelauncher.feature.social.LobbyManager.refreshSession()
+        }.onFailure { t -> Logging.w(TAG, "Could not refresh the party session", t) }
     }
 
     private fun handleException(type: TerracottaState.ExceptionState.Type) {

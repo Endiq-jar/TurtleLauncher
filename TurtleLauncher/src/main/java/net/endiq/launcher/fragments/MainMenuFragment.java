@@ -102,6 +102,9 @@ public class MainMenuFragment extends FragmentWithAnim {
         binding.terracottaButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
             com.endiq.turtlelauncher.ui.fragment.TerracottaFragment.class,
             com.endiq.turtlelauncher.ui.fragment.TerracottaFragment.TAG, null));
+        binding.friendsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this,
+                com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment.class,
+                com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment.TAG, null));
         binding.shareLogsButton.setOnClickListener(v -> ZHTools.swapFragmentWithAnim(this, com.endiq.turtlelauncher.ui.fragment.ShareLogsFragment.class, com.endiq.turtlelauncher.ui.fragment.ShareLogsFragment.TAG, null));
         binding.modpackImportButton.setOnClickListener(v -> {
             if (ProgressKeeper.getTaskCount() == 0) {

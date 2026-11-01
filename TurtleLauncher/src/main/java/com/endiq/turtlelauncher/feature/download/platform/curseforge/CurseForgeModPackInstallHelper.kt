@@ -5,10 +5,13 @@ import com.endiq.mcgui.ProgressLayout
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.download.enums.ModLoader
 import com.endiq.turtlelauncher.feature.download.item.ModLoaderWrapper
+import com.endiq.turtlelauncher.context.ContextExecutor
+import com.endiq.turtlelauncher.feature.download.install.InstallHelper
+import com.endiq.turtlelauncher.feature.download.item.VersionItem
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.feature.mod.CurseForgeApi
+import com.endiq.turtlelauncher.feature.mod.CurseForgeKeys
 import com.endiq.turtlelauncher.feature.mod.models.CurseForgeManifest
-import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.ui.dialog.TipDialog
 import net.endiq.launcher.Tools
@@ -22,6 +25,17 @@ class CurseForgeModPackInstallHelper {
     companion object {
         private const val TAG = "CurseForgeModPackInstallHelper"
 
+        /**
+         * Downloads [version] (a CurseForge modpack file) and installs it - the entry point
+         * CurseForgeHelper.installModPack calls, mirroring ModrinthModPackInstallHelper.
+         */
+        @Throws(Exception::class)
+        fun startInstall(version: VersionItem, customName: String): ModLoaderWrapper? {
+            return InstallHelper.installModPack(version, customName) { modpackFile, targetPath ->
+                installZip(ContextExecutor.getActivity(), modpackFile, targetPath)
+            }
+        }
+
         @Throws(Exception::class)
         fun installZip(context: Context, packFile: File, targetPath: File): ModLoaderWrapper? {
             ZipFile(packFile).use { zip ->
@@ -34,14 +48,16 @@ class CurseForgeModPackInstallHelper {
                     return null
                 }
 
-                val apiKey = AllSettings.curseForgeApiKey.getValue()
+                // Same resolution order as every other CurseForge call: the user's own key
+                // first, then the one baked in from the CURSEFORGE_API_KEY repository secret.
+                val apiKey = CurseForgeKeys.effectiveApiKey()
                 val files = manifest.files.orEmpty()
                 val skipped = mutableListOf<CurseForgeManifest.ManifestFile>()
 
                 if (files.isNotEmpty()) {
                     if (apiKey.isBlank()) {
                         skipped.addAll(files)
-                        Logging.i(TAG, "No CurseForge API key configured - skipping ${files.size} mod download(s)")
+                        Logging.i(TAG, "No CurseForge API key available - skipping ${files.size} mod download(s)")
                     } else {
                         val modDownloader = ModDownloader(targetPath, true)
                         val failedIds = java.util.Collections.synchronizedList(mutableListOf<CurseForgeManifest.ManifestFile>())

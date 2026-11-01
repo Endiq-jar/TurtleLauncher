@@ -28,12 +28,15 @@ class WorldDownloadFragment(parentFragment: Fragment? = null) : AbstractResource
     private var openDocumentLauncher: ActivityResultLauncher<Any>? = null
 
     /**
-     * Modrinth (the only download platform right now) has no world/archive project
-     * type, so this tab can never list results. Say that plainly - the tab used to
-     * fire a doomed search and then show a generic failure - and keep the
-     * "install from local .zip" button as the supported way in.
+     * Modrinth has no world/archive project type, but CurseForge does (classId 17). So the
+     * tab is only "search unavailable" while Modrinth is the selected platform - picking
+     * CurseForge in the platform spinner runs a real search instead. The
+     * "install from local .zip" button stays available either way.
      */
     override fun remoteSearchUnavailableMessage(): Int = R.string.download_world_remote_unavailable
+
+    override fun isRemoteSearchSupported(platform: com.endiq.turtlelauncher.feature.download.enums.Platform): Boolean =
+        platform == com.endiq.turtlelauncher.feature.download.enums.Platform.CURSEFORGE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -157,6 +157,39 @@ android {
                 "BUILD: GEMINI_API_KEY provided (${geminiApiKey.length} chars) - built into the APK"
             }
         )
+
+        // CurseForge's v1 API rejects every request without a key (there is no keyless
+        // path any more), which is why the launcher used to ship with CurseForge modpack
+        // imports only half working. The key now comes from the same three places as the
+        // Gemini one, in the same order:
+        //   1. -PCURSEFORGE_API_KEY=... on the Gradle command line
+        //   2. the CURSEFORGE_API_KEY environment variable (CI passes the repo secret)
+        //   3. CURSEFORGE_API_KEY=... in local.properties (gitignored)
+        // CurseForgeKeys then treats this as the built-in fallback, so a user-supplied key
+        // in Settings still wins. Absent everywhere = empty string, and CurseForge browse
+        // then explains that a key is needed instead of silently returning nothing.
+        val curseForgeApiKey = (
+            (project.findProperty("CURSEFORGE_API_KEY") as String?)
+                ?: System.getenv("CURSEFORGE_API_KEY")
+                ?: rootProject.file("local.properties")
+                    .takeIf { it.isFile }
+                    ?.let { localProperties ->
+                        Properties().apply { localProperties.inputStream().use { load(it) } }
+                            .getProperty("CURSEFORGE_API_KEY")
+                    }
+            ).orEmpty().trim()
+        buildConfigField(
+            "String",
+            "CURSEFORGE_API_KEY",
+            "\"" + curseForgeApiKey.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
+        logger.lifecycle(
+            if (curseForgeApiKey.isEmpty()) {
+                "BUILD: no CURSEFORGE_API_KEY - CurseForge browsing will ask the user for a key"
+            } else {
+                "BUILD: CURSEFORGE_API_KEY provided (${curseForgeApiKey.length} chars) - built into the APK"
+            }
+        )
     }
 
     buildTypes {

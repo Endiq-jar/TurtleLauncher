@@ -103,6 +103,9 @@ jobs:
       - name: Build release APK
         working-directory: ${{ steps.locate.outputs.dir }}
         env:
+          # Baked into BuildConfig.CURSEFORGE_API_KEY by build.gradle.kts, so the APK ships
+          # with CurseForge search/downloads and modpack imports working out of the box.
+          # Missing secret = empty key = the app asks the user for one in Settings instead.
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           # Baked into BuildConfig.GEMINI_API_KEY by build.gradle.kts, so the APK ships with
           # Turtle AI working and no key to paste. Add it under

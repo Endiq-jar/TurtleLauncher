@@ -973,7 +973,9 @@
     <string name="setting_version_custom_info_title">Custom Info</string>
     <string name="setting_version_custom_info_desc">Custom info will be displayed in the lower-left corner of the game’s main menu and the upper-left corner of the F3 debug screen. After adding the [zl_version] field, the launcher will replace it with the launcher version number.</string>
     <string name="setting_curseforge_api_key_title">CurseForge API Key</string>
-    <string name="setting_curseforge_api_key_desc">Optional - only needed so the Modpack Importer can auto-download mods from CurseForge-format packs (overrides and the mod loader install fine either way). Get a key from console.curseforge.com if you have one.</string>
+    <string name="setting_curseforge_api_key_desc">Optional - used by the CurseForge download source and by the Modpack Importer when it resolves mods from CurseForge-format packs (overrides and the mod loader install fine without it). Get a key from console.curseforge.com if you have one.</string>
+    <string name="setting_curseforge_api_key_built_in">CurseForge works out of the box in this build - a key from the CURSEFORGE_API_KEY build secret is already active. Paste your own key here to override it (for example to use your own rate limit).</string>
+    <string name="setting_curseforge_api_key_override_hint">Optional - overrides the key built into this build</string>
     <string name="setting_set_game_language_title">Auto Set Game Language</string>
     <string name="setting_set_game_language_desc">Automatically set the game language to the selected language when the game starts</string>
     <string name="setting_set_game_language_list">Set Game Language</string>

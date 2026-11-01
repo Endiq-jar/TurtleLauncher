@@ -58,6 +58,14 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
             binding.curseForgeApiKeyLayout,
             binding.curseForgeApiKeyEdittext
         )
+        // Say where CurseForge is getting its key from instead of asking for one that is
+        // already built into this APK (from the CURSEFORGE_API_KEY repository secret).
+        if (com.endiq.turtlelauncher.feature.mod.CurseForgeKeys.usingBuiltInKey()) {
+            binding.curseForgeApiKeySummary.setText(R.string.setting_curseforge_api_key_built_in)
+            binding.curseForgeApiKeyEdittext.setHint(R.string.setting_curseforge_api_key_override_hint)
+        } else if (!com.endiq.turtlelauncher.feature.mod.CurseForgeKeys.hasAnyKey()) {
+            binding.curseForgeApiKeySummary.setText(R.string.setting_curseforge_api_key_desc)
+        }
 
         SwitchSettingsWrapper(
             context,

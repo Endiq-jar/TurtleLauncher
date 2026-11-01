@@ -171,6 +171,7 @@ public class ModDependenciesAdapter extends RecyclerView.Adapter<ModDependencies
 
         private Drawable getPlatformIcon(Platform platform) {
             if (platform == Platform.MODRINTH) return ContextCompat.getDrawable(context, R.drawable.ic_modrinth);
+            if (platform == Platform.CURSEFORGE) return ContextCompat.getDrawable(context, R.drawable.ic_curseforge);
             return null;
         }
 

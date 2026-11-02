@@ -195,15 +195,52 @@ object DiscordOAuthClient {
         return SocialIdentityStore.unlinkDiscord()
     }
 
+    /** Scopes Discord actually granted, straight from the stored token response. */
+    fun grantedScopes(): Set<String> =
+        DiscordTokenStore.load()
+            ?.scope
+            ?.split(' ', ',')
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.toSet()
+            .orEmpty()
+
+    /**
+     * True when the stored token is known to carry [scope]. A token that recorded no scopes at
+     * all is treated as "unknown" rather than "missing", so an older token is not blocked here.
+     */
+    fun hasScope(scope: String): Boolean {
+        val granted = grantedScopes()
+        return granted.isEmpty() || granted.contains(scope)
+    }
+
+    /** Drops the tokens but keeps the merged identity, e.g. after Discord rejected a session. */
+    fun clearToken() = DiscordTokenStore.clear()
+
+    /**
+     * Repairs a rejected/expired session in one tap: drop the tokens and start the sign-in again.
+     * The merged identity (Discord profile + Turtle friends) is untouched, so the user does not
+     * have to unlink - which used to be the only way out of "reconnect your account".
+     */
+    fun reconnect(context: Context): Result<String> {
+        DiscordTokenStore.clear()
+        return beginAuth(context)
+    }
+
     /**
      * A valid access token, refreshing it when needed. Returns null when not linked, when the
      * refresh token is gone/rejected, or when the request could not be made.
+     *
+     * [forceRefresh] skips the "expiry says it is still good" shortcut. That matters after a 401:
+     * Discord can reject a token whose local expiry has not passed yet (revoked by a re-consent,
+     * clock skew, password change), and the only way to tell a dead session from a stale one is
+     * to trade the refresh token for a new one.
      */
-    fun accessToken(): String? {
+    fun accessToken(forceRefresh: Boolean = false): String? {
         if (!isLinked()) return null
         val stored = DiscordTokenStore.load() ?: return null
         val now = System.currentTimeMillis()
-        if (stored.isUsable(now)) return stored.accessToken
+        if (!forceRefresh && stored.isUsable(now)) return stored.accessToken
 
         if (stored.refreshToken.isBlank()) {
             Logging.w(TAG, "Access token expired and no refresh token is stored")

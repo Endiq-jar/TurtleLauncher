@@ -37,6 +37,9 @@ object SocialRepository {
     private const val MAX_MESSAGES_PER_THREAD = 250
     private const val PRESENCE_INTERVAL_SECONDS = 25L
 
+    /** Scope Discord must grant before /users/@me/relationships answers anything but 401. */
+    private const val RELATIONSHIPS_SCOPE = "relationships.read"
+
     /** On-disk shape of the Turtle side of the graph. */
     internal data class GameSocialFile(
         val friends: MutableList<SocialFriend> = mutableListOf(),
@@ -63,6 +66,13 @@ object SocialRepository {
     @Volatile private var discordFriends: List<SocialFriend> = emptyList()
     @Volatile private var discordRequests: List<FriendRequest> = emptyList()
     @Volatile private var statusMessage: String? = null
+
+    /**
+     * True once the linked Discord session was rejected and only a fresh sign-in can fix it.
+     * The Friends screen uses this to offer Reconnect instead of hiding the action behind
+     * "unlink first" (which was the only path out of a dead session).
+     */
+    @Volatile private var discordSessionInvalid: Boolean = false
     @Volatile private var busy: Boolean = false
     @Volatile private var openConversationId: String? = null
     @Volatile private var attached: Boolean = false
@@ -132,14 +142,25 @@ object SocialRepository {
         val identity = SocialIdentityStore.current()
         if (identity.hasDiscordLink) {
             val token = DiscordOAuthClient.accessToken()
-            if (token.isNullOrBlank()) {
-                statusMessage = "Discord session expired - reconnect your account."
-                discordFriends = emptyList()
-            } else {
-                loadDiscord(token)
+            when {
+                token.isNullOrBlank() -> failDiscord(
+                    "Discord sign-in is no longer usable - tap Reconnect to sign in again."
+                )
+
+                // Discord issues a token even when the user unticks a scope on the consent
+                // screen, and every relationship call then answers 401. Retrying or relinking
+                // cannot fix that, so say what is actually wrong instead of "session expired".
+                !DiscordOAuthClient.hasScope(RELATIONSHIPS_SCOPE) -> failDiscord(
+                    "Discord did not grant friend-list access ($RELATIONSHIPS_SCOPE). That scope " +
+                        "must be approved for the app in the Discord Developer Portal; after it is " +
+                        "approved, reconnect the account."
+                )
+
+                else -> loadDiscord(token)
             }
         } else {
             discordFriends = emptyList()
+            discordSessionInvalid = false
         }
 
         LobbyManager.refreshSession()
@@ -147,16 +168,44 @@ object SocialRepository {
         publish()
     }
 
+    /** Marks the linked Discord session as unusable and explains why in one line. */
+    private fun failDiscord(message: String) {
+        discordFriends = emptyList()
+        discordRequests = emptyList()
+        discordSessionInvalid = true
+        statusMessage = message
+    }
+
     private fun loadDiscord(token: String) {
-        val relationshipResult = runCatching { DiscordRestClient.relationships(token) }
+        var relationshipResult = runCatching { DiscordRestClient.relationships(token) }
+
+        // A 401 is not proof that the session is dead: Discord also answers 401 for a token that
+        // simply went stale before its recorded expiry. Trade the refresh token for a new access
+        // token once and retry, and only then treat the session as rejected.
+        val firstError = relationshipResult.exceptionOrNull()
+        if (firstError is DiscordRestClient.DiscordApiException && firstError.isUnauthorized) {
+            val refreshed = DiscordOAuthClient.accessToken(forceRefresh = true)
+            if (!refreshed.isNullOrBlank() && refreshed != token) {
+                relationshipResult = runCatching { DiscordRestClient.relationships(refreshed) }
+            }
+        }
+
         relationshipResult.onFailure { error ->
             val message = when (error) {
                 is DiscordRestClient.DiscordApiException ->
-                    if (error.isForbidden) {
-                        "Discord friends need the relationships.read scope. Add it to the app in the " +
-                            "Discord Developer Portal, then link again."
-                    } else {
-                        error.message
+                    when {
+                        error.isUnauthorized -> {
+                            // Nothing left to refresh: the stored session is rejected for good.
+                            DiscordOAuthClient.clearToken()
+                            discordSessionInvalid = true
+                            "Discord rejected friend-list access (HTTP 401) even after a token " +
+                                "refresh - tap Reconnect. If it keeps failing, the app needs the " +
+                                "$RELATIONSHIPS_SCOPE scope approved in the Discord Developer Portal."
+                        }
+                        error.isForbidden ->
+                            "Discord friends need the relationships.read scope. Add it to the app in the " +
+                                "Discord Developer Portal, then link again."
+                        else -> error.message
                     }
                 else -> error.message
             }
@@ -165,7 +214,10 @@ object SocialRepository {
         }
 
         val relationships = relationshipResult.getOrElse { emptyList() }
-        if (relationships.isNotEmpty()) statusMessage = null
+        if (relationshipResult.isSuccess) {
+            statusMessage = null
+            discordSessionInvalid = false
+        }
 
         val friends = mutableListOf<SocialFriend>()
         val requests = mutableListOf<FriendRequest>()
@@ -232,6 +284,7 @@ object SocialRepository {
         DiscordOAuthClient.unlink()
         discordFriends = emptyList()
         discordRequests = emptyList()
+        discordSessionInvalid = false
         statusMessage = "Discord disconnected. Turtle friends are unchanged."
         enqueue { publish() }
     }
@@ -1146,6 +1199,7 @@ object SocialRepository {
             linkedChannel = linked,
             voice = VoiceManager.current(),
             statusMessage = statusMessage,
+            discordSessionInvalid = discordSessionInvalid,
             busy = busy,
         )
 

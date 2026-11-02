@@ -1633,6 +1633,8 @@
     <string name="social_unlink_channel">Unlink channel</string>
     <string name="social_link_discord">Link Discord account</string>
     <string name="social_unlink_discord">Disconnect Discord</string>
+    <string name="social_reconnect_discord">Reconnect Discord</string>
+    <string name="social_reconnect_keeps_identity">Signs in again without unlinking, so your Turtle friends and messages stay put.</string>
     <string name="social_rename_identity">Rename Turtle profile</string>
     <string name="social_identity_loading">Loading your identity…</string>
     <string name="social_identity_discord_connected">Connected as %1$s</string>

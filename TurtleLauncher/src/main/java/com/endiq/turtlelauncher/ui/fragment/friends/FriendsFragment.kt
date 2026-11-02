@@ -298,6 +298,12 @@ class FriendsFragment : FragmentWithAnim(R.layout.fragment_friends) {
         }
         binding.statusText.text = text
         binding.statusText.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+        // A dead Discord session is the one status that has a fix; make the line lead to it
+        // instead of printing an instruction with no button behind it.
+        binding.statusText.setOnClickListener(
+            if (snapshot.discordSessionInvalid) View.OnClickListener { showAccountDialog() } else null
+        )
+        binding.statusText.isClickable = snapshot.discordSessionInvalid
     }
 
     private fun voiceStatus(voice: VoiceState): String = when (voice.connection) {
@@ -497,6 +503,10 @@ class FriendsFragment : FragmentWithAnim(R.layout.fragment_friends) {
         if (!snapshot.discordLinked) {
             actions.add(getString(R.string.social_link_discord) to { startDiscordLink() })
         } else {
+            // Reconnect must exist even while the identity is still "linked": a rejected or
+            // scope-less session used to leave Disconnect as the only way out, which threw away
+            // the merged identity just to sign in again.
+            actions.add(getString(R.string.social_reconnect_discord) to { reconnectDiscord() })
             actions.add(getString(R.string.social_unlink_discord) to { SocialRepository.unlinkDiscord() })
         }
         actions.add(getString(R.string.social_rename_identity) to {
@@ -563,6 +573,18 @@ class FriendsFragment : FragmentWithAnim(R.layout.fragment_friends) {
 
     private fun startDiscordLink() {
         DiscordOAuthClient.beginAuth(requireContext())
+            .onSuccess { toast(getString(R.string.social_link_opened)) }
+            .onFailure { error ->
+                toast(getString(R.string.social_link_failed, error.message ?: ""))
+            }
+    }
+
+    /**
+     * One-tap repair for a rejected Discord session: the stored tokens are dropped, the merged
+     * identity stays, and the normal PKCE sign-in runs again.
+     */
+    private fun reconnectDiscord() {
+        DiscordOAuthClient.reconnect(requireContext())
             .onSuccess { toast(getString(R.string.social_link_opened)) }
             .onFailure { error ->
                 toast(getString(R.string.social_link_failed, error.message ?: ""))

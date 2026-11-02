@@ -258,7 +258,7 @@ object DiscordRestClient {
                 throw DiscordApiException(
                     response.code,
                     when (response.code) {
-                        401 -> "Discord session expired - reconnect your account."
+                        401 -> "Discord rejected the saved sign-in - reconnect your account."
                         403 -> message?.takeIf { it.isNotBlank() }
                             ?: "Discord refused the request (missing scope or permission)."
                         429 -> "Discord is rate limiting the launcher - try again in a moment."

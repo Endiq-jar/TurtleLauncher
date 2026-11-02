@@ -195,6 +195,49 @@ for method in (
     if method not in repository:
         errors.append(f"SocialRepository.kt: missing {method}")
 
+# --- Discord session recovery -------------------------------------------------
+# A rejected/stale Discord token must be self-diagnosing and repairable in one tap: the old
+# behaviour asked the user to "reconnect" while the only available action was Disconnect.
+auth = (social_dir / "DiscordAuth.kt").read_text()
+models = (social_dir / "SocialModels.kt").read_text()
+friends_ui = fragment.read_text()
+
+if "fun accessToken(forceRefresh: Boolean = false): String?" not in auth:
+    errors.append("DiscordAuth.kt: accessToken() needs a forceRefresh path (401 retry)")
+if "fun grantedScopes()" not in auth or "fun hasScope(scope: String)" not in auth:
+    errors.append("DiscordAuth.kt: granted scopes must be readable (scope-aware error messages)")
+if "fun reconnect(context: Context): Result<String>" not in auth:
+    errors.append("DiscordAuth.kt: missing reconnect() (drop tokens, keep the identity)")
+reconnect_body = auth.split("fun reconnect(context: Context)", 1)[-1].split("\n    }", 1)[0]
+if "DiscordTokenStore.clear()" not in reconnect_body or "beginAuth(context)" not in reconnect_body:
+    errors.append("DiscordAuth.kt: reconnect() must clear tokens and start a fresh sign-in")
+
+for needle, what in (
+    ("private const val RELATIONSHIPS_SCOPE", "the relationships.read scope constant"),
+    ("fun failDiscord(message: String)", "a helper that marks the session unusable"),
+    ("DiscordOAuthClient.hasScope(RELATIONSHIPS_SCOPE)", "a scope check before calling Discord"),
+    ("accessToken(forceRefresh = true)", "a refresh-and-retry on 401"),
+    ("DiscordOAuthClient.clearToken()", "clearing a token Discord rejected"),
+    ("discordSessionInvalid = true", "recording that the session is dead"),
+):
+    if needle not in repository:
+        errors.append(f"SocialRepository.kt: missing {what} (`{needle}`)")
+
+if "val discordSessionInvalid: Boolean = false" not in models:
+    errors.append("SocialModels.kt: SocialSnapshot must carry discordSessionInvalid")
+if "discordSessionInvalid = discordSessionInvalid" not in repository:
+    errors.append("SocialRepository.publish() must publish discordSessionInvalid")
+
+if "social_reconnect_discord" not in friends_ui:
+    errors.append("FriendsFragment.kt: linked accounts need a Reconnect Discord action")
+if "DiscordOAuthClient.reconnect(" not in friends_ui:
+    errors.append("FriendsFragment.kt: Reconnect must call DiscordOAuthClient.reconnect()")
+if "setOnClickListener(" not in friends_ui.split("private fun renderStatus(", 1)[-1].split("private fun", 1)[0]:
+    errors.append("FriendsFragment.renderStatus must make the invalid-session status actionable")
+
+if "Discord session expired" in repository + auth:
+    errors.append("the misleading 'Discord session expired' copy must not come back")
+
 # --- Known Kotlin traps ------------------------------------------------------
 for path in sorted(social_dir.glob("*.kt")) + [adapter_file, message_adapter,
                                                fragment, conversation_fragment]:
@@ -214,4 +257,4 @@ if errors:
         print(f"  - {error}")
     raise SystemExit(1)
 
-print("Social checks passed: 7 tabs, 4 action rows, rows bind, redirect + notifications wired")
+print("Social checks passed: 7 tabs, 4 action rows, rows bind, redirect + notifications wired, Discord session recovery")

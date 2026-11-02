@@ -224,6 +224,8 @@ data class SocialSnapshot(
     val linkedChannel: LinkedChannel? = null,
     val voice: VoiceState = VoiceState(),
     val statusMessage: String? = null,
+    /** Discord rejected the stored session; only a fresh sign-in can fix it (see Reconnect). */
+    val discordSessionInvalid: Boolean = false,
     val busy: Boolean = false,
 ) {
     val discordFriendCount: Int get() = friends.count { it.source == SocialSource.DISCORD && !it.isMuted }

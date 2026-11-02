@@ -98,6 +98,8 @@ jobs:
           python3 tests/check_ui_lifecycle_guards.py
           python3 tests/check_performance_defaults.py
           python3 tests/check_game_engine.py
+          python3 tests/check_social.py
+          python3 tests/check_discord_presence.py
           tests/native/run.sh
           tests/native/run-discord.sh
 

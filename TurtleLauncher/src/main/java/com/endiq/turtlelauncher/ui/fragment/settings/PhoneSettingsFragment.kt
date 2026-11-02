@@ -15,6 +15,8 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.engine.GameEngine
 import com.endiq.turtlelauncher.feature.engine.GameEngineManager
 import com.endiq.turtlelauncher.feature.engine.HorizonEngine
+import com.endiq.turtlelauncher.feature.engine.HorizonEngineInstaller
+import com.endiq.turtlelauncher.ui.dialog.EditTextDialog
 import com.endiq.turtlelauncher.feature.version.VersionsManager
 import com.endiq.turtlelauncher.databinding.SettingsFragmentPhoneBinding
 import com.endiq.turtlelauncher.setting.AllSettings
@@ -167,8 +169,16 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
             renderEngineState()
         }
         binding.engineHorizonPick.setOnClickListener { showEngineAppPicker() }
-        binding.engineHorizonInstall.setOnClickListener { pickHorizonApk() }
+        // "Install engine" is the built-in downloader; a locally downloaded APK can still be
+        // handed over with a long press, which keeps the manual path without another row.
+        binding.engineHorizonInstall.setOnClickListener { downloadHorizonEngine() }
+        binding.engineHorizonInstall.setOnLongClickListener {
+            pickHorizonApk()
+            true
+        }
         binding.engineHorizonOpen.setOnClickListener { openHorizonEngine() }
+        binding.engineHorizonSource.setOnClickListener { editEngineSource() }
+        binding.engineHorizonUninstall.setOnClickListener { uninstallHorizonEngine() }
         renderEngineState()
     }
 
@@ -184,6 +194,80 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         binding.engineHorizonActions.visibility = View.VISIBLE
         binding.engineHorizonOpen.visibility =
             if (status.installation != null) View.VISIBLE else View.GONE
+        binding.engineHorizonUninstall.visibility =
+            if (status.installation != null) View.VISIBLE else View.GONE
+        binding.engineHorizonSource.text =
+            getString(R.string.engine_source_label, HorizonEngineInstaller.sourceRepo())
+    }
+
+    /**
+     * Built-in engine install: resolve the newest Horizon build for this device, download it with
+     * progress in the status line, then hand the APK to Android's installer. All of it happens
+     * behind the same card, so the engine behaves like a launcher component.
+     */
+    private fun downloadHorizonEngine() {
+        val appContext = requireContext().applicationContext
+        binding.engineHorizonStatus.text = getString(R.string.engine_download_starting)
+        binding.engineHorizonInstall.isEnabled = false
+        TaskExecutors.getDefault().execute {
+            val result = HorizonEngineInstaller.downloadLatest(appContext) { percent ->
+                TaskExecutors.runInUIThread {
+                    if (isAdded) {
+                        binding.engineHorizonStatus.text =
+                            getString(R.string.engine_download_progress, percent)
+                    }
+                }
+            }
+            TaskExecutors.runInUIThread {
+                if (!isAdded) return@runInUIThread
+                binding.engineHorizonInstall.isEnabled = true
+                result.onSuccess { (_, file) ->
+                    HorizonEngineInstaller.install(requireContext(), file)
+                        .onSuccess { Toast.makeText(requireContext(), R.string.engine_install_started, Toast.LENGTH_LONG).show() }
+                        .onFailure { error ->
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.engine_install_failed, error.message ?: ""),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                }.onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.engine_install_failed, error.message ?: ""),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                renderEngineState()
+            }
+        }
+    }
+
+    private fun editEngineSource() {
+        EditTextDialog.Builder(requireContext())
+            .setTitle(R.string.engine_source_title)
+            .setMessage(R.string.engine_source_hint)
+            .setEditText(HorizonEngineInstaller.sourceRepo())
+            .setConfirmListener { editText, _ ->
+                HorizonEngineInstaller.setSourceRepo(editText.text.toString())
+                renderEngineState()
+                Toast.makeText(requireContext(), R.string.engine_source_saved, Toast.LENGTH_SHORT).show()
+                true
+            }
+            .showDialog()
+    }
+
+    private fun uninstallHorizonEngine() {
+        val context = requireContext()
+        val installation = HorizonEngine.resolve(context)
+        if (installation == null) {
+            Toast.makeText(context, R.string.engine_pick_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        runCatching { context.startActivity(HorizonEngineInstaller.uninstallIntent(installation.packageName)) }
+            .onFailure {
+                Toast.makeText(context, R.string.engine_install_unavailable, Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun showEngineAppPicker() {

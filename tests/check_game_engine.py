@@ -198,6 +198,81 @@ else:
         if "getMessage()" not in body:
             errors.append("launchGame must surface the fallback reason when the hand-off fails")
 
+# ── 6. The engine is a first-class, launcher-managed install ────────────────────────────
+# "Built in" cannot mean embedding Rust into this APK, so it must mean the launcher owns the
+# whole lifecycle: resolve the release, pick this device's ABI, verify, install, detect.
+installer = engine_dir / "HorizonEngineInstaller.kt"
+flow = engine_dir / "HorizonEngineInstallFlow.kt"
+installer_src = read(installer)
+flow_src = read(flow)
+
+for needle, what in (
+    ("fun latestRelease(repo: String = sourceRepo()): Result<EngineRelease>", "release resolution"),
+    ("https://api.github.com", "the GitHub release API"),
+    ("fun pickAsset(assets: JsonArray): JsonObject?", "ABI-aware asset selection"),
+    ("Build.SUPPORTED_ABIS", "the device ABI probe"),
+    ("fun downloadLatest(context: Context", "the download entry point"),
+    ("fun download(context: Context, release: EngineRelease", "the streaming download"),
+    ("fun install(context: Context, apk: File): Result<String>", "the install hand-off"),
+    ("fun installIntent(context: Context, apk: File): Intent", "the installer intent"),
+    ("getPackageArchiveInfo", "reading the package id out of the APK"),
+    ("GameEngineManager.selectHorizonPackage", "remembering the downloaded engine's package"),
+    ("FileProvider.getUriForFile", "the FileProvider hand-off"),
+    ("SHA256SUMS.txt", "checksum verification"),
+    ("MessageDigest.getInstance(\"SHA-256\")", "SHA-256 hashing"),
+    ("fun uninstallIntent(packageName: String): Intent", "uninstall support"),
+    ("fun setSourceRepo(repo: String)", "the configurable engine source"),
+):
+    if needle not in installer_src:
+        errors.append(f"HorizonEngineInstaller.kt: missing {what} (`{needle}`)")
+
+if 'StringSettingUnit("horizonEngineSource"' not in settings_src:
+    errors.append("AllSettings: horizonEngineSource must exist so the feed is configurable")
+if "Vasysik/horizon-android" not in settings_src:
+    errors.append("AllSettings: the engine source needs a working default feed")
+if "ACTION_DELETE" not in installer_src:
+    errors.append("HorizonEngineInstaller: uninstall must go through ACTION_DELETE")
+
+# Play must offer the install instead of only failing over silently.
+if "NOT_INSTALLED" not in manager_src:
+    errors.append("GameEngineManager: attemptHorizonLaunch must report NOT_INSTALLED separately")
+for needle, what in (
+    ("HorizonLaunchOutcome.NOT_INSTALLED", "the install offer on Play"),
+    ("HorizonEngineInstallFlow.offerInstall", "the built-in install flow hook"),
+    ("startOnDeviceEngine(version)", "the fallback into the Java path"),
+    ("private void startOnDeviceEngine(Version version)", "the extracted on-device path"),
+):
+    if needle not in launcher_src:
+        errors.append(f"LauncherActivity.java: missing {what} (`{needle}`)")
+
+if "downloadLatest" not in flow_src or "engine_download_progress" not in flow_src:
+    errors.append("HorizonEngineInstallFlow.kt: the flow needs download progress feedback")
+if "onDeclined.run()" not in flow_src:
+    errors.append("HorizonEngineInstallFlow.kt: declining must fall back to the on-device engine")
+
+# Phone settings own the same lifecycle: download, source override, uninstall.
+for needle, what in (
+    ("downloadHorizonEngine()", "the built-in download action"),
+    ("HorizonEngineInstaller.downloadLatest(", "the downloader call"),
+    ("HorizonEngineInstaller.setSourceRepo(", "editing the engine source"),
+    ("HorizonEngineInstaller.uninstallIntent(", "the uninstall action"),
+    ("binding.engineHorizonUninstall.visibility", "uninstall visibility"),
+    ("binding.engineHorizonSource.text", "the source label"),
+    ("R.string.engine_download_progress", "download progress in the status line"),
+):
+    if needle not in fragment_src:
+        errors.append(f"PhoneSettingsFragment.kt: missing {what} (`{needle}`)")
+
+for view_id in ("engine_horizon_source", "engine_horizon_uninstall"):
+    if f'@+id/{view_id}"' not in layout_src:
+        errors.append(f"settings_fragment_phone.xml: missing view id {view_id}")
+
+# Android will not install an APK on our behalf without this permission.
+if "android.permission.REQUEST_INSTALL_PACKAGES" not in read(manifest):
+    errors.append("AndroidManifest.xml: REQUEST_INSTALL_PACKAGES is required to install the engine")
+if 'android:authorities="${applicationId}.provider"' not in read(manifest):
+    errors.append("AndroidManifest.xml: the FileProvider used for the APK hand-off is missing")
+
 # Package visibility for the engine app (Android 11+ hides other apps otherwise).
 manifest_src = read(manifest)
 if 'android:name="dev.horizon.android"' not in manifest_src:
@@ -209,4 +284,4 @@ if errors:
         print(f"  - {error}")
     raise SystemExit(1)
 
-print("Game engine checks passed: persisted switch, defensive Horizon hand-off, fallback to the on-device engine")
+print("Game engine checks passed: persisted switch, built-in engine install, defensive hand-off, fallback")

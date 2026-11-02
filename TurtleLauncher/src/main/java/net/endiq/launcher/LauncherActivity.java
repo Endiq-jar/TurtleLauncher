@@ -49,6 +49,7 @@ import com.endiq.turtlelauncher.feature.background.BackgroundManager;
 import com.endiq.turtlelauncher.feature.background.BackgroundType;
 import com.endiq.turtlelauncher.feature.download.item.ModLoaderWrapper;
 import com.endiq.turtlelauncher.feature.engine.GameEngineManager;
+import com.endiq.turtlelauncher.feature.engine.HorizonEngineInstallFlow;
 import com.endiq.turtlelauncher.feature.engine.HorizonLaunchOutcome;
 import com.endiq.turtlelauncher.feature.engine.HorizonLaunchResult;
 import com.endiq.turtlelauncher.feature.log.Logging;
@@ -707,10 +708,22 @@ public class LauncherActivity extends BaseActivity {
         if (engineLaunch.getOutcome() == HorizonLaunchOutcome.LAUNCHED) {
             return;
         }
+        if (engineLaunch.getOutcome() == HorizonLaunchOutcome.NOT_INSTALLED) {
+            // The engine is built into the launcher as a managed download: offer it here instead
+            // of only telling the user to go install something. Backing out of the dialog falls
+            // through to the on-device engine so Play still starts a game.
+            HorizonEngineInstallFlow.offerInstall(this, () -> startOnDeviceEngine(version));
+            return;
+        }
         if (engineLaunch.getMessage() != null) {
             Toast.makeText(this, engineLaunch.getMessage(), Toast.LENGTH_LONG).show();
         }
 
+        startOnDeviceEngine(version);
+    }
+
+    /** The classic launch path: account prompt, then download/JRE/renderer setup. */
+    private void startOnDeviceEngine(Version version) {
         LocalAccountUtils.checkUsageAllowed(new LocalAccountUtils.CheckResultListener() {
             @Override
             public void onUsageAllowed() {

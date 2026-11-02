@@ -188,6 +188,14 @@ class AllSettings {
         /** Package id of the Horizon engine app the user picked (blank = auto-detect). */
         @JvmStatic val horizonEnginePackage     = StringSettingUnit("horizonEnginePackage", "")
 
+        /**
+         * GitHub repository the built-in engine installer pulls Horizon Android builds from,
+         * written as `owner/repository`. See
+         * [com.endiq.turtlelauncher.feature.engine.HorizonEngineInstaller].
+         */
+        @JvmStatic val horizonEngineSource      =
+            StringSettingUnit("horizonEngineSource", "Vasysik/horizon-android")
+
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
         @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")

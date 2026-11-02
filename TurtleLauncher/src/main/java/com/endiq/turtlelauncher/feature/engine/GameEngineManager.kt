@@ -9,6 +9,9 @@ enum class HorizonLaunchOutcome {
     /** The on-device engine is selected; nothing was handed off. */
     NOT_SELECTED,
 
+    /** Horizon is selected and supported, but no engine app is installed yet. */
+    NOT_INSTALLED,
+
     /** The Horizon engine app was started; the Java launch path must not run. */
     LAUNCHED,
 
@@ -91,7 +94,8 @@ object GameEngineManager {
 
         val installation = HorizonEngine.resolve(context)
             ?: return HorizonLaunchResult(
-                HorizonLaunchOutcome.FAILED,
+                // Callers can offer the built-in download instead of silently bouncing to the JVM.
+                HorizonLaunchOutcome.NOT_INSTALLED,
                 context.getString(R.string.engine_fallback_not_installed),
             )
 

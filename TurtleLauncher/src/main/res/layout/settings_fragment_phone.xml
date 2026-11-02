@@ -194,7 +194,7 @@
                         android:layout_weight="1"
                         android:background="?android:attr/selectableItemBackground"
                         android:padding="@dimen/_12sdp"
-                        android:text="@string/engine_install_apk"
+                        android:text="@string/engine_install_engine"
                         android:textColor="@color/accent_primary"
                         android:textSize="@dimen/_10ssp" />
 
@@ -208,6 +208,36 @@
                         android:text="@string/engine_open"
                         android:textColor="@color/accent_primary"
                         android:textSize="@dimen/_10ssp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/engine_horizon_source"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:padding="@dimen/_12sdp"
+                        android:textColor="@color/turtle_text_secondary"
+                        android:textSize="@dimen/_10ssp"
+                        tools:text="Source: Vasysik/horizon-android" />
+
+                    <TextView
+                        android:id="@+id/engine_horizon_uninstall"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:padding="@dimen/_12sdp"
+                        android:text="@string/engine_uninstall"
+                        android:textColor="@color/accent_primary"
+                        android:textSize="@dimen/_10ssp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
                 </LinearLayout>
             </androidx.appcompat.widget.LinearLayoutCompat>
 

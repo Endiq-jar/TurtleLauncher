@@ -803,6 +803,29 @@
         <item quantity="other">%d screenshots</item>
     </plurals>
 
+    <!-- Phone Settings: Game engine -->
+    <string name="setting_category_phone_engine">Game engine</string>
+    <string name="setting_phone_engine_desc">Chooses what the Play button starts. The on-device engine is the bundled Java runtime this launcher has always used. The Horizon engine hands the launch to an installed Horizon app - a separate native (Rust/Vulkan) build that prepares its own game resources and cannot run Java mods.</string>
+    <string name="engine_device_title">On-device engine</string>
+    <string name="engine_device_summary">Bundled Java runtime + renderer, with your mods, worlds and accounts exactly as before.</string>
+    <string name="engine_horizon_title">Horizon engine</string>
+    <string name="engine_horizon_summary">Launches through an installed Horizon app instead of the JVM. Needs a 64-bit ARM device with Vulkan; Java mods and Microsoft sign-in do not apply there.</string>
+    <string name="engine_status_ready">Installed: %1$s</string>
+    <string name="engine_status_ready_version">Installed: %1$s v%2$s</string>
+    <string name="engine_status_missing">No Horizon app found. Install a Horizon build or pick an installed engine app below.</string>
+    <string name="engine_status_unsupported_abi">This device has no 64-bit ARM CPU, which every Horizon Android build requires. The on-device engine stays selected when you press Play.</string>
+    <string name="engine_pick_app">Choose app</string>
+    <string name="engine_install_apk">Install APK</string>
+    <string name="engine_open">Open</string>
+    <string name="engine_pick_title">Installed engine apps</string>
+    <string name="engine_pick_empty">No Horizon app found on this device. Install one first.</string>
+    <string name="engine_pick_selected">Horizon engine set to %1$s</string>
+    <string name="engine_install_unavailable">No app on this device can install that file.</string>
+    <string name="engine_open_failed">Could not open the Horizon engine: %1$s</string>
+    <string name="engine_fallback_not_installed">Horizon engine is not installed - starting with the on-device engine instead.</string>
+    <string name="engine_fallback_unsupported">Horizon needs a 64-bit ARM device - starting with the on-device engine instead.</string>
+    <string name="engine_fallback_failed">Could not start Horizon (%1$s) - starting with the on-device engine instead.</string>
+
     <!-- Phone Settings: CPU -->
     <string name="setting_category_phone_cpu">CPU</string>
     <string name="setting_active_processor_count_desc">Passes -XX:ActiveProcessorCount to the JVM so it sees the right core count on phones that misreport their own. Always clamped to 1-16, falling back to 8 if the device reports something bogus.</string>

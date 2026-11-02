@@ -24824,6 +24824,10 @@
     <queries>
         <package android:name="moe.shizuku.privileged.api"/>
         <package android:name="net.kdt.pojavlaunch.ffmpeg"/>
+        <!-- Horizon engine builds (see feature/engine/HorizonEngine.kt): package visibility is
+             needed to detect an installed engine and to hand the launch over to it. -->
+        <package android:name="dev.horizon.android"/>
+        <package android:name="dev.horizon.launcher"/>
         <intent>
             <action android:name="android.intent.action.MAIN" />
         </intent>

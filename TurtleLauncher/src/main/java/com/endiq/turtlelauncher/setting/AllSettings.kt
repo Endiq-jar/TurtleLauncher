@@ -177,6 +177,17 @@ class AllSettings {
         @JvmStatic val gyroInvertY              = BooleanSettingUnit("gyroInvertY", false)
         @JvmStatic val deadZoneScale            = IntSettingUnit("gamepad_deadzone_scale", 100)
 
+        // ── Engine ────────────────────────────────────────────────────────────
+        /**
+         * Which runtime the Play button starts: `device` (the bundled Java engine, default) or
+         * `horizon` (hand the launch to an installed Horizon engine app).
+         * See [com.endiq.turtlelauncher.feature.engine.GameEngineManager].
+         */
+        @JvmStatic val gameEngine               = StringSettingUnit("gameEngine", "device")
+
+        /** Package id of the Horizon engine app the user picked (blank = auto-detect). */
+        @JvmStatic val horizonEnginePackage     = StringSettingUnit("horizonEnginePackage", "")
+
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
         @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")

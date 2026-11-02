@@ -57,6 +57,160 @@
             android:orientation="vertical"
             android:paddingVertical="@dimen/_12sdp">
 
+            <!-- ── Game engine ─────────────────────────────────────────────── -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/phone_engine_category"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_12sdp"
+                android:background="@drawable/background_card"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/_2sdp"
+                android:paddingVertical="@dimen/_12sdp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_12sdp"
+                    android:text="@string/setting_category_phone_engine"
+                    android:textColor="@color/accent_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_12sdp"
+                    android:layout_marginBottom="@dimen/_6sdp"
+                    android:text="@string/setting_phone_engine_desc"
+                    android:textSize="@dimen/_10ssp" />
+
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/engine_device_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/engine_device_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/engine_device_radio"
+                        android:text="@string/engine_device_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/engine_device_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/engine_device_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/engine_device_radio"
+                        android:text="@string/engine_device_summary" />
+
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixRadioButton
+                        android:id="@+id/engine_device_radio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:importantForAccessibility="no" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+
+                <com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout
+                    android:id="@+id/engine_horizon_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:id="@+id/engine_horizon_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/engine_horizon_radio"
+                        android:text="@string/engine_horizon_title"
+                        android:textColor="@color/turtle_primary_text" />
+
+                    <TextView
+                        android:id="@+id/engine_horizon_summary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/engine_horizon_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_toStartOf="@+id/engine_horizon_radio"
+                        android:text="@string/engine_horizon_summary" />
+
+                    <com.endiq.turtlelauncher.ui.miuix.MiuixRadioButton
+                        android:id="@+id/engine_horizon_radio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:importantForAccessibility="no" />
+                </com.endiq.turtlelauncher.ui.layout.AnimRelativeLayout>
+
+                <TextView
+                    android:id="@+id/engine_horizon_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_12sdp"
+                    android:layout_marginBottom="@dimen/_6sdp"
+                    android:textSize="@dimen/_10ssp"
+                    tools:text="Not installed" />
+
+                <LinearLayout
+                    android:id="@+id/engine_horizon_actions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/engine_horizon_pick"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:padding="@dimen/_12sdp"
+                        android:text="@string/engine_pick_app"
+                        android:textColor="@color/accent_primary"
+                        android:textSize="@dimen/_10ssp" />
+
+                    <TextView
+                        android:id="@+id/engine_horizon_install"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:padding="@dimen/_12sdp"
+                        android:text="@string/engine_install_apk"
+                        android:textColor="@color/accent_primary"
+                        android:textSize="@dimen/_10ssp" />
+
+                    <TextView
+                        android:id="@+id/engine_horizon_open"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:padding="@dimen/_12sdp"
+                        android:text="@string/engine_open"
+                        android:textColor="@color/accent_primary"
+                        android:textSize="@dimen/_10ssp" />
+                </LinearLayout>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
             <!-- ── CPU ──────────────────────────────────────────────────────── -->
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/phone_cpu_category"

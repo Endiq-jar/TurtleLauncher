@@ -48,6 +48,9 @@ import com.endiq.turtlelauncher.feature.accounts.LocalAccountUtils;
 import com.endiq.turtlelauncher.feature.background.BackgroundManager;
 import com.endiq.turtlelauncher.feature.background.BackgroundType;
 import com.endiq.turtlelauncher.feature.download.item.ModLoaderWrapper;
+import com.endiq.turtlelauncher.feature.engine.GameEngineManager;
+import com.endiq.turtlelauncher.feature.engine.HorizonLaunchOutcome;
+import com.endiq.turtlelauncher.feature.engine.HorizonLaunchResult;
 import com.endiq.turtlelauncher.feature.log.Logging;
 import com.endiq.turtlelauncher.feature.mod.modpack.install.InstallExtra;
 import com.endiq.turtlelauncher.feature.mod.modpack.install.InstallLocalModPack;
@@ -692,6 +695,22 @@ public class LauncherActivity extends BaseActivity {
     private void launchGame(Version version) {
         // Stop launcher music unless the scope is set to keep playing into the game too.
         com.endiq.turtlelauncher.feature.music.MusicManager.INSTANCE.onGameLaunching();
+
+        // Engine switch (Phone settings -> Game engine). When the Horizon engine is selected and
+        // installed, the Play press is handed to that app and the Java launch path below must not
+        // run: Horizon is a separate native runtime, so downloading a JRE/img or resolving a
+        // renderer for it would be wasted work (and would never be used). Any failure to hand off
+        // falls through to the on-device engine with the reason surfaced, so Play never becomes a
+        // dead button. This deliberately sits before the Microsoft-account prompt: Horizon builds
+        // do not take launcher accounts.
+        HorizonLaunchResult engineLaunch = GameEngineManager.attemptHorizonLaunch(this, version);
+        if (engineLaunch.getOutcome() == HorizonLaunchOutcome.LAUNCHED) {
+            return;
+        }
+        if (engineLaunch.getMessage() != null) {
+            Toast.makeText(this, engineLaunch.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
         LocalAccountUtils.checkUsageAllowed(new LocalAccountUtils.CheckResultListener() {
             @Override
             public void onUsageAllowed() {

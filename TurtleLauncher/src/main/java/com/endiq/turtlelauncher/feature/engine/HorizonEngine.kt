@@ -67,8 +67,10 @@ object HorizonEngine {
     fun describe(context: Context, packageName: String): Installation? {
         val info = packageInfo(context, packageName) ?: return null
         val manager = context.packageManager
-        val label = runCatching { manager.getApplicationLabel(info.applicationInfo).toString() }
-            .getOrNull()
+        val label = info.applicationInfo
+            ?.let { applicationInfo ->
+                runCatching { manager.getApplicationLabel(applicationInfo).toString() }.getOrNull()
+            }
             ?.takeIf { it.isNotBlank() }
             ?: packageName
         return Installation(packageName, label, info.versionName)

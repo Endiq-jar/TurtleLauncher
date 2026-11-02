@@ -106,9 +106,54 @@ object DiscordOAuthClient {
         AllSettings.discordOAuthRedirectUri.getValue().trim()
             .ifBlank { DiscordConfig.DEFAULT_REDIRECT_URI }
 
+    /**
+     * Scopes that only work for a bot install (`bot` and the `applications.*` family) or for a
+     * webhook. Sending them on a public-client user authorization makes Discord reject the whole
+     * request with `invalid_scope`, which looks like "sign-in is broken" from the app's side, so
+     * they are dropped before the URL is built and reported to the UI instead.
+     */
+    private val BOT_ONLYISH_SCOPES = setOf(
+        "bot",
+        "applications.builds.read",
+        "applications.commands",
+        "applications.commands.permissions.update",
+        "applications.entitlements",
+        "applications.store.update",
+        "webhook.incoming",
+    )
+
+    /** The three scopes the Friends feature actually consumes. */
+    val RECOMMENDED_SCOPES: String = DiscordConfig.DEFAULT_SCOPES
+
+    /**
+     * Splits a configured scope string into what can be requested and what needed a bot token.
+     * Falls back to [RECOMMENDED_SCOPES] when nothing usable is left.
+     */
+    fun sanitizeScopes(raw: String): Pair<List<String>, List<String>> {
+        val requested = raw.split(' ', ',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        val dropped = requested.filter { it.lowercase() in BOT_ONLYISH_SCOPES }
+        val usable = requested.filterNot { it.lowercase() in BOT_ONLYISH_SCOPES }
+        val effective = usable.ifEmpty {
+            DiscordConfig.DEFAULT_SCOPES.split(' ').filter { it.isNotBlank() }
+        }
+        return effective to dropped
+    }
+
     fun scopes(): String =
-        AllSettings.discordOAuthScopes.getValue().trim()
-            .ifBlank { DiscordConfig.DEFAULT_SCOPES }
+        sanitizeScopes(
+            AllSettings.discordOAuthScopes.getValue().trim()
+                .ifBlank { DiscordConfig.DEFAULT_SCOPES }
+        ).first.joinToString(" ")
+
+    /** Bot-only scopes named in Settings that cannot be granted here. */
+    fun unsupportedScopes(): List<String> =
+        sanitizeScopes(
+            AllSettings.discordOAuthScopes.getValue().trim()
+                .ifBlank { DiscordConfig.DEFAULT_SCOPES }
+        ).second
 
     fun isLinked(): Boolean = SocialIdentityStore.current().hasDiscordLink
 
@@ -165,7 +210,15 @@ object DiscordOAuthClient {
             val description = uri.getQueryParameter("error_description").orEmpty()
             SocialStorage.delete(PENDING_FILE)
             throw IllegalStateException(
-                if (description.isBlank()) "Discord returned '$error'." else description
+                when {
+                    // The authorization URL asked for something Discord will not grant to a
+                    // public client - almost always a bot-only scope pasted into Settings.
+                    error == "invalid_scope" ->
+                        "Discord rejected the requested scopes. Use only: $RECOMMENDED_SCOPES " +
+                            "(bot-only scopes such as bot/applications.* cannot be used here)."
+                    description.isNotBlank() -> description
+                    else -> "Discord returned '$error'."
+                }
             )
         }
 
@@ -330,7 +383,9 @@ object DiscordOAuthClient {
     /** Exposed for the "copy this URI into the Discord portal" row and for diagnostics. */
     fun describeConfiguration(): String {
         val state = if (isLinked()) "linked" else "not linked"
-        return "app ${DiscordConfig.APPLICATION_ID} · $state · redirect ${redirectUri()} · scopes ${scopes()}"
+        val dropped = unsupportedScopes()
+        val ignored = if (dropped.isEmpty()) "" else " · ignored ${dropped.joinToString(" ")}"
+        return "app ${DiscordConfig.APPLICATION_ID} · $state · redirect ${redirectUri()} · scopes ${scopes()}$ignored"
     }
 
     internal fun pendingAuthForDebug(): String = gson.toJson(pendingAuth())

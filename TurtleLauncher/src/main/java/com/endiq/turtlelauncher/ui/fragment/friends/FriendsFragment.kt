@@ -572,6 +572,7 @@ class FriendsFragment : FragmentWithAnim(R.layout.fragment_friends) {
     }
 
     private fun startDiscordLink() {
+        warnAboutDroppedScopes()
         DiscordOAuthClient.beginAuth(requireContext())
             .onSuccess { toast(getString(R.string.social_link_opened)) }
             .onFailure { error ->
@@ -579,11 +580,20 @@ class FriendsFragment : FragmentWithAnim(R.layout.fragment_friends) {
             }
     }
 
+    /** Tells the user when Settings still carries bot-only scopes that were not sent. */
+    private fun warnAboutDroppedScopes() {
+        val dropped = DiscordOAuthClient.unsupportedScopes()
+        if (dropped.isNotEmpty()) {
+            toast(getString(R.string.social_scope_bot_only_ignored, dropped.joinToString(", ")))
+        }
+    }
+
     /**
      * One-tap repair for a rejected Discord session: the stored tokens are dropped, the merged
      * identity stays, and the normal PKCE sign-in runs again.
      */
     private fun reconnectDiscord() {
+        warnAboutDroppedScopes()
         DiscordOAuthClient.reconnect(requireContext())
             .onSuccess { toast(getString(R.string.social_link_opened)) }
             .onFailure { error ->
@@ -594,9 +604,17 @@ class FriendsFragment : FragmentWithAnim(R.layout.fragment_friends) {
     private fun showScopeDialog() {
         val redirect = DiscordOAuthClient.redirectUri()
         val scopes = DiscordOAuthClient.scopes()
+        val dropped = DiscordOAuthClient.unsupportedScopes()
+        val body = buildString {
+            append(getString(R.string.social_scope_body, redirect, scopes))
+            if (dropped.isNotEmpty()) {
+                append("\n\n")
+                append(getString(R.string.social_scope_bot_only_ignored, dropped.joinToString(", ")))
+            }
+        }
         AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
             .setTitle(R.string.social_scope_title)
-            .setMessage(getString(R.string.social_scope_body, redirect, scopes))
+            .setMessage(body)
             .setPositiveButton(R.string.social_copy_redirect) { _, _ ->
                 copyToClipboard(redirect)
             }

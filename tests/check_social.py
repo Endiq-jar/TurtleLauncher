@@ -235,6 +235,29 @@ if "DiscordOAuthClient.reconnect(" not in friends_ui:
 if "setOnClickListener(" not in friends_ui.split("private fun renderStatus(", 1)[-1].split("private fun", 1)[0]:
     errors.append("FriendsFragment.renderStatus must make the invalid-session status actionable")
 
+# --- Scope hygiene ------------------------------------------------------------
+# The OAuth2 URL Generator in the Developer Portal offers bot-only scopes (bot,
+# applications.*, webhook.incoming). Pasting them into Settings makes Discord reject the
+# whole authorize request, so they must be dropped and reported, never sent.
+if "fun sanitizeScopes(raw: String): Pair<List<String>, List<String>>" not in auth:
+    errors.append("DiscordAuth.kt: missing sanitizeScopes() (bot-only scope filter)")
+if "val RECOMMENDED_SCOPES: String = DiscordConfig.DEFAULT_SCOPES" not in auth:
+    errors.append("DiscordAuth.kt: RECOMMENDED_SCOPES must name the scopes the feature uses")
+if "fun unsupportedScopes(): List<String>" not in auth:
+    errors.append("DiscordAuth.kt: unsupportedScopes() must report dropped bot-only scopes")
+for scope in ("\"bot\"", "\"applications.commands\"", "\"webhook.incoming\""):
+    if scope not in auth.split("BOT_ONLYISH_SCOPES", 1)[-1].split(")", 1)[0]:
+        errors.append(f"DiscordAuth.kt: bot-only scope {scope} must be filtered out")
+if "sanitizeScopes(" not in auth.split("fun scopes(): String", 1)[-1].split("\n    }", 1)[0]:
+    errors.append("DiscordAuth.scopes() must return the sanitized list")
+if 'error == "invalid_scope"' not in auth:
+    errors.append("DiscordAuth.kt: invalid_scope redirects need their own explanation")
+
+if "unsupportedScopes()" not in friends_ui:
+    errors.append("FriendsFragment.kt: the scope dialog must report ignored bot-only scopes")
+if "social_scope_bot_only_ignored" not in friends_ui:
+    errors.append("FriendsFragment.kt: linking must warn about bot-only scopes from Settings")
+
 if "Discord session expired" in repository + auth:
     errors.append("the misleading 'Discord session expired' copy must not come back")
 

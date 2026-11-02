@@ -1642,7 +1642,8 @@
     <string name="social_identity_title">Your identity</string>
     <string name="social_identity_desc">Turtle keeps a local profile, so friends and party invites work without signing in. Linking Discord adds your Discord friends and turns both into one list.</string>
     <string name="social_scope_title">Discord OAuth redirect and scopes</string>
-    <string name="social_scope_body">Redirect URI: %1$s\nScopes: %2$s\n\nPaste the same redirect URI into Discord Developer Portal → your application → OAuth2 → Redirects. relationships.read is required to list Discord friends and is granted per application by Discord.</string>
+    <string name="social_scope_body">Redirect URI: %1$s\nScopes: %2$s\n\nPaste the same redirect URI into Discord Developer Portal → your application → OAuth2 → Redirects. relationships.read is required to list Discord friends and is granted per application by Discord. Only the Identify, Guilds and relationships.read scopes can be requested from a launcher: bot, applications.* and webhook.incoming need a bot token and would make Discord reject the sign-in.</string>
+    <string name="social_scope_bot_only_ignored">Ignoring %1$s - those scopes need a bot token, so Discord would reject the sign-in.</string>
     <string name="social_copy_redirect">Copy redirect URI</string>
     <string name="social_copied">Copied</string>
     <string name="social_sdk_help_title">Enable the Discord Social SDK</string>
@@ -1717,5 +1718,5 @@
     <string name="social_preview_toggle">Show message text in notifications</string>
     <string name="social_setting_saved">Saved.</string>
     <string name="social_redirect_hint">Must match, character for character, a redirect URI registered on the Discord application (Developer Portal → OAuth2 → Redirects). Leave blank to use the default.</string>
-    <string name="social_scopes_hint">Space-separated OAuth2 scopes. relationships.read has to be granted to the application by Discord before the friends list can load. Leave blank to use the defaults.</string>
+    <string name="social_scopes_hint">Space-separated OAuth2 scopes. Use only identify, guilds and relationships.read - bot, applications.* and webhook.incoming need a bot token and are dropped automatically. relationships.read also has to be granted to the application by Discord before the friends list can load. Leave blank to use the defaults.</string>
 </resources>

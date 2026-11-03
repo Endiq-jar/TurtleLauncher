@@ -9,8 +9,14 @@ import zipfile
 from pathlib import Path
 
 abis = {"armeabi-v7a": (1, 40), "arm64-v8a": (2, 183), "x86": (1, 3), "x86_64": (2, 62)}
-# Every ABI build of the Horizon engine the launcher carries (see bundleHorizonEngine).
-horizon_abis = ("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+# Every ABI build of the Horizon engine the launcher carries (see bundleHorizonEngine), with a
+# size floor so a truncated download cannot pass as a complete engine.
+horizon_abis = {
+    "arm64-v8a": 28 * 1024 * 1024,
+    "armeabi-v7a": 24 * 1024 * 1024,
+    "x86": 28 * 1024 * 1024,
+    "x86_64": 30 * 1024 * 1024,
+}
 libraries = (
     "libdiscord_partner_sdk.so", "libturtlediscordrpc.so", "libc++_shared.so",
     "libturtlefiledialogs.so", "liblwjgl_tinyfd.so", "liblwjgl_nfd.so",
@@ -45,11 +51,13 @@ for path in paths:
         # here, loudly, instead of shipping a launcher that silently falls back to the feed.
         version = apk.read("assets/horizon/version").decode().strip()
         assert re.fullmatch(r"\d+\.\d+\.\d+", version), f"Bundled Horizon engine version looks wrong ({version!r})"
-        for abi in horizon_abis:
+        for abi, minimum in horizon_abis.items():
             engine = f"assets/horizon/horizon-engine-{abi}.apk"
             assert engine in names, f"The release APK must ship the built-in Horizon engine for {abi}"
             engine_size = apk.getinfo(engine).file_size
-            assert engine_size > 10 * 1024 * 1024, f"Bundled Horizon engine for {abi} looks truncated ({engine_size} bytes)"
+            assert engine_size >= minimum, (
+                f"Bundled Horizon engine for {abi} looks truncated ({engine_size} of at least {minimum} bytes)"
+            )
             with zipfile.ZipFile(io.BytesIO(apk.read(engine))) as engine_apk:
                 assert engine_apk.read("AndroidManifest.xml")[:4] == b"\x03\x00\x08\x00", \
                     f"Bundled Horizon engine for {abi} is not an Android APK"

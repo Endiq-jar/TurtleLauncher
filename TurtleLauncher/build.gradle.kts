@@ -525,8 +525,16 @@ tasks.withType<MergeSourceSetFolders>().configureEach {
 // every ABI build is included the right one is always there for the device.
 // The APKs are fetched once on the build machine and live only in build/generated - never in git.
 val horizonEngineVersion = "0.7.7"
-/** Every Horizon Android ABI build that ships inside the launcher. */
+/** Every Horizon Android ABI build that ships inside the launcher, with its minimum size. */
 val horizonEngineAbis = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+// ~80% of the published sizes: a truncated download or an error page must never be bundled as if
+// it were an engine, while a smaller future build still fits.
+val horizonEngineMinBytes = mapOf(
+    "arm64-v8a" to 28L * 1024 * 1024,
+    "armeabi-v7a" to 24L * 1024 * 1024,
+    "x86" to 28L * 1024 * 1024,
+    "x86_64" to 30L * 1024 * 1024,
+)
 val horizonEngineAssetDir = layout.buildDirectory.dir("generated/horizonAssets")
 // A file dropped into src/main/assets/horizon/ wins, and a mirror can be supplied with
 // -Pturtlelauncher.horizonEngineUrlTemplate=https://mirror/.../Horizon-{abi}.apk (file: URLs work).
@@ -540,6 +548,7 @@ val bundleHorizonEngine by tasks.registering {
     val template = horizonEngineUrlTemplate
     val version = horizonEngineVersion
     val abis = horizonEngineAbis
+    val minBytes = horizonEngineMinBytes
     val committed = layout.projectDirectory.dir("src/main/assets/horizon")
     outputs.dir(outDir)
     // Declare the APKs themselves as outputs: if a download failed last time, the missing files
@@ -575,9 +584,15 @@ val bundleHorizonEngine by tasks.registering {
                 (connection as? HttpURLConnection)?.instanceFollowRedirects = true
                 connection.getInputStream().use { input -> target.outputStream().use { input.copyTo(it) } }
             }
-            if (fetched.isFailure || target.length() <= 0L) {
+            val minimum = minBytes.getValue(abi)
+            if (fetched.isFailure || target.length() < minimum) {
+                val size = target.length()
                 target.delete()
-                logger.warn("Horizon engine: $abi not bundled (${fetched.exceptionOrNull()?.message})")
+                logger.warn(
+                    "Horizon engine: $abi not bundled (" +
+                        (fetched.exceptionOrNull()?.message ?: "only $size bytes, expected at least $minimum") +
+                        ")"
+                )
             } else {
                 logger.lifecycle("Horizon engine: bundled $abi v$version (${target.length()} bytes)")
                 bundled++

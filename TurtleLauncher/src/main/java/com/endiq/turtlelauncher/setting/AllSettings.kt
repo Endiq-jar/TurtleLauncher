@@ -196,6 +196,13 @@ class AllSettings {
         @JvmStatic val horizonEngineSource      =
             StringSettingUnit("horizonEngineSource", "Vasysik/horizon-android")
 
+        /**
+         * Bundled engine version whose update prompt the user dismissed ("Later"). Remembering it
+         * keeps "always the latest engine" from turning into a dialog on every Play press.
+         */
+        @JvmStatic val horizonEngineUpdateSkipped =
+            StringSettingUnit("horizonEngineUpdateSkipped", "")
+
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)
         @JvmStatic val versionCustomInfo        = StringSettingUnit("versionCustomInfo", "TurtleLauncher")

@@ -520,51 +520,78 @@ tasks.withType<MergeSourceSetFolders>().configureEach {
 
 // ── Built-in Horizon engine ──────────────────────────────────────────────────────────────
 // The Horizon engine is a native Rust/Vulkan app, so it cannot be linked in as a library. It is
-// therefore packed into the launcher's own APK as assets/horizon/horizon-engine.apk: picking the
-// engine in Phone settings then needs no download at all (HorizonEngineInstaller.extractBundled).
-// The APK is fetched once on the build machine and lives only in build/generated - never in git.
-val horizonEngineVersion = "0.7.6"
+// therefore packed into the launcher's own APK under assets/horizon/: picking the engine in Phone
+// settings then needs no download at all (HorizonEngineInstaller.extractBundled), and because
+// every ABI build is included the right one is always there for the device.
+// The APKs are fetched once on the build machine and live only in build/generated - never in git.
+val horizonEngineVersion = "0.7.7"
+/** Every Horizon Android ABI build that ships inside the launcher. */
+val horizonEngineAbis = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
 val horizonEngineAssetDir = layout.buildDirectory.dir("generated/horizonAssets")
-// A copy dropped into src/main/assets/horizon/ wins, and a checksum-pinned mirror can be supplied
-// with -Pturtlelauncher.horizonEngineUrl=... (file: URLs work too).
-val horizonEngineUrl = providers.gradleProperty("turtlelauncher.horizonEngineUrl").orElse(
+// A file dropped into src/main/assets/horizon/ wins, and a mirror can be supplied with
+// -Pturtlelauncher.horizonEngineUrlTemplate=https://mirror/.../Horizon-{abi}.apk (file: URLs work).
+val horizonEngineUrlTemplate = providers.gradleProperty("turtlelauncher.horizonEngineUrlTemplate").orElse(
     "https://github.com/Vasysik/horizon-android/releases/download/v$horizonEngineVersion/" +
-        "Horizon-Android-$horizonEngineVersion-arm64-v8a.apk"
+        "Horizon-Android-$horizonEngineVersion-{abi}.apk"
 )
 val bundleHorizonEngine by tasks.registering {
-    description = "Packs the Horizon engine APK into the launcher's assets."
+    description = "Packs every Horizon engine ABI build into the launcher's assets."
     val outDir = horizonEngineAssetDir
-    val url = horizonEngineUrl
+    val template = horizonEngineUrlTemplate
+    val version = horizonEngineVersion
+    val abis = horizonEngineAbis
     val committed = layout.projectDirectory.dir("src/main/assets/horizon")
     outputs.dir(outDir)
+    // Declare the APKs themselves as outputs: if a download failed last time, the missing files
+    // keep this task out of date so the next build tries again instead of shipping a partial set.
+    outputs.files(abis.map { outDir.get().dir("horizon").file("horizon-engine-$it.apk") })
     doLast {
         val assetRoot = outDir.get().dir("horizon").asFile
         assetRoot.mkdirs()
-        val target = File(assetRoot, "horizon-engine.apk")
-        if (target.isFile && target.length() > 0L) return@doLast
-
-        val local = File(committed.asFile, "horizon-engine.apk")
-        if (local.isFile && local.length() > 0L) {
-            local.copyTo(target, overwrite = true)
-            logger.lifecycle("Horizon engine: bundled from ${local.path}")
-            return@doLast
+        val stamp = File(assetRoot, "version")
+        // A version bump must not ship the old APKs next to the new ones.
+        if (stamp.isFile && stamp.readText().trim() != version) {
+            assetRoot.listFiles()?.forEach { stale -> runCatching { stale.delete() } }
         }
 
-        val fetched = runCatching {
-            val connection = URI(url.get()).toURL().openConnection()
-            connection.connectTimeout = 30_000
-            connection.readTimeout = 180_000
-            (connection as? HttpURLConnection)?.instanceFollowRedirects = true
-            connection.getInputStream().use { input -> target.outputStream().use { input.copyTo(it) } }
+        var bundled = 0
+        for (abi in abis) {
+            val target = File(assetRoot, "horizon-engine-$abi.apk")
+            if (target.isFile && target.length() > 0L) {
+                bundled++
+                continue
+            }
+            val local = File(committed.asFile, "horizon-engine-$abi.apk")
+            if (local.isFile && local.length() > 0L) {
+                local.copyTo(target, overwrite = true)
+                bundled++
+                continue
+            }
+            val url = template.get().replace("{abi}", abi)
+            val fetched = runCatching {
+                val connection = URI(url).toURL().openConnection()
+                connection.connectTimeout = 30_000
+                connection.readTimeout = 300_000
+                (connection as? HttpURLConnection)?.instanceFollowRedirects = true
+                connection.getInputStream().use { input -> target.outputStream().use { input.copyTo(it) } }
+            }
+            if (fetched.isFailure || target.length() <= 0L) {
+                target.delete()
+                logger.warn("Horizon engine: $abi not bundled (${fetched.exceptionOrNull()?.message})")
+            } else {
+                logger.lifecycle("Horizon engine: bundled $abi v$version (${target.length()} bytes)")
+                bundled++
+            }
         }
-        if (fetched.isFailure || target.length() <= 0L) {
-            target.delete()
-            logger.warn(
-                "Horizon engine: not bundled (${fetched.exceptionOrNull()?.message}). " +
-                    "Phone settings will offer a one-time download instead."
-            )
+
+        stamp.writeText(version)
+        if (bundled == abis.size) {
+            logger.lifecycle("Horizon engine: bundled v$version for all ${abis.size} ABIs")
         } else {
-            logger.lifecycle("Horizon engine: bundled v$horizonEngineVersion (${target.length()} bytes)")
+            logger.warn(
+                "Horizon engine: only $bundled of ${abis.size} ABIs bundled. " +
+                    "Phone settings falls back to a download for the missing ones."
+            )
         }
     }
 }

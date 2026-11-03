@@ -5,11 +5,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.log.Logging
+import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.task.TaskExecutors
 
 /**
  * Activity-facing wrapper around [HorizonEngineInstaller], used when someone presses Play with
- * the Horizon engine selected but not installed.
+ * the Horizon engine selected but not installed - or installed at an older version than the
+ * engine this launcher carries.
  *
  * Kept separate from the settings screen so the Play button can offer the same built-in install
  * without the user having to find a setting first. The dialog is the consent step: nothing is
@@ -32,8 +34,9 @@ object HorizonEngineInstallFlow {
             return
         }
         val bundled = HorizonEngineInstaller.isBundled(activity.applicationContext)
+        val label = HorizonEngineInstaller.bundledLabel(activity.applicationContext)
         val message = if (bundled) {
-            activity.getString(R.string.engine_install_body_bundled)
+            activity.getString(R.string.engine_install_body_bundled, label.orEmpty())
         } else {
             activity.getString(R.string.engine_install_body, HorizonEngineInstaller.sourceRepo())
         }
@@ -47,6 +50,42 @@ object HorizonEngineInstallFlow {
             .setOnCancelListener { onDeclined.run() }
             .create()
         dialog.show()
+    }
+
+    /**
+     * Offers to upgrade an already-installed Horizon app when the launcher's built-in engine is
+     * newer. Returns true when a dialog was shown (the caller should stop; [onContinue] runs if
+     * the user chooses to launch now, and the dismissal is remembered per bundled version so the
+     * prompt never becomes a nag).
+     */
+    @JvmStatic
+    fun offerUpdateIfNeeded(activity: Activity, onContinue: Runnable): Boolean {
+        if (activity.isFinishing || activity.isDestroyed) return false
+        val context = activity.applicationContext
+        if (!HorizonEngineInstaller.isBundled(context)) return false
+        val status = GameEngineManager.horizonStatus(activity)
+        if (!status.updateAvailable) return false
+        val bundledVersion = HorizonEngineInstaller.bundledVersion(context)
+        if (AllSettings.horizonEngineUpdateSkipped.getValue() == bundledVersion) return false
+
+        val installed = status.installation?.versionName.orEmpty().ifBlank { "unknown" }
+        AlertDialog.Builder(activity, R.style.CustomAlertDialogTheme)
+            .setTitle(R.string.engine_update_title)
+            .setMessage(activity.getString(R.string.engine_update_body, installed, bundledVersion))
+            .setPositiveButton(R.string.engine_update_confirm) { _, _ ->
+                // Installing is Android's own flow; the game starts on the next Play press.
+                download(activity)
+            }
+            .setNegativeButton(R.string.engine_update_later) { _, _ ->
+                AllSettings.horizonEngineUpdateSkipped.put(bundledVersion).save()
+                onContinue.run()
+            }
+            .setOnCancelListener {
+                AllSettings.horizonEngineUpdateSkipped.put(bundledVersion).save()
+                onContinue.run()
+            }
+            .show()
+        return true
     }
 
     private fun download(activity: Activity) {

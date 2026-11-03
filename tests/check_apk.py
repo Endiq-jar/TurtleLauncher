@@ -2,12 +2,15 @@
 """Check the universal release APK's native ABIs and Java-8 guest bootstrap."""
 import hashlib
 import io
+import re
 import struct
 import sys
 import zipfile
 from pathlib import Path
 
 abis = {"armeabi-v7a": (1, 40), "arm64-v8a": (2, 183), "x86": (1, 3), "x86_64": (2, 62)}
+# Every ABI build of the Horizon engine the launcher carries (see bundleHorizonEngine).
+horizon_abis = ("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
 libraries = (
     "libdiscord_partner_sdk.so", "libturtlediscordrpc.so", "libc++_shared.so",
     "libturtlefiledialogs.so", "liblwjgl_tinyfd.so", "liblwjgl_nfd.so",
@@ -37,19 +40,22 @@ for path in paths:
             bootstrap = jar.read("com/endiq/turtlelauncher/bridge/GameFileDialogs.class")
             assert bootstrap[:4] == b"\xca\xfe\xba\xbe", "Invalid guest class"
             assert struct.unpack_from(">H", bootstrap, 6)[0] <= 52, "Guest bootstrap requires Java newer than 8"
-        # The Horizon engine ships inside this APK; choosing it in Phone settings must not require
-        # a download. A build whose bundling step could not fetch the engine fails here, loudly,
-        # instead of shipping a launcher that silently falls back to the release feed.
-        engine = "assets/horizon/horizon-engine.apk"
-        assert engine in names, "The release APK must ship the built-in Horizon engine"
-        engine_size = apk.getinfo(engine).file_size
-        assert engine_size > 10 * 1024 * 1024, f"Bundled Horizon engine looks truncated ({engine_size} bytes)"
-        with zipfile.ZipFile(io.BytesIO(apk.read(engine))) as engine_apk:
-            assert engine_apk.read("AndroidManifest.xml")[:4] == b"\x03\x00\x08\x00", \
-                "Bundled Horizon engine is not an Android APK"
+        # The Horizon engine ships inside this APK for every ABI; choosing it in Phone settings
+        # must not require a download. A build whose bundling step could not fetch an engine fails
+        # here, loudly, instead of shipping a launcher that silently falls back to the feed.
+        version = apk.read("assets/horizon/version").decode().strip()
+        assert re.fullmatch(r"\d+\.\d+\.\d+", version), f"Bundled Horizon engine version looks wrong ({version!r})"
+        for abi in horizon_abis:
+            engine = f"assets/horizon/horizon-engine-{abi}.apk"
+            assert engine in names, f"The release APK must ship the built-in Horizon engine for {abi}"
+            engine_size = apk.getinfo(engine).file_size
+            assert engine_size > 10 * 1024 * 1024, f"Bundled Horizon engine for {abi} looks truncated ({engine_size} bytes)"
+            with zipfile.ZipFile(io.BytesIO(apk.read(engine))) as engine_apk:
+                assert engine_apk.read("AndroidManifest.xml")[:4] == b"\x03\x00\x08\x00", \
+                    f"Bundled Horizon engine for {abi} is not an Android APK"
         overlay = "assets/components/lwjgl-performance/turtle-performance.jar"
         with zipfile.ZipFile(io.BytesIO(apk.read(overlay))) as jar:
             glfw = jar.read("org/lwjgl/glfw/GLFW.class")
             assert struct.unpack_from(">H", glfw, 6)[0] <= 52, "Idle overlay needs Java newer than 8"
             assert apk.read("assets/components/lwjgl-performance/version").decode().strip() == hashlib.sha256(glfw).hexdigest()
-    print(f"APK packaging passed: {path.name}; all four ABIs, SDK/shared STL, renderers, dialogs, Java-8 bootstrap, bundled Horizon engine")
+    print(f"APK packaging passed: {path.name}; all four ABIs, SDK/shared STL, renderers, dialogs, Java-8 bootstrap, bundled Horizon engine for every ABI")

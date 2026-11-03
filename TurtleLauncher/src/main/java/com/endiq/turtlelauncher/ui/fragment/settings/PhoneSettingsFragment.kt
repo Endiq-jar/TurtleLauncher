@@ -196,18 +196,19 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
             if (status.installation != null) View.VISIBLE else View.GONE
         binding.engineHorizonUninstall.visibility =
             if (status.installation != null) View.VISIBLE else View.GONE
+        val bundledLabel = HorizonEngineInstaller.bundledLabel(requireContext())
         binding.engineHorizonSource.text =
-            if (HorizonEngineInstaller.isBundled(requireContext())) {
-                getString(R.string.engine_bundled_label)
+            if (bundledLabel != null) {
+                getString(R.string.engine_bundled_label, bundledLabel)
             } else {
                 getString(R.string.engine_source_label, HorizonEngineInstaller.sourceRepo())
             }
-        // The engine ships inside the launcher, so this is a plain "install", not a download.
+        // The engine ships inside the launcher, so this is a plain install/update, not a download.
         binding.engineHorizonInstall.text = getString(
-            if (HorizonEngineInstaller.isBundled(requireContext())) {
-                R.string.engine_install_bundled
-            } else {
-                R.string.engine_install_engine
+            when {
+                status.updateAvailable -> R.string.engine_install_update
+                bundledLabel != null -> R.string.engine_install_bundled
+                else -> R.string.engine_install_engine
             },
         )
     }

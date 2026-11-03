@@ -37,6 +37,10 @@ object GameEngineManager {
         val deviceSupported: Boolean,
         val installation: HorizonEngine.Installation?,
         val summary: String,
+        /** What this launcher carries internally, e.g. "v0.7.7, arm64-v8a"; null if nothing. */
+        val bundledLabel: String? = null,
+        /** True when the bundled engine is newer than the installed Horizon app. */
+        val updateAvailable: Boolean = false,
     )
 
     @JvmStatic
@@ -60,9 +64,29 @@ object GameEngineManager {
     fun horizonStatus(context: Context): HorizonStatus {
         val supported = HorizonEngine.isDeviceSupported()
         val installation = if (supported) HorizonEngine.resolve(context) else null
+        val bundledLabel = HorizonEngineInstaller.bundledLabel(context)
+        // "Always the latest": the launcher carries a specific engine version, so an installed app
+        // that is older than it is reported as updateable instead of just "installed".
+        val updateAvailable = if (installation != null && bundledLabel != null) {
+            HorizonEngineInstaller.compareVersions(
+                HorizonEngineInstaller.bundledVersion(context),
+                installation.versionName,
+            ) > 0
+        } else {
+            false
+        }
         val summary = when {
             !supported -> context.getString(R.string.engine_status_unsupported_abi)
+            installation == null && bundledLabel != null -> context.getString(
+                R.string.engine_status_bundled_missing,
+                bundledLabel,
+            )
             installation == null -> context.getString(R.string.engine_status_missing)
+            updateAvailable -> context.getString(
+                R.string.engine_status_update_available,
+                installation.versionName.orEmpty(),
+                bundledLabel.orEmpty(),
+            )
             installation.versionName.isNullOrBlank() ->
                 context.getString(R.string.engine_status_ready, installation.label)
             else -> context.getString(
@@ -71,7 +95,7 @@ object GameEngineManager {
                 installation.versionName,
             )
         }
-        return HorizonStatus(supported, installation, summary)
+        return HorizonStatus(supported, installation, summary, bundledLabel, updateAvailable)
     }
 
     /**

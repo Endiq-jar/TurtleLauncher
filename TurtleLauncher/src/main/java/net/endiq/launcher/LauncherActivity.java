@@ -704,6 +704,12 @@ public class LauncherActivity extends BaseActivity {
         // falls through to the on-device engine with the reason surfaced, so Play never becomes a
         // dead button. This deliberately sits before the Microsoft-account prompt: Horizon builds
         // do not take launcher accounts.
+        // Keep the installed engine at the version this launcher carries: if the built-in engine
+        // is newer than the installed app, offer the update once per bundled version first.
+        if (GameEngineManager.isHorizonSelected()
+                && HorizonEngineInstallFlow.offerUpdateIfNeeded(this, () -> launchGame(version))) {
+            return;
+        }
         HorizonLaunchResult engineLaunch = GameEngineManager.attemptHorizonLaunch(this, version);
         if (engineLaunch.getOutcome() == HorizonLaunchOutcome.LAUNCHED) {
             return;

@@ -30,8 +30,8 @@ import java.util.zip.ZipOutputStream
  * directory and are reused until the source jar changes (path + size + mtime key).
  *
  * Notes on the rewrite:
- *  - signature files (`META-INF/*.SF`, `*.RSA`, `*.DSA`, `*.EC`) are dropped, because editing the
- *    manifest invalidates them and a broken signature is worse than no signature;
+ *  - signature files under META-INF (`.SF`, `.RSA`, `.DSA`, `.EC`) are dropped, because editing
+ *    the manifest invalidates them and a broken signature is worse than no signature;
  *  - `META-INF/INDEX.LIST` is dropped, since it indexes the old jar;
  *  - every other entry is copied byte-for-byte, so classes and bundled natives are untouched.
  */

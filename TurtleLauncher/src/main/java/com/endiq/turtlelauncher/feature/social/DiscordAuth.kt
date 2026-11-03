@@ -89,6 +89,9 @@ internal object DiscordTokenStore {
 object DiscordOAuthClient {
     private const val TAG = "DiscordOAuth"
     private const val PENDING_FILE = "oauth_pending.json"
+
+    /** How long to wait after a failed refresh before asking Discord's token endpoint again. */
+    private const val REFRESH_COOLDOWN_MS = 60_000L
     private val gson = GsonBuilder().disableHtmlEscaping().create()
     private val client by lazy { UrlManager.createOkHttpClient() }
     private val random = SecureRandom()
@@ -289,23 +292,39 @@ object DiscordOAuthClient {
      * clock skew, password change), and the only way to tell a dead session from a stale one is
      * to trade the refresh token for a new one.
      */
+    /**
+     * Serialises refreshes. Discord rotates refresh tokens on use, so two concurrent refreshes
+     * (presence tick + a send, say) would invalidate each other and permanently break a link that
+     * was perfectly healthy. One refresh at a time, and the stored token is re-read under the lock.
+     */
+    private val refreshLock = Any()
+
+    /** Backs off the token endpoint after a failure so a broken refresh token is not hammered. */
+    @Volatile private var lastRefreshFailureMs = 0L
+
     fun accessToken(forceRefresh: Boolean = false): String? {
         if (!isLinked()) return null
-        val stored = DiscordTokenStore.load() ?: return null
-        val now = System.currentTimeMillis()
-        if (!forceRefresh && stored.isUsable(now)) return stored.accessToken
+        synchronized(refreshLock) {
+            val stored = DiscordTokenStore.load() ?: return null
+            val now = System.currentTimeMillis()
+            if (!forceRefresh && stored.isUsable(now)) return stored.accessToken
 
-        if (stored.refreshToken.isBlank()) {
-            Logging.w(TAG, "Access token expired and no refresh token is stored")
-            return null
+            if (stored.refreshToken.isBlank()) {
+                Logging.w(TAG, "Access token expired and no refresh token is stored")
+                return null
+            }
+            if (now - lastRefreshFailureMs < REFRESH_COOLDOWN_MS) return null
+
+            return runCatching {
+                val refreshed = refreshToken(stored.refreshToken)
+                DiscordTokenStore.save(refreshed)
+                lastRefreshFailureMs = 0L
+                refreshed.accessToken
+            }.onFailure { e ->
+                lastRefreshFailureMs = System.currentTimeMillis()
+                Logging.w(TAG, "Could not refresh Discord token", e)
+            }.getOrNull()
         }
-        return runCatching {
-            val refreshed = refreshToken(stored.refreshToken)
-            DiscordTokenStore.save(refreshed)
-            refreshed.accessToken
-        }.onFailure { e ->
-            Logging.w(TAG, "Could not refresh Discord token", e)
-        }.getOrNull()
     }
 
     // ── OAuth2 plumbing ────────────────────────────────────────────────────────────

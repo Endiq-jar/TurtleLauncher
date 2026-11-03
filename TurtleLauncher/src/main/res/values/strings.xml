@@ -805,7 +805,7 @@
 
     <!-- Phone Settings: Game engine -->
     <string name="setting_category_phone_engine">Game engine</string>
-    <string name="setting_phone_engine_desc">Chooses what the Play button starts. The on-device engine is the bundled Java runtime this launcher has always used. The Horizon engine hands the launch to an installed Horizon app - a separate native (Rust/Vulkan) build that prepares its own game resources and cannot run Java mods.</string>
+    <string name="setting_phone_engine_desc">Chooses what the Play button starts. The on-device engine is the bundled Java runtime this launcher has always used. The Horizon engine hands the launch to the Horizon app that is built into this launcher (install it once from the engine card - nothing is downloaded); it is a native (Rust/Vulkan) build that prepares its own game resources and cannot run Java mods.</string>
     <string name="engine_device_title">On-device engine</string>
     <string name="engine_device_summary">Bundled Java runtime + renderer, with your mods, worlds and accounts exactly as before.</string>
     <string name="engine_horizon_title">Horizon engine</string>

@@ -212,6 +212,13 @@ if "fun grantedScopes()" not in auth or "fun hasScope(scope: String)" not in aut
 if "fun reconnect(context: Context): Result<String>" not in auth:
     errors.append("DiscordAuth.kt: missing the optional manual reconnect()")
 
+# Refresh tokens rotate, so concurrent refreshes would invalidate each other and log the user out
+# of a healthy link. Refreshes must be serialised and rate limited.
+if "private val refreshLock = Any()" not in auth or "synchronized(refreshLock)" not in auth:
+    errors.append("DiscordAuth.kt: token refreshes must be serialised (rotating refresh tokens)")
+if "REFRESH_COOLDOWN_MS" not in auth:
+    errors.append("DiscordAuth.kt: a failed refresh needs a cooldown")
+
 for needle, what in (
     ("private const val RELATIONSHIPS_SCOPE", "the relationships.read scope constant"),
     ("fun markDiscordOffline(reason: String?)", "a temporary-offline marker"),

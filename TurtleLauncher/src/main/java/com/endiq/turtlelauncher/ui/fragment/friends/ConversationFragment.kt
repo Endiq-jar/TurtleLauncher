@@ -118,7 +118,9 @@ class ConversationFragment : FragmentWithAnim(R.layout.fragment_social_conversat
         conversation = snapshot.conversations.firstOrNull { it.id == id }
         val current = conversation
         if (current != null) {
-            if (binding.conversationTitle.text.isNullOrBlank()) binding.conversationTitle.text = current.title
+            // Always refresh: a Discord friend who renames themselves should not keep the old
+            // title for the rest of the session.
+            binding.conversationTitle.text = current.title
             val subtitle = current.subtitle.orEmpty().trim()
             binding.conversationSubtitle.text = subtitle
             binding.conversationSubtitle.visibility = if (subtitle.isEmpty()) View.GONE else View.VISIBLE

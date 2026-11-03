@@ -48,6 +48,10 @@ import com.endiq.turtlelauncher.feature.accounts.LocalAccountUtils;
 import com.endiq.turtlelauncher.feature.background.BackgroundManager;
 import com.endiq.turtlelauncher.feature.background.BackgroundType;
 import com.endiq.turtlelauncher.feature.download.item.ModLoaderWrapper;
+import com.endiq.turtlelauncher.feature.engine.GameEngineManager;
+import com.endiq.turtlelauncher.feature.engine.HorizonEngineInstallFlow;
+import com.endiq.turtlelauncher.feature.engine.HorizonLaunchOutcome;
+import com.endiq.turtlelauncher.feature.engine.HorizonLaunchResult;
 import com.endiq.turtlelauncher.feature.log.Logging;
 import com.endiq.turtlelauncher.feature.mod.modpack.install.InstallExtra;
 import com.endiq.turtlelauncher.feature.mod.modpack.install.InstallLocalModPack;
@@ -362,6 +366,16 @@ public class LauncherActivity extends BaseActivity {
         processViews();
 
         handleAssistantShortcut(getIntent());
+        handleSocialIntent(getIntent());
+
+        // Keep the Friends store warm for the whole launcher session: presence and direct
+        // messages arrive over the Friends/LAN tunnel even when the screen is closed, and the
+        // notification channel has to exist before the first message can raise one.
+        //
+        // Off the main thread and behind try/catch on purpose: this is optional social setup,
+        // and it must never delay (or crash) launcher startup - the Discord Rich Presence lease
+        // is established by the Activity lifecycle callbacks and would die with the Activity.
+        warmUpSocial();
 
         // Startup/background music (see the Music screen's "Enable Startup Music" +
         // playback scope). Gated internally on AllSettings.musicEnabled and a track
@@ -408,6 +422,69 @@ public class LauncherActivity extends BaseActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleAssistantShortcut(intent);
+        handleSocialIntent(intent);
+    }
+
+    /**
+     * Friends / Discord intents: the OAuth2 redirect (turtlelauncher://discord-callback) from the
+     * browser, and the OPEN_FRIENDS extra attached to social notifications. Both end on the
+     * Friends screen; the redirect is finished off the main thread by SocialEntryPoints.
+     */
+    private void handleSocialIntent(Intent intent) {
+        if (intent == null) return;
+        final boolean openFriends = intent.getBooleanExtra(
+                com.endiq.turtlelauncher.feature.social.SocialNotifications.EXTRA_OPEN_FRIENDS, false);
+        // Consume the flag so a recreation does not reopen the screen.
+        intent.removeExtra(com.endiq.turtlelauncher.feature.social.SocialNotifications.EXTRA_OPEN_FRIENDS);
+
+        final android.net.Uri data = intent.getData();
+        if (com.endiq.turtlelauncher.feature.social.SocialEntryPoints.INSTANCE.isDiscordRedirect(data)) {
+            intent.setData(null);
+            com.endiq.turtlelauncher.feature.social.SocialEntryPoints.INSTANCE.completeDiscordRedirect(data,
+                    (success, error) -> {
+                        final String message = success
+                                ? getString(R.string.social_linked)
+                                : getString(R.string.social_link_failed, error == null ? "" : error);
+                        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                        openFriendsScreen();
+                    });
+        } else if (openFriends) {
+            openFriendsScreen();
+        }
+    }
+
+    private void warmUpSocial() {
+        final android.content.Context context = getApplicationContext();
+        try {
+            com.endiq.turtlelauncher.feature.social.SocialNotifications.INSTANCE.ensureChannel(context);
+        } catch (Throwable t) {
+            com.endiq.turtlelauncher.feature.log.Logging.w("LauncherActivity",
+                    "Social notifications unavailable", t);
+        }
+        try {
+            TaskExecutors.getDefault().execute(() -> {
+                try {
+                    com.endiq.turtlelauncher.feature.social.SocialRepository.INSTANCE.attach();
+                } catch (Throwable t) {
+                    com.endiq.turtlelauncher.feature.log.Logging.w("LauncherActivity",
+                            "Social store could not start", t);
+                }
+            });
+        } catch (Throwable t) {
+            com.endiq.turtlelauncher.feature.log.Logging.w("LauncherActivity",
+                    "Social store could not be scheduled", t);
+        }
+    }
+
+    private void openFriendsScreen() {
+        binding.getRoot().post(() -> {
+            Fragment currentFragment = getCurrentFragment();
+            if (currentFragment == null) return;
+            if (currentFragment instanceof com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment) return;
+            ZHTools.swapFragmentWithAnim(currentFragment,
+                    com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment.class,
+                    com.endiq.turtlelauncher.ui.fragment.friends.FriendsFragment.TAG, null);
+        });
     }
 
     private void handleAssistantShortcut(Intent intent) {
@@ -619,6 +696,34 @@ public class LauncherActivity extends BaseActivity {
     private void launchGame(Version version) {
         // Stop launcher music unless the scope is set to keep playing into the game too.
         com.endiq.turtlelauncher.feature.music.MusicManager.INSTANCE.onGameLaunching();
+
+        // Engine switch (Phone settings -> Game engine). When the Horizon engine is selected and
+        // installed, the Play press is handed to that app and the Java launch path below must not
+        // run: Horizon is a separate native runtime, so downloading a JRE/img or resolving a
+        // renderer for it would be wasted work (and would never be used). Any failure to hand off
+        // falls through to the on-device engine with the reason surfaced, so Play never becomes a
+        // dead button. This deliberately sits before the Microsoft-account prompt: Horizon builds
+        // do not take launcher accounts.
+        HorizonLaunchResult engineLaunch = GameEngineManager.attemptHorizonLaunch(this, version);
+        if (engineLaunch.getOutcome() == HorizonLaunchOutcome.LAUNCHED) {
+            return;
+        }
+        if (engineLaunch.getOutcome() == HorizonLaunchOutcome.NOT_INSTALLED) {
+            // The engine is built into the launcher as a managed download: offer it here instead
+            // of only telling the user to go install something. Backing out of the dialog falls
+            // through to the on-device engine so Play still starts a game.
+            HorizonEngineInstallFlow.offerInstall(this, () -> startOnDeviceEngine(version));
+            return;
+        }
+        if (engineLaunch.getMessage() != null) {
+            Toast.makeText(this, engineLaunch.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        startOnDeviceEngine(version);
+    }
+
+    /** The classic launch path: account prompt, then download/JRE/renderer setup. */
+    private void startOnDeviceEngine(Version version) {
         LocalAccountUtils.checkUsageAllowed(new LocalAccountUtils.CheckResultListener() {
             @Override
             public void onUsageAllowed() {

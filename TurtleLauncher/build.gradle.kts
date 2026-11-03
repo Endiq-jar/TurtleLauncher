@@ -1,7 +1,10 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.gradle.tasks.MergeSourceSetFolders
-// Imported rather than written as java.util.Properties: inside a Kotlin DSL script the
-// fully qualified form does not resolve (the script's implicit receivers shadow `java`).
+// Imported rather than written fully qualified: inside a Kotlin DSL script `java` resolves to
+// the java extension, so `java.util.Properties` / `java.net.URI` do not compile.
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URI
 import java.util.Properties
 
 plugins {
@@ -155,6 +158,39 @@ android {
                 "BUILD: no GEMINI_API_KEY - the app will ask the user for a key and work offline until then"
             } else {
                 "BUILD: GEMINI_API_KEY provided (${geminiApiKey.length} chars) - built into the APK"
+            }
+        )
+
+        // CurseForge's v1 API rejects every request without a key (there is no keyless
+        // path any more), which is why the launcher used to ship with CurseForge modpack
+        // imports only half working. The key now comes from the same three places as the
+        // Gemini one, in the same order:
+        //   1. -PCURSEFORGE_API_KEY=... on the Gradle command line
+        //   2. the CURSEFORGE_API_KEY environment variable (CI passes the repo secret)
+        //   3. CURSEFORGE_API_KEY=... in local.properties (gitignored)
+        // CurseForgeKeys then treats this as the built-in fallback, so a user-supplied key
+        // in Settings still wins. Absent everywhere = empty string, and CurseForge browse
+        // then explains that a key is needed instead of silently returning nothing.
+        val curseForgeApiKey = (
+            (project.findProperty("CURSEFORGE_API_KEY") as String?)
+                ?: System.getenv("CURSEFORGE_API_KEY")
+                ?: rootProject.file("local.properties")
+                    .takeIf { it.isFile }
+                    ?.let { localProperties ->
+                        Properties().apply { localProperties.inputStream().use { load(it) } }
+                            .getProperty("CURSEFORGE_API_KEY")
+                    }
+            ).orEmpty().trim()
+        buildConfigField(
+            "String",
+            "CURSEFORGE_API_KEY",
+            "\"" + curseForgeApiKey.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
+        logger.lifecycle(
+            if (curseForgeApiKey.isEmpty()) {
+                "BUILD: no CURSEFORGE_API_KEY - CurseForge browsing will ask the user for a key"
+            } else {
+                "BUILD: CURSEFORGE_API_KEY provided (${curseForgeApiKey.length} chars) - built into the APK"
             }
         )
     }
@@ -480,4 +516,59 @@ android.sourceSets["main"].assets.srcDir(performanceAssets.get().asFile)
 tasks.named("preBuild") { dependsOn(prepareGlfwIdleOverlay) }
 tasks.withType<MergeSourceSetFolders>().configureEach {
     if (name.endsWith("Assets")) dependsOn(prepareGlfwIdleOverlay)
+}
+
+// ── Built-in Horizon engine ──────────────────────────────────────────────────────────────
+// The Horizon engine is a native Rust/Vulkan app, so it cannot be linked in as a library. It is
+// therefore packed into the launcher's own APK as assets/horizon/horizon-engine.apk: picking the
+// engine in Phone settings then needs no download at all (HorizonEngineInstaller.extractBundled).
+// The APK is fetched once on the build machine and lives only in build/generated - never in git.
+val horizonEngineVersion = "0.7.6"
+val horizonEngineAssetDir = layout.buildDirectory.dir("generated/horizonAssets")
+// A copy dropped into src/main/assets/horizon/ wins, and a checksum-pinned mirror can be supplied
+// with -Pturtlelauncher.horizonEngineUrl=... (file: URLs work too).
+val horizonEngineUrl = providers.gradleProperty("turtlelauncher.horizonEngineUrl").orElse(
+    "https://github.com/Vasysik/horizon-android/releases/download/v$horizonEngineVersion/" +
+        "Horizon-Android-$horizonEngineVersion-arm64-v8a.apk"
+)
+val bundleHorizonEngine by tasks.registering {
+    description = "Packs the Horizon engine APK into the launcher's assets."
+    val outDir = horizonEngineAssetDir
+    val url = horizonEngineUrl
+    val committed = layout.projectDirectory.dir("src/main/assets/horizon")
+    outputs.dir(outDir)
+    doLast {
+        val assetRoot = outDir.get().dir("horizon").asFile
+        assetRoot.mkdirs()
+        val target = File(assetRoot, "horizon-engine.apk")
+        if (target.isFile && target.length() > 0L) return@doLast
+
+        val local = File(committed.asFile, "horizon-engine.apk")
+        if (local.isFile && local.length() > 0L) {
+            local.copyTo(target, overwrite = true)
+            logger.lifecycle("Horizon engine: bundled from ${local.path}")
+            return@doLast
+        }
+
+        val fetched = runCatching {
+            val connection = URI(url.get()).toURL().openConnection()
+            connection.connectTimeout = 30_000
+            connection.readTimeout = 180_000
+            (connection as? HttpURLConnection)?.instanceFollowRedirects = true
+            connection.getInputStream().use { input -> target.outputStream().use { input.copyTo(it) } }
+        }
+        if (fetched.isFailure || target.length() <= 0L) {
+            target.delete()
+            logger.warn(
+                "Horizon engine: not bundled (${fetched.exceptionOrNull()?.message}). " +
+                    "Phone settings will offer a one-time download instead."
+            )
+        } else {
+            logger.lifecycle("Horizon engine: bundled v$horizonEngineVersion (${target.length()} bytes)")
+        }
+    }
+}
+android.sourceSets["main"].assets.srcDir(horizonEngineAssetDir.get().asFile)
+tasks.withType<MergeSourceSetFolders>().configureEach {
+    if (name.endsWith("Assets")) dependsOn(bundleHorizonEngine)
 }

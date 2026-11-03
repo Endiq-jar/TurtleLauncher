@@ -91,6 +91,11 @@ public class GameService extends Service {
         if (discordPresence != null) discordPresence.refresh();
     }
 
+    /** The game process's presence lease, or null when this process has not started one. */
+    public static com.endiq.turtlelauncher.feature.discord.DiscordPresenceClient currentPresence() {
+        return discordPresence;
+    }
+
     public static void endDiscordPresence() {
         final com.endiq.turtlelauncher.feature.discord.DiscordPresenceClient ending = discordPresence;
         new Handler(Looper.getMainLooper()).post(() -> {

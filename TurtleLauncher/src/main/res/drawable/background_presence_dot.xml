@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Presence indicator for the Friends list. A plain white circle: the adapter tints it with
+     the status colour (online / idle / do not disturb / offline / unknown) via backgroundTint,
+     so one drawable covers every state and stays correct in the night theme. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFFFFFFF" />
+    <size
+        android:width="10dp"
+        android:height="10dp" />
+</shape>

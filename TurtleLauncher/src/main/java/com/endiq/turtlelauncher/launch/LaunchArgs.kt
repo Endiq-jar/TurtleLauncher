@@ -53,7 +53,14 @@ class LaunchArgs(
         val lwjglClasspathSuffix = if (lwjglAbiOverrideClasspath.isNotEmpty()) ":$lwjglAbiOverrideClasspath" else ""
 
         argsList.add("-cp")
-        argsList.add("${Tools.getLWJGL3ClassPath()}$lwjglClasspathSuffix:$launchClassPath")
+        // Sealed LWJGL jars (LWJGL 2 seals org.lwjgl) cannot share a package with the bridge and
+        // ABI-override jars, which also provide org.lwjgl classes. Handing the JVM unsealed copies
+        // is what stops Forge 1.8.9 dying with "sealing violation: package org.lwjgl is sealed".
+        argsList.add(
+            JarSealing.unsealClasspath(
+                "${Tools.getLWJGL3ClassPath()}$lwjglClasspathSuffix:$launchClassPath"
+            )
+        )
 
         val lwjglNativeOverride = Tools.getLwjglNativeLibraryOverride(versionInfo)
         if (lwjglNativeOverride != null) {

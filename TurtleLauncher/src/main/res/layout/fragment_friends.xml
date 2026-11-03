@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Friends screen: one list, seven tabs.
+
+  Everything the tabs render comes from SocialRepository's snapshot, so this layout only has
+  to describe the chrome: a header, a horizontally scrollable tab row (the tab labels are
+  long in some languages and there are seven of them), a status line, the list, and one
+  action row per tab that needs controls.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_app">
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/friends_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/space_l"
+        android:paddingVertical="@dimen/space_m"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconButton
+            android:id="@+id/back_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/generic_return"
+            android:rotation="90"
+            android:src="@drawable/ic_chevron_down"
+            android:tint="@color/turtle_text_secondary" />
+
+        <com.endiq.turtlelauncher.ui.view.AnimatedIconView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="@dimen/space_s"
+            android:contentDescription="@string/social_shortcut_desc"
+            android:src="@drawable/ic_friends_network"
+            android:tint="@color/accent_primary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_s"
+            android:layout_weight="1"
+            android:text="@string/social_title"
+            android:textColor="@color/turtle_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/account_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_pill_outline"
+            android:clickable="true"
+            android:focusable="true"
+            android:maxWidth="220dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingHorizontal="@dimen/space_m"
+            android:paddingVertical="@dimen/space_xs"
+            android:text="@string/social_account_button"
+            android:textColor="@color/turtle_text_primary"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Tabs -->
+    <HorizontalScrollView
+        android:id="@+id/tab_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/space_l"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/friends_header">
+
+        <LinearLayout
+            android:id="@+id/tab_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="@dimen/space_xs">
+
+            <TextView
+                android:id="@+id/friends_tab"
+                style="@style/SocialTab"
+                android:text="@string/social_tab_friends" />
+
+            <TextView
+                android:id="@+id/requests_tab"
+                style="@style/SocialTab"
+                android:text="@string/social_tab_requests" />
+
+            <TextView
+                android:id="@+id/messages_tab"
+                style="@style/SocialTab"
+                android:text="@string/social_tab_messages" />
+
+            <TextView
+                android:id="@+id/voice_tab"
+                style="@style/SocialTab"
+                android:text="@string/social_tab_voice" />
+
+            <TextView
+                android:id="@+id/play_tab"
+                style="@style/SocialTab"
+                android:text="@string/social_tab_play" />
+
+            <TextView
+                android:id="@+id/activity_tab"
+                style="@style/SocialTab"
+                android:text="@string/social_tab_activity" />
+
+            <TextView
+                android:id="@+id/channels_tab"
+                style="@style/SocialTab"
+                android:text="@string/social_tab_channels" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/space_l"
+        android:paddingVertical="@dimen/space_xs"
+        android:textColor="@color/turtle_text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tab_scroll" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/friends_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/space_l"
+        android:paddingTop="@dimen/space_xs"
+        android:paddingBottom="@dimen/space_s"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@id/actions_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/status_text" />
+
+    <!-- One action row per tab. Exactly one is VISIBLE at a time (see FriendsFragment). -->
+    <LinearLayout
+        android:id="@+id/actions_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/space_l"
+        android:paddingBottom="@dimen/space_l"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/add_friend_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/add_friend_input"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:background="@drawable/background_edit_box"
+                android:hint="@string/social_add_friend_hint"
+                android:imeOptions="actionSend"
+                android:inputType="textPersonName"
+                android:maxLines="1"
+                android:paddingHorizontal="@dimen/space_m"
+                android:textColor="@color/turtle_text_primary"
+                android:textColorHint="@color/turtle_text_secondary"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/add_friend_button"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:text="@string/social_add_friend"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/refresh_button"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:text="@string/social_refresh"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/play_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/party_code_input"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:background="@drawable/background_edit_box"
+                android:hint="@string/social_party_code_hint"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingHorizontal="@dimen/space_m"
+                android:textColor="@color/turtle_text_primary"
+                android:textColorHint="@color/turtle_text_secondary"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/create_party_button"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:text="@string/social_create_party"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/join_party_button"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:text="@string/social_join_party"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/voice_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/voice_join_button"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="@string/social_voice_join_party"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/leave_voice_button"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="@dimen/space_s"
+                    android:layout_weight="1"
+                    android:text="@string/social_voice_leave"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/mute_button"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="@string/social_voice_mute"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/deafen_button"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_weight="1"
+                    android:text="@string/social_voice_deafen"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/ptt_button"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_weight="1"
+                    android:text="@string/social_voice_push_to_talk"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/noise_button"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_weight="1"
+                    android:text="@string/social_voice_noise"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/channel_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/link_channel_button"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="@string/social_link_channel"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/unlink_channel_button"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:layout_weight="1"
+                android:text="@string/social_unlink_channel"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

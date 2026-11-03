@@ -42,6 +42,28 @@ class AllSettings {
         @JvmStatic val discordRpcButton2 = StringSettingUnit("discordRpcButton2", "")
         @JvmStatic val discordRpcButton2Url = StringSettingUnit("discordRpcButton2Url", "")
 
+        // ── Friends / social ───────────────────────────────────────────────────
+        /**
+         * Redirect URI used by the Discord account-linking flow. Must match, character for
+         * character, one of the OAuth2 redirects registered on the application in the
+         * Discord Developer Portal. Blank = DiscordConfig.DEFAULT_REDIRECT_URI.
+         */
+        @JvmStatic val discordOAuthRedirectUri = StringSettingUnit("discordOAuthRedirectUri", "")
+        /**
+         * Space-separated OAuth2 scopes. Blank = DiscordConfig.DEFAULT_SCOPES. Editable
+         * because `relationships.read` (needed to *list* Discord friends) is a scope Discord
+         * has to grant the application - see DiscordOAuthClient.
+         */
+        @JvmStatic val discordOAuthScopes = StringSettingUnit("discordOAuthScopes", "")
+        /** Message/request notifications from the Friends feature. */
+        @JvmStatic val socialNotificationsEnabled = BooleanSettingUnit("socialNotificationsEnabled", true)
+        /** Whether a notification includes the message text or just the sender. */
+        @JvmStatic val socialNotificationPreview = BooleanSettingUnit("socialNotificationPreview", true)
+        /** Global push-to-talk preference for party voice (per-lobby state lives in VoiceManager). */
+        @JvmStatic val socialPushToTalk = BooleanSettingUnit("socialPushToTalk", false)
+        /** Noise-suppression preference; only applied when the SDK exposes it. */
+        @JvmStatic val socialNoiseSuppression = BooleanSettingUnit("socialNoiseSuppression", false)
+
         // ── Video ──────────────────────────────────────────────────────────────
         @JvmStatic val renderer = StringSettingUnit("renderer", "4b4b8e4b-083d-429c-97e1-5e8239b6dc17")
         @JvmStatic val driver   = StringSettingUnit("driver", "Turnip")
@@ -154,6 +176,25 @@ class AllSettings {
         @JvmStatic val gyroInvertX              = BooleanSettingUnit("gyroInvertX", false)
         @JvmStatic val gyroInvertY              = BooleanSettingUnit("gyroInvertY", false)
         @JvmStatic val deadZoneScale            = IntSettingUnit("gamepad_deadzone_scale", 100)
+
+        // ── Engine ────────────────────────────────────────────────────────────
+        /**
+         * Which runtime the Play button starts: `device` (the bundled Java engine, default) or
+         * `horizon` (hand the launch to an installed Horizon engine app).
+         * See [com.endiq.turtlelauncher.feature.engine.GameEngineManager].
+         */
+        @JvmStatic val gameEngine               = StringSettingUnit("gameEngine", "device")
+
+        /** Package id of the Horizon engine app the user picked (blank = auto-detect). */
+        @JvmStatic val horizonEnginePackage     = StringSettingUnit("horizonEnginePackage", "")
+
+        /**
+         * GitHub repository the built-in engine installer pulls Horizon Android builds from,
+         * written as `owner/repository`. See
+         * [com.endiq.turtlelauncher.feature.engine.HorizonEngineInstaller].
+         */
+        @JvmStatic val horizonEngineSource      =
+            StringSettingUnit("horizonEngineSource", "Vasysik/horizon-android")
 
         // ── Game ──────────────────────────────────────────────────────────────
         @JvmStatic val versionIsolation         = BooleanSettingUnit("versionIsolation", true)

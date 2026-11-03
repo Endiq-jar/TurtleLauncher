@@ -170,6 +170,7 @@ class InfoAdapter(
         private fun getPlatformIcon(platform: Platform): Drawable? {
             return when (platform) {
                 Platform.MODRINTH -> ContextCompat.getDrawable(mContext, R.drawable.ic_modrinth)
+                Platform.CURSEFORGE -> ContextCompat.getDrawable(mContext, R.drawable.ic_curseforge)
             }
         }
 

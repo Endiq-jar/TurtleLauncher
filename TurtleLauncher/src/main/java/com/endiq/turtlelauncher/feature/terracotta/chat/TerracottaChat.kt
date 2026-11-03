@@ -47,7 +47,18 @@ object TerracottaChat {
         fun onMessage(message: ChatMessage)
     }
 
+    /**
+     * Receives every line that carries a `t` field (the Friends feature's envelopes: DMs,
+     * lobby state, presence, voice signalling). Those lines are *not* surfaced as chat
+     * messages - the two channels share this transport so social features work exactly when
+     * the Friends/LAN tunnel is up, without polluting the party chat log.
+     */
+    fun interface PayloadListener {
+        fun onPayload(payload: JsonObject)
+    }
+
     private val listeners = CopyOnWriteArrayList<Listener>()
+    private val payloadListeners = CopyOnWriteArrayList<PayloadListener>()
     private val executor = Executors.newCachedThreadPool()
 
     @Volatile private var serverSocket: ServerSocket? = null
@@ -58,6 +69,28 @@ object TerracottaChat {
 
     fun addListener(listener: Listener) = listeners.add(listener)
     fun removeListener(listener: Listener) = listeners.remove(listener)
+
+    fun addPayloadListener(listener: PayloadListener) {
+        if (!payloadListeners.contains(listener)) payloadListeners.add(listener)
+    }
+
+    fun removePayloadListener(listener: PayloadListener) = payloadListeners.remove(listener)
+
+    /**
+     * Sends a structured payload to everyone on the tunnel (DMs filter on the receiving
+     * side). Returns false when the tunnel isn't up, so callers can mark a message as
+     * queued instead of pretending it was delivered.
+     */
+    fun sendPayload(payload: JsonObject): Boolean {
+        if (!running) return false
+        val line = payload.toString() + "\n"
+        when (Terracotta.getMode()) {
+            Terracotta.TerracottaMode.HOST -> executor.execute { broadcastFromHost(line, exclude = null) }
+            Terracotta.TerracottaMode.GUEST -> executor.execute { writeLine(guestSocket, line) }
+            null -> return false
+        }
+        return true
+    }
 
     private val stateListener = Terracotta.StateListener { state ->
         when (state) {
@@ -200,14 +233,23 @@ object TerracottaChat {
         }.onFailure { e -> Logging.w("TerracottaChat", "Failed to send chat message", e) }
     }
 
-    private fun parseLine(line: String): ChatMessage? = runCatching {
-        val obj = JsonParser.parseString(line).asJsonObject
-        val sender = obj.get("sender")?.asString ?: "Player"
-        val text = obj.get("text")?.asString ?: return null
-        ChatMessage(text = "$sender: $text", isUser = false)
-    }.getOrElse { e ->
-        Logging.w("TerracottaChat", "Dropped malformed chat line", e)
-        null
+    private fun parseLine(line: String): ChatMessage? {
+        return try {
+            val obj = JsonParser.parseString(line).asJsonObject
+            val sender = obj.get("sender")?.asString ?: "Player"
+            // A `t` field marks a Friends-feature envelope (dm / lobby / presence / voice). It
+            // is fanned out to SocialTransport and never rendered as a party chat line.
+            if (obj.has("t")) {
+                notifyPayloadListeners(obj)
+                null
+            } else {
+                val text = obj.get("text")?.asString ?: return null
+                ChatMessage(text = "$sender: $text", isUser = false)
+            }
+        } catch (t: Throwable) {
+            Logging.w("TerracottaChat", "Dropped malformed chat line", t)
+            null
+        }
     }
 
     @Synchronized
@@ -226,5 +268,12 @@ object TerracottaChat {
 
     private fun notifyListeners(message: ChatMessage) {
         for (listener in listeners) listener.onMessage(message)
+    }
+
+    private fun notifyPayloadListeners(payload: JsonObject) {
+        for (listener in payloadListeners) {
+            runCatching { listener.onPayload(payload) }
+                .onFailure { e -> Logging.w("TerracottaChat", "Social payload listener failed", e) }
+        }
     }
 }

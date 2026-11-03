@@ -39,10 +39,13 @@ object DownloadPages {
     fun classifyAt(index: Int): Classify? = entries.getOrNull(index)?.classify
 
     /**
-     * Modrinth exposes no world/archive project type (see
-     * `ModrinthHelper.searchWorld`), so the World tab can only ever offer
-     * "install from a local .zip". Keep that knowledge next to the mapping so
-     * the UI can explain itself instead of showing a generic search failure.
+     * Whether *any* download platform can serve remote results for [classify].
+     *
+     * This used to be `classify != Classify.WORLD`, because Modrinth has no world/archive
+     * project type. CurseForge does have worlds, so the World tab is now searchable there -
+     * and only there. The per-platform decision lives in
+     * `AbstractResourceDownloadFragment.isRemoteSearchSupported`, which the World page
+     * narrows to CurseForge; this helper answers the platform-agnostic question.
      */
-    fun supportsRemoteSearch(classify: Classify): Boolean = classify != Classify.WORLD
+    fun supportsRemoteSearch(classify: Classify): Boolean = classify != Classify.ALL
 }

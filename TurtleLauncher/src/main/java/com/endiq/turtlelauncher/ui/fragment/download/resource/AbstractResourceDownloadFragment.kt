@@ -86,6 +86,13 @@ abstract class AbstractResourceDownloadFragment(
     protected open fun remoteSearchUnavailableMessage(): Int? = null
 
     /**
+     * Whether the *currently selected* platform can serve this tab remotely. Tabs that only
+     * some platforms support (World: CurseForge yes, Modrinth no) override this instead of
+     * hard-disabling the search, so switching the platform spinner takes effect.
+     */
+    protected open fun isRemoteSearchSupported(platform: Platform): Boolean = true
+
+    /**
      * Optional banner shown at the top of the operation panel. Subclasses use it to
      * explain something about the *current device* (e.g. "your renderer can't render
      * shader packs") rather than about the search result.
@@ -348,6 +355,7 @@ abstract class AbstractResourceDownloadFragment(
      * that can only fail, and keeps the "install from local .zip" button usable.
      */
     private fun showRemoteSearchUnavailable(): Boolean {
+        if (isRemoteSearchSupported(mCurrentPlatform)) return false
         val message = remoteSearchUnavailableMessage() ?: return false
         binding.recyclerView.visibility = View.GONE
         setLoadingLayout(false)

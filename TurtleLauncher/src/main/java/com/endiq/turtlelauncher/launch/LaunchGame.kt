@@ -53,6 +53,22 @@ class LaunchGame {
          */
         @JvmStatic
         fun preLaunch(context: Context, version: Version) {
+            // Warm the unsealed-jar cache while the game files are still being prepared: the
+            // rewrite copies the sealed LWJGL jars once, and doing it here keeps that off the
+            // launch path (LaunchArgs would otherwise do the same work synchronously).
+            runCatching {
+                TaskExecutors.getDefault().execute {
+                    runCatching {
+                        val info = Tools.getVersionInfo(version)
+                        JarSealing.unsealClasspath(
+                            "${Tools.getLWJGL3ClassPath()}:" + Tools.generateLaunchClassPath(info, version)
+                        )
+                    }.onFailure { error ->
+                        Logging.w("LaunchGame", "Could not prepare unsealed jars", error)
+                    }
+                }
+            }.onFailure { error -> Logging.w("LaunchGame", "Could not schedule jar unsealing", error) }
+
             runCatching {
                 val loader = version.getVersionInfo()?.loaderInfo?.firstNotNullOfOrNull {
                     com.endiq.turtlelauncher.feature.download.utils.ModLoaderUtils.getModLoader(it.name)

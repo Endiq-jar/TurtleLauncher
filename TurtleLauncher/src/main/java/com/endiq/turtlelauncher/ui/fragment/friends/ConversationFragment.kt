@@ -45,6 +45,7 @@ class ConversationFragment : FragmentWithAnim(R.layout.fragment_social_conversat
     private var conversationId: String? = null
     private var conversation: SocialConversation? = null
     private var lastMessageCount: Int = -1
+    private var lastMessageId: String? = null
 
     private val repositoryListener: (SocialSnapshot) -> Unit = { snapshot -> renderConversation(snapshot) }
 
@@ -118,7 +119,9 @@ class ConversationFragment : FragmentWithAnim(R.layout.fragment_social_conversat
         val current = conversation
         if (current != null) {
             if (binding.conversationTitle.text.isNullOrBlank()) binding.conversationTitle.text = current.title
-            binding.conversationSubtitle.text = current.subtitle.orEmpty()
+            val subtitle = current.subtitle.orEmpty().trim()
+            binding.conversationSubtitle.text = subtitle
+            binding.conversationSubtitle.visibility = if (subtitle.isEmpty()) View.GONE else View.VISIBLE
             binding.sendButton.isEnabled = current.canSend
             binding.messageInput.isEnabled = current.canSend
             binding.messageInput.hint = if (current.canSend) {
@@ -127,17 +130,21 @@ class ConversationFragment : FragmentWithAnim(R.layout.fragment_social_conversat
                 getString(R.string.social_conversation_read_only, current.subtitle.orEmpty())
             }
         }
-        renderStatus(snapshot)
+        renderStatus()
         refreshMessages()
     }
 
-    private fun renderStatus(snapshot: SocialSnapshot) {
+    private fun renderStatus() {
+        // Discord connection problems are handled in the background (see SocialRepository's
+        // retry loop). Printing that global status here used to drop a red paragraph into the
+        // chat every time the session hiccuped - a conversation only ever shows its own state.
+        val queued = SocialRepository.messages(conversationId.orEmpty()).any { it.pending }
         val text = when {
-            snapshot.statusMessage != null -> snapshot.statusMessage
             conversation?.canSend == false -> getString(
                 R.string.social_conversation_read_only,
                 conversation?.subtitle.orEmpty(),
             )
+            queued -> getString(R.string.social_messages_queued)
             else -> null
         }
         binding.conversationStatus.text = text.orEmpty()
@@ -148,9 +155,18 @@ class ConversationFragment : FragmentWithAnim(R.layout.fragment_social_conversat
         val id = conversationId ?: return
         val messages = SocialRepository.messages(id)
         adapter.submit(messages)
-        if (messages.size != lastMessageCount) {
+        // Track the newest id, not the count: a queued message that Discord accepts is replaced
+        // in place, so the count stays the same and the view would otherwise not follow it.
+        val newest = messages.lastOrNull()?.id
+        if (newest != lastMessageId) {
+            lastMessageId = newest
             lastMessageCount = messages.size
-            if (messages.isNotEmpty()) binding.messageList.scrollToPosition(messages.size - 1)
+            if (messages.isEmpty()) return
+            // Post it: the list has not measured the new row yet, so an immediate scroll lands
+            // short and the last bubble ends up half-hidden behind the composer.
+            binding.messageList.post {
+                if (_binding != null) binding.messageList.scrollToPosition(messages.size - 1)
+            }
         }
     }
 

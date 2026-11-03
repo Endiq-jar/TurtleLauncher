@@ -197,31 +197,48 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         binding.engineHorizonUninstall.visibility =
             if (status.installation != null) View.VISIBLE else View.GONE
         binding.engineHorizonSource.text =
-            getString(R.string.engine_source_label, HorizonEngineInstaller.sourceRepo())
+            if (HorizonEngineInstaller.isBundled(requireContext())) {
+                getString(R.string.engine_bundled_label)
+            } else {
+                getString(R.string.engine_source_label, HorizonEngineInstaller.sourceRepo())
+            }
+        // The engine ships inside the launcher, so this is a plain "install", not a download.
+        binding.engineHorizonInstall.text = getString(
+            if (HorizonEngineInstaller.isBundled(requireContext())) {
+                R.string.engine_install_bundled
+            } else {
+                R.string.engine_install_engine
+            },
+        )
     }
 
     /**
-     * Built-in engine install: resolve the newest Horizon build for this device, download it with
-     * progress in the status line, then hand the APK to Android's installer. All of it happens
-     * behind the same card, so the engine behaves like a launcher component.
+     * Built-in engine install. The engine is packed inside this launcher's APK, so this unpacks
+     * the bundled file (with progress) and hands it to Android's installer - no download, and it
+     * works offline. Only builds with the asset stripped fall back to the release feed.
      */
     private fun downloadHorizonEngine() {
         val appContext = requireContext().applicationContext
-        binding.engineHorizonStatus.text = getString(R.string.engine_download_starting)
+        val bundled = HorizonEngineInstaller.isBundled(appContext)
+        binding.engineHorizonStatus.text = getString(
+            if (bundled) R.string.engine_prepare_starting else R.string.engine_download_starting
+        )
         binding.engineHorizonInstall.isEnabled = false
         TaskExecutors.getDefault().execute {
-            val result = HorizonEngineInstaller.downloadLatest(appContext) { percent ->
+            val result = HorizonEngineInstaller.acquire(appContext) { percent ->
                 TaskExecutors.runInUIThread {
                     if (isAdded) {
-                        binding.engineHorizonStatus.text =
-                            getString(R.string.engine_download_progress, percent)
+                        binding.engineHorizonStatus.text = getString(
+                            if (bundled) R.string.engine_unpack_progress else R.string.engine_download_progress,
+                            percent,
+                        )
                     }
                 }
             }
             TaskExecutors.runInUIThread {
                 if (!isAdded) return@runInUIThread
                 binding.engineHorizonInstall.isEnabled = true
-                result.onSuccess { (_, file) ->
+                result.onSuccess { file ->
                     HorizonEngineInstaller.install(requireContext(), file)
                         .onSuccess { Toast.makeText(requireContext(), R.string.engine_install_started, Toast.LENGTH_LONG).show() }
                         .onFailure { error ->

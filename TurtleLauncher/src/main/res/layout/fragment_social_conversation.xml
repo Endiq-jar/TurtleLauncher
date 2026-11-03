@@ -75,7 +75,8 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingHorizontal="@dimen/space_l"
-        android:paddingVertical="@dimen/space_s"
+        android:paddingTop="@dimen/space_s"
+        android:paddingBottom="@dimen/space_l"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/message_input_row"
         app:layout_constraintEnd_toEndOf="parent"
@@ -104,16 +105,27 @@
             android:imeOptions="actionSend"
             android:inputType="textCapSentences|textMultiLine"
             android:maxLines="3"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
             android:paddingHorizontal="@dimen/space_m"
             android:textColor="@color/turtle_text_primary"
             android:textColorHint="@color/turtle_text_secondary"
             android:textSize="13sp" />
 
+        <!-- The theme's Button insets reserve space for a shadow; with a 0dp-wide input they
+             pushed the text field under the button. Inset-free, the two sit side by side. -->
         <Button
             android:id="@+id/send_button"
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:layout_marginStart="@dimen/space_s"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="@dimen/space_l"
             android:text="@string/social_send"
             android:textSize="12sp" />
     </LinearLayout>

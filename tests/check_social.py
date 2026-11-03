@@ -195,33 +195,66 @@ for method in (
     if method not in repository:
         errors.append(f"SocialRepository.kt: missing {method}")
 
-# --- Discord session recovery -------------------------------------------------
-# A rejected/stale Discord token must be self-diagnosing and repairable in one tap: the old
-# behaviour asked the user to "reconnect" while the only available action was Disconnect.
+# --- Permanent link, queued sends ---------------------------------------------
+# The account is linked once and must stay linked: a stale token is refreshed silently, a
+# temporary Discord outage only backs off and retries, and an outgoing message that could not be
+# delivered is queued ("Sending…") and re-sent - never turned into a permanent "Not sent" row.
 auth = (social_dir / "DiscordAuth.kt").read_text()
 models = (social_dir / "SocialModels.kt").read_text()
 friends_ui = fragment.read_text()
+conversation_ui = conversation_fragment.read_text()
+message_adapter_text = message_adapter.read_text()
 
 if "fun accessToken(forceRefresh: Boolean = false): String?" not in auth:
     errors.append("DiscordAuth.kt: accessToken() needs a forceRefresh path (401 retry)")
 if "fun grantedScopes()" not in auth or "fun hasScope(scope: String)" not in auth:
-    errors.append("DiscordAuth.kt: granted scopes must be readable (scope-aware error messages)")
+    errors.append("DiscordAuth.kt: granted scopes must be readable (scope-aware handling)")
 if "fun reconnect(context: Context): Result<String>" not in auth:
-    errors.append("DiscordAuth.kt: missing reconnect() (drop tokens, keep the identity)")
-reconnect_body = auth.split("fun reconnect(context: Context)", 1)[-1].split("\n    }", 1)[0]
-if "DiscordTokenStore.clear()" not in reconnect_body or "beginAuth(context)" not in reconnect_body:
-    errors.append("DiscordAuth.kt: reconnect() must clear tokens and start a fresh sign-in")
+    errors.append("DiscordAuth.kt: missing the optional manual reconnect()")
 
 for needle, what in (
     ("private const val RELATIONSHIPS_SCOPE", "the relationships.read scope constant"),
-    ("fun failDiscord(message: String)", "a helper that marks the session unusable"),
-    ("DiscordOAuthClient.hasScope(RELATIONSHIPS_SCOPE)", "a scope check before calling Discord"),
+    ("fun markDiscordOffline(reason: String?)", "a temporary-offline marker"),
+    ("fun markDiscordOnline()", "an online marker that clears the status"),
+    ("fun retryDiscordWork()", "background Discord recovery"),
     ("accessToken(forceRefresh = true)", "a refresh-and-retry on 401"),
-    ("DiscordOAuthClient.clearToken()", "clearing a token Discord rejected"),
-    ("discordSessionInvalid = true", "recording that the session is dead"),
+    ("fun queuedDiscordMessage(", "queued outgoing messages"),
+    ("fun retryQueuedMessages()", "queued-message delivery"),
+    ("fun replaceMessage(", "in-place replacement of a delivered queued message"),
+    ("discordBackoffMs", "retry backoff"),
+    ("presenceScheduler.scheduleWithFixedDelay", "the retry tick"),
 ):
     if needle not in repository:
         errors.append(f"SocialRepository.kt: missing {what} (`{needle}`)")
+
+# The link is permanent: the repository must never silently drop tokens on an HTTP failure.
+if "DiscordOAuthClient.clearToken()" in repository:
+    errors.append("SocialRepository.kt: must not clear Discord tokens (the link is permanent)")
+if "reconnect your account" in repository.lower() or "tap Reconnect" in repository:
+    errors.append("SocialRepository.kt: status copy must not ask the user to reconnect")
+if "discordSessionInvalid = true" in repository:
+    errors.append("SocialRepository.kt: a failed request must not mark the session invalid")
+
+# Queued work survives restarts and old permanent failures are migrated on load.
+if "pending = true" not in repository:
+    errors.append("SocialRepository.kt: undeliverable Discord sends must be queued as pending")
+if "message.failed && message.fromSelf" not in repository:
+    errors.append("SocialRepository.kt: legacy \"Not sent\" rows must be migrated to the retry queue")
+
+# A conversation shows its own state only - the global Discord status used to be printed there.
+conv_status = conversation_ui.split("private fun renderStatus(", 1)[-1].split("private fun ", 1)[0]
+if "snapshot.statusMessage" in conv_status:
+    errors.append("ConversationFragment: the global status must not be rendered inside a chat")
+if "social_messages_queued" not in conv_status:
+    errors.append("ConversationFragment: queued messages need the sending hint")
+
+# Pending messages render as "Sending…", not as a failure.
+if "social_message_pending" not in message_adapter_text:
+    errors.append("SocialMessageAdapter: pending messages must render as sending")
+if "Discord presence needs the Social SDK connection" in repository:
+    errors.append("SocialRepository.kt: internal presence wording must not reach the UI")
+if "Social SDK" in conversation_ui or "Social SDK" in message_adapter_text:
+    errors.append("friends UI: internal Social SDK wording must not be user-visible")
 
 if "val discordSessionInvalid: Boolean = false" not in models:
     errors.append("SocialModels.kt: SocialSnapshot must carry discordSessionInvalid")
@@ -229,11 +262,9 @@ if "discordSessionInvalid = discordSessionInvalid" not in repository:
     errors.append("SocialRepository.publish() must publish discordSessionInvalid")
 
 if "social_reconnect_discord" not in friends_ui:
-    errors.append("FriendsFragment.kt: linked accounts need a Reconnect Discord action")
+    errors.append("FriendsFragment.kt: keep the manual Reconnect action in the account dialog")
 if "DiscordOAuthClient.reconnect(" not in friends_ui:
     errors.append("FriendsFragment.kt: Reconnect must call DiscordOAuthClient.reconnect()")
-if "setOnClickListener(" not in friends_ui.split("private fun renderStatus(", 1)[-1].split("private fun", 1)[0]:
-    errors.append("FriendsFragment.renderStatus must make the invalid-session status actionable")
 
 # --- Scope hygiene ------------------------------------------------------------
 # The OAuth2 URL Generator in the Developer Portal offers bot-only scopes (bot,
@@ -280,4 +311,4 @@ if errors:
         print(f"  - {error}")
     raise SystemExit(1)
 
-print("Social checks passed: 7 tabs, 4 action rows, rows bind, redirect + notifications wired, Discord session recovery")
+print("Social checks passed: 7 tabs, permanent Discord link, queued sends, no leaked internals")

@@ -40,6 +40,10 @@ object SocialRepository {
     /** Scope Discord must grant before /users/@me/relationships answers anything but 401. */
     private const val RELATIONSHIPS_SCOPE = "relationships.read"
 
+    /** Retry cadence for Discord work; the link itself is never dropped, so this only backs off. */
+    private const val DISCORD_RETRY_MIN_MS = 30_000L
+    private const val DISCORD_RETRY_MAX_MS = 10 * 60_000L
+
     /** On-disk shape of the Turtle side of the graph. */
     internal data class GameSocialFile(
         val friends: MutableList<SocialFriend> = mutableListOf(),
@@ -73,6 +77,15 @@ object SocialRepository {
      * "unlink first" (which was the only path out of a dead session).
      */
     @Volatile private var discordSessionInvalid: Boolean = false
+
+    /**
+     * True while Discord is temporarily unusable. This is *not* a session failure: the account
+     * stays linked and the tokens are kept, the launcher just retries in the background with
+     * backoff. Nothing asks the user to reconnect.
+     */
+    @Volatile private var discordOffline: Boolean = false
+    @Volatile private var discordNextAttemptAtMs: Long = 0L
+    private var discordBackoffMs: Long = DISCORD_RETRY_MIN_MS
     @Volatile private var busy: Boolean = false
     @Volatile private var openConversationId: String? = null
     @Volatile private var attached: Boolean = false
@@ -113,7 +126,12 @@ object SocialRepository {
         }
 
         presenceScheduler.scheduleWithFixedDelay(
-            { runCatching { announcePresence() } },
+            {
+                runCatching { announcePresence() }
+                // Discord recovery + queued-message delivery ride the same tick: the link is
+                // permanent, so anything that failed is simply retried until it goes through.
+                runCatching { enqueue { retryDiscordWork() } }
+            },
             PRESENCE_INTERVAL_SECONDS,
             PRESENCE_INTERVAL_SECONDS,
             TimeUnit.SECONDS,
@@ -141,26 +159,31 @@ object SocialRepository {
 
         val identity = SocialIdentityStore.current()
         if (identity.hasDiscordLink) {
+            // The account is linked for good: a missing/expired token is refreshed silently and
+            // a temporary Discord failure only schedules another attempt. Nothing here unlinks.
             val token = DiscordOAuthClient.accessToken()
             when {
-                token.isNullOrBlank() -> failDiscord(
-                    "Discord sign-in is no longer usable - tap Reconnect to sign in again."
+                token.isNullOrBlank() -> markDiscordOffline(
+                    "Discord is unreachable right now - retrying in the background."
                 )
 
-                // Discord issues a token even when the user unticks a scope on the consent
-                // screen, and every relationship call then answers 401. Retrying or relinking
-                // cannot fix that, so say what is actually wrong instead of "session expired".
-                !DiscordOAuthClient.hasScope(RELATIONSHIPS_SCOPE) -> failDiscord(
-                    "Discord did not grant friend-list access ($RELATIONSHIPS_SCOPE). That scope " +
-                        "must be approved for the app in the Discord Developer Portal; after it is " +
-                        "approved, reconnect the account."
+                // Discord issues a token even when a scope is unticked on the consent screen and
+                // then answers 401 for relationships. Say what is missing, once, without asking
+                // the user to babysit the session.
+                !DiscordOAuthClient.hasScope(RELATIONSHIPS_SCOPE) -> markDiscordOffline(
+                    "Discord has not granted friend-list access ($RELATIONSHIPS_SCOPE). The " +
+                        "account stays linked; retrying automatically."
                 )
 
-                else -> loadDiscord(token)
+                else -> {
+                    loadDiscord(token)
+                    retryQueuedMessages()
+                }
             }
         } else {
             discordFriends = emptyList()
             discordSessionInvalid = false
+            discordOffline = false
         }
 
         LobbyManager.refreshSession()
@@ -168,12 +191,38 @@ object SocialRepository {
         publish()
     }
 
-    /** Marks the linked Discord session as unusable and explains why in one line. */
-    private fun failDiscord(message: String) {
-        discordFriends = emptyList()
-        discordRequests = emptyList()
-        discordSessionInvalid = true
-        statusMessage = message
+    /**
+     * Records a temporary Discord failure. The link and the tokens are deliberately left alone -
+     * "session expired" is not a state this launcher has any more - and the next attempt is
+     * scheduled with backoff. [reason] is shown once in the Friends screen, never per message.
+     */
+    private fun markDiscordOffline(reason: String?) {
+        discordOffline = true
+        discordSessionInvalid = false
+        discordNextAttemptAtMs = System.currentTimeMillis() + discordBackoffMs
+        discordBackoffMs = (discordBackoffMs * 2).coerceAtMost(DISCORD_RETRY_MAX_MS)
+        if (reason != null) statusMessage = reason
+    }
+
+    private fun markDiscordOnline() {
+        discordOffline = false
+        discordNextAttemptAtMs = 0L
+        discordBackoffMs = DISCORD_RETRY_MIN_MS
+        discordSessionInvalid = false
+        statusMessage = null
+    }
+
+    /**
+     * Background recovery: re-reads Discord when the backoff elapsed and drains queued messages.
+     * Runs on the social worker thread (all store access stays serialised).
+     */
+    private fun retryDiscordWork() {
+        if (!SocialIdentityStore.current().hasDiscordLink) return
+        if (discordOffline && System.currentTimeMillis() >= discordNextAttemptAtMs) {
+            val token = DiscordOAuthClient.accessToken(forceRefresh = true)
+            if (!token.isNullOrBlank()) loadDiscord(token)
+        }
+        retryQueuedMessages()
     }
 
     private fun loadDiscord(token: String) {
@@ -191,33 +240,20 @@ object SocialRepository {
         }
 
         relationshipResult.onFailure { error ->
-            val message = when (error) {
+            // Never drop the tokens here. A rejected-looking token is either stale (the retry
+            // above already refreshed it) or the account simply has no usable connection yet;
+            // either way the link survives and the next tick tries again.
+            val reason = when (error) {
                 is DiscordRestClient.DiscordApiException ->
-                    when {
-                        error.isUnauthorized -> {
-                            // Nothing left to refresh: the stored session is rejected for good.
-                            DiscordOAuthClient.clearToken()
-                            discordSessionInvalid = true
-                            "Discord rejected friend-list access (HTTP 401) even after a token " +
-                                "refresh - tap Reconnect. If it keeps failing, the app needs the " +
-                                "$RELATIONSHIPS_SCOPE scope approved in the Discord Developer Portal."
-                        }
-                        error.isForbidden ->
-                            "Discord friends need the relationships.read scope. Add it to the app in the " +
-                                "Discord Developer Portal, then link again."
-                        else -> error.message
-                    }
-                else -> error.message
+                    if (error.isRateLimited) null else "Discord is unreachable right now - retrying in the background."
+                else -> "Discord is unreachable right now - retrying in the background."
             }
-            statusMessage = message
+            markDiscordOffline(reason)
             Logging.w(TAG, "Discord relationships unavailable", error)
         }
 
         val relationships = relationshipResult.getOrElse { emptyList() }
-        if (relationshipResult.isSuccess) {
-            statusMessage = null
-            discordSessionInvalid = false
-        }
+        if (relationshipResult.isSuccess) markDiscordOnline()
 
         val friends = mutableListOf<SocialFriend>()
         val requests = mutableListOf<FriendRequest>()
@@ -230,7 +266,9 @@ object SocialRepository {
                 avatarUrl = relationship.avatarUrl,
                 discordUserId = relationship.userId,
                 presence = PresenceStatus.UNKNOWN,
-                presenceLabel = "Discord presence needs the Social SDK connection",
+                // No presence label: Discord's REST API has no presence, and a sentence about
+                // the Social SDK is launcher internals, not something a chat header should show.
+                presenceLabel = null,
                 blocked = relationship.isBlocked,
             )
             when {
@@ -269,6 +307,29 @@ object SocialRepository {
             if (messages != null) {
                 conversations = messages.conversations
                 threads = messages.threads
+                // Older builds stored every failed Discord send as a permanent "Not sent" row.
+                // They are queued work, not history: turn them back into pending messages so the
+                // retry tick can deliver them and the red rows disappear from the conversation.
+                conversations = conversations.map { conversation ->
+                    val subtitle = conversation.subtitle
+                    if (subtitle != null && subtitle.contains("Social SDK", ignoreCase = true)) {
+                        conversation.copy(subtitle = null)
+                    } else {
+                        conversation
+                    }
+                }.toMutableList()
+                threads.values.forEach { thread ->
+                    for (index in thread.indices) {
+                        val message = thread[index]
+                        if (message.failed && message.fromSelf) {
+                            thread[index] = message.copy(
+                                failed = false,
+                                pending = true,
+                                failureReason = null,
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -617,11 +678,17 @@ object SocialRepository {
     }
 
     private fun sendDiscordMessage(conversation: SocialConversation, body: String): SocialMessage {
-        val token = DiscordOAuthClient.accessToken()
-            ?: return failedMessage(conversation, body, "Reconnect your Discord account to send this.")
-
         val userId = discordFriends.firstOrNull { it.key == conversation.peerKey }?.discordUserId
             ?: return failedMessage(conversation, body, "That Discord friend is no longer in your list.")
+
+        val token = DiscordOAuthClient.accessToken()
+        if (token.isNullOrBlank()) {
+            // Offline, not broken: keep the text as a queued message and let the retry tick send
+            // it as soon as a token exists again. The old behaviour wrote a permanent "Not sent"
+            // row for every attempt, which is what filled the conversation with red rows.
+            markDiscordOffline("Discord is unreachable right now - retrying in the background.")
+            return queuedDiscordMessage(conversation, body)
+        }
 
         return runCatching {
             var channelId = conversation.platformChannelId
@@ -632,8 +699,84 @@ object SocialRepository {
             DiscordRestClient.sendMessage(token, channelId, body)
                 .toSocialMessage(conversation.id, fromSelf = true)
         }.getOrElse { error ->
-            failedMessage(conversation, body, error.message ?: "Discord rejected the message.")
+            Logging.w(TAG, "Discord send failed; keeping the message queued", error)
+            if (error is DiscordRestClient.DiscordApiException && error.isUnauthorized) {
+                markDiscordOffline("Discord is unreachable right now - retrying in the background.")
+            }
+            queuedDiscordMessage(conversation, body)
         }
+    }
+
+    /** A message that is kept locally until Discord accepts it. Rendered as "Sending…". */
+    private fun queuedDiscordMessage(conversation: SocialConversation, body: String): SocialMessage =
+        SocialMessage(
+            id = UUID.randomUUID().toString(),
+            conversationId = conversation.id,
+            authorName = SocialTransport.selfName(),
+            fromSelf = true,
+            text = body,
+            sentAtMs = System.currentTimeMillis(),
+            pending = true,
+            deletable = true,
+        )
+
+    /**
+     * Re-sends queued Discord messages. Idempotent per message id: a delivered message is replaced
+     * in place, so a retry can never duplicate a row or a Discord message.
+     */
+    private fun retryQueuedMessages() {
+        if (!SocialIdentityStore.current().hasDiscordLink) return
+        val queued = synchronized(lock) {
+            threads.values.flatten().filter { it.pending && it.fromSelf }
+        }
+        if (queued.isEmpty()) return
+
+        val token = DiscordOAuthClient.accessToken()
+        if (token.isNullOrBlank()) {
+            markDiscordOffline("Discord is unreachable right now - retrying in the background.")
+            return
+        }
+
+        var delivered = false
+        for (message in queued) {
+            val conversation = conversations.firstOrNull { it.id == message.conversationId } ?: continue
+            if (conversation.source != SocialSource.DISCORD ||
+                conversation.kind == ConversationKind.CHANNEL
+            ) {
+                continue
+            }
+            val userId = discordFriends.firstOrNull { it.key == conversation.peerKey }?.discordUserId
+                ?: continue
+            runCatching {
+                var channelId = conversation.platformChannelId
+                if (channelId.isNullOrBlank()) {
+                    channelId = DiscordRestClient.openDirectMessage(token, userId)
+                    updateConversation(conversation.id) { it.copy(platformChannelId = channelId) }
+                }
+                DiscordRestClient.sendMessage(token, channelId, message.text)
+            }.onSuccess { sent ->
+                replaceMessage(message.conversationId, message.id, sent.toSocialMessage(message.conversationId, fromSelf = true))
+                delivered = true
+            }.onFailure { error ->
+                Logging.w(TAG, "Queued message still waiting", error)
+            }
+        }
+
+        if (delivered) {
+            persist()
+            statusMessage = null
+            publish()
+        }
+    }
+
+    /** Replaces a queued message with the delivered one, keeping its position in the thread. */
+    private fun replaceMessage(conversationId: String, messageId: String, replacement: SocialMessage) {
+        synchronized(lock) {
+            val thread = threads[conversationId] ?: return
+            val index = thread.indexOfFirst { it.id == messageId }
+            if (index >= 0) thread[index] = replacement else thread.add(replacement)
+        }
+        refreshConversationPreview(conversationId)
     }
 
     private fun sendTurtleMessage(conversation: SocialConversation, body: String): SocialMessage {
@@ -707,7 +850,7 @@ object SocialRepository {
         val message = synchronized(lock) {
             threads[conversationId]?.firstOrNull { it.id == messageId }
         }
-        if (conversation != null && message != null &&
+        if (conversation != null && message != null && !message.pending &&
             conversation.source == SocialSource.DISCORD && !conversation.platformChannelId.isNullOrBlank()
         ) {
             DiscordOAuthClient.accessToken()?.let { token ->

@@ -20,8 +20,10 @@ object HorizonEngineInstallFlow {
     private const val TAG = "HorizonInstallFlow"
 
     /**
-     * Asks whether to download the engine. [onDeclined] runs on the main thread when the user
-     * backs out (or the dialog is cancelled) so the caller can fall back to the on-device engine.
+     * Asks whether to install the engine. It ships inside the launcher APK, so this is a consent
+     * prompt for Android's installer, not a download. [onDeclined] runs on the main thread when
+     * the user backs out (or the dialog is cancelled) so the caller can fall back to the on-device
+     * engine.
      */
     @JvmStatic
     fun offerInstall(activity: Activity, onDeclined: Runnable) {
@@ -29,11 +31,18 @@ object HorizonEngineInstallFlow {
             onDeclined.run()
             return
         }
-        val repo = HorizonEngineInstaller.sourceRepo()
+        val bundled = HorizonEngineInstaller.isBundled(activity.applicationContext)
+        val message = if (bundled) {
+            activity.getString(R.string.engine_install_body_bundled)
+        } else {
+            activity.getString(R.string.engine_install_body, HorizonEngineInstaller.sourceRepo())
+        }
         val dialog = AlertDialog.Builder(activity, R.style.CustomAlertDialogTheme)
             .setTitle(R.string.engine_install_title)
-            .setMessage(activity.getString(R.string.engine_install_body, repo))
-            .setPositiveButton(R.string.engine_install_confirm) { _, _ -> download(activity) }
+            .setMessage(message)
+            .setPositiveButton(
+                if (bundled) R.string.engine_install_confirm_bundled else R.string.engine_install_confirm
+            ) { _, _ -> download(activity) }
             .setNegativeButton(android.R.string.cancel) { _, _ -> onDeclined.run() }
             .setOnCancelListener { onDeclined.run() }
             .create()
@@ -41,22 +50,26 @@ object HorizonEngineInstallFlow {
     }
 
     private fun download(activity: Activity) {
+        val bundled = HorizonEngineInstaller.isBundled(activity.applicationContext)
+        val startText = if (bundled) R.string.engine_prepare_starting else R.string.engine_download_starting
+        val progressText = if (bundled) R.string.engine_unpack_progress else R.string.engine_download_progress
+
         val progress = AlertDialog.Builder(activity, R.style.CustomAlertDialogTheme)
             .setTitle(R.string.engine_install_title)
-            .setMessage(activity.getString(R.string.engine_download_starting))
+            .setMessage(activity.getString(startText))
             .setCancelable(false)
             .create()
         progress.show()
 
         TaskExecutors.getDefault().execute {
-            val result = HorizonEngineInstaller.downloadLatest(activity.applicationContext) { percent ->
+            val result = HorizonEngineInstaller.acquire(activity.applicationContext) { percent ->
                 TaskExecutors.runInUIThread {
-                    runCatching { progress.setMessage(activity.getString(R.string.engine_download_progress, percent)) }
+                    runCatching { progress.setMessage(activity.getString(progressText, percent)) }
                 }
             }
             TaskExecutors.runInUIThread {
                 runCatching { progress.dismiss() }
-                result.onSuccess { (_, file) ->
+                result.onSuccess { file ->
                     HorizonEngineInstaller.install(activity, file)
                         .onSuccess {
                             toast(activity, activity.getString(R.string.engine_install_started), Toast.LENGTH_LONG)

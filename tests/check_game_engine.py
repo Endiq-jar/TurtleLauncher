@@ -198,16 +198,22 @@ else:
         if "getMessage()" not in body:
             errors.append("launchGame must surface the fallback reason when the hand-off fails")
 
-# ── 6. The engine is a first-class, launcher-managed install ────────────────────────────
-# "Built in" cannot mean embedding Rust into this APK, so it must mean the launcher owns the
-# whole lifecycle: resolve the release, pick this device's ABI, verify, install, detect.
+# ── 6. The engine ships inside the launcher ────────────────────────────────────────────
+# Horizon is a native Rust/Vulkan app, so it cannot be linked in as a library - but it must not
+# be a separate download either. The build packs the engine APK into assets/horizon/ and the app
+# unpacks it from its own APK, so choosing Horizon in Phone settings works offline. The release
+# feed survives only as the fallback for builds where the asset was stripped.
 installer = engine_dir / "HorizonEngineInstaller.kt"
 flow = engine_dir / "HorizonEngineInstallFlow.kt"
 installer_src = read(installer)
 flow_src = read(flow)
 
 for needle, what in (
-    ("fun latestRelease(repo: String = sourceRepo()): Result<EngineRelease>", "release resolution"),
+    ("const val BUNDLED_ASSET: String = \"horizon/horizon-engine.apk\"", "the bundled asset path"),
+    ("fun isBundled(context: Context): Boolean", "the bundled-engine probe"),
+    ("fun extractBundled(context: Context", "unpacking the bundled engine"),
+    ("fun acquire(context: Context", "the single install entry point (bundled first)"),
+    ("fun latestRelease(repo: String = sourceRepo()): Result<EngineRelease>", "release fallback resolution"),
     ("https://api.github.com", "the GitHub release API"),
     ("fun pickAsset(assets: JsonArray): JsonObject?", "ABI-aware asset selection"),
     ("Build.SUPPORTED_ABIS", "the device ABI probe"),
@@ -245,23 +251,47 @@ for needle, what in (
     if needle not in launcher_src:
         errors.append(f"LauncherActivity.java: missing {what} (`{needle}`)")
 
-if "downloadLatest" not in flow_src or "engine_download_progress" not in flow_src:
-    errors.append("HorizonEngineInstallFlow.kt: the flow needs download progress feedback")
+if "HorizonEngineInstaller.acquire(" not in flow_src:
+    errors.append("HorizonEngineInstallFlow.kt: the flow must go through the bundled-engine entry point")
+if "engine_unpack_progress" not in flow_src or "engine_download_progress" not in flow_src:
+    errors.append("HorizonEngineInstallFlow.kt: progress feedback is needed for both paths")
+if "engine_install_body_bundled" not in flow_src:
+    errors.append("HorizonEngineInstallFlow.kt: a bundled engine must not be presented as a download")
 if "onDeclined.run()" not in flow_src:
     errors.append("HorizonEngineInstallFlow.kt: declining must fall back to the on-device engine")
 
-# Phone settings own the same lifecycle: download, source override, uninstall.
+# Phone settings own the same lifecycle: install from the APK, source override, uninstall.
 for needle, what in (
-    ("downloadHorizonEngine()", "the built-in download action"),
-    ("HorizonEngineInstaller.downloadLatest(", "the downloader call"),
+    ("downloadHorizonEngine()", "the built-in install action"),
+    ("HorizonEngineInstaller.acquire(", "the bundled-engine install call"),
     ("HorizonEngineInstaller.setSourceRepo(", "editing the engine source"),
     ("HorizonEngineInstaller.uninstallIntent(", "the uninstall action"),
     ("binding.engineHorizonUninstall.visibility", "uninstall visibility"),
     ("binding.engineHorizonSource.text", "the source label"),
     ("R.string.engine_download_progress", "download progress in the status line"),
+    ("R.string.engine_unpack_progress", "unpack progress in the status line"),
+    ("R.string.engine_bundled_label", "the \"built in\" label"),
+    ("HorizonEngineInstaller.isBundled(", "the bundled-engine probe in the UI"),
 ):
     if needle not in fragment_src:
         errors.append(f"PhoneSettingsFragment.kt: missing {what} (`{needle}`)")
+
+# The binary itself is packed at build time - never committed, never fetched on device.
+if "HorizonEngineInstaller.downloadLatest(" in fragment_src:
+    errors.append("PhoneSettingsFragment.kt: selecting the engine must not download anything")
+
+gradle_src = read(repo / "TurtleLauncher/build.gradle.kts")
+for needle, what in (
+    ("val bundleHorizonEngine by tasks.registering", "the bundling task"),
+    ("generated/horizonAssets", "a build-only asset directory"),
+    ("assets.srcDir(horizonEngineAssetDir.get().asFile)", "the bundled assets source dir"),
+    ("dependsOn(bundleHorizonEngine)", "assets depending on the bundled engine"),
+    ("horizon-engine.apk", "the bundled file name"),
+    ("Vasysik/horizon-android", "the pinned upstream build"),
+    ("turtlelauncher.horizonEngineUrl", "an override for offline/mirror builds"),
+):
+    if needle not in gradle_src:
+        errors.append(f"build.gradle.kts: missing {what} (`{needle}`)")
 
 for view_id in ("engine_horizon_source", "engine_horizon_uninstall"):
     if f'@+id/{view_id}"' not in layout_src:

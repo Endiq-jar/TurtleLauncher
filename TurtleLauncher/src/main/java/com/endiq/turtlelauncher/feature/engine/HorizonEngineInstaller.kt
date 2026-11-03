@@ -18,8 +18,9 @@ import java.security.MessageDigest
  * The built-in Horizon engine installer.
  *
  * Horizon itself is a native Rust/Vulkan application, so it cannot be compiled into this APK as a
- * library - but the user should never have to hunt for an APK either. This object makes the engine
- * a first-class, launcher-managed download:
+ * library - but it *is* shipped inside this APK: the build packs the Android port's APK into
+ * `assets/horizon/`, so choosing the engine in Phone settings never downloads anything. The
+ * release-feed path below stays as the fallback for builds where that asset was stripped:
  *
  *  - the latest Android build is resolved from a GitHub release feed (configurable in Settings,
  *    defaulting to the multi-ABI Horizon Android port);
@@ -43,6 +44,16 @@ object HorizonEngineInstaller {
 
     private const val CACHE_DIR = "horizon-engine"
     private const val SUMS_ASSET = "SHA256SUMS.txt"
+
+    /**
+     * The engine APK packed into this launcher at build time (`bundleHorizonEngine` in
+     * build.gradle.kts). Because it travels inside the launcher's own signed APK there is no
+     * download, no size check and no network permission involved in switching engines.
+     */
+    const val BUNDLED_ASSET: String = "horizon/horizon-engine.apk"
+
+    /** Horizon Android port packed into the APK; also names the extracted file. */
+    const val BUNDLED_VERSION: String = "0.7.6"
 
     /** One resolved release asset plus what is known about it. */
     data class EngineRelease(
@@ -170,6 +181,93 @@ object HorizonEngineInstaller {
             release to download(context, release, onProgress)
         }
 
+    // ── Built-in engine ───────────────────────────────────────────────────────────
+
+    /** True when this APK carries the engine, i.e. switching engines needs no download at all. */
+    fun isBundled(context: Context): Boolean =
+        runCatching { context.assets.open(BUNDLED_ASSET).close() }.isSuccess
+
+    /**
+     * Copies the bundled engine out of the launcher's assets into the cache and returns it,
+     * ready for [install]. Blocking - call from a worker thread. A completed extraction is
+     * reused, so re-installing does not rewrite 35 MB every time.
+     */
+    fun extractBundled(context: Context, onProgress: (Int) -> Unit = {}): File {
+        val directory = File(context.cacheDir, CACHE_DIR).apply { mkdirs() }
+        val target = File(directory, "horizon-engine-$BUNDLED_VERSION.apk")
+        val stamp = File(directory, "horizon-engine-$BUNDLED_VERSION.ready")
+        if (target.isFile && target.length() > 0L && stamp.isFile) {
+            onProgress(100)
+            return target
+        }
+
+        val partial = File(directory, "horizon-engine.apk.part").apply { delete() }
+        // Anything else in the cache is a previous attempt or an older download.
+        directory.listFiles()?.forEach { stale ->
+            if (stale.name != target.name && stale.name != stamp.name && stale.name != partial.name) {
+                runCatching { stale.deleteRecursively() }
+            }
+        }
+
+        onProgress(0)
+        val total = runCatching {
+            context.assets.open(BUNDLED_ASSET).use { it.available().toLong() }
+        }.getOrDefault(0L)
+        runCatching {
+            context.assets.open(BUNDLED_ASSET).use { input ->
+                partial.outputStream().use { output ->
+                    val buffer = ByteArray(64 * 1024)
+                    var written = 0L
+                    var lastPercent = -1
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read <= 0) break
+                        output.write(buffer, 0, read)
+                        written += read
+                        if (total > 0) {
+                            val percent = ((written * 100) / total).toInt().coerceIn(0, 100)
+                            if (percent != lastPercent) {
+                                lastPercent = percent
+                                onProgress(percent)
+                            }
+                        }
+                    }
+                }
+            }
+        }.onFailure { error ->
+            partial.delete()
+            throw InstallException(
+                "The built-in Horizon engine could not be unpacked (${error.message ?: "unknown error"})."
+            )
+        }
+
+        if (partial.length() <= 0L) {
+            partial.delete()
+            throw InstallException("This launcher build does not contain the Horizon engine.")
+        }
+        stamp.delete()
+        if (!partial.renameTo(target)) {
+            target.writeBytes(partial.readBytes())
+            partial.delete()
+        }
+        stamp.writeText(System.currentTimeMillis().toString())
+        onProgress(100)
+        Logging.i(TAG, "Unpacked the bundled Horizon engine v$BUNDLED_VERSION")
+        return target
+    }
+
+    /**
+     * The APK a settings action should install: the engine packed in this launcher when present,
+     * otherwise a download from the configured feed (custom builds that strip the asset).
+     */
+    fun acquire(context: Context, onProgress: (Int) -> Unit = {}): Result<File> = runCatching {
+        if (isBundled(context)) {
+            extractBundled(context, onProgress)
+        } else {
+            downloadLatest(context, onProgress).getOrThrow().second
+        }
+    }
+
     fun download(context: Context, release: EngineRelease, onProgress: (Int) -> Unit): File {
         val directory = File(context.cacheDir, CACHE_DIR).apply { mkdirs() }
         // Drop anything the previous download left behind (old versions, partial files).
@@ -246,7 +344,7 @@ object HorizonEngineInstaller {
      * the engine is detected in the very next session even if its id is not one we guess.
      */
     fun install(context: Context, apk: File): Result<String> = runCatching {
-        if (!apk.isFile) throw InstallException("The engine download is gone - download it again.")
+        if (!apk.isFile) throw InstallException("The engine file is gone - install it again.")
         val packageName = packageNameOf(context, apk)
         context.startActivity(installIntent(context, apk))
         if (!packageName.isNullOrBlank()) {

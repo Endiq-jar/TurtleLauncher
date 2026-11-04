@@ -148,16 +148,22 @@ object DualChannelNetwork {
         report()
         val outcome = runCatching {
             target.parentFile?.mkdirs()
+            // A channel failure must not escape as an unhandled thread exception (that would print
+            // a stack trace and leave the caller guessing); it is collected and rethrown below.
+            val failure = java.util.concurrent.atomic.AtomicReference<Throwable?>(null)
             val threads = listOf(
                 Thread {
-                    fetchRange(channels[0], cleanUrl, 0L, half - 1, parts[0], done, report)
+                    runCatching { fetchRange(channels[0], cleanUrl, 0L, half - 1, parts[0], done, ::report) }
+                        .onFailure { failure.compareAndSet(null, it) }
                 }.apply { name = "dual-channel-wifi"; isDaemon = true },
                 Thread {
-                    fetchRange(channels[1], cleanUrl, half, total - 1, parts[1], done, report)
+                    runCatching { fetchRange(channels[1], cleanUrl, half, total - 1, parts[1], done, ::report) }
+                        .onFailure { failure.compareAndSet(null, it) }
                 }.apply { name = "dual-channel-cell"; isDaemon = true },
             )
             threads.forEach { it.start() }
             threads.forEach { it.join() }
+            failure.get()?.let { throw it }
             if (parts.any { !it.isFile || it.length() != expectedLength(it, total, half) }) {
                 throw IllegalStateException("a channel returned an incomplete range")
             }

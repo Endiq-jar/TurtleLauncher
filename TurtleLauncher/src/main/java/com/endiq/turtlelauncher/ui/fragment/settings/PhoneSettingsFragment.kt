@@ -171,7 +171,7 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
             // The engine is built into the launcher, so selecting it is the moment to install:
             // one prompt, no download, no trip back to Play to find out something is missing.
             val status = GameEngineManager.horizonStatus(requireContext())
-            if (status.supported && status.installation == null) offerEngineInstall()
+            if (status.deviceSupported && status.installation == null) offerEngineInstall()
         }
         binding.engineHorizonPick.setOnClickListener { showEngineAppPicker() }
         // "Install engine" is the built-in downloader; a locally downloaded APK can still be

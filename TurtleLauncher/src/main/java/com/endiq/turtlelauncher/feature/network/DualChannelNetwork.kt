@@ -172,7 +172,9 @@ object DualChannelNetwork {
 
         parts.forEach { runCatching { it.delete() } }
         if (outcome.isFailure) {
-            Logging.w(TAG, "Dual channel download failed, falling back to one stream", outcome.exceptionOrNull())
+            outcome.exceptionOrNull()?.let { error ->
+                Logging.w(TAG, "Dual channel download failed, falling back to one stream", error)
+            }
             runCatching { target.delete() }
             return false
         }

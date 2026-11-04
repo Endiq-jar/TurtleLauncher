@@ -520,51 +520,58 @@ tasks.withType<MergeSourceSetFolders>().configureEach {
 
 // ── Built-in Horizon engine ──────────────────────────────────────────────────────────────
 // The Horizon engine is a native Rust/Vulkan app, so it cannot be linked in as a library. It is
-// therefore packed into the launcher's own APK as assets/horizon/horizon-engine.apk: picking the
-// engine in Phone settings then needs no download at all (HorizonEngineInstaller.extractBundled).
-// The APK is fetched once on the build machine and lives only in build/generated - never in git.
-val horizonEngineVersion = "0.7.6"
+// therefore packed into the launcher's own APK, one APK per CPU architecture, under
+// assets/horizon/horizon-engine-<abi>.apk: picking the engine in Phone settings then needs no
+// download at all (HorizonEngineInstaller.extractBundled). Every architecture Horizon ships is
+// bundled so the engine is available on arm64, armv7, x86 and x86_64 devices alike.
+// The APKs are fetched once on the build machine and live only in build/generated - never in git.
+val horizonEngineVersion = "0.7.7"
+val horizonEngineAbis = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
 val horizonEngineAssetDir = layout.buildDirectory.dir("generated/horizonAssets")
-// A copy dropped into src/main/assets/horizon/ wins, and a checksum-pinned mirror can be supplied
-// with -Pturtlelauncher.horizonEngineUrl=... (file: URLs work too).
-val horizonEngineUrl = providers.gradleProperty("turtlelauncher.horizonEngineUrl").orElse(
-    "https://github.com/Vasysik/horizon-android/releases/download/v$horizonEngineVersion/" +
-        "Horizon-Android-$horizonEngineVersion-arm64-v8a.apk"
+// A copy dropped into src/main/assets/horizon/ wins per architecture, and a mirror can be
+// supplied with -Pturtlelauncher.horizonEngineBase=<url prefix>/ (file: URLs work too).
+val horizonEngineBase = providers.gradleProperty("turtlelauncher.horizonEngineBase").orElse(
+    "https://github.com/Vasysik/horizon-android/releases/download/v$horizonEngineVersion/"
 )
 val bundleHorizonEngine by tasks.registering {
-    description = "Packs the Horizon engine APK into the launcher's assets."
+    description = "Packs every Horizon engine APK into the launcher's assets."
     val outDir = horizonEngineAssetDir
-    val url = horizonEngineUrl
+    val base = horizonEngineBase
+    val version = horizonEngineVersion
+    val abis = horizonEngineAbis
     val committed = layout.projectDirectory.dir("src/main/assets/horizon")
     outputs.dir(outDir)
     doLast {
         val assetRoot = outDir.get().dir("horizon").asFile
         assetRoot.mkdirs()
-        val target = File(assetRoot, "horizon-engine.apk")
-        if (target.isFile && target.length() > 0L) return@doLast
+        for (abi in abis) {
+            val target = File(assetRoot, "horizon-engine-$abi.apk")
+            if (target.isFile && target.length() > 0L) continue
 
-        val local = File(committed.asFile, "horizon-engine.apk")
-        if (local.isFile && local.length() > 0L) {
-            local.copyTo(target, overwrite = true)
-            logger.lifecycle("Horizon engine: bundled from ${local.path}")
-            return@doLast
-        }
+            val local = File(committed.asFile, "horizon-engine-$abi.apk")
+            if (local.isFile && local.length() > 0L) {
+                local.copyTo(target, overwrite = true)
+                logger.lifecycle("Horizon engine ($abi): bundled from ${local.path}")
+                continue
+            }
 
-        val fetched = runCatching {
-            val connection = URI(url.get()).toURL().openConnection()
-            connection.connectTimeout = 30_000
-            connection.readTimeout = 180_000
-            (connection as? HttpURLConnection)?.instanceFollowRedirects = true
-            connection.getInputStream().use { input -> target.outputStream().use { input.copyTo(it) } }
-        }
-        if (fetched.isFailure || target.length() <= 0L) {
-            target.delete()
-            logger.warn(
-                "Horizon engine: not bundled (${fetched.exceptionOrNull()?.message}). " +
-                    "Phone settings will offer a one-time download instead."
-            )
-        } else {
-            logger.lifecycle("Horizon engine: bundled v$horizonEngineVersion (${target.length()} bytes)")
+            val url = base.get().trimEnd('/') + "/Horizon-Android-$version-$abi.apk"
+            val fetched = runCatching {
+                val connection = URI(url).toURL().openConnection()
+                connection.connectTimeout = 30_000
+                connection.readTimeout = 600_000
+                (connection as? HttpURLConnection)?.instanceFollowRedirects = true
+                connection.getInputStream().use { input -> target.outputStream().use { input.copyTo(it) } }
+            }
+            if (fetched.isFailure || target.length() <= 0L) {
+                target.delete()
+                logger.warn(
+                    "Horizon engine ($abi): not bundled (${fetched.exceptionOrNull()?.message}). " +
+                        "Phone settings will offer a one-time download for that architecture."
+                )
+            } else {
+                logger.lifecycle("Horizon engine ($abi): bundled v$version (${target.length()} bytes)")
+            }
         }
     }
 }

@@ -519,6 +519,11 @@ class AllSettings {
         // calls), independent of the download-source (BMCLAPI) mirror above.
         @JvmStatic val dnsServer                = StringSettingUnit("dnsServer", "cloudflare")
 
+        // Dual channel network acceleration: split a large download over Wi-Fi and mobile data at
+        // the same time (feature/network/DualChannelNetwork). On by default because the module
+        // falls back to a single stream whenever the second link is missing or unusable.
+        @JvmStatic val dualChannelNetwork       = BooleanSettingUnit("dualChannelNetwork", true)
+
         // ── Terracotta (Friends/LAN) ──────────────────────────────────────────
         @JvmStatic val enableTerracottaNodes    = BooleanSettingUnit("enableTerracottaNodes", false)
         @JvmStatic val terracottaNodes          = StringSettingUnit("terracottaNodes", "")

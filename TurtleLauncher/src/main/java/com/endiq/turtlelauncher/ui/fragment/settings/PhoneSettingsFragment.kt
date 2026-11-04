@@ -15,6 +15,7 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.engine.GameEngine
 import com.endiq.turtlelauncher.feature.engine.GameEngineManager
 import com.endiq.turtlelauncher.feature.engine.HorizonEngine
+import com.endiq.turtlelauncher.feature.engine.HorizonEngineInstallFlow
 import com.endiq.turtlelauncher.feature.engine.HorizonEngineInstaller
 import com.endiq.turtlelauncher.ui.dialog.EditTextDialog
 import com.endiq.turtlelauncher.feature.version.VersionsManager
@@ -167,6 +168,11 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         binding.engineHorizonLayout.setOnClickListener {
             GameEngineManager.select(GameEngine.HORIZON)
             renderEngineState()
+            // The engine is built into the launcher, so selecting it is the moment to install:
+            // one prompt, no download, no trip back to Play to find out something is missing.
+            if (GameEngineManager.horizonStatus(requireContext()).installation == null) {
+                offerEngineInstall()
+            }
         }
         binding.engineHorizonPick.setOnClickListener { showEngineAppPicker() }
         // "Install engine" is the built-in downloader; a locally downloaded APK can still be
@@ -180,6 +186,16 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         binding.engineHorizonSource.setOnClickListener { editEngineSource() }
         binding.engineHorizonUninstall.setOnClickListener { uninstallHorizonEngine() }
         renderEngineState()
+    }
+
+    /** Offers the built-in install (or a download when this build has no engine for the device). */
+    private fun offerEngineInstall() {
+        val owner = activity ?: return
+        HorizonEngineInstallFlow.offerInstall(owner) {
+            // Declining keeps the previous engine selected, exactly like pressing Play does.
+            runCatching { GameEngineManager.select(GameEngine.DEVICE) }
+            renderEngineState()
+        }
     }
 
     private fun renderEngineState() {
@@ -196,12 +212,12 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
             if (status.installation != null) View.VISIBLE else View.GONE
         binding.engineHorizonUninstall.visibility =
             if (status.installation != null) View.VISIBLE else View.GONE
-        binding.engineHorizonSource.text =
-            if (HorizonEngineInstaller.isBundled(requireContext())) {
-                getString(R.string.engine_bundled_label)
-            } else {
-                getString(R.string.engine_source_label, HorizonEngineInstaller.sourceRepo())
-            }
+        val bundled = HorizonEngineInstaller.bundledSummary(requireContext())
+        binding.engineHorizonSource.text = if (bundled != null) {
+            getString(R.string.engine_bundled_label, bundled)
+        } else {
+            getString(R.string.engine_source_label, HorizonEngineInstaller.sourceRepo())
+        }
         // The engine ships inside the launcher, so this is a plain "install", not a download.
         binding.engineHorizonInstall.text = getString(
             if (HorizonEngineInstaller.isBundled(requireContext())) {
@@ -210,6 +226,7 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
                 R.string.engine_install_engine
             },
         )
+        binding.engineHorizonInstall.isEnabled = true
     }
 
     /**

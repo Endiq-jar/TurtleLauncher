@@ -812,8 +812,9 @@
     <string name="engine_horizon_summary">Launches through an installed Horizon app instead of the JVM. Needs a 64-bit ARM device with Vulkan; Java mods and Microsoft sign-in do not apply there.</string>
     <string name="engine_status_ready">Installed: %1$s</string>
     <string name="engine_status_ready_version">Installed: %1$s v%2$s</string>
+    <string name="engine_status_bundled_ready">Horizon %1$s ships inside this launcher. Install it once - no download - and Play starts it directly.</string>
     <string name="engine_status_missing">No Horizon app found. Install a Horizon build or pick an installed engine app below.</string>
-    <string name="engine_status_unsupported_abi">This device has no 64-bit ARM CPU, which every Horizon Android build requires. The on-device engine stays selected when you press Play.</string>
+    <string name="engine_status_unsupported_abi">This device uses a CPU architecture Horizon has no build for (Horizon ships for ARM64, ARMv7, x86 and x86_64). The on-device engine stays selected when you press Play.</string>
     <string name="engine_pick_app">Choose app</string>
     <string name="engine_install_engine">Install engine</string>
     <string name="engine_install_bundled">Install built-in engine</string>
@@ -821,7 +822,7 @@
     <string name="engine_open">Open</string>
     <string name="engine_uninstall">Uninstall</string>
     <string name="engine_source_label">Source: %1$s</string>
-    <string name="engine_bundled_label">Built in - ships with this launcher, no download needed</string>
+    <string name="engine_bundled_label">Built in: Horizon %1$s - ships with this launcher, no download needed</string>
     <string name="engine_source_title">Horizon engine source</string>
     <string name="engine_source_hint">GitHub repository that publishes Horizon Android APKs, written as owner/repository. Restart the download after changing it.</string>
     <string name="engine_install_title">Install Horizon engine</string>
@@ -1007,6 +1008,8 @@
     <string name="setting_download_source_title">Game Download Source</string>
     <string name="setting_download_source_desc">Choose a mirror download source instead of using the official download source</string>
     <string name="setting_dns_server_title">DNS Server</string>
+    <string name="setting_dual_channel_title">Dual channel network acceleration</string>
+    <string name="setting_dual_channel_desc">Downloads large files over Wi-Fi and mobile data at the same time and joins the pieces, so one file is not limited to one link. Uses mobile data for about half of each large download while both are connected; always falls back to a single connection when the server or the network cannot split the file.</string>
     <string name="setting_dns_server_desc">Use a specific public DNS resolver for the launcher\'s network requests, instead of the device\'s default</string>
     <string name="setting_max_download_threads_title">Max Download Threads</string>
     <string name="setting_max_download_threads_desc">Maximum number of concurrent downloads when downloading multiple files simultaneously, but too many threads will cause launcher lag. 64 threads are sufficient!</string>

@@ -36,7 +36,7 @@ object CustomDns : Dns {
             if (System.currentTimeMillis() < entry.expiresAtMs) return entry.addresses
         }
 
-        val resolved = runCatching { queryA(hostname, serverIp) }
+        val resolved = runCatching { resolve(hostname, serverKey, serverIp) }
             .onFailure { e -> Logging.w("CustomDns", "Query for $hostname via $serverKey ($serverIp) failed, falling back to system DNS", e) }
             .getOrNull()
             ?.takeIf { it.isNotEmpty() }
@@ -60,6 +60,42 @@ object CustomDns : Dns {
             if (e is java.net.UnknownHostException) throw e
             throw java.net.UnknownHostException("Unable to resolve host \"$hostname\": ${e.message}").apply { initCause(e) }
         }
+    }
+
+    /**
+     * Resolves [hostname] with the configured server, or - when dual channel network acceleration
+     * is on - with that server and a second provider at the same time, taking whichever answers
+     * first. Two resolvers instead of one removes the "one resolver is slow right now" case from
+     * the critical path of every download, which matters far more on mobile than on a desktop.
+     */
+    private fun resolve(hostname: String, serverKey: String, serverIp: String): List<InetAddress> {
+        val racing = runCatching { AllSettings.dualChannelNetwork.getValue() }.getOrDefault(false)
+        if (!racing) return queryA(hostname, serverIp)
+
+        val backup = SERVERS.entries.firstOrNull { it.key != serverKey }?.value ?: return queryA(hostname, serverIp)
+        val winner = java.util.concurrent.atomic.AtomicReference<List<InetAddress>?>(null)
+        val first = java.util.concurrent.CountDownLatch(1)
+        val finished = java.util.concurrent.CountDownLatch(2)
+        for (ip in listOf(serverIp, backup)) {
+            Thread {
+                try {
+                    val answer = runCatching { queryA(hostname, ip) }.getOrNull()
+                    if (!answer.isNullOrEmpty() && winner.compareAndSet(null, answer)) first.countDown()
+                } finally {
+                    finished.countDown()
+                }
+            }.apply {
+                name = "dns-race-$ip"
+                isDaemon = true
+            }.start()
+        }
+
+        // Wait for the fastest usable answer; if both fail, close out quickly instead of hanging.
+        first.await((QUERY_TIMEOUT_MS + 200).toLong(), java.util.concurrent.TimeUnit.MILLISECONDS)
+        if (winner.get() == null) {
+            finished.await((QUERY_TIMEOUT_MS + 200).toLong(), java.util.concurrent.TimeUnit.MILLISECONDS)
+        }
+        return winner.get() ?: emptyList()
     }
 
     /** Sends one A-record query for [hostname] to [serverIp]:53 and returns every address found. */

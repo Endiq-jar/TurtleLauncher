@@ -209,9 +209,17 @@ installer_src = read(installer)
 flow_src = read(flow)
 
 for needle, what in (
-    ("const val BUNDLED_ASSET: String = \"horizon/horizon-engine.apk\"", "the bundled asset path"),
+    ("val BUNDLED_ABIS: List<String>", "the list of bundled architectures"),
+    ("fun bundledAssetName(abi: String): String", "one asset per architecture"),
+    ("fun availableBundledAbis(context: Context): List<String>", "which architectures are in this build"),
+    ("fun bundledAbiForDevice(context: Context): String?", "the per-device architecture choice"),
+    ("fun pickAbi(deviceAbis: List<String>, availableAbis: List<String>): String?", "testable ABI selection"),
+    ("const val BUNDLED_VERSION: String = \"0.7.7\"", "the bundled Horizon release"),
     ("fun isBundled(context: Context): Boolean", "the bundled-engine probe"),
     ("fun extractBundled(context: Context", "unpacking the bundled engine"),
+    ("fun extractBundled(context: Context, abi: String", "unpacking a specific architecture"),
+    ("fun prepareInBackground(context: Context)", "unpacking ahead of time, unprompted"),
+    ("fun isPrepared(context: Context): Boolean", "knowing whether the engine is ready"),
     ("fun acquire(context: Context", "the single install entry point (bundled first)"),
     ("fun latestRelease(repo: String = sourceRepo()): Result<EngineRelease>", "release fallback resolution"),
     ("https://api.github.com", "the GitHub release API"),
@@ -232,10 +240,22 @@ for needle, what in (
     if needle not in installer_src:
         errors.append(f"HorizonEngineInstaller.kt: missing {what} (`{needle}`)")
 
+# Selection rules: exact device ABI first, aliases second, and a single bundled build as a last
+# resort so a one-architecture build still installs something Android can accept or reject.
+for needle, what in (
+    ("val preferred = deviceAbis.firstOrNull { it in available }", "exact ABI matching"),
+    ("\"arm64\", \"arm64-v8a\" -> \"arm64-v8a\"", "ABI aliases"),
+    ("return availableAbis.firstOrNull()", "a single-architecture fallback"),
+):
+    if needle not in installer_src:
+        errors.append(f"HorizonEngineInstaller.kt: missing {what} (`{needle}`)")
+
 if 'StringSettingUnit("horizonEngineSource"' not in settings_src:
     errors.append("AllSettings: horizonEngineSource must exist so the feed is configurable")
 if "Vasysik/horizon-android" not in settings_src:
     errors.append("AllSettings: the engine source needs a working default feed")
+if "R.string.engine_status_bundled_ready" not in manager_src:
+    errors.append("GameEngineManager: the engine card must say when the engine is built in")
 if "ACTION_DELETE" not in installer_src:
     errors.append("HorizonEngineInstaller: uninstall must go through ACTION_DELETE")
 
@@ -286,9 +306,12 @@ for needle, what in (
     ("generated/horizonAssets", "a build-only asset directory"),
     ("assets.srcDir(horizonEngineAssetDir.get().asFile)", "the bundled assets source dir"),
     ("dependsOn(bundleHorizonEngine)", "assets depending on the bundled engine"),
-    ("horizon-engine.apk", "the bundled file name"),
+    ("horizon-engine-$abi.apk", "the bundled file names"),
     ("Vasysik/horizon-android", "the pinned upstream build"),
-    ("turtlelauncher.horizonEngineUrl", "an override for offline/mirror builds"),
+    ("turtlelauncher.horizonEngineBase", "an override for offline/mirror builds"),
+    ("val horizonEngineAbis = listOf(\"arm64-v8a\", \"armeabi-v7a\", \"x86\", \"x86_64\")",
+     "all four Horizon architectures"),
+    ("Horizon-Android-$version-$abi.apk", "per-architecture asset names"),
 ):
     if needle not in gradle_src:
         errors.append(f"build.gradle.kts: missing {what} (`{needle}`)")

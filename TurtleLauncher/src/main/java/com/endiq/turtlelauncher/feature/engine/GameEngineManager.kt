@@ -60,8 +60,13 @@ object GameEngineManager {
     fun horizonStatus(context: Context): HorizonStatus {
         val supported = HorizonEngine.isDeviceSupported()
         val installation = if (supported) HorizonEngine.resolve(context) else null
+        // "Built in" has to be visible where the decision is made: when nothing is installed yet
+        // but this launcher carries an engine, the card says so instead of asking for a download.
+        val bundled = HorizonEngineInstaller.bundledSummary(context)
         val summary = when {
             !supported -> context.getString(R.string.engine_status_unsupported_abi)
+            installation == null && bundled != null ->
+                context.getString(R.string.engine_status_bundled_ready, bundled)
             installation == null -> context.getString(R.string.engine_status_missing)
             installation.versionName.isNullOrBlank() ->
                 context.getString(R.string.engine_status_ready, installation.label)

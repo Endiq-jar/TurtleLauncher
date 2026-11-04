@@ -61,6 +61,10 @@ for path in paths:
             with zipfile.ZipFile(io.BytesIO(apk.read(engine))) as engine_apk:
                 assert engine_apk.read("AndroidManifest.xml")[:4] == b"\x03\x00\x08\x00", \
                     f"Bundled Horizon engine for {abi} is not an Android APK"
+                # The build must be *for this ABI*: a renamed arm64 APK under the x86 name would
+                # install nowhere, and this is the only place that can catch a mirror mix-up.
+                assert any(n.startswith(f"lib/{abi}/") for n in engine_apk.namelist()), \
+                    f"Bundled Horizon engine for {abi} carries no {abi} native code"
         overlay = "assets/components/lwjgl-performance/turtle-performance.jar"
         with zipfile.ZipFile(io.BytesIO(apk.read(overlay))) as jar:
             glfw = jar.read("org/lwjgl/glfw/GLFW.class")

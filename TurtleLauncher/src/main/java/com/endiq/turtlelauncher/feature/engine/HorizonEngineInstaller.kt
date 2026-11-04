@@ -9,6 +9,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.setting.AllSettings
+import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.utils.path.UrlManager
 import okhttp3.Request
 import java.io.File
@@ -212,13 +213,28 @@ object HorizonEngineInstaller {
      * The launcher is a universal APK, so this is what turns "the engine is in here somewhere"
      * into "the right engine for this phone".
      */
-    fun bundledAbi(context: Context): String? {
-        val available = bundledAbis(context)
-        if (available.isEmpty()) return null
-        val deviceAbis = Build.SUPPORTED_ABIS.orEmpty().map { it.lowercase() }
-        // No guessing: an engine built for another CPU would only fail to install, so a device
-        // with no matching build is told to use the download instead.
-        return deviceAbis.firstOrNull { it in available }
+    fun bundledAbi(context: Context): String? =
+        pickAbi(Build.SUPPORTED_ABIS.orEmpty().toList(), bundledAbis(context))
+
+    /**
+     * Pure ABI selection so the rule can be unit-tested: the first of the device's own ABIs that
+     * this launcher ships, understanding the aliases Android reports ("arm64" for "arm64-v8a").
+     *
+     * No guessing beyond that: an engine built for another CPU would only fail to install, so a
+     * device with no matching build is told to use the download instead.
+     */
+    fun pickAbi(deviceAbis: List<String>, availableAbis: List<String>): String? {
+        if (availableAbis.isEmpty()) return null
+        val available = availableAbis.map { it.lowercase() }.toSet()
+        for (abi in deviceAbis) {
+            val normalized = when (abi.lowercase()) {
+                "arm64" -> "arm64-v8a"
+                "arm", "armv7", "armeabi" -> "armeabi-v7a"
+                else -> abi.lowercase()
+            }
+            if (normalized in available) return normalized
+        }
+        return null
     }
 
     /**
@@ -300,6 +316,34 @@ object HorizonEngineInstaller {
         onProgress(100)
         Logging.i(TAG, "Unpacked the bundled Horizon engine v$version ($abi)")
         return target
+    }
+
+    /**
+     * Prepares the engine without any user action: when this launcher carries a build for this
+     * device and it is not unpacked yet, it is unpacked in the background at start-up. That is what
+     * makes the engine "already installed" from the user's point of view - selecting it never waits
+     * on a 35 MB copy out of assets. Failures are silent: the UI can still install on demand.
+     */
+    @JvmStatic
+    fun prepareInBackground(context: Context) {
+        if (isPrepared(context)) return
+        if (bundledAbi(context) == null) return
+        val app = context.applicationContext
+        TaskExecutors.getDefault().execute {
+            runCatching { extractBundled(app) }
+                .onFailure { error -> Logging.w(TAG, "Could not prepare the bundled engine", error) }
+        }
+    }
+
+    /** True once [extractBundled] produced this version's APK for this device. */
+    fun isPrepared(context: Context): Boolean {
+        val abi = bundledAbi(context) ?: return false
+        return runCatching {
+            val directory = File(File(context.cacheDir, CACHE_DIR), "$CACHE_VERSION_PREFIX${bundledVersion(context)}")
+            val apk = File(directory, "horizon-engine-$abi.apk")
+            val stamp = File(directory, "ready")
+            apk.isFile && apk.length() > 0L && stamp.isFile
+        }.getOrDefault(false)
     }
 
     /**

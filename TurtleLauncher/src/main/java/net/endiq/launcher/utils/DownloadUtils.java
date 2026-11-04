@@ -78,6 +78,15 @@ public class DownloadUtils {
                                              Tools.DownloaderFeedback monitor) throws IOException {
         FileUtils.ensureParentDirectory(outputFile);
 
+        // Dual channel network acceleration: try Wi-Fi + mobile data in parallel first. It returns
+        // false without touching outputFile whenever the split does not apply (single link, no
+        // range support, small file, any failure), so the single-stream path below - the only
+        // behaviour the rest of the launcher depends on - stays exactly as it was.
+        if (com.endiq.turtlelauncher.feature.network.DualChannelNetwork
+                .accelerate(urlInput, outputFile, monitor::updateProgress)) {
+            return;
+        }
+
         Request request = UrlManager.createRequestBuilder(urlInput).build();
 
         try (Response response = DOWNLOAD_CLIENT.newCall(request).execute()) {

@@ -815,7 +815,7 @@
     <string name="engine_status_missing">No Horizon app found. Install a Horizon build or pick an installed engine app below.</string>
     <string name="engine_status_bundled_missing">No Horizon app installed yet. The engine is built in (%1$s) - tap Install built-in engine; nothing is downloaded.</string>
     <string name="engine_status_update_available">Installed: Horizon v%1$s - this launcher now carries %2$s. Tap Update built-in engine to upgrade.</string>
-    <string name="engine_status_unsupported_abi">This device has no 64-bit ARM CPU, which every Horizon Android build requires. The on-device engine stays selected when you press Play.</string>
+    <string name="engine_status_unsupported_abi">This device uses a CPU architecture Horizon has no build for (Horizon ships for ARM64, ARMv7, x86 and x86_64). The on-device engine stays selected when you press Play.</string>
     <string name="engine_pick_app">Choose app</string>
     <string name="engine_install_engine">Install engine</string>
     <string name="engine_install_bundled">Install built-in engine</string>
@@ -1014,6 +1014,8 @@
     <string name="setting_download_source_title">Game Download Source</string>
     <string name="setting_download_source_desc">Choose a mirror download source instead of using the official download source</string>
     <string name="setting_dns_server_title">DNS Server</string>
+    <string name="setting_dual_channel_title">Dual channel network acceleration</string>
+    <string name="setting_dual_channel_desc">Downloads large files over Wi-Fi and mobile data at the same time and joins the pieces, so one file is not limited to one link. Uses mobile data for about half of each large download while both are connected; always falls back to a single connection when the server or the network cannot split the file.</string>
     <string name="setting_dns_server_desc">Use a specific public DNS resolver for the launcher\'s network requests, instead of the device\'s default</string>
     <string name="setting_max_download_threads_title">Max Download Threads</string>
     <string name="setting_max_download_threads_desc">Maximum number of concurrent downloads when downloading multiple files simultaneously, but too many threads will cause launcher lag. 64 threads are sufficient!</string>

@@ -324,8 +324,23 @@ for abi in GRADLE_ABIS:
 
 # The device must get its own ABI build, never a neighbouring one, and an unmatched device must
 # fall back to the download instead of installing a binary it cannot run.
-if "return deviceAbis.firstOrNull { it in available }" not in installer_src:
-    errors.append("HorizonEngineInstaller.kt: bundledAbi must match the device ABI, not guess")
+if "pickAbi(Build.SUPPORTED_ABIS.orEmpty().toList(), bundledAbis(context))" not in installer_src:
+    errors.append("HorizonEngineInstaller.kt: bundledAbi must delegate to the pure ABI picker")
+if "if (normalized in available) return normalized" not in installer_src:
+    errors.append("HorizonEngineInstaller.kt: the ABI picker must match an available build, not guess")
+
+# "Always installed": the bundled engine is unpacked at start-up and readiness is queryable, so
+# selecting Horizon never waits on a 35 MB copy out of assets.
+for needle, what in (
+    ("fun prepareInBackground(context: Context)", "unpacking ahead of time, unprompted"),
+    ("fun isPrepared(context: Context): Boolean", "knowing whether the engine is ready"),
+):
+    if needle not in installer_src:
+        errors.append(f"HorizonEngineInstaller.kt: missing {what} (`{needle}`)")
+if "HorizonEngineInstaller.prepareInBackground(this)" not in launcher_src:
+    errors.append("LauncherActivity: the bundled engine must be prepared at start-up")
+if "offerEngineInstall()" not in fragment_src:
+    errors.append("PhoneSettingsFragment: selecting the Horizon engine must offer its install")
 if "fun isBundled(context: Context): Boolean = bundledAbi(context) != null" not in installer_src:
     errors.append("HorizonEngineInstaller.kt: isBundled must mean \"bundled for this device\"")
 

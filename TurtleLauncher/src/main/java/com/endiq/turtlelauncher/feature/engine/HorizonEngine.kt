@@ -52,10 +52,18 @@ object HorizonEngine {
         val versionName: String?,
     )
 
-    /** Horizon builds are ARM64 + Vulkan only; a 32-bit-only device cannot run one. */
+    /**
+     * Horizon 0.7.7 ships for ARM64, ARMv7, x86 and x86_64, so every device on a modern Android
+     * ABI can run it - the launcher just has to hand the installer the matching build. This is a
+     * capability check, not a Vulkan probe: Horizon itself reports a driver it cannot use.
+     */
     @JvmStatic
-    fun isDeviceSupported(): Boolean =
-        Build.SUPPORTED_64_BIT_ABIS.any { it.equals("arm64-v8a", ignoreCase = true) }
+    fun isDeviceSupported(): Boolean = Build.SUPPORTED_ABIS.any { abi ->
+        abi.equals("arm64-v8a", ignoreCase = true) ||
+            abi.equals("armeabi-v7a", ignoreCase = true) ||
+            abi.equals("x86", ignoreCase = true) ||
+            abi.equals("x86_64", ignoreCase = true)
+    }
 
     private fun packageInfo(context: Context, packageName: String): PackageInfo? =
         runCatching { context.packageManager.getPackageInfo(packageName, 0) }.getOrNull()

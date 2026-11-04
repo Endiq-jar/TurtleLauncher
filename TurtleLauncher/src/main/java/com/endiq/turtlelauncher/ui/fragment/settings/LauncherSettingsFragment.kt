@@ -9,6 +9,7 @@ import com.endiq.anim.animations.Animations
 import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.databinding.SettingsFragmentLauncherBinding
 import com.endiq.turtlelauncher.event.single.PageOpacityChangeEvent
+import com.endiq.turtlelauncher.feature.network.DualChannelNetwork
 import com.endiq.turtlelauncher.feature.update.UpdateUtils
 import com.endiq.turtlelauncher.setting.AllSettings
 import com.endiq.turtlelauncher.ui.fragment.CustomBackgroundFragment
@@ -108,6 +109,19 @@ class LauncherSettingsFragment() : AbstractSettingsFragment(R.layout.settings_fr
             binding.dnsServerValue,
             R.array.dns_server_names, R.array.dns_server_values
         )
+
+        // Dual channel: the switch drives DualChannelNetwork, and the row's value line shows which
+        // links are live right now so the feature is not a mystery toggle.
+        SwitchSettingsWrapper(
+            context,
+            AllSettings.dualChannelNetwork,
+            binding.dualChannelNetworkLayout,
+            binding.dualChannelNetwork
+        ).setOnCheckedChangeListener { _, _, save ->
+            save.onSave()
+            runCatching { binding.dualChannelNetworkValue.text = DualChannelNetwork.describe(context) }
+        }
+        runCatching { binding.dualChannelNetworkValue.text = DualChannelNetwork.describe(context) }
 
         SeekBarSettingsWrapper(
             context,

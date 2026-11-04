@@ -377,6 +377,11 @@ public class LauncherActivity extends BaseActivity {
         // is established by the Activity lifecycle callbacks and would die with the Activity.
         warmUpSocial();
 
+        // The Horizon engine ships inside this APK, one build per architecture. Unpacking it in
+        // the background means the engine is ready the moment the user selects it, instead of
+        // waiting on a 35 MB copy from assets while staring at a settings card.
+        com.endiq.turtlelauncher.feature.engine.HorizonEngineInstaller.prepareInBackground(this);
+
         // Startup/background music (see the Music screen's "Enable Startup Music" +
         // playback scope). Gated internally on AllSettings.musicEnabled and a track
         // actually being set, so this is a no-op otherwise.

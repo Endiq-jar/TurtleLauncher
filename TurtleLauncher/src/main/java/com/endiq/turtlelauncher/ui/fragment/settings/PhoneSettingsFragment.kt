@@ -15,6 +15,7 @@ import com.endiq.turtlelauncher.R
 import com.endiq.turtlelauncher.feature.engine.GameEngine
 import com.endiq.turtlelauncher.feature.engine.GameEngineManager
 import com.endiq.turtlelauncher.feature.engine.HorizonEngine
+import com.endiq.turtlelauncher.feature.engine.HorizonEngineInstallFlow
 import com.endiq.turtlelauncher.feature.engine.HorizonEngineInstaller
 import com.endiq.turtlelauncher.ui.dialog.EditTextDialog
 import com.endiq.turtlelauncher.feature.version.VersionsManager
@@ -167,6 +168,10 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         binding.engineHorizonLayout.setOnClickListener {
             GameEngineManager.select(GameEngine.HORIZON)
             renderEngineState()
+            // The engine is built into the launcher, so selecting it is the moment to install:
+            // one prompt, no download, no trip back to Play to find out something is missing.
+            val status = GameEngineManager.horizonStatus(requireContext())
+            if (status.deviceSupported && status.installation == null) offerEngineInstall()
         }
         binding.engineHorizonPick.setOnClickListener { showEngineAppPicker() }
         // "Install engine" is the built-in downloader; a locally downloaded APK can still be
@@ -180,6 +185,16 @@ class PhoneSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         binding.engineHorizonSource.setOnClickListener { editEngineSource() }
         binding.engineHorizonUninstall.setOnClickListener { uninstallHorizonEngine() }
         renderEngineState()
+    }
+
+    /** Offers the built-in install (or a download when this build carries no engine for the device). */
+    private fun offerEngineInstall() {
+        val owner = activity ?: return
+        HorizonEngineInstallFlow.offerInstall(owner) {
+            // Declining keeps the on-device engine, exactly like pressing Play does.
+            runCatching { GameEngineManager.select(GameEngine.DEVICE) }
+            renderEngineState()
+        }
     }
 
     private fun renderEngineState() {

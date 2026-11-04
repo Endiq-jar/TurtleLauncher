@@ -9,6 +9,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.endiq.turtlelauncher.feature.log.Logging
 import com.endiq.turtlelauncher.setting.AllSettings
+import com.endiq.turtlelauncher.task.TaskExecutors
 import com.endiq.turtlelauncher.utils.path.UrlManager
 import okhttp3.Request
 import java.io.File
@@ -46,53 +47,24 @@ object HorizonEngineInstaller {
     private const val SUMS_ASSET = "SHA256SUMS.txt"
 
     /**
-     * Every architecture Horizon publishes, packed into this launcher at build time by
-     * `bundleHorizonEngine` in build.gradle.kts. Because the APKs travel inside the launcher's
-     * own signed APK there is no download, no size check and no network permission involved in
-     * switching engines - on any device Horizon supports.
+     * The engine APKs packed into this launcher at build time (`bundleHorizonEngine` in
+     * build.gradle.kts): one per ABI, under assets/horizon/. Because they travel inside the
+     * launcher's own signed APK there is no download, no size check and no network permission
+     * involved in switching engines, and the device always has a build that matches its CPU.
      */
-    val BUNDLED_ABIS: List<String> = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+    const val BUNDLED_ASSET_DIR: String = "horizon"
 
-    /** Horizon Android port packed into the APK; also names the extracted files. */
+    /** Written by the build next to the APKs; the source of truth for the bundled version. */
+    const val VERSION_ASSET: String = "horizon/version"
+
+    /** Horizon Android port packed into the APK; fallback when the version asset is missing. */
     const val BUNDLED_VERSION: String = "0.7.7"
 
-    /** Asset path of the engine APK for one CPU architecture. */
-    fun bundledAssetName(abi: String): String = "horizon/horizon-engine-$abi.apk"
+    /** Build-time cache directories are named per version so an upgrade never reuses an old one. */
+    private const val CACHE_VERSION_PREFIX = "v"
 
-    /** Architectures whose engine APK is actually inside this build. */
-    fun availableBundledAbis(context: Context): List<String> = BUNDLED_ABIS.filter { abi ->
-        runCatching { context.assets.open(bundledAssetName(abi)).close() }.isSuccess
-    }
-
-    /**
-     * The architecture this device should get: the first of [Build.SUPPORTED_ABIS] that was
-     * bundled, which is Android's own preference order. Null means this build carries no engine
-     * for this device and the release feed has to be used.
-     */
-    fun bundledAbiForDevice(context: Context): String? = pickAbi(
-        deviceAbis = runCatching { Build.SUPPORTED_ABIS?.toList().orEmpty() }.getOrDefault(emptyList()),
-        availableAbis = availableBundledAbis(context),
-    )
-
-    /** Pure helper so the selection rules are testable without an Android device. */
-    fun pickAbi(deviceAbis: List<String>, availableAbis: List<String>): String? {
-        val available = availableAbis.toSet()
-        val preferred = deviceAbis.firstOrNull { it in available }
-        if (preferred != null) return preferred
-        // Some devices report unusual names (e.g. "arm64" without the -v8a suffix).
-        for (abi in deviceAbis) {
-            val match = when (abi.lowercase()) {
-                "arm64", "arm64-v8a" -> "arm64-v8a"
-                "arm", "armv7", "armeabi-v7a", "armeabi" -> "armeabi-v7a"
-                "x86", "x86_64" -> abi.lowercase()
-                else -> null
-            }
-            if (match != null && match in available) return match
-        }
-        // A launcher that only carries one engine still beats no engine at all: the installer
-        // rejects an incompatible APK, and the UI falls back to the on-device engine.
-        return availableAbis.firstOrNull()
-    }
+    /** Every Horizon Android ABI build the launcher can carry, in device-preference order. */
+    private val BUNDLED_ABIS = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
 
     /** One resolved release asset plus what is known about it. */
     data class EngineRelease(
@@ -222,50 +194,87 @@ object HorizonEngineInstaller {
 
     // ── Built-in engine ───────────────────────────────────────────────────────────
 
-    /** True when this APK carries an engine for this device, so switching needs no download. */
-    fun isBundled(context: Context): Boolean = bundledAbiForDevice(context) != null
+    fun bundledAssetName(abi: String): String = "$BUNDLED_ASSET_DIR/horizon-engine-$abi.apk"
 
-    /** One-line description of what is bundled, e.g. "0.7.7 - arm64-v8a". */
-    fun bundledSummary(context: Context): String? {
-        val abi = bundledAbiForDevice(context) ?: return null
-        return "v$BUNDLED_VERSION - $abi"
+    /** Version of the engine packed in this APK (written by the build next to the APKs). */
+    fun bundledVersion(context: Context): String = runCatching {
+        context.assets.open(VERSION_ASSET).bufferedReader().use { it.readText().trim() }
+    }.getOrNull()?.takeIf { it.isNotEmpty() } ?: BUNDLED_VERSION
+
+    private fun hasBundledAsset(context: Context, abi: String): Boolean =
+        runCatching { context.assets.open(bundledAssetName(abi)).close() }.isSuccess
+
+    /** Every ABI this launcher actually ships an engine for. */
+    fun bundledAbis(context: Context): List<String> =
+        BUNDLED_ABIS.filter { abi -> hasBundledAsset(context, abi) }
+
+    /**
+     * The bundled engine build this device should install, or null when the launcher carries none.
+     * The launcher is a universal APK, so this is what turns "the engine is in here somewhere"
+     * into "the right engine for this phone".
+     */
+    fun bundledAbi(context: Context): String? =
+        pickAbi(Build.SUPPORTED_ABIS.orEmpty().toList(), bundledAbis(context))
+
+    /**
+     * Pure ABI selection so the rule can be unit-tested: the first of the device's own ABIs that
+     * this launcher ships, understanding the aliases Android reports ("arm64" for "arm64-v8a").
+     *
+     * No guessing beyond that: an engine built for another CPU would only fail to install, so a
+     * device with no matching build is told to use the download instead.
+     */
+    fun pickAbi(deviceAbis: List<String>, availableAbis: List<String>): String? {
+        if (availableAbis.isEmpty()) return null
+        val available = availableAbis.map { it.lowercase() }.toSet()
+        for (abi in deviceAbis) {
+            val normalized = when (abi.lowercase()) {
+                "arm64" -> "arm64-v8a"
+                "arm", "armv7", "armeabi" -> "armeabi-v7a"
+                else -> abi.lowercase()
+            }
+            if (normalized in available) return normalized
+        }
+        return null
     }
 
     /**
-     * Copies this device's bundled engine out of the launcher's assets into the cache and returns
-     * it, ready for [install]. Blocking - call from a worker thread. The result is cached per
-     * version *and* architecture, so a launcher update re-extracts the newer engine instead of
-     * handing Android the old one, and re-installing does not rewrite 35 MB every time.
+     * True when this launcher carries an engine *for this device*, i.e. switching engines needs no
+     * download. [bundledAbis] reports everything the APK carries, which is what the version label
+     * and the packaging checks use.
+     */
+    fun isBundled(context: Context): Boolean = bundledAbi(context) != null
+
+    /**
+     * Copies the bundled engine for this device out of the launcher's assets into the cache and
+     * returns it, ready for [install]. Blocking - call from a worker thread.
+     *
+     * The cache is keyed by version and ABI: a launcher update that carries a newer engine
+     * re-extracts instead of reusing the old file, while re-installing the same version reuses it.
      */
     fun extractBundled(context: Context, onProgress: (Int) -> Unit = {}): File {
-        val abi = bundledAbiForDevice(context)
-            ?: throw InstallException("This launcher build does not contain a Horizon engine for this device.")
-        return extractBundled(context, abi, onProgress)
-    }
-
-    /** Unpacks one specific bundled architecture; used by [extractBundled] and by diagnostics. */
-    fun extractBundled(context: Context, abi: String, onProgress: (Int) -> Unit = {}): File {
+        val abi = bundledAbi(context)
+            ?: throw InstallException("This launcher build does not contain the Horizon engine.")
+        val version = bundledVersion(context)
         val asset = bundledAssetName(abi)
-        val directory = File(context.cacheDir, CACHE_DIR).apply { mkdirs() }
-        val target = File(directory, "horizon-engine-$abi-$BUNDLED_VERSION.apk")
-        val stamp = File(directory, "horizon-engine-$abi-$BUNDLED_VERSION.ready")
+
+        val root = File(context.cacheDir, CACHE_DIR).apply { mkdirs() }
+        val currentDirName = "$CACHE_VERSION_PREFIX$version"
+        // Older engines (and stray downloads) are deleted, so only the shipped version lives here.
+        root.listFiles()?.forEach { stale ->
+            if (stale.name != currentDirName) runCatching { stale.deleteRecursively() }
+        }
+        val directory = File(root, currentDirName).apply { mkdirs() }
+        val target = File(directory, "horizon-engine-$abi.apk")
+        val stamp = File(directory, "ready")
         if (target.isFile && target.length() > 0L && stamp.isFile) {
             onProgress(100)
             return target
         }
 
         val partial = File(directory, "horizon-engine-$abi.apk.part").apply { delete() }
-        // Anything else in the cache is a previous attempt or an older download.
-        directory.listFiles()?.forEach { stale ->
-            if (stale.name != target.name && stale.name != stamp.name && stale.name != partial.name) {
-                runCatching { stale.deleteRecursively() }
-            }
-        }
-
         onProgress(0)
-        val total = runCatching {
-            context.assets.open(asset).use { it.available().toLong() }
-        }.getOrDefault(0L)
+        val total = runCatching { context.assets.open(asset).use { it.available().toLong() } }
+            .getOrDefault(0L)
         runCatching {
             context.assets.open(asset).use { input ->
                 partial.outputStream().use { output ->
@@ -296,30 +305,31 @@ object HorizonEngineInstaller {
 
         if (partial.length() <= 0L) {
             partial.delete()
-            throw InstallException("The bundled Horizon engine for $abi is missing from this build.")
+            throw InstallException("This launcher build does not contain a Horizon engine for $abi.")
         }
         stamp.delete()
         if (!partial.renameTo(target)) {
             target.writeBytes(partial.readBytes())
             partial.delete()
         }
-        stamp.writeText(System.currentTimeMillis().toString())
+        stamp.writeText("$version $abi")
         onProgress(100)
-        Logging.i(TAG, "Unpacked the bundled Horizon engine v$BUNDLED_VERSION ($abi)")
+        Logging.i(TAG, "Unpacked the bundled Horizon engine v$version ($abi)")
         return target
     }
 
     /**
-     * Prepares the engine without any user action: when the bundled build matches this device and
-     * no extracted copy exists yet, it is unpacked in the background. Callers are cheap - the work
-     * is skipped once the cache is warm, and every failure is silent because the UI can still
-     * install on demand.
+     * Prepares the engine without any user action: when this launcher carries a build for this
+     * device and it is not unpacked yet, it is unpacked in the background at start-up. That is what
+     * makes the engine "already installed" from the user's point of view - selecting it never waits
+     * on a 35 MB copy out of assets. Failures are silent: the UI can still install on demand.
      */
     @JvmStatic
     fun prepareInBackground(context: Context) {
-        if (!isBundled(context)) return
+        if (isPrepared(context)) return
+        if (bundledAbi(context) == null) return
         val app = context.applicationContext
-        com.endiq.turtlelauncher.task.TaskExecutors.getDefault().execute {
+        TaskExecutors.getDefault().execute {
             runCatching { extractBundled(app) }
                 .onFailure { error -> Logging.w(TAG, "Could not prepare the bundled engine", error) }
         }
@@ -327,30 +337,63 @@ object HorizonEngineInstaller {
 
     /** True once [extractBundled] produced this version's APK for this device. */
     fun isPrepared(context: Context): Boolean {
-        val abi = bundledAbiForDevice(context) ?: return false
-        val directory = File(context.cacheDir, CACHE_DIR)
-        val apk = File(directory, "horizon-engine-$abi-$BUNDLED_VERSION.apk")
-        val stamp = File(directory, "horizon-engine-$abi-$BUNDLED_VERSION.ready")
-        return apk.isFile && apk.length() > 0L && stamp.isFile
+        val abi = bundledAbi(context) ?: return false
+        return runCatching {
+            val directory = File(File(context.cacheDir, CACHE_DIR), "$CACHE_VERSION_PREFIX${bundledVersion(context)}")
+            val apk = File(directory, "horizon-engine-$abi.apk")
+            val stamp = File(directory, "ready")
+            apk.isFile && apk.length() > 0L && stamp.isFile
+        }.getOrDefault(false)
     }
 
     /**
-     * The APK a settings action should install: the engine packed in this launcher when present,
-     * otherwise a download from the configured feed (custom builds that strip the asset).
+     * The APK a settings action should install: the engine packed in this launcher for this
+     * device when present, otherwise a download from the configured feed (stripped builds).
      */
     fun acquire(context: Context, onProgress: (Int) -> Unit = {}): Result<File> = runCatching {
-        if (isBundled(context)) {
+        val abi = bundledAbi(context)
+        if (abi != null) {
             extractBundled(context, onProgress)
         } else {
+            // Either nothing is bundled, or the bundled builds are for other CPUs.
             downloadLatest(context, onProgress).getOrThrow().second
         }
     }
 
+    /**
+     * Numeric version comparison for the bundled/installed engine versions, so "always the latest"
+     * can be checked without a semver dependency: "0.7.10" > "0.7.9", "0.7.6-rc1" == "0.7.6".
+     */
+    fun compareVersions(left: String?, right: String?): Int {
+        fun parts(value: String?): List<Int> = value.orEmpty().trim()
+            .removePrefix("v")
+            // A pre-release suffix ("0.7.6-rc1") counts as that release, not as a later one.
+            .substringBefore('-')
+            .substringBefore('+')
+            .split(Regex("[^0-9]+"))
+            .filter { it.isNotEmpty() }
+            .map { it.toIntOrNull() ?: 0 }
+        val a = parts(left)
+        val b = parts(right)
+        for (index in 0 until maxOf(a.size, b.size)) {
+            val difference = (a.getOrNull(index) ?: 0) - (b.getOrNull(index) ?: 0)
+            if (difference != 0) return if (difference > 0) 1 else -1
+        }
+        return 0
+    }
+
+    /** Human-readable description of what this launcher carries, e.g. "v0.7.7, arm64-v8a". */
+    fun bundledLabel(context: Context): String? {
+        val abi = bundledAbi(context) ?: return null
+        return "v${bundledVersion(context)}, $abi"
+    }
+
     fun download(context: Context, release: EngineRelease, onProgress: (Int) -> Unit): File {
-        val directory = File(context.cacheDir, CACHE_DIR).apply { mkdirs() }
+        // Downloads live next to, not inside, the extracted built-in engines.
+        val directory = File(context.cacheDir, "$CACHE_DIR/download").apply { mkdirs() }
         // Drop anything the previous download left behind (old versions, partial files).
         directory.listFiles()?.forEach { stale ->
-            if (stale.name != release.assetName) runCatching { stale.delete() }
+            if (stale.name != release.assetName) runCatching { stale.deleteRecursively() }
         }
 
         val target = File(directory, release.assetName)

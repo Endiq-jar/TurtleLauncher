@@ -209,18 +209,17 @@ installer_src = read(installer)
 flow_src = read(flow)
 
 for needle, what in (
-    ("val BUNDLED_ABIS: List<String>", "the list of bundled architectures"),
-    ("fun bundledAssetName(abi: String): String", "one asset per architecture"),
-    ("fun availableBundledAbis(context: Context): List<String>", "which architectures are in this build"),
-    ("fun bundledAbiForDevice(context: Context): String?", "the per-device architecture choice"),
-    ("fun pickAbi(deviceAbis: List<String>, availableAbis: List<String>): String?", "testable ABI selection"),
-    ("const val BUNDLED_VERSION: String = \"0.7.7\"", "the bundled Horizon release"),
+    ("const val BUNDLED_ASSET_DIR: String = \"horizon\"", "the bundled asset directory"),
+    ("const val VERSION_ASSET: String = \"horizon/version\"", "the bundled-version asset"),
+    ("fun bundledAssetName(abi: String): String", "per-ABI asset naming"),
+    ("fun bundledVersion(context: Context): String", "reading the bundled version"),
+    ("fun bundledAbis(context: Context): List<String>", "listing bundled ABIs"),
+    ("fun bundledAbi(context: Context): String?", "picking this device's ABI"),
+    ("Build.SUPPORTED_ABIS", "the device ABI probe"),
     ("fun isBundled(context: Context): Boolean", "the bundled-engine probe"),
     ("fun extractBundled(context: Context", "unpacking the bundled engine"),
-    ("fun extractBundled(context: Context, abi: String", "unpacking a specific architecture"),
-    ("fun prepareInBackground(context: Context)", "unpacking ahead of time, unprompted"),
-    ("fun isPrepared(context: Context): Boolean", "knowing whether the engine is ready"),
     ("fun acquire(context: Context", "the single install entry point (bundled first)"),
+    ("fun compareVersions(left: String?, right: String?): Int", "version comparison"),
     ("fun latestRelease(repo: String = sourceRepo()): Result<EngineRelease>", "release fallback resolution"),
     ("https://api.github.com", "the GitHub release API"),
     ("fun pickAsset(assets: JsonArray): JsonObject?", "ABI-aware asset selection"),
@@ -240,22 +239,10 @@ for needle, what in (
     if needle not in installer_src:
         errors.append(f"HorizonEngineInstaller.kt: missing {what} (`{needle}`)")
 
-# Selection rules: exact device ABI first, aliases second, and a single bundled build as a last
-# resort so a one-architecture build still installs something Android can accept or reject.
-for needle, what in (
-    ("val preferred = deviceAbis.firstOrNull { it in available }", "exact ABI matching"),
-    ("\"arm64\", \"arm64-v8a\" -> \"arm64-v8a\"", "ABI aliases"),
-    ("return availableAbis.firstOrNull()", "a single-architecture fallback"),
-):
-    if needle not in installer_src:
-        errors.append(f"HorizonEngineInstaller.kt: missing {what} (`{needle}`)")
-
 if 'StringSettingUnit("horizonEngineSource"' not in settings_src:
     errors.append("AllSettings: horizonEngineSource must exist so the feed is configurable")
 if "Vasysik/horizon-android" not in settings_src:
     errors.append("AllSettings: the engine source needs a working default feed")
-if "R.string.engine_status_bundled_ready" not in manager_src:
-    errors.append("GameEngineManager: the engine card must say when the engine is built in")
 if "ACTION_DELETE" not in installer_src:
     errors.append("HorizonEngineInstaller: uninstall must go through ACTION_DELETE")
 
@@ -306,15 +293,86 @@ for needle, what in (
     ("generated/horizonAssets", "a build-only asset directory"),
     ("assets.srcDir(horizonEngineAssetDir.get().asFile)", "the bundled assets source dir"),
     ("dependsOn(bundleHorizonEngine)", "assets depending on the bundled engine"),
-    ("horizon-engine-$abi.apk", "the bundled file names"),
+    ("horizon-engine-$abi.apk", "per-ABI bundled file names"),
     ("Vasysik/horizon-android", "the pinned upstream build"),
-    ("turtlelauncher.horizonEngineBase", "an override for offline/mirror builds"),
-    ("val horizonEngineAbis = listOf(\"arm64-v8a\", \"armeabi-v7a\", \"x86\", \"x86_64\")",
-     "all four Horizon architectures"),
-    ("Horizon-Android-$version-$abi.apk", "per-architecture asset names"),
+    ("turtlelauncher.horizonEngineUrlTemplate", "an override for mirror builds"),
+    ("outputs.files(", "declaring the APKs as outputs so a failed download is retried"),
+    ("stamp.readText().trim() != version", "dropping the previous version's APKs on a bump"),
 ):
     if needle not in gradle_src:
         errors.append(f"build.gradle.kts: missing {what} (`{needle}`)")
+
+# All four Horizon Android ABIs must ship, and both files must agree on the version and the list.
+GRADLE_ABIS = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"]
+gradle_version = re.search(r'val horizonEngineVersion = "([^"]+)"', gradle_src)
+kotlin_version = re.search(r'const val BUNDLED_VERSION: String = "([^"]+)"', installer_src)
+if not gradle_version or not kotlin_version:
+    errors.append("the bundled engine version must be a literal in build.gradle.kts and the installer")
+elif gradle_version.group(1) != kotlin_version.group(1):
+    errors.append(
+        "the bundled engine version must match in build.gradle.kts ("
+        f"{gradle_version.group(1)}) and HorizonEngineInstaller.kt ({kotlin_version.group(1)})"
+    )
+elif not re.fullmatch(r"\d+\.\d+\.\d+", gradle_version.group(1)):
+    errors.append(f"unexpected bundled engine version {gradle_version.group(1)}")
+
+for abi in GRADLE_ABIS:
+    if f'"{abi}"' not in gradle_src:
+        errors.append(f"build.gradle.kts: the bundled engine must include {abi}")
+    if f'"{abi}"' not in installer_src:
+        errors.append(f"HorizonEngineInstaller.kt: the runtime must know about {abi}")
+
+# The device must get its own ABI build, never a neighbouring one, and an unmatched device must
+# fall back to the download instead of installing a binary it cannot run.
+if "pickAbi(Build.SUPPORTED_ABIS.orEmpty().toList(), bundledAbis(context))" not in installer_src:
+    errors.append("HorizonEngineInstaller.kt: bundledAbi must delegate to the pure ABI picker")
+if "if (normalized in available) return normalized" not in installer_src:
+    errors.append("HorizonEngineInstaller.kt: the ABI picker must match an available build, not guess")
+
+# "Always installed": the bundled engine is unpacked at start-up and readiness is queryable, so
+# selecting Horizon never waits on a 35 MB copy out of assets.
+for needle, what in (
+    ("fun prepareInBackground(context: Context)", "unpacking ahead of time, unprompted"),
+    ("fun isPrepared(context: Context): Boolean", "knowing whether the engine is ready"),
+):
+    if needle not in installer_src:
+        errors.append(f"HorizonEngineInstaller.kt: missing {what} (`{needle}`)")
+if "HorizonEngineInstaller.prepareInBackground(this)" not in launcher_src:
+    errors.append("LauncherActivity: the bundled engine must be prepared at start-up")
+if "offerEngineInstall()" not in fragment_src:
+    errors.append("PhoneSettingsFragment: selecting the Horizon engine must offer its install")
+if "fun isBundled(context: Context): Boolean = bundledAbi(context) != null" not in installer_src:
+    errors.append("HorizonEngineInstaller.kt: isBundled must mean \"bundled for this device\"")
+
+# An upgrade must re-extract instead of reusing an older engine.
+if "CACHE_VERSION_PREFIX" not in installer_src or "stale.name != currentDirName" not in installer_src:
+    errors.append("HorizonEngineInstaller.kt: the extraction cache must be keyed by engine version")
+
+manager_status = read(engine_dir / "GameEngineManager.kt")
+for needle, what in (
+    ("val bundledLabel: String? = null", "the bundled label in HorizonStatus"),
+    ("val updateAvailable: Boolean = false", "the update flag in HorizonStatus"),
+    ("HorizonEngineInstaller.compareVersions(", "comparing bundled and installed versions"),
+    ("R.string.engine_status_bundled_missing", "the built-in install hint"),
+    ("R.string.engine_status_update_available", "the update hint"),
+):
+    if needle not in manager_status:
+        errors.append(f"GameEngineManager.kt: missing {what} (`{needle}`)")
+
+if "fun offerUpdateIfNeeded(activity: Activity, onContinue: Runnable): Boolean" not in flow_src:
+    errors.append("HorizonEngineInstallFlow.kt: a newer built-in engine must be offered as an update")
+if "horizonEngineUpdateSkipped" not in settings_src:
+    errors.append("AllSettings: the dismissed update needs a per-version marker")
+if "HorizonEngineInstallFlow.offerUpdateIfNeeded(" not in launcher_src:
+    errors.append("LauncherActivity.java: Play must offer the newer built-in engine")
+
+for needle, what in (
+    ("R.string.engine_install_update", "the update button label"),
+    ("status.updateAvailable", "using the update flag"),
+    ("HorizonEngineInstaller.bundledLabel(", "the bundled label in the UI"),
+):
+    if needle not in fragment_src:
+        errors.append(f"PhoneSettingsFragment.kt: missing {what} (`{needle}`)")
 
 for view_id in ("engine_horizon_source", "engine_horizon_uninstall"):
     if f'@+id/{view_id}"' not in layout_src:

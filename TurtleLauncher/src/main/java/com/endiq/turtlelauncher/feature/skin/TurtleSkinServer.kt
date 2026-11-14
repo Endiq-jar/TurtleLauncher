@@ -161,6 +161,16 @@ object TurtleSkinServer {
         val textures = JSONObject()
         if (skinFile.isFile) {
             val skin = JSONObject().put("url", "http://127.0.0.1:$port/textures/skin/$noDashUuid")
+            // Without this, the client always renders the classic (Steve, 4px-arm)
+            // model, regardless of how the skin was actually authored - there's no
+            // stored flag for it, so detect it straight from the PNG, the same way
+            // Blessing Skin/NameMC do: a 64x64 skin's overlay layer only has real
+            // pixel data in the outer arm columns for the classic model, so a
+            // transparent pixel at (54, 20) - inside that classic-only region -
+            // reliably signals a slim-authored skin instead.
+            if (detectSlimModel(skinFile)) {
+                skin.put("metadata", JSONObject().put("model", "slim"))
+            }
             textures.put("SKIN", skin)
         }
         if (capeFile.isFile) {
@@ -186,6 +196,18 @@ object TurtleSkinServer {
             .put("name", account.username)
             .put("properties", JSONArray().put(property))
     }
+
+    /**
+     * Heuristic slim/classic model detection - only meaningful for the modern 64x64
+     * skin format; legacy 64x32 skins predate the slim model entirely, so they're
+     * always treated as classic. Errors (corrupt/unreadable PNG) also fall back to
+     * classic rather than risk throwing out of a request-handling path.
+     */
+    private fun detectSlimModel(skinFile: File): Boolean = runCatching {
+        val bitmap = android.graphics.BitmapFactory.decodeFile(skinFile.absolutePath) ?: return false
+        if (bitmap.width != 64 || bitmap.height != 64) return false
+        android.graphics.Color.alpha(bitmap.getPixel(54, 20)) == 0
+    }.getOrDefault(false)
 
     private fun sign(value: String): String = try {
         val signer = Signature.getInstance("SHA1withRSA")
